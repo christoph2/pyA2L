@@ -56,8 +56,12 @@ def a2lParser(fname):
 
     tokenizer = Tokenizer(''.join(uncomment(fp)), keywords)
 
-    stack = []
-    stack.append(classes.RootElement)
+    classStack = []
+    classStack.append(classes.RootElement)
+
+    instanceStack = []
+    instanceStack.append(classes.instanceFactory("Root"))
+    pushToInstanceStack = False
 
     while tokenizer.tokenAvailable():
         lineno, (tokenType, lexem) = tokenizer.getToken()
@@ -66,20 +70,22 @@ def a2lParser(fname):
 
         if tokenType == BEGIN:
             lineno, (tokenType, lexem) = tokenizer.getToken()   # Move on.
-            handler = classes.KEYWORD_MAP.get(lexem)
-            stack.append(handler)
+            pushToInstanceStack = True
+            klass = classes.KEYWORD_MAP.get(lexem)
+            classStack.append(klass)
         elif tokenType == END:
             lineno, (tokenType, lexem) = tokenizer.getToken()   # Move on.
-            stack.pop()
+            classStack.pop()
+            instanceStack.pop()
             continue
         elif tokenType == KEYWORD:
-            handler = classes.KEYWORD_MAP.get(lexem)
+            klass = classes.KEYWORD_MAP.get(lexem)
 
-        if stack:
-            tos = stack[-1]
+        if classStack:
+            tos = classStack[-1]
         if tokenType in (BEGIN, KEYWORD):
-            fixedAttributes =  handler.fixedAttributes
-            variableAttribute =  handler.variableAttribute
+            fixedAttributes =  klass.fixedAttributes
+            variableAttribute =  klass.variableAttribute
 
             numParameters = len(fixedAttributes)
 
@@ -87,7 +93,7 @@ def a2lParser(fname):
             attributeValues = [x[1][1] for x in parameters]
             inst = classes.instanceFactory(lexem.title(), **OrderedDict(zip(fixedAttributes, attributeValues)))
             if variableAttribute:
-                attr = handler[variableAttribute]
+                attr = klass[variableAttribute]
                 result = []
                 while True:
                     lineno, (tokenType, lexem) = tokenizer.getToken()
@@ -102,6 +108,7 @@ def a2lParser(fname):
                 #
                 # COMPU_TAB / COMPU_VTAB / COMPU_VTAB_RANGE require special attention.
                 #
+                attribute = "Items"
                 if lexem == 'COMPU_VTAB_RANGE':
                     sliceLength = 3
                     valueClass = classes.CompuTriplet
@@ -112,9 +119,13 @@ def a2lParser(fname):
                     variablePart = [tokenizer.getToken() for _ in range(inst.NumberValuePairs * sliceLength)]
                 variablePartValues = [v[1][1] for v in variablePart]
                 result = slicer(variablePartValues, sliceLength, valueClass)
-                inst.attrs.append(attr[1])
-                setattr(inst, attr[1], result)
+                inst.attrs.append(attribute)
+                setattr(inst, attribute, result)
             print inst
+            instanceStack[-1].children.append(inst)
+            if pushToInstanceStack:
+                instanceStack.append(inst)
+                pushToInstanceStack = False
 
 
 def uncomment(fp): # Nested comments are not supported!
@@ -147,6 +158,3 @@ def uncomment(fp): # Nested comments are not supported!
                 multiLineComment = False
     return result
 
-if __name__=='__main__':
-    #a2lParser(r'C:\projekte\csProjects\pySART\pySART\fibex\example_chris2.a2l')
-    a2lParser(r'C:\projekte\csProjects\pySART\pySART\fibex\ASAP2Example_saml.a2l')
