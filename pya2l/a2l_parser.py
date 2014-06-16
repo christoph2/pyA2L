@@ -56,11 +56,8 @@ def a2lParser(fname):
 
     tokenizer = Tokenizer(''.join(uncomment(fp)), keywords)
 
-    state = STATE_NORMAL
-    a2mlSyntax = []
     stack = []
     stack.append(classes.RootElement)
-    end = False
 
     while tokenizer.tokenAvailable():
         lineno, (tokenType, lexem) = tokenizer.getToken()
@@ -150,4 +147,6 @@ def uncomment(fp): # Nested comments are not supported!
                 multiLineComment = False
     return result
 
-
+if __name__=='__main__':
+    #a2lParser(r'C:\projekte\csProjects\pySART\pySART\fibex\example_chris2.a2l')
+    a2lParser(r'C:\projekte\csProjects\pySART\pySART\fibex\ASAP2Example_saml.a2l')
