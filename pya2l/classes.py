@@ -1781,6 +1781,7 @@ def instanceFactory(className, **kws):
     for k, v in kws.items():
         setattr(inst, k, v)
         inst.attrs.append(k)
+    inst.children = []
     return inst
 
 
