@@ -39,7 +39,7 @@ class Tokenizer(object):
         | \s*(?P<BEGIN>/begin)
         | \s*(?P<END>/end)
         | \s*(?P<NUMBER>
-                  (0(x|X)[0-9a-zA-Z]+)
+                  (0(x|X)?[0-9a-fA-F]+)
                 | ((\+ | \-)?\d+)
              )
     """, re.VERBOSE | re.DOTALL)

@@ -28,6 +28,7 @@ from collections import OrderedDict
 
 import pya2l.classes as classes
 from pya2l.a2l_lexer import Tokenizer
+from pya2l.aml import ParserWrapper
 from pya2l.utils import slicer
 
 VERSION = 'ASAM MCD-2MC V1.6'
@@ -50,11 +51,28 @@ from collections import namedtuple
 
 Token = namedtuple('Token', 'lineNo tokenType lexem')
 
+
+import re
+
+def extractAML(source):
+    amlSource = ""
+    AML = re.compile("""/begin\s+A2ML.*/end\s+A2ML""", re.DOTALL | re.MULTILINE | re.UNICODE)
+    match = AML.search(source)
+    if match:
+        amlSource =  match.group(0)
+        source = AML.sub('', source)
+    return source, amlSource,
+
 def a2lParser(fname):
     keywords = classes.KEYWORD_MAP.keys()
     fp = file(fname)
 
-    tokenizer = Tokenizer(''.join(uncomment(fp)), keywords)
+    source = ''.join(uncomment(fp))
+    source, amlSource = extractAML(source)
+    tokenizer = Tokenizer(source, keywords)
+
+    parser = ParserWrapper('aml', 'file')
+    tree = parser.parseFromString(amlSource)
 
     classStack = []
     classStack.append(classes.RootElement)
@@ -73,6 +91,7 @@ def a2lParser(fname):
             pushToInstanceStack = True
             klass = classes.KEYWORD_MAP.get(lexem)
             classStack.append(klass)
+            #print "\tName:", lexem
         elif tokenType == END:
             lineno, (tokenType, lexem) = tokenizer.getToken()   # Move on.
             classStack.pop()
@@ -84,6 +103,9 @@ def a2lParser(fname):
         if classStack:
             tos = classStack[-1]
         if tokenType in (BEGIN, KEYWORD):
+            if lexem == "A2ML":
+                print "Meta-Language!!!"
+
             fixedAttributes =  klass.fixedAttributes
             variableAttribute =  klass.variableAttribute
 
@@ -158,3 +180,8 @@ def uncomment(fp): # Nested comments are not supported!
                 multiLineComment = False
     return result
 
+if __name__=='__main__':
+    #a2lParser(r'C:\projekte\csProjects\pySART\pySART\fibex\example_chris2.a2l')
+    #a2lParser(r'C:\projekte\csProjects\pySART\pySART\fibex\ASAP2Example_saml.a2l')
+    #a2lParser(r'C:\projekte\csProjects\pySART\pySART\fibex\ASAP2Example.a2l')
+    a2lParser(r'C:\projekte\csProjects\pySART\pySART\fibex\XCPSim.a2l')
