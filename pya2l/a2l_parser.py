@@ -69,18 +69,17 @@ def a2lParser(fname):
 
         if tokenType == BEGIN:
             lineno, (tokenType, lexem) = tokenizer.getToken()   # Move on.
+            handler = classes.KEYWORD_MAP.get(lexem)
+            stack.append(handler)
         elif tokenType == END:
             lineno, (tokenType, lexem) = tokenizer.getToken()   # Move on.
+            stack.pop()
             continue
         elif tokenType == KEYWORD:
-            #end = False
-            pass
+            handler = classes.KEYWORD_MAP.get(lexem)
 
         if stack:
             tos = stack[-1]
-#            print tos
-        handler = classes.KEYWORD_MAP.get(lexem)
-
         if tokenType in (BEGIN, KEYWORD):
             fixedAttributes =  handler.fixedAttributes
             variableAttribute =  handler.variableAttribute
