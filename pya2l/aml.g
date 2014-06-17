@@ -25,8 +25,8 @@ grammar aml;
 
 options {
 //   debug = 1;
-  //language = Python;
-  language = Java;
+  language = Python;
+  //language = Java;
    output = AST;
    ASTLabelType = CommonTree;
    //k = 2;
@@ -61,32 +61,57 @@ tokens {
 	PREDEFINED_TYPE_NAME;
 }
 
-file:	'/begin' 'A2ML'
-	declaration*
+@parser::header {
+import pya2l.amllib as amllib
+}
+
+@parser::members {
+
+}
+
+@lexer::init {
+   pass
+}
+
+
+file returns [value]:	
+	'/begin' 'A2ML'
+	declarations += declaration*
 	'/end' 'A2ML'
+	{ $value = amllib.File(declarations) }
 	-> ^(FILE declaration*)
 	;
 
-declaration:	
-	(type_definition | block_definition) ';' -> ^(DECLARATION type_definition? block_definition?)
+declaration returns [value]
+@init {
+typeDefinition = None
+blockDefinition = None
+}
+:	
+	(type_definition { typeDefinition = $type_definition.value } | block_definition { blockDefinition = $block_definition.value } ) ';' 
+	{ $value = amllib.Declaration(typeDefinition, blockDefinition) }
+	-> ^(DECLARATION type_definition? block_definition?)
 	;
 
-type_definition:	
-	type_name
+type_definition returns [value]:	
+	typeName = type_name
+	{ $value = amllib.TypeDefinition(typeName)}
 	-> ^(TYPE_DEFINITION type_name)
 	;
 	
-type_name:	
-	TAG? (
+type_name returns [value]:	
+	tagName = TAG? (
 	  name = predefined_type_name
 	| name = struct_type_name
 	| name = taggedstruct_type_name
 	| name = taggedunion_type_name
 	| name = enum_type_name
-	) -> ^(PREDEFINED_TYPE $name)
+	) 
+	{ $value = amllib.TypeName(tagName, name) }
+	-> ^(PREDEFINED_TYPE $name)
 	;
 	
-predefined_type_name:	
+predefined_type_name returns [value]:	
 	(  
 	  name = 'char' 
 	| name = 'int' 
@@ -96,80 +121,114 @@ predefined_type_name:
 	| name = 'ulong' 
 	| name = 'double' 
 	| name = 'float'
-	) -> ^(PREDEFINED_TYPE_NAME $name)
+	) 
+	{ $value = amllib.PredefinedTypeName(name) }
+	-> ^(PREDEFINED_TYPE_NAME $name)
 	;
 	
-block_definition:	
-	'block' TAG type_name -> ^(BLOCK TAG type_name)
+block_definition returns [value]:	
+	'block' tagName = TAG typeName = type_name  { $value = amllib.BlockDefinition(tagName, typeName)} -> ^(BLOCK TAG type_name)
 	;	
 	
-enum_type_name:	
-	  (('enum' ID? '{' enumerator_list '}' -> ^(ENUM  ID? enumerator_list))
-	| ('enum' ID -> ^(ENUM_REF ID)))
+enum_type_name returns [value]:	
+	  (('enum' idValue = ID? '{' enumList = enumerator_list '}' { $value = amllib.EnumType(idValue, enumList) } -> ^(ENUM  ID? enumerator_list))
+	| ('enum' idValue = ID { $value = amllib.EnumRefType(idValue) } -> ^(ENUM_REF ID)))
 	;	
 	
-enumerator_list:	
-	en += enumerator (',' en +=enumerator)*  -> ^(ENUMERATOR_LIST $en*)
+enumerator_list returns [value]
+@init {
+myList = list()
+}
+@after {
+$value = myList
+}
+:
+	en += enumerator { myList.append(en.value) } (',' en +=enumerator { myList.append(en.value) })*  
+//	{ $value = amllib.EnumeratorList(en) }
+	-> ^(ENUMERATOR_LIST $en*)	
 	;	
 	
-enumerator	:	
-	 TAG /*KEYWORD*/ ('=' constant)?  -> ^(ENUMERATOR TAG constant?)
+enumerator returns [value]	:	
+	 enumTag = TAG /*KEYWORD*/ ('=' konst = constant)?  
+	 { $value = amllib.Enumerator(enumTag, konst) }
+	 -> ^(ENUMERATOR TAG constant?)
 	;	
 
-struct_type_name:	
-	   (('struct' ID? '{'struct_member* '}' -> ^(STRUCT  ID? struct_member*))
-	 | ('struct'  ID	 -> ^(STRUCT_REF ID)) )
+struct_type_name returns [value]:	
+	   (('struct' idVal = ID? '{' members += struct_member* '}' {$value =amllib.StructType(idVal, members.value) } -> ^(STRUCT  ID? struct_member*)  )
+	 | ('struct'  idVal = ID    {$value = amllib.StructRefType(idVal) } -> ^(STRUCT_REF ID))  )
 	 ;
 	 	
-struct_member:	
-	member ';'
+struct_member returns [value]:	
+	mem = member ';'
+	{ $value = amllib.StructMember(mem.value)  }
 	-> ^(STRUCT_MEMBER member)
 	;	
 
-member:	
-	 type_name  array_specifier* -> ^(MEMBER type_name array_specifier*)
+member returns [value]:	
+	 tname = type_name  specifiers+=array_specifier* 
+	 {$value = amllib.Member(tname, specifiers) }
+	 -> ^(MEMBER type_name array_specifier*)
 	 ;	
 	 
-array_specifier:	
-	'[' constant ']'  -> ^(ARRAY_SPECIFIER constant)
+array_specifier returns [value]:	
+	'[' konstant = constant ']'  
+	{ $value = amllib.ArraySpecifier(konstant.value) }
+	-> ^(ARRAY_SPECIFIER constant)
 	;	
 	
-taggedstruct_type_name:	
-	  ID? 'taggedstruct' ( '{'  taggedstruct_member* '}'
-	| taggedstruct_member*)
+taggedstruct_type_name returns[value]:	
+	  idVal = ID? 'taggedstruct' ( '{'  members = taggedstruct_member* '}'
+	| members = taggedstruct_member*)
+	{ $value = amllib.TaggedStructType(idVal, members) }
 	-> ^(TAGGED_STRUCT  ID? taggedstruct_member*)
 	;
 		
-taggedstruct_member:	
-	  (taggedstruct_definition ';'  ->^(TAGGED_STRUCT_MEMBER taggedstruct_definition? )) 
-	| ('(' taggedstruct_definition ')' '*' ';'  ->^(TAGGED_STRUCT_MEMBER_VAR taggedstruct_definition? ))
-	| (block_definition ';' ->^(TAGGED_STRUCT_MEMBER block_definition?))
-	| ('(' block_definition ')' '*' ';' ->^(TAGGED_STRUCT_MEMBER_VAR  block_definition?))
+taggedstruct_member returns [value]
+@init {
+multiple = False
+structDef = None
+blockDef = None
+}
+:	
+	  (taggedstruct_definition ';'  { multiple = False;  structDef = $taggedstruct_definition.value } ->^(TAGGED_STRUCT_MEMBER taggedstruct_definition? )) 
+	| ('(' taggedstruct_definition ')' '*' ';'  { multiple = True;  structDef = $taggedstruct_definition.value  } ->^(TAGGED_STRUCT_MEMBER_VAR taggedstruct_definition? ))
+	| (block_definition ';' { multiple =  False; blockDef = $block_definition.value } ->^(TAGGED_STRUCT_MEMBER block_definition?))
+	| ('(' block_definition ')' '*' ';' { multiple = True; blockDef = $block_definition.value } ->^(TAGGED_STRUCT_MEMBER_VAR  block_definition?))
+	{ $value = amllib.TaggedStructMember(structDef, blockDef, multiple) }
 	;	
 
-taggedstruct_definition:	
-	  TAG?  member? 
-	|  TAG '(' member ')' '*' ';'
+taggedstruct_definition returns [value]
+@init {
+multiple = False
+}
+:	
+	  tagName = TAG?  mem= member?  { multiple = False }
+	| tagName = TAG '(' mem = member ')' '*' ';' { multiple = True }
+	{ $value = amllib.TaggedStructDefinition(tagName, mem, multiple)}
 	-> ^(TAGGEDSTRUCT_DEFINITION TAG? member?)
 	;
 
-taggedunion_type_name	:	
-	  (('taggedunion'  ID? '{' tagged_union_member* '}' -> ^(TAGGED_UNION ID ? tagged_union_member*) )
-	| ('taggedunion' ID -> ^(TAGGED_UNION_REF ID)))
+taggedunion_type_name	 returns [value]:	
+	  (('taggedunion'  idVal = ID? '{' members = tagged_union_member* '}' 
+	  { $value = amllib.TaggedUnionType(idVal, members) }
+	  -> ^(TAGGED_UNION ID ? tagged_union_member*) )
+	| ('taggedunion' idVal = ID { $value = amllib.TaggedUnionRefType(idVal) }-> ^(TAGGED_UNION_REF ID)))
 	;
 	
-tagged_union_member:	
+tagged_union_member returns [value]:	
 	(
-	  TAG  member?  ';' 
-	| block_definition ';'
+	  TAG  mem = member?  ';' 
+	| bd = block_definition ';'
 	)
+	{ $value = amllib.TaggedUnionMember($TAG.text, mem, bd) }
 	-> ^(TAGGED_UNION_MEMBER member? block_definition?)
 	;	
 
-constant:
-	  INT 
-	| HEX
-	| FLOAT
+constant returns [value]:
+	  INT  {$value = int($INT.text)}
+	| HEX  {$value = int($HEX.text, 16)}
+	| FLOAT  {$value = float($FLOAT.text)}
 	;
 /*
 ** Lexer
@@ -188,7 +247,6 @@ INT :	'0'..'9'+
     
 HEX:	 '0'('x' | 'X') ('a' .. 'f' | 'A' .. 'F' | '0' .. '9')+
     ;
-	    
 
 FLOAT
     :   ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
@@ -231,6 +289,3 @@ OCTAL_ESC
     |   '\\' ('0'..'7')
     ;
 
-/*
-
-*/
