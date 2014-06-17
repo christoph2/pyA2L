@@ -31,7 +31,7 @@ options {
    ASTLabelType = CommonTree;
    //k = 2;
    //debug = true;
-   backtrack = true;
+   //backtrack = true;
    //memoize = true;   
 }
 
@@ -77,7 +77,7 @@ type_definition:
 	;
 	
 type_name:	
-	(
+	TAG? (
 	  name = predefined_type_name
 	| name = struct_type_name
 	| name = taggedstruct_type_name
@@ -104,7 +104,7 @@ block_definition:
 	;	
 	
 enum_type_name:	
-	  TAG? (('enum' ID? '{' enumerator_list '}' -> ^(ENUM TAG? ID? enumerator_list))
+	  (('enum' ID? '{' enumerator_list '}' -> ^(ENUM  ID? enumerator_list))
 	| ('enum' ID -> ^(ENUM_REF ID)))
 	;	
 	
@@ -117,7 +117,7 @@ enumerator	:
 	;	
 
 struct_type_name:	
-	   TAG? (('struct' ID? '{'struct_member* '}' -> ^(STRUCT TAG? ID? struct_member*))
+	   (('struct' ID? '{'struct_member* '}' -> ^(STRUCT  ID? struct_member*))
 	 | ('struct'  ID	 -> ^(STRUCT_REF ID)) )
 	 ;
 	 	
@@ -135,9 +135,9 @@ array_specifier:
 	;	
 	
 taggedstruct_type_name:	
-	  TAG? ID? 'taggedstruct' ( '{'  taggedstruct_member* '}'
+	  ID? 'taggedstruct' ( '{'  taggedstruct_member* '}'
 	| taggedstruct_member*)
-	-> ^(TAGGED_STRUCT TAG? ID? taggedstruct_member*)
+	-> ^(TAGGED_STRUCT  ID? taggedstruct_member*)
 	;
 		
 taggedstruct_member:	
@@ -154,7 +154,7 @@ taggedstruct_definition:
 	;
 
 taggedunion_type_name	:	
-	  TAG? (('taggedunion'  ID? '{' tagged_union_member* '}' -> ^(TAGGED_UNION TAG? ID ? tagged_union_member*) )
+	  (('taggedunion'  ID? '{' tagged_union_member* '}' -> ^(TAGGED_UNION ID ? tagged_union_member*) )
 	| ('taggedunion' ID -> ^(TAGGED_UNION_REF ID)))
 	;
 	
