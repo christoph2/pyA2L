@@ -78,7 +78,7 @@ file returns [value]:
 	'/begin' 'A2ML'
 	declarations += declaration*
 	'/end' 'A2ML'
-	{ $value = amllib.File(declarations) }
+	{ $value = amllib.File(declarations.value) }
 	-> ^(FILE declaration*)
 	;
 

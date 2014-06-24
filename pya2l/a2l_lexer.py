@@ -30,6 +30,8 @@ import sys
 
 import pya2l.classes as classes
 
+BEGIN_AML = re.compile(r'/begin\s+A2ML', re.M | re.S)
+END_AML = re.compile(r'/end\s+A2ML', re.M | re.S)
 
 class Tokenizer(object):
 
@@ -126,7 +128,22 @@ class Tokenizer(object):
 
     def genTokens(self):
         self._lineNumber = 0
-        for lineNumber, line in enumerate(self._content.splitlines(), 1):
+        lineEnumerator = enumerate(self._content.splitlines(), 1)
+        for lineNumber, line in lineEnumerator:
+            match = BEGIN_AML.search(line)
+            if match:
+                start, end = match.span()
+                savedLine = line[ : start]
+                result = [line[ start : end]]
+                while True:
+                    lineNumber, line = lineEnumerator.next()
+                    result.append(line)
+                    match = END_AML.search(line)
+                    if match:
+                        break
+                aml = ''.join(result)
+                self.tokens.append((lineNumber, ("AML", aml)))
+                line = savedLine
             lexems = self.lexer(line.strip())
             if lexems == []:
                 continue
