@@ -16,6 +16,7 @@ setup(
     author_email = 'cpu12.gems@googlemail.com',
     url = 'https://www.github.com/Christoph2/pyA2L',
     packages = ['pya2l'],
+    install_requires = ['antlr4-python2-runtime'],
     entry_points = {
         'console_scripts': [
                 'vd_exporter = pyA2L.catalogue.vd_exporter:main'
