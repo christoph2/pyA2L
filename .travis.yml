@@ -1,0 +1,15 @@
+# https://travis-ci.org/christoph2/pyA2l
+language: python
+python:
+    - 2.7.8
+    - 2.7
+    - "pypy"
+
+notifications:
+  email: false
+
+install:
+  - pip install -r requirements.txt
+
+script:
+  python -m unittest discover ./pya2l/tests/
