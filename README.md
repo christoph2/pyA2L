@@ -3,7 +3,7 @@ pyA2L
 
 [![Code Climate](https://codeclimate.com/github/christoph2/pyA2L/badges/gpa.svg)](https://codeclimate.com/github/christoph2/pyA2L)
 [![Test Coverage](https://codeclimate.com/github/christoph2/pyA2L/badges/coverage.svg)](https://codeclimate.com/github/christoph2/pyA2L/coverage)
-[![Build Status](https://travis-ci.org/christoph2/pyA2L.svg)](https://travis-ci.org/christoph2/pyA2L
+[![Build Status](https://travis-ci.org/christoph2/pyA2L.svg)](https://travis-ci.org/christoph2/pyA2L)
 
 pyA2L is an ASAM MCD-2MC processing library written in Python.
 
