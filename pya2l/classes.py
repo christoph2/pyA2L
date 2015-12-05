@@ -4,7 +4,7 @@
 __copyright__="""
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2014 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2015 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -750,7 +750,6 @@ class FNC_VALUES(Keyword):
 
 
 class FORMAT(Keyword):
-    ## TODO: Format-String ('printf') verifizieren!!!
     attrs = [
         (String, "FormatString")
     ]

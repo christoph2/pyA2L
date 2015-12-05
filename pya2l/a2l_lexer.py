@@ -4,7 +4,7 @@
 __copyright__="""
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2014 by Christoph Schueler <github.com/Christoph2,
+   (C) 2009-2015 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -58,7 +58,6 @@ class Tokenizer(object):
 
     def __del__(self):
         pass
-        #print "\n\nSTATISTICS: '%s'" % sorted(self.stats.items(), key = lambda x: x[1])
 
     def lexer(self, line, stringDelimiter = '"', splitBy = None):
         """Split a line into tokens while considering delimited strings."""
@@ -83,11 +82,9 @@ class Tokenizer(object):
     def makeToken(self, lexem):
         tokenType = None
         if lexem.startswith('"') and lexem.endswith('"'):
-            #print "STRING: '%s'" % lexem
             tokenType = 'STRING'
             lexem = lexem.strip('"')
 
-            #self.stats.setdefault('STRING', 0)  # TODO: Default-Dict!!!
             self.stats['STRING'] += 1
         elif lexem.isdigit():
             tokenType = 'NUMBER'
@@ -120,7 +117,7 @@ class Tokenizer(object):
                     #self.stats.setdefault('FLOAT', 0)
                     self.stats['FLOAT'] += 1
                 except:
-                    tokenType = 'IDENT' # TODO: Checken!!!
+                    tokenType = 'IDENT'
 
                     #self.stats.setdefault('IDENT', 0)
                     self.stats['IDENT'] += 1
@@ -150,7 +147,7 @@ class Tokenizer(object):
             for lexem in lexems:
                 token = self.makeToken(lexem)
                 if token[0] == None:
-                    print "*** '%s%u does not match'" % (lexem, lineNum)
+                    print("*** '%s%u does not match'" % (lexem, lineNum))
                 else:
                     pass
                 self.tokens.append((lineNumber, token, ))

@@ -98,7 +98,7 @@ class Listener(antlr4.ParseTreeListener):
         ctx.value = Enumeration(id_, elements)
 
     def exitType_definition(self, ctx):
-        print ctx
+        pprint(ctx)
 
     def exitMember(self, ctx):
         typeName = ctx.type_name().value

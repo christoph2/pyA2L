@@ -4,7 +4,7 @@
 __copyright__="""
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2014 by Christoph Schueler <github.com/Christoph2,
+   (C) 2009-2015 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -72,7 +72,10 @@ def a2lParser(fname):
     while tokenizer.tokenAvailable():
         lineno, (tokenType, lexem) = tokenizer.getToken()
 
-        print "[%s]%s:%s" % (tokenType, lexem, lineno)
+        if tokenType == 'AML':
+            pass
+        else:
+            print("[%s]%s:%s" % (tokenType, lexem, lineno))
 
         if tokenType == BEGIN:
             lineno, (tokenType, lexem) = tokenizer.getToken()   # Move on.
@@ -131,7 +134,7 @@ def a2lParser(fname):
                 result = slicer(variablePartValues, sliceLength, valueClass)
                 inst.attrs.append(attribute)
                 setattr(inst, attribute, result)
-            print inst
+            #print inst
             instanceStack[-1].children.append(inst)
             if pushToInstanceStack:
                 instanceStack.append(inst)
