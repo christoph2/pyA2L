@@ -1,0 +1,11 @@
+engines:
+  fixme:
+    enabled: true
+  pep8:
+    enabled: false
+  radon:
+    enabled: true
+ratings:
+  paths:
+  - "**.py"
+exclude_paths: []
