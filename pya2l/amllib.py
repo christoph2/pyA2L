@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2015 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2016 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -76,13 +76,18 @@ class Listener(antlr4.ParseTreeListener):
 
     def exitTaggedstruct_member(self, ctx):
         # TODO: '*'!!!
-        taggedstructDefinition = ctx.taggedstruct_definition().value
-        blockDefinition = ctx.block_definition()
+        # TODO: Check variants!!!
+        taggedstructDefinition = ctx.taggedstruct_definition().value if ctx.taggedstruct_definition() else None
+        blockDefinition = ctx.block_definition().value if ctx.block_definition() else None
+        #print("TSD: {0} BD: {1}\n".format(taggedstructDefinition, blockDefinition))
         ctx.value = TaggedStructMember(taggedstructDefinition, blockDefinition)
 
     def exitTaggedstruct_definition(self, ctx):
+        # TODO: '*'!!!
+        # TODO: Check variants!!!
         tag = ctx.TAG().getText()
-        member = ctx.member().value
+        member = ctx.member().value if ctx.member() else None
+        #print("TAG: {0} MEMBER: {1}\n".format(tag, member))
         ctx.value = TaggedStructDefinition(tag, member)
 
     def exitEnumerator(self, ctx):
@@ -111,14 +116,17 @@ class Listener(antlr4.ParseTreeListener):
         ctx.value = Member(typeName, arraySpecifier)
 
     def exitTagged_union_member(self, ctx):
-        tag = ctx.TAG().getText()
-        member = ctx.member().value
-        blockDefinition = ctx.block_definition()
+        # TODO: '*'!!!
+        # TODO: Check variants!!!
+        tag = ctx.TAG().getText() if ctx.TAG() else None
+        member = ctx.member().value if ctx.member() else None
+        blockDefinition = ctx.block_definition().value if ctx.block_definition() else None
         ctx.value = TaggedUnionMember(tag, member, blockDefinition)
 
     def exitTaggedunion_type_name(self, ctx):
-        name = ctx.ID().getText()
+        name = ctx.ID().getText() if ctx.ID() else None   # TODO: FIXME!!!
         members = [m.value for m in ctx.tagged_union_member()]
+        #print("NAME: {0} MEMBERS: {1}\n".format(name, members))
         ctx.value = TaggedUnion(name, members)
 
     def exitBlock_definition(self, ctx):
