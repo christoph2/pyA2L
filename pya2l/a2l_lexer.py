@@ -4,7 +4,7 @@
 __copyright__="""
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2015 by Christoph Schueler <github.com/Christoph2,
+   (C) 2009-2016 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -32,6 +32,7 @@ import pya2l.classes as classes
 
 BEGIN_AML = re.compile(r'/begin\s+A2ML', re.M | re.S)
 END_AML = re.compile(r'/end\s+A2ML', re.M | re.S)
+HEX_NUMBER = re.compile(r'^[0-9a-fA-F]+$')
 
 class Tokenizer(object):
 
@@ -93,14 +94,16 @@ class Tokenizer(object):
             #self.stats.setdefault('NUMBER', 0)
             self.stats['NUMBER'] += 1
         elif lexem.startswith('0x') or lexem.startswith('0X'):
-            lexem = long(lexem[2: ], 16)
-            tokenType = 'HEX_NUMBER'
+            if HEX_NUMBER.match(lexem[2 : ]):   # Look before you leap.
+                tokenType = 'HEX_NUMBER'
+                lexem = long(lexem[2: ], 16)
+            else:
+                tokenType = 'IDENT'
 
             #self.stats.setdefault('HEX_NUMBER', 0)
             self.stats['HEX_NUMBER'] += 1
         elif lexem in self._keywords:
             tokenType = 'KEYWORD'
-
             #self.stats.setdefault('KEYWORD', 0)
             self.stats['KEYWORD'] += 1
         elif lexem in ('/begin', '/end'):
