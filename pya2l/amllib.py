@@ -27,9 +27,11 @@ __copyright__ = """
 __author__  = 'Christoph Schueler'
 __version__ = '0.1.0'
 
-from pprint import pprint
 
 from collections import namedtuple
+import json
+from pprint import pprint
+
 import antlr4
 
 Enumerator = namedtuple('Enumerator', 'tag constant')
@@ -43,13 +45,16 @@ StructType = namedtuple('StructType', 'name member')
 TaggedStructType = namedtuple('TaggedStructType', 'name member')
 TaggedStructDefinition = namedtuple('TaggedStructDefinition', 'tag member')
 TaggedStructMember = namedtuple('TaggedStructMember', 'taggedstructDefinition blockDefinition')
+Declaration = namedtuple('Declaration', 'blockDefinition typeDefinition')
+BlockDefinition = namedtuple('BlockDefinition', 'tag typeName')
+TypeDefinition = namedtuple('TypeDefinition', 'typename')
 
 class Listener(antlr4.ParseTreeListener):
 
     def exitType_name(self, ctx):
         name = ctx.name.value
         tag = ctx.TAG()
-        pprint("NAME: {0}".format(name), indent = 3)
+        #pprint("NAME: {0}".format(name), indent = 3)
         ctx.value = TypeName(tag, name)
 
     def exitPredefined_type_name(self, ctx):
@@ -98,7 +103,7 @@ class Listener(antlr4.ParseTreeListener):
         ctx.value = Enumeration(id_, elements)
 
     def exitType_definition(self, ctx):
-        pprint(ctx)
+        ctx.value = TypeDefinition(ctx.type_name().value)
 
     def exitMember(self, ctx):
         typeName = ctx.type_name().value
@@ -114,6 +119,19 @@ class Listener(antlr4.ParseTreeListener):
     def exitTaggedunion_type_name(self, ctx):
         name = ctx.ID().getText()
         members = [m.value for m in ctx.tagged_union_member()]
-        pprint("TaggedUnionMembers: {0}".format(members), indent = 3)
         ctx.value = TaggedUnion(name, members)
+
+    def exitBlock_definition(self, ctx):
+        tag = ctx.TAG().getText()
+        typeName = ctx.type_name().value
+        ctx.value = BlockDefinition(tag, typeName)
+
+    def exitDeclaration(self, ctx):
+        blockDefinition = ctx.block_definition().value
+        typeDefinition = ctx.type_definition()  # .value
+        ctx.value = Declaration(blockDefinition, typeDefinition)
+
+    def exitAmlFile(self, ctx):
+        declaration = [d.value for d in ctx.declaration()]
+        ctx.value = declaration
 
