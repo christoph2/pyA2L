@@ -81,7 +81,7 @@ class ParserWrapper(object):
         return self.parse(ParserWrapper.stringStream(fileName))
 
     def parseFromString(self, buffer):
-        return self.parse(antlr4.StringStream(buffer))
+        return self.parse(antlr4.InputStream(buffer))
 
     @staticmethod
     def stringStream(fname):
