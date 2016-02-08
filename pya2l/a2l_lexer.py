@@ -29,12 +29,16 @@ import re
 import sys
 
 import pya2l.classes as classes
+from pya2l.logger import logger
 
 BEGIN_AML = re.compile(r'/begin\s+A2ML', re.M | re.S)
 END_AML = re.compile(r'/end\s+A2ML', re.M | re.S)
 HEX_NUMBER = re.compile(r'^[0-9a-fA-F]+$')
 
+
 class Tokenizer(object):
+
+    logger = logger.getChild('lexer')
 
     TOKENS = re.compile(r"""
           \s*"(?P<STRING>[^"]*?)"
