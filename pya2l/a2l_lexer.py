@@ -34,6 +34,7 @@ from pya2l.logger import logger
 BEGIN_AML = re.compile(r'/begin\s+A2ML', re.M | re.S)
 END_AML = re.compile(r'/end\s+A2ML', re.M | re.S)
 HEX_NUMBER = re.compile(r'^[0-9a-fA-F]+$')
+IDENTIFIER = re.compile(r'^[a-zA-Z_][a-zA-Z_0-9]*$')
 
 
 class Tokenizer(object):
@@ -103,6 +104,7 @@ class Tokenizer(object):
                 lexem = long(lexem[2: ], 16)
             else:
                 tokenType = 'IDENT'
+                self.checkIdentifier(lexem)
 
             #self.stats.setdefault('HEX_NUMBER', 0)
             self.stats['HEX_NUMBER'] += 1
@@ -125,9 +127,9 @@ class Tokenizer(object):
                     self.stats['FLOAT'] += 1
                 except:
                     tokenType = 'IDENT'
-
+                    self.checkIdentifier(lexem)
                     #self.stats.setdefault('IDENT', 0)
-                    self.stats['IDENT'] += 1
+                    #self.stats['IDENT'] += 1
         return (tokenType, lexem)
 
     def genTokens(self):
@@ -173,4 +175,9 @@ class Tokenizer(object):
 
     def stepBack(self, count = 1):
         self.tokenIndex -= count
+
+    def checkIdentifier(self, identifier):
+        for item in identifier.split('.'):  # Identifiers can be hierarchically.
+            if not IDENTIFIER.match(item):
+                self.logger.error("Identifier '{0}' contains at least one invalid character -- check: '{1}'".format(identifier, item))
 
