@@ -29,6 +29,7 @@ __version__ = '0.1.0'
 
 
 from collections import namedtuple
+import enum
 import json
 from pprint import pprint
 
@@ -48,6 +49,21 @@ TaggedStructMember = namedtuple('TaggedStructMember', 'taggedstructDefinition bl
 Declaration = namedtuple('Declaration', 'blockDefinition typeDefinition')
 BlockDefinition = namedtuple('BlockDefinition', 'tag typeName')
 TypeDefinition = namedtuple('TypeDefinition', 'typename')
+
+
+class DefinitionType(enum.IntEnum):
+    BLOCK           = 0
+    STRUCT          = 1
+    TAGGEDSTRUCT    = 2
+    TAGGEDUNION     = 3
+    ENUM            = 4
+
+
+class TypeDefinitions(object):
+
+    def __init__(self):
+        self.definitions = {}
+
 
 class Listener(antlr4.ParseTreeListener):
 
