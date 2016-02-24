@@ -39,20 +39,6 @@ class ASTType(object):
     attrs = []
     children = []
 
-    def __str__(self):
-        result = []
-        attrs = [(attr, getattr(self, attr)) for attr in self.attrs]
-        children = [(child, getattr(self, child)) for child in self.children]
-        attrList = "\n".join([("{0} = {1}".format(attr, value)) for attr, value in attrs])
-
-        print("CLASS: {0}".format(self.__class__.__name__))
-        print("ATTRS: {0}".format(attrList))
-        print("CHILDREN: {0}".format(children))
-        print
-        return " ".join(result)
-
-    __repr__ = __str__
-
 
 class Enumerator(ASTType):
 
