@@ -35,20 +35,155 @@ from pprint import pprint
 
 import antlr4
 
-Enumerator = namedtuple('Enumerator', 'tag constant')
-Enumeration = namedtuple('Enumeration', 'tag enumerators')
-TaggedUnion = namedtuple('TaggedUnion', 'name members')
-TaggedUnionMember = namedtuple('TaggedUnionMember', 'tag member blockDefinition')
-Member = namedtuple('Member', 'typeName arraySpecifier')
-TypeName = namedtuple('TypeName', 'tag name')
-PredefinedType = namedtuple('PredefinedType', 'name')
-StructType = namedtuple('StructType', 'name member')
-TaggedStructType = namedtuple('TaggedStructType', 'name member')
-TaggedStructDefinition = namedtuple('TaggedStructDefinition', 'tag member')
-TaggedStructMember = namedtuple('TaggedStructMember', 'taggedstructDefinition blockDefinition')
-Declaration = namedtuple('Declaration', 'blockDefinition typeDefinition')
-BlockDefinition = namedtuple('BlockDefinition', 'tag typeName')
-TypeDefinition = namedtuple('TypeDefinition', 'typename')
+class ASTType(object):
+    attrs = []
+    children = []
+
+    def __str__(self):
+        result = []
+        attrs = [(attr, getattr(self, attr)) for attr in self.attrs]
+        children = [(child, getattr(self, child)) for child in self.children]
+        attrList = "\n".join([("{0} = {1}".format(attr, value)) for attr, value in attrs])
+
+        print("CLASS: {0}".format(self.__class__.__name__))
+        print("ATTRS: {0}".format(attrList))
+        print("CHILDREN: {0}".format(children))
+        print
+        return " ".join(result)
+
+    __repr__ = __str__
+
+
+class Enumerator(ASTType):
+
+    attrs = ("tag", "constant")
+
+    def __init__(self, tag, constant):
+        self.tag = tag
+        self.constant = constant
+
+
+class Enumeration(ASTType):
+
+    attrs = ('tag', )
+    children = ('enumerators', )
+
+    def __init__(self, tag, enumerators):
+        self.tag = tag
+        self.enumerators = enumerators
+
+
+class TaggedUnion(ASTType):
+
+    attrs = ('name', )
+    children = ('members', )
+
+    def __init__(self, name, members):
+        self.name = name
+        self.members = members
+
+
+class TaggedUnionMember(ASTType):
+
+     attrs = ('tag', )
+     children = ('member', 'blockDefinition')
+
+     def __init__(self, tag, member, blockDefinition):
+         self.tag = tag
+         self.member = member
+         self.blockDefinition = blockDefinition
+
+
+class Member(ASTType):
+
+     attrs = ('typeName', )
+     children = ('arraySpecifier', )
+
+     def __init__(self, typeName, arraySpecifier):
+         self.typeName = typeName
+         self.arraySpecifier = arraySpecifier
+
+
+class TypeName(ASTType):
+
+    attrs = ('tag', )
+    children = ('name', )
+
+    def __init__(self, tag, name):
+          self.tag = tag
+          self.name = name
+
+
+class PredefinedType(ASTType):
+
+    attrs = ('name', )
+
+    def __init__(self, name):
+        self.name = name
+
+
+class StructType(ASTType):
+
+     attrs = ('name', )
+     children = ('member', )
+
+     def __init__(self, name, member):
+         self.name = name
+         self.member = member
+
+
+class TaggedStructType(ASTType):
+
+     attrs = ('name', )
+     children = ('member', )
+
+     def __init__(self, name, member):
+         self.name = name
+         self.member = member
+
+
+class TaggedStructDefinition(ASTType):
+
+     attrs = ('tag', )
+     children = ('member',)
+
+     def __init__(self, tag, member):
+           self.tag = tag
+           self.member = member
+
+
+class TaggedStructMember(ASTType):
+
+    children = ('taggedstructDefinition', 'blockDefinition')
+
+    def __init__(self, taggedstructDefinition, blockDefinition):
+        self.taggedstructDefinition = taggedstructDefinition
+        self.blockDefinition = blockDefinition
+
+
+class Declaration(ASTType):
+
+     children = ('blockDefinition', 'typeDefinition')
+
+     def __init__(self, blockDefinition, typeDefinition):
+         self.blockDefinition = blockDefinition
+         self.typeDefinition = typeDefinition
+
+class BlockDefinition(ASTType):
+
+    attrs = ('tag', )
+    children = ('typeName', )
+
+    def __init__(self, tag, typeName):
+        self.tag  = tag
+        self.typeName = typeName
+
+class TypeDefinition(ASTType):
+
+    children = ('typename', )
+
+    def __init__(self, typename):
+        self.typename = typename
 
 
 class DefinitionType(enum.IntEnum):
@@ -78,7 +213,7 @@ class Listener(antlr4.ParseTreeListener):
         tag = ctx.TAG()
         #pprint("NAME: {0}".format(name), indent = 3)
         ctx.value = TypeName(tag, name)
-        print("Name: {0} Tag: {1}\n".format(name, tag))
+        #print("Name: {0} Tag: {1}\n".format(name, tag))
 
     def exitPredefined_type_name(self, ctx):
         ctx.value =  PredefinedType(ctx.name.text)
