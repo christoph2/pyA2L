@@ -30,7 +30,7 @@ __version__ = '0.1.0'
 import logging
 
 LOGGER_NAME = 'pya2l'
-DEPHAULT_LEVEL = logging.NOTSET
+DEPHAULT_LEVEL = logging.WARN
 PHORMAT = "[%(levelname)s (%(name)s)]: %(message)s"
 
 try:
