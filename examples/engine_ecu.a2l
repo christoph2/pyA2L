@@ -1,0 +1,278 @@
+/begin MODULE  DIM  "Comment on module"    
+           /* Detailed description of a device */ 
+ 
+    /include "supp1_if.aml"   /* Specification of the interface-specific parts */    
+     
+    /begin MOD_PAR    "Comment" 
+        VERSION      "Test version 09.11.93" 
+        ADDR_EPK     0x12345 
+        EPK      "EPROM identifier test" 
+        SUPPLIER     "Mustermann" 
+        CUSTOMER     "LANZ-Landmaschinen" 
+        CUSTOMER_NO    "0987654321" 
+        USER      "Ignaz Lanz"           /* calibration engineer */ 
+        PHONE_NO     "(01111) 22222" 
+        ECU      "Engine control" 
+        CPU_TYPE     "Intel 0815" 
+        NO_OF_INTERFACES   2 
+        /begin MEMORY_LAYOUT  PRG_DATA  0x0000  0x8000   -1   -1   -1   -1   -1 
+  /begin IF_DATA DIM  
+    /begin DP_BLOB EXTERN /end DP_BLOB    /* memory type */ 
+    /begin PA_BLOB DIRECT /end PA_BLOB    /* addressing mode */ 
+  /end IF_DATA 
+        /end MEMORY_LAYOUT 
+        SYSTEM_CONSTANT         "CONTROLLERx CONSTANT1"   "0.99" 
+        SYSTEM_CONSTANT         "CONTROLLERx CONSTANT2"   "2.88" 
+        SYSTEM_CONSTANT         "CONTROLLERx CONSTANT3"   "-7" 
+        SYSTEM_CONSTANT         "ANY-PARAMETER"           "3.14159" 
+    /end MOD_PAR     
+     
+     
+     /begin MOD_COMMON    "Characteristic maps always deposited in same mode" 
+        DEPOSIT      ABSOLUTE  
+        BYTE_ORDER    MSB_LAST 
+        DATA_SIZE     16       /* bit */ 
+    /end MOD_COMMON 
+ 
+    /begin IF_DATA DIM 
+  /begin SOURCE "angular synchonous" 101 1 
+    /begin QP_BLOB   0x5661  20   0xE001    2 
+    /end QP_BLOB 
+  /end SOURCE 
+  /begin SOURCE "time synchronous, rate 20ms" 4 2 
+    /begin QP_BLOB   0x3441  20   0xE041    3 
+    /end QP_BLOB 
+  /end SOURCE 
+  /begin TP_BLOB 14  /end TP_BLOB 
+    /end IF_DATA    
+     
+    /begin CHARACTERISTIC  KI "I share for speed limitation" 
+          VALUE             /* type: constant */ 
+          0x0408            /* address */ 
+          DAMOS_FW          /* deposit */ 
+          5.0               /* max_diff */ 
+          FACTOR01          /* conversion */ 
+        0.0               /* lower limit */ 
+        255.0             /* upper limit */ 
+ 
+  /* interface-spec. parameters: address location, addressing */ 
+  /begin IF_DATA  DIM  
+    /begin DP_BLOB EXTERN /end DP_BLOB  /* memory type */ 
+    /begin PA_BLOB DIRECT /end PA_BLOB  /* addressing mode */ 
+  /end IF_DATA 
+  /begin FUNCTION_LIST  V_LIM      /* reference to functions */ 
+  /end FUNCTION_LIST         
+    /end CHARACTERISTIC   
+     
+     
+     /begin CHARACTERISTIC    PUMCD   "Pump characteristic map"  
+                                MAP    /* type: characteristic map */ 
+                                0x7140   /* address */ 
+                                DAMOS_KF  /* deposit */ 
+                                100.0    /* max_diff */ 
+                                VOLTAGE   /* conversion */ 
+                                0.0    /* lower limit */ 
+                                5000.0   /* upper limit */ 
+      
+ 
+  /begin IF_DATA  DIM  
+    /begin DP_BLOB EXTERN /end DP_BLOB  /* memory type */ 
+    /begin PA_BLOB INDIRECT /end PA_BLOB   /* addressing mode */ 
+  /end IF_DATA 
+  /begin AXIS_DESCR                             /* X-axis: */ 
+                                STD_AXIS    /* standard axis (no group or 
+                 fixed characteristic map) */ 
+                                N      /* input quantity */ 
+                                N_RULE     /* conversion */ 
+                                16      /* maximum number of axis 
+                 points */ 
+                    0.0      /* lower limit */ 
+                                5800.0     /* upper limit */ 
+          MAX_GRAD  20.0  /* max_grad */ 
+  /end AXIS_DESCR 
+  /begin FUNCTION_LIST  CLDSTRT  FLLD    /* reference to functions */ 
+  /end FUNCTION_LIST         
+    /end CHARACTERISTIC   
+     
+    /begin MEASUREMENT        M_ECORR 
+                                "corrected fuel mass" 
+                                UWORD      /* data type */ 
+                                 M_E      /* reference to conversion 
+                  method */ 
+                      1      /* resolution in bits */ 
+                       0.001      /* accuracy in '%' */ 
+                       0.0      /* lower limit */ 
+                       43.0      /* upper limit */ 
+            BIT_MASK  0x0ff  /* bit mask */        
+     
+    /begin IF_DATA   DIM  
+     /begin DP_BLOB EXTERN /end DP_BLOB    /* memory type */ 
+     /begin PA_BLOB DIRECT /end PA_BLOB    /* addressing mode */ 
+     /begin KP_BLOB 0x8038 WORD /end KP_BLOB  /* address, address length */ 
+   /end IF_DATA 
+    
+   /begin FUNCTION_LIST  CLDSTRT  FLLD      /* reference to functins */ 
+   /end FUNCTION_LIST    
+                                      
+     /end MEASUREMENT 
+      
+      
+     /begin MEASUREMENT     N 
+                                 "current speed" 
+                                 UWORD      /* data type */ 
+                                 N_RULE     /* reference to conversion 
+                  method */ 
+                            4      /* resolution in bits */ 
+                                 0.006      /* accuracy in '%' */ 
+                                 0.0      /* lower limit */ 
+                                 5800.0     /* upper limit */ 
+           BIT_MASK  0xFFFF  /* bit mask */ 
+   /begin IF_DATA  DIM  
+     /begin DP_BLOB EXTERN /end DP_BLOB    /* memory type */ 
+     /begin PA_BLOB DIRECT /end PA_BLOB    /* addressing mode */ 
+     /begin KP_BLOB 0x8020 WORD /end KP_BLOB  /* address, address length */ 
+   /end IF_DATA 
+   /begin FUNCTION_LIST         V_LIM  CLDSTRT  FLLD  /* reference to functions */ 
+   /end FUNCTION_LIST          
+     /end MEASUREMENT     
+      
+      
+    /begin COMPU_METHOD    FACTOR01  /* name */ 
+                                 "factor 1"  /* long identifier */ 
+                                 RAT_FUNC  / *fractional rational function */ 
+                                 "%4.0"   /* format string */ 
+                                 ""    /* unit */ 
+                                 /* coefficients for polynome conversion */ 
+           COEFFS   0.0  1.0  0.0  0.0  1.0  0.0 
+     /end COMPU_METHOD 
+  
+     /begin COMPU_METHOD  M_E      /* name */ 
+                                 "amount"  /* long identifier */ 
+                                 TAB_INTP  /* conversion table with interpolation*/ 
+                                 "%4.0"   /* format string */ 
+                                 "mg/H"   /* unit */ 
+           COMPU_TAB_REF AMOUNT      /* reference to table */ 
+     /end COMPU_METHOD       
+      
+     /begin COMPU_METHOD    N_RUL      /* name */ 
+                                 "speed"     /* long identifier */ 
+                                 RAT_FUNC    /* fractional rational function */ 
+                                 "%4.0"     /* format string */ 
+                                 "1/min"     /* unit */ 
+                                 /* coefficients for polynome conversion: "don't care" */ 
+           COEFFS   0.0 255.0  0.0  0.0  5800.0  0.0 
+     /end COMPU_METHOD     
+      
+      
+     /begin COMPU_METHOD    VOLTAGE     /* name */ 
+                                "voltage"             /* long identifier */ 
+                      RAT_FUNC    /* fractional rational function */ 
+                      "%4.0"     /* format string */ 
+                      "mV"      /* unit */ 
+            /* coefficients for polynome conversion: "don't care" */ 
+           COEFFS   0.0 255.0  0.0  0.0  5000.0  0.0 
+     /end COMPU_METHOD 
+      
+     /begin COMPU_TAB          AMOUNT     /* name */ 
+                                 "conversion table for AMOUNT" 
+                                 TAB_INTP    /* table with interpolation */ 
+                                 4      /* number of value pairs   */ 
+                                 0  0.0  100  10.0  156  30.0  255  43.0 /* value pairs*/ 
+     /end COMPU_TAB 
+  
+     /begin FUNCTION             V_LIM  "speed limitation"    /end FUNCTION 
+     /begin FUNCTION             CLDSTRT "cold start"         /end FUNCTION 
+     /begin FUNCTION             FLLD  "full load"            /end FUNCTION 
+  
+    /* BOSCH record layout */ 
+     /begin RECORD_LAYOUT DAMOS_FW      /* DAMOS constant */ 
+           FNC_VALUES     /* description of function value: */ 
+                                  1    /* position in memory */ 
+                                  UBYTE  /* data type of the constant */ 
+                                  COLUMN_DIR  /* deposited in columns (don't care) */ 
+                                 DIRECT   /* direct addressing */ 
+     /end RECORD_LAYOUT   
+      
+      
+   /begin RECORD_LAYOUT   DAMOS_KF      /* DAMOS characteristic diagram*/ 
+           SRC_ADDR_X    /* description of the addresses of the X- 
+                input quantities */ 
+                                  1        /* position in memory */ 
+   UWORD  /* datatype */ 
+           NO_AXIS_PTS_X  /* description of the number of X-axis 
+                points */ 
+                                  2    /* position in memory */ 
+                                  UBYTE  /* word length */ 
+           AXIS_PTS_X    /*description of the X-axis point values*/ 
+                                  3    /* position in memory */ 
+                                  UBYTE  /* data type of the axis point values */ 
+                                 INDEX_INCR  /* increasing index with increasing 
+                addresses */ 
+                                 DIRECT   /* direct addressing */ 
+           SRC_ADDR_Y     /* description of the addresses of the Y- 
+                input quantities */ 
+                                  4    /* position in memory */ 
+   UWORD  /* datatype */ 
+           NO_AXIS_PTS_Y  /* description of the number of Y-axis 
+                points */ 
+                                  5    /* position in memory */ 
+                                  UBYTE  /* word length */ 
+            AXIS_PTS_Y    /*description of the Y-axis point values*/ 
+                                  6    /* position in memory */ 
+                                  UBYTE  /* data type of the axis point values */ 
+                                 INDEX_INCR   /* increasing index with increasing 
+                addresses */ 
+                                 DIRECT   /* direct addressing */
+           FNC_VALUES  /* description of the function values */ 
+                                  7    /* position in memory */ 
+                                  UBYTE  /* data type of the table values */ 
+                                  COLUMN_DIR  /* deposited in columns */ 
+                                 DIRECT   /* direct addressing */ 
+     /end RECORD_LAYOUT 
+     /* SIEMENS record layout */ 
+     /begin RECORD_LAYOUT   SIEMENS_KF    /* SIEMENS characteristic map */ 
+                AXIS_PTS_X     /* description of the function values: 
+                axis points are described in an  
+                additional specification */ 
+                                  1    /* position in memory */ 
+                                  UWORD  /* data type of the table values */ 
+                                 COLUMN_DIR  /* deposited in columns */ 
+                                 DIRECT   /* direct addressing */ 
+     /end RECORD_LAYOUT 
+  
+     /begin RECORD_LAYOUT   SIEMENS_SST    /* SIEMENS axis points distribution */ 
+           AXIS_PTS_X     /* description of the axis point values*/ 
+                                  1    /* position in memory */ 
+                                  UWORD  /* data type of the axis point values */ 
+                                 INDEX_INCR  /* increasing index with increasing  
+                addresses */ 
+                                 DIRECT   /* direct addressing */ 
+     /end RECORD_LAYOUT                
+  
+     /begin MEASUREMENT     N1 
+                                 "engine speed" 
+                                 UWORD         /* data type */ 
+                                 R_SPEED_3    /* reference to conversion method */ 
+                                 2            /* resolution in bits */ 
+                                 2.5          /* accuracy in '%' */ 
+                                 120.0        /* lower limit */ 
+                                8400.0       /* upper limit */ 
+   BIT_MASK    0x0FFF              /* bit mask */ 
+   BYTE_ORDER    MSB_FIRST 
+   /begin FUNCTION_LIST  ID_ADJUSTM  FL_ADJUSTM  /* reference to functions */ 
+   /end FUNCTION_LIST 
+     /end MEASUREMENT     
+    
+    
+    /begin COMPU_METHOD    R_SPEED_3    /* name */ 
+                            "processing the speed"  /* long identifier */ 
+                                 RAT_FUNC    /* fractional rational function */ 
+                                 "%4.0"     /* format string */ 
+                                 "kmh"      /* unit */ 
+                                 /* coefficients for polynome conversion */ 
+           COEFFS   0.0  0.0  0.0  0.0  1.0  1.0 
+     /end COMPU_METHOD   
+  
+     /begin FUNCTION        ID_ADJUSTM  "ID adjustment"    /end FUNCTION 
+     /begin FUNCTION        FL_ADJUSTM "FL adjustment"         /end FUNCTION 
+ /end MODULE 

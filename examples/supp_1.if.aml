@@ -1,0 +1,49 @@
+ /begin A2ML 
+  /* A2ML-file defining the interface DIM.      */ 
+  /* ******************************************** */ 
+   
+  enum mem_typ   { "INTERN" = 0, "EXTERN" = 1 }; 
+  enum addr_typ  { "BYTE" = 1, "WORD" = 2, "LONG" = 4 }; 
+  enum addr_mode  { "DIRECT" = 0, "INDIRECT" = 1 }; 
+   
+  taggedunion IF_DATA { 
+    "DIM" taggedstruct {  /* optional parameters  */ 
+    (block "SOURCE" struct  { 
+          struct {      /*  indispensable */  
+            char [101];  /* source name (string)*/ 
+   int;         /* min period ( conforming 
+      together with min factor the  
+      fastest */ 
+                /* ...samplingrate available ). */ 
+            long;        /* min factor */     
+            }; 
+          taggedstruct { 
+            block "QP_BLOB" struct  { 
+              ulong; /* adr_distab */ 
+              int;  /* len_distab */ 
+              ulong; /* addr_outp  */ 
+              long;  /* trgid      */ 
+              }; 
+            }; 
+            } 
+          )*;      /* multiple SOURCE */ 
+   
+    block "TP_BLOB" struct   { 
+            int;    /* display table type */ 
+            }; 
+   
+      block "KP_BLOB" struct {  /* KP_BLOB specification for Driver */  
+            ulong;     /* address   */ 
+            enum addr_typ;  /* addr_size */ 
+            }; 
+   
+      block "DP_BLOB" struct {  /* DP_BLOB specification for Driver */  
+            enum mem_typ;  /* mem_typ   */ 
+            }; 
+      block "PA_BLOB" struct {  /* PA_BLOB specification for Driver */  
+            enum addr_mode;  /* addressing mode */ 
+            }; 
+    /* additional data types could be defined here*/ 
+          }; 
+  }; /* end of:  taggedunion if_data */ 
+  /end A2ML 
