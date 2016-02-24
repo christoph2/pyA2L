@@ -64,14 +64,21 @@ class TypeDefinitions(object):
     def __init__(self):
         self.definitions = {}
 
+    def append(self, name, type_, definition):
+        print("APPENDING: {0} {1} {2}".format(name, type_, definition))
+        print()
+
 
 class Listener(antlr4.ParseTreeListener):
+
+    typeDefinitions = TypeDefinitions()
 
     def exitType_name(self, ctx):
         name = ctx.name.value
         tag = ctx.TAG()
         #pprint("NAME: {0}".format(name), indent = 3)
         ctx.value = TypeName(tag, name)
+        print("Name: {0} Tag: {1}\n".format(name, tag))
 
     def exitPredefined_type_name(self, ctx):
         ctx.value =  PredefinedType(ctx.name.text)
@@ -79,7 +86,8 @@ class Listener(antlr4.ParseTreeListener):
     def exitStruct_type_name(self, ctx):
         name = ctx.ID().text if ctx.ID() else None
         member = [m.value for m in ctx.struct_member()]
-        ctx.value = StructType(name, member)
+        value = StructType(name, member)
+        ctx.value = value
 
     def exitStruct_member(self, ctx):
         member = ctx.member()

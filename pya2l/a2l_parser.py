@@ -4,7 +4,7 @@
 __copyright__="""
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2015 by Christoph Schueler <github.com/Christoph2,
+   (C) 2009-2016 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -25,7 +25,9 @@ __copyright__="""
 """
 
 from collections import OrderedDict
+from pprint import pprint
 
+from pya2l import aml
 import pya2l.classes as classes
 from pya2l.a2l_lexer import Tokenizer
 from pya2l.aml import ParserWrapper
@@ -53,6 +55,14 @@ from collections import namedtuple
 Token = namedtuple('Token', 'lineNo tokenType lexem')
 
 
+def parseBlockDefinition(block):
+    print("Blockoo: <<<{0}>>>\n\n\n".format(block[0]))
+
+def parseAml(aml):
+    for decl in aml:
+        #pprint("BlockDef: {0}\n".format(decl.blockDefinition))
+        parseBlockDefinition(decl.blockDefinition)
+
 def a2lParser(fname):
     keywords = classes.KEYWORD_MAP.keys()
     fp = file(fname)
@@ -60,7 +70,7 @@ def a2lParser(fname):
     source = ''.join(uncomment(fp))
     tokenizer = Tokenizer(source, keywords)
 
-    amlParser = ParserWrapper('aml', 'file')
+    amlParser = ParserWrapper('aml', 'amlFile')
 
     classStack = []
     classStack.append(classes.RootElement)
@@ -73,7 +83,10 @@ def a2lParser(fname):
         lineno, (tokenType, lexem) = tokenizer.getToken()
 
         if tokenType == 'AML':
-            pass
+            parserWrapper = aml.ParserWrapper('aml', 'amlFile')
+            tree = parserWrapper.parseFromString(lexem)
+            parseAml(tree.value)
+            #pprint(tree.value)
         else:
             print("[%s]%s:%s" % (tokenType, lexem, lineno))
 
