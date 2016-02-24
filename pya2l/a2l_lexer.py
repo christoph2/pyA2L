@@ -179,5 +179,5 @@ class Tokenizer(object):
     def checkIdentifier(self, identifier):
         for item in identifier.split('.'):  # Identifiers can be hierarchically.
             if not IDENTIFIER.match(item):
-                self.logger.warn("part '{1}' of identifier '{0}' is not a valid C-identifier.".format(identifier, item))
+                self.logger.warn("Part '{1}' of identifier '{0}' is not a valid C-identifier.".format(identifier, item))
 

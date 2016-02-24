@@ -54,14 +54,32 @@ from collections import namedtuple
 
 Token = namedtuple('Token', 'lineNo tokenType lexem')
 
+def dumpElement(element, level):
+    level += 1
+    indent = " " * level
+    print "{0}<<{1}>>".format(indent, element.__class__.__name__)
+    if isinstance(element, (str, int, long)):
+        print("{0}".format(element))
+        return
+    for attr in element.attrs:
+        print "{0}{1} = {2}".format(indent, attr, getattr(element, attr))
+    for child in element.children:
+        parseAml(getattr(element, child), level)
+    level -= 1
 
-def parseBlockDefinition(block):
-    print("Blockoo: <<<{0}>>>\n\n\n".format(block[0]))
 
-def parseAml(aml):
-    for decl in aml:
-        #pprint("BlockDef: {0}\n".format(decl.blockDefinition))
-        parseBlockDefinition(decl.blockDefinition)
+def parseAml(element, level = 0):
+    if isinstance(element, (list, tuple)):
+        for el in element:
+            dumpElement(el, level)
+    elif isinstance(element, (str, int, long)):
+        print("{0}".format(element))
+    elif element is None:
+        #print("<<NONE>>")
+        pass
+    else:
+        dumpElement(element, level)
+
 
 def a2lParser(fname):
     keywords = classes.KEYWORD_MAP.keys()
@@ -82,11 +100,11 @@ def a2lParser(fname):
     while tokenizer.tokenAvailable():
         lineno, (tokenType, lexem) = tokenizer.getToken()
 
-        if tokenType == 'AML':
+        if tokenType == AML:
             parserWrapper = aml.ParserWrapper('aml', 'amlFile')
             tree = parserWrapper.parseFromString(lexem)
             parseAml(tree.value)
-            #pprint(tree.value)
+            continue
         else:
             print("[%s]%s:%s" % (tokenType, lexem, lineno))
 
@@ -102,9 +120,6 @@ def a2lParser(fname):
             continue
         elif tokenType == KEYWORD:
             klass = classes.KEYWORD_MAP.get(lexem)
-        elif tokenType == AML:
-            tree = amlParser.parseFromString(lexem)
-            continue
 
         if classStack:
             tos = classStack[-1]

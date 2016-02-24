@@ -82,8 +82,8 @@ class TaggedUnionMember(ASTType):
 
 class Member(ASTType):
 
-     attrs = ('typeName', )
-     children = ('arraySpecifier', )
+     attrs = ('arraySpecifier', )
+     children = ('typeName', )
 
      def __init__(self, typeName, arraySpecifier):
          self.typeName = typeName
@@ -254,6 +254,10 @@ class Listener(antlr4.ParseTreeListener):
 
     def exitType_definition(self, ctx):
         ctx.value = TypeDefinition(ctx.type_name().value)
+
+    def exitArray_specifier(self, ctx):
+        constant = ctx.constant().value
+        ctx.value = constant
 
     def exitMember(self, ctx):
         typeName = ctx.type_name().value
