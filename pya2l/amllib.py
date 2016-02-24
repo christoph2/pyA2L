@@ -40,15 +40,6 @@ class ASTType(object):
     children = []
 
 
-class Enumerator(ASTType):
-
-    attrs = ("tag", "constant")
-
-    def __init__(self, tag, constant):
-        self.tag = tag
-        self.constant = constant
-
-
 class Enumeration(ASTType):
 
     attrs = ('tag', )
@@ -238,7 +229,7 @@ class Listener(antlr4.ParseTreeListener):
     def exitEnumerator(self, ctx):
         tag = ctx.TAG().getText().replace('"', '')
         constant = ctx.constant().value
-        ctx.value = Enumerator(tag, constant)
+        ctx.value = (tag, constant)
 
     def exitArray_specifier(self, ctx):
         size = ctx.constant().value
