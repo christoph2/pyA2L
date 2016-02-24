@@ -38,6 +38,7 @@ import antlr4
 class ASTType(object):
     attrs = []
     children = []
+    block = False
 
 
 class Enumeration(ASTType):
@@ -148,6 +149,7 @@ class Declaration(ASTType):
 
 class BlockDefinition(ASTType):
 
+    block = True
     attrs = ('tag', )
     children = ('typeName', )
 
