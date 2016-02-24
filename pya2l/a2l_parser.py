@@ -57,10 +57,10 @@ Token = namedtuple('Token', 'lineNo tokenType lexem')
 def dumpElement(element, level):
     level += 1
     indent = " " * level
-    print "{0}<<{1}>>".format(indent, element.__class__.__name__)
-    if isinstance(element, (str, int, long)):
-        print("{0}".format(element))
+    if isinstance(element, (str, int, long, tuple)):
+        print("{0}{1}".format(indent, element))
         return
+    print "{0}<<{1}>>".format(indent, element.__class__.__name__)
     for attr in element.attrs:
         print "{0}{1} = {2}".format(indent, attr, getattr(element, attr))
     for child in element.children:
