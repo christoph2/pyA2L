@@ -52,7 +52,8 @@ class Tokenizer(object):
              )
     """, re.VERBOSE | re.DOTALL)
 
-    def __init__(self, content, keywords):
+    def __init__(self, filename, content, keywords):
+        self.filename = filename
         self._content = content
         self._lexems = []
         self._keywords = keywords

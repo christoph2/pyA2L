@@ -87,9 +87,7 @@ def a2lParser(fname):
     fp = codecs.open(fname, encoding = "utf")
 
     source = ''.join(uncomment(fp))
-    tokenizer = Tokenizer(source, keywords)
-
-    amlParser = ParserWrapper('aml', 'amlFile')
+    tokenizer = Tokenizer(fname, source, keywords)
 
     classStack = []
     classStack.append(classes.RootElement)

@@ -29,7 +29,7 @@ __version__ = '0.1.0'
 
 import logging
 
-# /usr/src/debug/cygwin-1.7.31-3/winsup/cygwin/lib/libcmain.c:39: undefined refere
+# libcmain.c:39: undefined refere
 
 
 class Logger(object):
