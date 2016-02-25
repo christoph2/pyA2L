@@ -30,7 +30,7 @@ from pprint import pprint
 
 from pya2l import aml
 import pya2l.classes as classes
-from pya2l.a2l_lexer import Tokenizer
+from pya2l.a2l_lexer import Tokenizer, TokenType
 from pya2l.aml import ParserWrapper
 from pya2l.utils import slicer
 
@@ -41,11 +41,6 @@ MAX_PARTIAL_IDENT   = 128
 MAX_STRING          = 255
 
 IDENT_EXPR = r'^(?:[a-zA-Z_][a-zA-Z_0-9]*\.?)+(?:\[(?:\d+ | [a-zA-Z_][a-zA-Z_0-9]*)\])?'
-
-BEGIN       = r'BEGIN'
-END         = r'END'
-KEYWORD     = r'KEYWORD'
-AML         = r'AML'
 
 STATE_NORMAL                = 1
 STATE_COLLECT               = 2
@@ -99,7 +94,7 @@ def a2lParser(fname):
     while tokenizer.tokenAvailable():
         lineno, (tokenType, lexem) = tokenizer.getToken()
 
-        if tokenType == AML:
+        if tokenType == TokenType.AML:
             parserWrapper = aml.ParserWrapper('aml', 'amlFile')
             tree = parserWrapper.parseFromString(lexem)
             parseAml(tree.value)
@@ -107,22 +102,22 @@ def a2lParser(fname):
         else:
             print("[%s]%s:%s" % (tokenType, lexem, lineno))
 
-        if tokenType == BEGIN:
+        if tokenType == TokenType.BEGIN:
             lineno, (tokenType, lexem) = tokenizer.getToken()   # Move on.
             pushToInstanceStack = True
             klass = classes.KEYWORD_MAP.get(lexem)
             classStack.append(klass)
-        elif tokenType == END:
+        elif tokenType == TokenType.END:
             lineno, (tokenType, lexem) = tokenizer.getToken()   # Move on.
             classStack.pop()
             instanceStack.pop()
             continue
-        elif tokenType == KEYWORD:
+        elif tokenType == TokenType.KEYWORD:
             klass = classes.KEYWORD_MAP.get(lexem)
 
         if classStack:
             tos = classStack[-1]
-        if tokenType in (BEGIN, KEYWORD):
+        if tokenType in (TokenType.BEGIN, TokenType.KEYWORD):
 
             fixedAttributes =  klass.fixedAttributes
             variableAttribute =  klass.variableAttribute
@@ -138,13 +133,13 @@ def a2lParser(fname):
                 while True:
                     lineno, (tokenType, lexem) = tokenizer.getToken()
                     print (tokenType, lexem)
-                    if tokenType in (KEYWORD, END):
+                    if tokenType in (TokenType.KEYWORD, TokenType.END):
                         tokenizer.stepBack()
                         break
                     result.append(lexem)
                 setattr(inst, attr[1], result)
                 inst.attrs.append(attr[1])
-            elif tokenType == KEYWORD and lexem in ('COMPU_TAB', 'COMPU_VTAB', 'COMPU_VTAB_RANGE'):
+            elif tokenType == TokenType.KEYWORD and lexem in ('COMPU_TAB', 'COMPU_VTAB', 'COMPU_VTAB_RANGE'):
                 #
                 # COMPU_TAB / COMPU_VTAB / COMPU_VTAB_RANGE require special attention.
                 #

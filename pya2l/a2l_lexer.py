@@ -25,6 +25,7 @@ __copyright__="""
 """
 
 import collections
+import enum
 import re
 import sys
 
@@ -35,6 +36,19 @@ BEGIN_AML = re.compile(r'/begin\s+A2ML', re.M | re.S)
 END_AML = re.compile(r'/end\s+A2ML', re.M | re.S)
 HEX_NUMBER = re.compile(r'^[0-9a-fA-F]+$')
 IDENTIFIER = re.compile(r'^[a-zA-Z_][a-zA-Z_0-9]*$')
+
+
+class TokenType(enum.IntEnum):
+    BEGIN       = 1
+    END         = 2
+    KEYWORD     = 3
+    AML         = 4
+    KEYWORD     = 5
+    IDENT       = 6
+    NUMBER      = 7
+    HEX_NUMBER  = 8
+    STRING      = 9
+    FLOAT       = 10
 
 
 class Tokenizer(object):
@@ -89,48 +103,39 @@ class Tokenizer(object):
     def makeToken(self, lexem):
         tokenType = None
         if lexem.startswith('"') and lexem.endswith('"'):
-            tokenType = 'STRING'
+            tokenType = TokenType.STRING
             lexem = lexem.strip('"')
 
-            self.stats['STRING'] += 1
+            self.stats[TokenType.STRING] += 1
         elif lexem.isdigit():
-            tokenType = 'NUMBER'
+            tokenType = TokenType.NUMBER
             lexem = long(lexem)
-
-            #self.stats.setdefault('NUMBER', 0)
-            self.stats['NUMBER'] += 1
+            self.stats[TokenType.NUMBER] += 1
         elif lexem.startswith('0x') or lexem.startswith('0X'):
             if HEX_NUMBER.match(lexem[2 : ]):   # Look before you leap.
-                tokenType = 'HEX_NUMBER'
+                tokenType = TokenType.HEX_NUMBER
                 lexem = long(lexem[2: ], 16)
             else:
-                tokenType = 'IDENT'
+                tokenType = TokenType.IDENT
                 self.checkIdentifier(lexem)
-
-            #self.stats.setdefault('HEX_NUMBER', 0)
-            self.stats['HEX_NUMBER'] += 1
+            self.stats[TokenType.HEX_NUMBER] += 1
+        elif lexem.lower() == '/begin':
+            tokenType = TokenType.BEGIN
+        elif lexem.lower() == '/end':
+            tokenType = TokenType.END
         elif lexem in self._keywords:
-            tokenType = 'KEYWORD'
-            #self.stats.setdefault('KEYWORD', 0)
-            self.stats['KEYWORD'] += 1
-        elif lexem in ('/begin', '/end'):
-            tokenType = lexem[1 : ].upper()
-
-            #self.stats.setdefault('DELIM', 0)
-            self.stats['DELIM'] += 1
+            tokenType = TokenType.KEYWORD
+            self.stats[TokenType.KEYWORD] += 1
         else:
             if lexem[0].isdigit() or lexem[0] or ('+', '-'):
                 try:
                     lexem = float(lexem)
-                    tokenType = 'FLOAT'
+                    tokenType = TokenType.FLOAT
 
-                    #self.stats.setdefault('FLOAT', 0)
-                    self.stats['FLOAT'] += 1
+                    self.stats[TokenType.FLOAT] += 1
                 except:
-                    tokenType = 'IDENT'
+                    tokenType = TokenType.IDENT
                     self.checkIdentifier(lexem)
-                    #self.stats.setdefault('IDENT', 0)
-                    #self.stats['IDENT'] += 1
         return (tokenType, lexem)
 
     def genTokens(self):
@@ -149,7 +154,7 @@ class Tokenizer(object):
                     if match:
                         break
                 aml = ''.join(result)
-                self.tokens.append((self.lineNo, ("AML", aml)))
+                self.tokens.append((self.lineNo, (TokenType.AML, aml)))
                 line = savedLine
             lexems = self.lexer(line.strip())
             if lexems == []:
