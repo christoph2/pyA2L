@@ -29,30 +29,42 @@ __version__ = '0.1.0'
 
 import logging
 
-LOGGER_NAME = 'pya2l'
-DEPHAULT_LEVEL = logging.WARN
-PHORMAT = "[%(levelname)s (%(name)s)]: %(message)s"
+# /usr/src/debug/cygwin-1.7.31-3/winsup/cygwin/lib/libcmain.c:39: undefined refere
 
-try:
-    logger
-except NameError:
-    # Create logger if it doesn't exist.
-    logger = logging.getLogger(LOGGER_NAME)
-    logger.setLevel(DEPHAULT_LEVEL)
-    handler = logging.StreamHandler()
-    handler.setLevel(DEPHAULT_LEVEL)
-    formatter = logging.Formatter(PHORMAT)
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
 
-def defaultLevel():
-    logger.setLevel(logging.WARNING)
+class Logger(object):
+    
+    LOGGER_BASE_NAME = 'pya2l'
+    FORMAT = "[%(levelname)s (%(name)s)]: %(message)s"
+    
+    def __init__(self, name, level = logging.WARN):
+        self.logger = logging.getLogger("{0}.{1}".format(self.LOGGER_BASE_NAME, name))
+        self.logger.setLevel(level)
+        handler = logging.StreamHandler()
+        handler.setLevel(level)
+        formatter = logging.Formatter(self.FORMAT)
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
 
-def verboseLevel():
-    logger.setLevel(logging.DEBUG)
+    def log(self, message, level):
+        self.logger.log(level, "{0}".format(message))
 
-def silentLevel():
-    logger.setLevel(logging.CRITICAL)
+    def info(self, message):
+        self.log(message, logging.INFO)
 
-## TODO: mix-ins class.
+    def warn(self, message):
+        self.log(message, logging.WARN)
+
+    def error(self, message):
+        self.log(message, logging.ERROR)
+
+    def critical(self, message):
+        self.log(message, logging.CRITICAL)
+
+    def verbose(self):
+        self.logger.setLevel(logging.DEBUG)
+
+    def silent(self):
+        self.logger.setLevel(logging.CRITICAL)
+
 
