@@ -1773,7 +1773,7 @@ class A2LElement(object):
 def instanceFactory(className, **kws):
     """Create an instance of a given class.
     """
-    klass = type(className, (A2LElement, ), {})
+    klass = type(str(className), (A2LElement, ), {})
     inst = klass()
     inst.attrs = []
     for k, v in kws.items():
