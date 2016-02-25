@@ -29,7 +29,7 @@ import re
 import sys
 
 import pya2l.classes as classes
-from pya2l.logger import logger
+from pya2l.logger import Logger
 
 BEGIN_AML = re.compile(r'/begin\s+A2ML', re.M | re.S)
 END_AML = re.compile(r'/end\s+A2ML', re.M | re.S)
@@ -39,7 +39,7 @@ IDENTIFIER = re.compile(r'^[a-zA-Z_][a-zA-Z_0-9]*$')
 
 class Tokenizer(object):
 
-    logger = logger.getChild('lexer')
+    logger = Logger('lexer')
 
     TOKENS = re.compile(r"""
           \s*"(?P<STRING>[^"]*?)"
@@ -133,22 +133,22 @@ class Tokenizer(object):
         return (tokenType, lexem)
 
     def genTokens(self):
-        self._lineNumber = 0
         lineEnumerator = enumerate(self._content.splitlines(), 1)
-        for lineNumber, line in lineEnumerator:
+        for lineNo, line in lineEnumerator:
+            self.lineNo = lineNo
             match = BEGIN_AML.search(line)
             if match:
                 start, end = match.span()
                 savedLine = line[ : start]
                 result = [line[ start : end]]
                 while True:
-                    lineNumber, line = lineEnumerator.next()
+                    self.lineNo, line = lineEnumerator.next()
                     result.append(line)
                     match = END_AML.search(line)
                     if match:
                         break
                 aml = ''.join(result)
-                self.tokens.append((lineNumber, ("AML", aml)))
+                self.tokens.append((self.lineNo, ("AML", aml)))
                 line = savedLine
             lexems = self.lexer(line.strip())
             if lexems == []:
@@ -156,10 +156,10 @@ class Tokenizer(object):
             for lexem in lexems:
                 token = self.makeToken(lexem)
                 if token[0] == None:
-                    print("*** '%s%u does not match'" % (lexem, lineNum))
+                    print("*** '%s%u does not match'" % (lexem, self.lineNo))
                 else:
                     pass
-                self.tokens.append((lineNumber, token, ))
+                self.tokens.append((self.lineNo, token, ))
 
     def tokenAvailable(self):
         return self.tokenIndex < self.numTokens
