@@ -53,7 +53,6 @@ class TokenType(enum.IntEnum):
 
 class Tokenizer(object):
 
-    logger = Logger('lexer')
 
     TOKENS = re.compile(r"""
           \s*"(?P<STRING>[^"]*?)"
@@ -67,6 +66,7 @@ class Tokenizer(object):
     """, re.VERBOSE | re.DOTALL)
 
     def __init__(self, filename, content, keywords):
+        self.logger = Logger(self, 'lexer')
         self.filename = filename
         self._content = content
         self._lexems = []

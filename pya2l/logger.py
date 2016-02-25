@@ -28,16 +28,16 @@ __author__  = 'Christoph Schueler'
 __version__ = '0.1.0'
 
 import logging
-
-# libcmain.c:39: undefined refere
+import os
 
 
 class Logger(object):
-    
+
     LOGGER_BASE_NAME = 'pya2l'
     FORMAT = "[%(levelname)s (%(name)s)]: %(message)s"
-    
-    def __init__(self, name, level = logging.WARN):
+
+    def __init__(self, parent, name, level = logging.WARN):
+        self.parent = parent
         self.logger = logging.getLogger("{0}.{1}".format(self.LOGGER_BASE_NAME, name))
         self.logger.setLevel(level)
         handler = logging.StreamHandler()
@@ -47,7 +47,9 @@ class Logger(object):
         self.logger.addHandler(handler)
 
     def log(self, message, level):
-        self.logger.log(level, "{0}".format(message))
+        self.logger.log(level, "{0}:{1}: {2}".format(
+            os.path.split(self.parent.filename)[1], self.parent.lineNo,  message)
+        )
 
     def info(self, message):
         self.log(message, logging.INFO)
