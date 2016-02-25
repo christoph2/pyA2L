@@ -25,6 +25,7 @@ __copyright__="""
 """
 
 from collections import OrderedDict
+import codecs
 from pprint import pprint
 
 from pya2l import aml
@@ -83,7 +84,7 @@ def parseAml(element, level = 0):
 
 def a2lParser(fname):
     keywords = classes.KEYWORD_MAP.keys()
-    fp = file(fname)
+    fp = codecs.open(fname, encoding = "utf")
 
     source = ''.join(uncomment(fp))
     tokenizer = Tokenizer(source, keywords)
