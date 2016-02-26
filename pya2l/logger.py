@@ -69,4 +69,14 @@ class Logger(object):
     def silent(self):
         self.logger.setLevel(logging.CRITICAL)
 
+    def setLevel(self, level):
+        LEVEL_MAP = {
+            "INFO": logging.INFO,
+            "WARN": logging.WARN,
+            "ERROR": logging.ERROR,
+            "CRITICAL": logging.CRITICAL,
+        }
+        if isinstance(level, str):
+            level = LEVEL_MAP.get(level.upper(), logging.WARN)
+        self.logger.setLevel(level)
 
