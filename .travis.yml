@@ -1,5 +1,6 @@
 # https://travis-ci.org/christoph2/pyA2l
 language: python
+sudo: required
 python:
     - 2.7.8
     - 2.7
