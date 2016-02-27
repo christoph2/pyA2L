@@ -93,9 +93,12 @@ class A2LParser(object):
 
     def parse(self, fp):
         keywords = classes.KEYWORD_MAP.keys()
-
-        source = ''.join(self.uncomment(fp))
-        tokenizer = Tokenizer(fp.name if hasattr(fp, 'name') else "<<buffer>>", source, keywords)
+        self.filename = fp.name if hasattr(fp, 'name') else "<<buffer>>"
+        returnCode, source = self.uncomment(fp)
+        if not returnCode:
+            return
+        source = ''.join(source)
+        tokenizer = Tokenizer(self.filename, source, keywords)
 
         classStack = []
         classStack.append(classes.RootElement)
@@ -103,9 +106,10 @@ class A2LParser(object):
         instanceStack = []
         instanceStack.append(classes.instanceFactory("Root"))
         pushToInstanceStack = False
+        self.lineNo = None
 
         while tokenizer.tokenAvailable():
-            lineno, (tokenType, lexem) = tokenizer.getToken()
+            self.lineNo, (tokenType, lexem) = tokenizer.getToken()
 
             if tokenType == TokenType.AML:
                 parserWrapper = aml.ParserWrapper('aml', 'amlFile')
@@ -113,15 +117,15 @@ class A2LParser(object):
                 parseAml(tree.value)
                 continue
             else:
-                print("[%s]%s:%s" % (tokenType, lexem, lineno))
+                print("[%s]%s:%s" % (tokenType, lexem, self.lineNo))
 
             if tokenType == TokenType.BEGIN:
-                lineno, (tokenType, lexem) = tokenizer.getToken()   # Move on.
+                self.lineNo, (tokenType, lexem) = tokenizer.getToken()   # Move on.
                 pushToInstanceStack = True
                 klass = classes.KEYWORD_MAP.get(lexem)
                 classStack.append(klass)
             elif tokenType == TokenType.END:
-                lineno, (tokenType, lexem) = tokenizer.getToken()   # Move on.
+                self.lineNo, (tokenType, lexem) = tokenizer.getToken()   # Move on.
                 classStack.pop()
                 instanceStack.pop()
                 continue
@@ -144,7 +148,7 @@ class A2LParser(object):
                     attr = klass[variableAttribute]
                     result = []
                     while True:
-                        lineno, (tokenType, lexem) = tokenizer.getToken()
+                        self.lineNo, (tokenType, lexem) = tokenizer.getToken()
                         print (tokenType, lexem)
                         if tokenType in (TokenType.KEYWORD, TokenType.END):
                             tokenizer.stepBack()
@@ -179,9 +183,11 @@ class A2LParser(object):
     def uncomment(self, fp): # Nested comments are not supported!
         result = []
         multiLineComment = False
-
+        inComment = False
+        returnCode = True
         for lineNo, line in enumerate(fp):
             # Bad style state-machine...
+            self.lineNo = lineNo
             if not multiLineComment:
                 if '//' in line:
                     cmtPos = line.index('//')
@@ -193,6 +199,7 @@ class A2LParser(object):
                     startLineNo = lineNo
                     if not '*/' in line:
                         multiLineComment = True
+                        inComment = True
                     line = line[ : cmtPos].strip()
                     if line:
                         result.append(line)
@@ -204,5 +211,13 @@ class A2LParser(object):
                     cmtPos = line.index('*/')
                     result.append(line[cmtPos + 2: ].strip())
                     multiLineComment = False
-        return result
+                    inComment = False
+                elif '/*' in line:
+                    if inComment:
+                        self.logger.error("Nested comments are not allowed.")
+                        returnCode = False
+        if multiLineComment:
+            self.logger.error("Premature end-of-file while processing comment.")
+            returnCode = False
+        return (returnCode, result)
 
