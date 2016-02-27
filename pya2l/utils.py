@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2014 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2016 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -35,4 +35,18 @@ def slicer(iterable, sliceLength, converter = None):
     length = len(iterable)
     return [converter(*(iterable[item : item + sliceLength])) for item in range(0, length, sliceLength)]
 
+import sys
 
+if sys.version_info.major == 3:
+    from io import BytesIO as StringIO
+else:
+    try:
+        from cStringIO import StringIO
+    except ImportError:
+        from StringIO import StringIO
+
+
+def createStringBuffer(*args):
+    """Create a string with file-like behaviour (StringIO on Python 2.x).
+    """
+    return StringIO(*args)
