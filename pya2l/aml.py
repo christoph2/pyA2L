@@ -41,7 +41,7 @@ def indent(level):
 def dump(tree, level = 0):
     indent(level)
     if isinstance(tree, antlr4.TerminalNode):
-        print tree.symbol.text
+        print(tree.symbol.text)
     else:
         print("({}".format(tree.value))
         level += 1
