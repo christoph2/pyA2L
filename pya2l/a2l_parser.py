@@ -57,9 +57,9 @@ def dumpElement(element, level):
     if isinstance(element, (str, int, long, tuple)):
         print("{0}{1}".format(indent, element))
         return
-    print "{0}<<{1}>>".format(indent, element.__class__.__name__)
+    print("{0}<<{1}>>".format(indent, element.__class__.__name__))
     for attr in element.attrs:
-        print "{0}{1} = {2}".format(indent, attr, getattr(element, attr))
+        print("{0}{1} = {2}".format(indent, attr, getattr(element, attr)))
     for child in element.children:
         parseAml(getattr(element, child), level)
     level -= 1
@@ -149,7 +149,7 @@ class A2LParser(object):
                     result = []
                     while True:
                         self.lineNo, (tokenType, lexem) = tokenizer.getToken()
-                        print (tokenType, lexem)
+                        print(tokenType, lexem)
                         if tokenType in (TokenType.KEYWORD, TokenType.END):
                             tokenizer.stepBack()
                             break
