@@ -36,20 +36,20 @@ import pya2l.amllib as amllib
 
 
 def indent(level):
-    print " " * level,
+    print(" " * level,)
 
 def dump(tree, level = 0):
     indent(level)
     if isinstance(tree, antlr4.TerminalNode):
         print tree.symbol.text
     else:
-        print "({}".format(tree.value)
+        print("({}".format(tree.value))
         level += 1
         for child in tree.children:
             dump(child, level)
         level -= 1
     indent(level)
-    print ")"
+    print(")")
 
 
 class ParserWrapper(object):
