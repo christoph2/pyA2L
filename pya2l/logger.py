@@ -54,6 +54,8 @@ class Logger(object):
         return result
 
     def log(self, message, level):
+        self.lastSeverity = level
+        self.lastMessage = message
         self.logger.log(level, "{0}:{1}: {2}".format(
             os.path.split(self.parent.filename)[1], self.parent.lineNo,  message)
         )
