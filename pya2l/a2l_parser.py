@@ -32,7 +32,7 @@ from pya2l import aml
 import pya2l.classes as classes
 from pya2l.a2l_lexer import Tokenizer, TokenType
 from pya2l.aml import ParserWrapper
-from pya2l.utils import slicer
+from pya2l.utils import slicer, createStringBuffer
 from pya2l.logger import Logger
 
 VERSION = 'ASAM MCD-2MC V1.6'
@@ -83,13 +83,19 @@ class A2LParser(object):
     def __init__(self):
         self.logger = Logger(self, 'parser')
 
-
-    def parse(self, filename):
-        keywords = classes.KEYWORD_MAP.keys()
+    def parseFromFileName(self, filename):
         fp = codecs.open(filename, encoding = "utf")
+        self.parse(fp)
+
+    def parseFromString(self, stringObj):
+        stringBuffer = createStringBuffer(stringObj)
+        self.parse(stringBuffer)
+
+    def parse(self, fp):
+        keywords = classes.KEYWORD_MAP.keys()
 
         source = ''.join(self.uncomment(fp))
-        tokenizer = Tokenizer(filename, source, keywords)
+        tokenizer = Tokenizer(fp.name if hasattr(fp, 'name') else "<<buffer>>", source, keywords)
 
         classStack = []
         classStack.append(classes.RootElement)
