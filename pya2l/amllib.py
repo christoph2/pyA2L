@@ -241,7 +241,7 @@ class Listener(antlr4.ParseTreeListener):
         ctx.value =[e.value for e in ctx.enumerator()]
 
     def exitEnum_type_name(self, ctx):
-        elements = ctx.enumerator_list().value
+        elements = ctx.enumerator_list().value if ctx.enumerator_list() else []
         id_ = ctx.ID()
         ctx.value = Enumeration(id_, elements)
 
@@ -277,7 +277,7 @@ class Listener(antlr4.ParseTreeListener):
         ctx.value = BlockDefinition(tag, typeName)
 
     def exitDeclaration(self, ctx):
-        blockDefinition = ctx.block_definition().value
+        blockDefinition = ctx.block_definition().value if ctx.block_definition() else None
         typeDefinition = ctx.type_definition()  # .value
         ctx.value = Declaration(blockDefinition, typeDefinition)
 
