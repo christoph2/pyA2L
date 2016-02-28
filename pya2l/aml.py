@@ -71,6 +71,7 @@ class ParserWrapper(object):
         tokenStream = antlr4.CommonTokenStream(lexer)
         parser = self.parserClass(tokenStream)
         meth = getattr(parser, self.startSymbol)
+        self._syntaxErrors = parser._syntaxErrors
         tree = meth()
         listener = amllib.Listener()
         walker = antlr4.ParseTreeWalker()
@@ -86,4 +87,9 @@ class ParserWrapper(object):
     @staticmethod
     def stringStream(fname):
         return antlr4.InputStream(codecs.open(fname, encoding = 'UTF-8').read())
+
+    def _getNumberOfSyntaxErrors(self):
+        return self._syntaxErrors
+
+    numberOfSyntaxErrors = property(_getNumberOfSyntaxErrors)
 
