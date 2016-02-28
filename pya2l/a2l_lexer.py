@@ -53,7 +53,6 @@ class TokenType(enum.IntEnum):
 
 class Tokenizer(object):
 
-
     TOKENS = re.compile(r"""
           \s*"(?P<STRING>[^"]*?)"
         | \s*(?P<IDENT>[a-zA-Z_][a-zA-Z_0-9.|]*)

@@ -69,7 +69,8 @@ block_definition:
    ;
 
 enum_type_name:
-    ('enum' ID? '{' enumerator_list '}' )
+      ('enum' ID? '{' enumerator_list '}' )
+    | ('enum' ID)
     ;
 
 enumerator_list:
