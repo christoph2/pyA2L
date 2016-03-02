@@ -28,6 +28,7 @@ __author__  = 'Christoph Schueler'
 __version__ = '0.1.0'
 
 import itertools
+import os
 
 def slicer(iterable, sliceLength, converter = None):
     if converter is None:
@@ -50,3 +51,16 @@ def createStringBuffer(*args):
     """Create a string with file-like behaviour (StringIO on Python 2.x).
     """
     return StringIO(*args)
+
+
+CYG_PREFIX = "/cygdrive/"
+
+def cygpathToWin(path):
+    if path.startswith(CYG_PREFIX):
+        path = path[len(CYG_PREFIX) : ]
+        driveLetter = "{0}:\\".format(path[0])
+        path = path[2 : ].replace("/", "\\")
+        path = "{0}{1}".format(driveLetter, path)
+    return path
+
+
