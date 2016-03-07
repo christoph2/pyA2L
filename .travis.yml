@@ -3,14 +3,27 @@ language: python
 sudo: required
 python:
     - 2.7.8
-    - 2.7
+    #- 3.2
+    - 3.3
+    #- 3.4
+    #- 3.5
     - "pypy"
+
+os:
+  - linux
 
 notifications:
   email: false
 
 install:
   - pip install -r requirements.txt
+  - travis_retry pip install pylint
+  - travis_retry pip install pytest-cov coverage coveralls codacy-coverage
 
 script:
-  python -m unittest discover ./pya2l/tests/
+   coverage run --source=pya2l setup.py test
+
+after_success:
+  - pylint app
+  - coveralls
+  - coverage xml && python-codacy-coverage -r coverage.xml

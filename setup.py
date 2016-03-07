@@ -17,14 +17,15 @@ setup(
     url = 'https://www.github.com/Christoph2/pyA2L',
     packages = ['pya2l'],
     install_requires = ['antlr4-python2-runtime', 'enum34', 'mock'],
-    entry_points = {
-        'console_scripts': [
-                'vd_exporter = pyA2L.catalogue.vd_exporter:main'
-        ],
-    },
+    #entry_points = {
+    #    'console_scripts': [
+    #            'vd_exporter = pyA2L.catalogue.vd_exporter:main'
+    #    ],
+    #},
     #data_files = [
     #        ('pya2l/config', glob('pya2l/config/*.*')),
     #        ('pya2l/imagez', glob('pya2l/imagez/*.bin')),
     #],
+    test_suite="pya2l.tests"
 )
 
