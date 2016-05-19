@@ -248,10 +248,6 @@ class Listener(antlr4.ParseTreeListener):
     def exitType_definition(self, ctx):
         ctx.value = TypeDefinition(ctx.type_name().value)
 
-    def exitArray_specifier(self, ctx):
-        constant = ctx.constant().value
-        ctx.value = constant
-
     def exitMember(self, ctx):
         typeName = ctx.type_name().value
         arraySpecifier = [a.value for a in ctx.array_specifier()]

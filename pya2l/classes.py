@@ -4,7 +4,7 @@
 __copyright__="""
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2015 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2016 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -123,7 +123,7 @@ class Keyword(object):
         return [attr[1] for attr in cls.attrs if not MULTIPLE in attr]
 
     def __str__(self):
-        return "< %s @ % 0x%0X >" % (self.__class__.__name__, id(self))
+        return "< %s @%0X >" % (self.__class__.__name__, id(self))
 
 ##
 ##
