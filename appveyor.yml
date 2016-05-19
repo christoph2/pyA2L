@@ -1,4 +1,8 @@
 environment:
+  COVERALLS_REPO_TOKEN: 
+    secure: DFqtaA1FWZtyjkWrLuWo0/fhZjHbiZaQoZw91SYpXhlTuQv08YfiRoL/rwvqDQh9
+  CODACY_PROJECT_TOKEN:
+    secure: Cx6jEa48Lx4/h9qiwR/N+0zsyf85D1rITrnG44XySbuiYPfg77ZS1wlkGx/B8zdM
 
   matrix:
 
@@ -20,8 +24,9 @@ environment:
 
 install:
   # We need wheel installed to build wheels
-  - "%PYTHON%\\python.exe -m pip install wheel"
-  - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
+  - set PATH=%PYTHON%\Scripts;%PATH%
+  - pip install wheel coveralls coverage codacy-coverage codeclimate-test-reporter"
+  - pip install -r requirements.txt
 
 build: off
 
@@ -33,7 +38,9 @@ test_script:
   # Note that you must use the environment variable %PYTHON% to refer to
   # the interpreter you're using - Appveyor does not do anything special
   # to put the Python evrsion you want to use on PATH.
-  - "build.cmd %PYTHON%\\python.exe setup.py test"
+  # - "build.cmd %PYTHON%\\python.exe setup.py test"
+  - "%PYTHON%\\Scripts\\coverage run --source=pya2l setup.py test"
+  #- cmd: dir .
 
 after_test:
   # This step builds your wheels.
@@ -46,7 +53,11 @@ artifacts:
   # bdist_wheel puts your built wheel in the dist directory
   - path: dist\*
 
-#on_success:
-#  You can use this step to upload your artifacts to a public website.
-#  See Appveyor's documentation for more details. Or you can simply
-#  access your wheels from the Appveyor "artifacts" tab for your build.
+on_success:
+  #- cmd: dir .
+  #- cmd: set
+  - dir "%PYTHON%\\Scripts"
+  - coverage xml
+  - coveralls
+  - python-codacy-coverage -r coverage.xml
+# - "%PYTHON%\\Scripts\\codeclimate-test-reporter"
