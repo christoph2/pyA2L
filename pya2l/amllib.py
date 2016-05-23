@@ -122,21 +122,24 @@ class TaggedStructType(ASTType):
 
 class TaggedStructDefinition(ASTType):
 
-     attrs = ('tag', )
+     attrs = ('tag', 'mult')
      children = ('member',)
 
-     def __init__(self, tag, member):
+     def __init__(self, tag, member, mult):
            self.tag = tag
            self.member = member
+           self.mult = mult
 
 
 class TaggedStructMember(ASTType):
 
+    atrs = ('mult', )
     children = ('taggedstructDefinition', 'blockDefinition')
 
-    def __init__(self, taggedstructDefinition, blockDefinition):
+    def __init__(self, taggedstructDefinition, blockDefinition, mult):
         self.taggedstructDefinition = taggedstructDefinition
         self.blockDefinition = blockDefinition
+        self.mult = mult
 
 
 class Declaration(ASTType):
@@ -191,7 +194,6 @@ class Listener(antlr4.ParseTreeListener):
         return attr().value if attr() else None
 
     def getList(self, attr):
-        print(attr())
         return [x for x in attr()] if attr() else []
 
     def getTerminal(self, attr):
@@ -223,20 +225,16 @@ class Listener(antlr4.ParseTreeListener):
         ctx.value = TaggedStructType(name, member)
 
     def exitTaggedstruct_member(self, ctx):
-        # TODO: '*'!!!
-        # TODO: Check variants!!!
+        mult = len(ctx.children) == 5 and ctx.children[3].getText() == '*'
         taggedstructDefinition = self.getRule(ctx.taggedstruct_definition)
         blockDefinition = self.getRule(ctx.block_definition)
-        #print("TSD: {0} BD: {1}\n".format(taggedstructDefinition, blockDefinition))
-        ctx.value = TaggedStructMember(taggedstructDefinition, blockDefinition)
+        ctx.value = TaggedStructMember(taggedstructDefinition, blockDefinition, mult)
 
     def exitTaggedstruct_definition(self, ctx):
-        # TODO: '*'!!!
-        # TODO: Check variants!!!
+        mult = len(ctx.children) == 6 and ctx.children[4].getText() == '*'
         tag = ctx.TAG().getText()
         member = self.getRule(ctx.member)
-        #print("TAG: {0} MEMBER: {1}\n".format(tag, member))
-        ctx.value = TaggedStructDefinition(tag, member)
+        ctx.value = TaggedStructDefinition(tag, member, mult)
 
     def exitEnumerator(self, ctx):
         tag = self.getTerminal(ctx.TAG).replace('"', '')
@@ -264,7 +262,6 @@ class Listener(antlr4.ParseTreeListener):
         ctx.value = Member(typeName, arraySpecifier)
 
     def exitTagged_union_member(self, ctx):
-        # TODO: '*'!!!
         # TODO: Check variants!!!
         tag = self.getTerminal(ctx.TAG)
         member = self.getRule(ctx.member)
@@ -274,7 +271,6 @@ class Listener(antlr4.ParseTreeListener):
     def exitTaggedunion_type_name(self, ctx):
         name = self.getTerminal(ctx.ID)   # TODO: FIXME!!!
         members = self.getList(ctx.tagged_union_member)
-        #print("NAME: {0} MEMBERS: {1}\n".format(name, members))
         ctx.value = TaggedUnion(name, members)
 
     def exitBlock_definition(self, ctx):
