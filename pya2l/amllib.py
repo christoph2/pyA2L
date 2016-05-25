@@ -142,7 +142,6 @@ class TaggedStructDefinition(ASTType):
      children = ('member',)
 
      def __init__(self, tag, member, mult):
-        #print("TAG: {0}".format(tag))
         self.tag = tag
         self.member = member
         self.mult = mult
@@ -219,7 +218,7 @@ class Listener(antlr4.ParseTreeListener):
 
     def exitType_name(self, ctx):
         name = ctx.name.value
-        tag = self.getTerminal(ctx.TAG)
+        tag = self.getTerminal(ctx.TAG).replace('"', '')
         match = TYPE_NAME.match("{0!r}".format(type(name)))
         if match:
             tn = match.group('klass')
@@ -253,7 +252,7 @@ class Listener(antlr4.ParseTreeListener):
 
     def exitTaggedstruct_definition(self, ctx):
         mult = len(ctx.children) == 6 and ctx.children[4].getText() == '*'
-        tag = ctx.TAG().getText()
+        tag = ctx.TAG().getText().replace('"', '')
         member = self.getRule(ctx.member)
         ctx.value = TaggedStructDefinition(tag, member, mult)
 
@@ -283,33 +282,28 @@ class Listener(antlr4.ParseTreeListener):
         ctx.value = Member(typeName, arraySpecifier)
 
     def exitTagged_union_member(self, ctx):
-        tag = self.getTerminal(ctx.TAG)
+        tag = self.getTerminal(ctx.TAG).replace('"', '')
         member = self.getRule(ctx.member)
         blockDefinition = self.getRule(ctx.block_definition)
         ctx.value = TaggedUnionMember(tag, member, blockDefinition)
 
     def exitTaggedunion_type_name(self, ctx):
-        name = self.getTerminal(ctx.ID)   # TODO: FIXME!!!
+        name = self.getTerminal(ctx.ID)
         members = self.getList(ctx.tagged_union_member)
         ctx.value = TaggedUnion(name, members)
 
     def enterBlock_definition(self, ctx):
-        print("{0}Enter block".format("  " * self.level))
         self.level += 1
 
     def exitBlock_definition(self, ctx):
-
-        tag = ctx.TAG().getText()
-
-        print("{0}Exit block: '{1}'".format("  " * self.level, tag))
+        tag = ctx.TAG().getText().replace('"', '')
         self.level -= 1
-
         typeName = ctx.type_name().value
         ctx.value = BlockDefinition(tag, typeName)
 
     def exitDeclaration(self, ctx):
         blockDefinition = self.getRule(ctx.block_definition)
-        typeDefinition = ctx.type_definition()  # .value
+        typeDefinition = ctx.type_definition()
         ctx.value = Declaration(blockDefinition, typeDefinition)
 
     def exitAmlFile(self, ctx):
