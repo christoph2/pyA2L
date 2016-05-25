@@ -101,9 +101,11 @@ class TypeName(ASTType):
     children = ('name', )
 
     def __init__(self, tag, name, type):
-          self.tag = tag
-          self.name = name
-          self.type = type
+        if tag:
+            print("TAG: ", tag)
+        self.tag = tag
+        self.name = name
+        self.type = type
 
 
 class PredefinedType(ASTType):
@@ -140,9 +142,10 @@ class TaggedStructDefinition(ASTType):
      children = ('member',)
 
      def __init__(self, tag, member, mult):
-           self.tag = tag
-           self.member = member
-           self.mult = mult
+        #print("TAG: {0}".format(tag))
+        self.tag = tag
+        self.member = member
+        self.mult = mult
 
 
 class TaggedStructMember(ASTType):

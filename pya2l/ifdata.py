@@ -97,7 +97,8 @@ class TaggedUnion(BaseType):
 
 class Member(BaseType):
 
-    def __init__(self, typeName, arraySpecifier, mult):
+    def __init__(self, tag, typeName, arraySpecifier, mult):
+        self.tag = tag
         self.typeName = typeName
         self.arraySpecifier = arraySpecifier
         self.mult = mult
@@ -108,8 +109,8 @@ class Parser(object):
     def __init__(self, tree):
         self.tree = tree
 
-    def doMember(self, tree, mult = None):
-        return Member(self.doTypeName(tree.typeName), tree.arraySpecifier, mult)
+    def doMember(self, tag, tree, mult = None):
+        return Member(tag, self.doTypeName(tree.typeName), [x.value for x in tree.arraySpecifier], mult)
 
     def doTaggedUnion(self, tree):
         members = []
@@ -120,7 +121,7 @@ class Parser(object):
                 blocks.append(self.doBlockDefinition(member.blockDefinition))
             else:
                 if member.member:
-                    members.append(self.doMember(member.member))
+                    members.append(self.doMember(member.tag, member.member))
         return TaggedUnion(tree.name, members, blocks)
 
     def doTaggedStruct(self, tree):
@@ -132,8 +133,9 @@ class Parser(object):
             if member.blockDefinition:
                 blocks.append(self.doBlockDefinition(member.blockDefinition, mult))
             if member.taggedstructDefinition:
+                #print("TDT: {0}".format(member.taggedstructDefinition.tag))
                 if member.taggedstructDefinition.member:
-                    members.append(self.doMember(member.taggedstructDefinition.member, mult))
+                    members.append(self.doMember(member.taggedstructDefinition.tag, member.taggedstructDefinition.member, mult))
         return TaggedStruct(tree.name, members, blocks, member.mult)
 
     def doStruct(self, tree):
@@ -141,7 +143,7 @@ class Parser(object):
         for member in tree.members:
             member = member.value
             if member:
-                members.append(self.doMember(member))
+                members.append(self.doMember(None, member))
         return Struct(tree.name, members)
 
     def doPredefined(self, tree):
