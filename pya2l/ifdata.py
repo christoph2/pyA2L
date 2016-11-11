@@ -33,13 +33,13 @@ class BaseType(object):
     def __repr__(self):
         keys = [k for k in self.__dict__ if not (k.startswith('__') and k.endswith('__'))]
         result = []
-        result.append("%s {" % self.__class__.__name__)
+        lines = []
         for key in keys:
             value = getattr(self, key)
-            line = "    {0} = {1!r}".format(key, value)
-            result.append(line)
-        result.append("}")
-        return '\n'.join(result)
+            line = "    {0}: {1!r}".format(key, value)
+            lines.append(line)
+        result = "{0} {{\n{1}\n}}".format(self.__class__.__name__, ',\n'.join(lines))
+        return result
 
     __str__ = __repr__
 
@@ -86,6 +86,8 @@ class TaggedStruct(BaseType):
         self.members = members
         self.blocks = blocks
         self.mult = mult
+        self.memberTags = {m.tag for m in members}
+        self.blockTags = {m.tag for m in blocks}
 
 
 class TaggedUnion(BaseType):
@@ -94,6 +96,9 @@ class TaggedUnion(BaseType):
         self.name = name
         self.members = members
         self.blocks = blocks
+        self.memberTags = {m.tag for m in members}
+        self.blockTags = {m.tag for m in blocks}
+
 
 class Member(BaseType):
 
@@ -133,7 +138,6 @@ class Parser(object):
             if member.blockDefinition:
                 blocks.append(self.doBlockDefinition(member.blockDefinition, mult))
             if member.taggedstructDefinition:
-                #print("TDT: {0}".format(member.taggedstructDefinition.tag))
                 if member.taggedstructDefinition.member:
                     members.append(self.doMember(member.taggedstructDefinition.tag, member.taggedstructDefinition.member, mult))
         return TaggedStruct(tree.name, members, blocks, member.mult)
