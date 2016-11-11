@@ -398,7 +398,7 @@ class CALIBRATION_ACCESS(Keyword):
 
 
 class CALIBRATION_HANDLE(Keyword):
-    #multiple = True
+    multiple = True
     children = ['CALIBRATION_HANDLE_TEXT']
     block = True
     attrs = [
@@ -1565,7 +1565,7 @@ class VIRTUAL_CHARACTERISTIC(Keyword):
 ##
 ##
 class RootElement(Keyword):
-    children = ['ASAP2_VERSION', 'A2ML_VERSION', 'PROJECT', 'MODULE']
+    children = ['ASAP2_VERSION', 'A2ML_VERSION', 'PROJECT']
 
 ###
 ###
@@ -1781,15 +1781,4 @@ def instanceFactory(className, **kws):
         inst.attrs.append(k)
     inst.children = []
     return inst
-
-
-#
-identifiables = [c for c in KEYWORD_MAP.values() if hasattr(c, 'attrs') and (Ident, "Name") in c.attrs]
-## HINWEIS: Group(GroupName) gehört dazu!!!
-identifiables = sorted([c.__name__ for c in identifiables])
-#print identifiables
-
-booleans  = [c for c in KEYWORD_MAP.values() if not (c.attrs and c.children)]
-booleans = sorted([c.__name__ for c in booleans])
-#print booleans
 
