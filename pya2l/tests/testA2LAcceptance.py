@@ -31,10 +31,6 @@ __version__ = '0.1.0'
 import unittest
 from pya2l.a2l_parser import A2LParser
 
-print(dir(A2LParser))
-
-parser = A2LParser()
-ppp = parser.parseFromFileName(r"C:\projekte\csProjects\k-A2L\examples\CR6EU5-642-49D1.a2l")
 
 TEST_A2L = """
 /************************************************************************************/
