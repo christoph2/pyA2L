@@ -43,7 +43,6 @@ class TokenType(enum.IntEnum):
     END         = 2
     KEYWORD     = 3
     AML         = 4
-    KEYWORD     = 5
     IDENT       = 6
     NUMBER      = 7
     HEX_NUMBER  = 8
@@ -108,12 +107,12 @@ class Tokenizer(object):
             self.stats[TokenType.STRING] += 1
         elif lexem.isdigit():
             tokenType = TokenType.NUMBER
-            lexem = long(lexem)
+            lexem = int(lexem)
             self.stats[TokenType.NUMBER] += 1
         elif lexem.startswith('0x') or lexem.startswith('0X'):
             if HEX_NUMBER.match(lexem[2 : ]):   # Look before you leap.
                 tokenType = TokenType.HEX_NUMBER
-                lexem = long(lexem[2: ], 16)
+                lexem = int(lexem[2: ], 16)
             else:
                 tokenType = TokenType.IDENT
                 self.checkIdentifier(lexem)
@@ -147,7 +146,7 @@ class Tokenizer(object):
                 savedLine = line[ : start]
                 result = [line[ start : end]]
                 while True:
-                    self.lineNo, line = lineEnumerator.next()
+                    self.lineNo, line = next(lineEnumerator)
                     result.append(line)
                     match = END_AML.search(line)
                     if match:
