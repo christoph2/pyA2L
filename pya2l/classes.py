@@ -25,6 +25,8 @@ __copyright__="""
 
 from collections import namedtuple
 import threading
+import sys
+import six
 
 class SingletonBase(object):
     _lock = threading.Lock()
@@ -107,9 +109,8 @@ class KeywordType(type):
             pass
         return result
 
-
+@six.add_metaclass(KeywordType)
 class Keyword(object):
-    __metaclass__ = KeywordType
 
     multiple = False
     block = False
