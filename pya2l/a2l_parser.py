@@ -51,7 +51,7 @@ from collections import namedtuple
 
 Token = namedtuple('Token', 'lineNo tokenType lexem')
 
-def dumpElement(element, level):
+def dumpElement(element, level = 0):
     level += 1
     indent = " " * level
     if isinstance(element, (str, int, long, tuple)):
@@ -77,6 +77,11 @@ def parseAml(element, level = 0):
     else:
         dumpElement(element, level)
 
+
+def dumpTree(tree):
+    for child in tree.children:
+        print(child)
+        dumpTree(child)
 
 class A2LParser(object):
 
@@ -118,7 +123,8 @@ class A2LParser(object):
                 parseAml(tree.value)
                 continue
             else:
-                print("[%s]%s:%s" % (tokenType, lexem, self.lineNo))
+                #print("[%s]%s:%s" % (tokenType, lexem, self.lineNo))
+                pass
 
             if tokenType == TokenType.BEGIN:
                 self.lineNo, (tokenType, lexem) = tokenizer.getToken()   # Move on.
@@ -128,6 +134,7 @@ class A2LParser(object):
             elif tokenType == TokenType.END:
                 self.lineNo, (tokenType, lexem) = tokenizer.getToken()   # Move on.
                 classStack.pop()
+                #print("instanceStack: {}".format(instanceStack[-1]))
                 instanceStack.pop()
                 continue
             elif tokenType == TokenType.KEYWORD:
@@ -148,7 +155,7 @@ class A2LParser(object):
                     result = []
                     while True:
                         self.lineNo, (tokenType, lexem) = tokenizer.getToken()
-                        print(tokenType, lexem)
+                        #print(tokenType, lexem)
                         if tokenType in (TokenType.KEYWORD, TokenType.END):
                             tokenizer.stepBack()
                             break
@@ -177,6 +184,7 @@ class A2LParser(object):
                 if pushToInstanceStack:
                     instanceStack.append(inst)
                     pushToInstanceStack = False
+        dumpTree(instanceStack[0])
 
 
     def uncomment(self, fp): # Nested comments are not supported!
