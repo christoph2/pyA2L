@@ -84,7 +84,8 @@ class A2LParser(object):
         self.logger = Logger(self, 'parser')
 
     def parseFromFileName(self, filename):
-        fp = codecs.open(filename, encoding = "utf")
+        #fp = codecs.open(filename, encoding = "utf8")
+        fp = codecs.open(filename, encoding = "latin1")
         self.parse(fp)
 
     def parseFromString(self, stringObj):
