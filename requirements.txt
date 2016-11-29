@@ -1,4 +1,6 @@
 antlr4-python2-runtime
+antlr4-python3-runtime
 enum34
 mock
 mako
+six
