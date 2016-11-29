@@ -2,8 +2,11 @@
 
 from distutils.core import setup, Extension
 import os
+import sys
 from setuptools import find_packages
 from glob import glob
+
+ANTLR_RT = "antlr4-python3-runtime" if sys.version_info.major == 3 else "antlr4-python2-runtime"
 
 def packagez(base):
     return  ["%s%s%s" % (base, os.path.sep, p) for p in find_packages(base)]
@@ -16,7 +19,7 @@ setup(
     author_email = 'cpu12.gems@googlemail.com',
     url = 'https://www.github.com/Christoph2/pyA2L',
     packages = ['pya2l'],
-    install_requires = ['antlr4-python2-runtime', 'enum34', 'mock', 'mako'],
+    install_requires = [ANTLR_RT, 'enum34', 'mock', 'mako'],
     #entry_points = {
     #    'console_scripts': [
     #            'vd_exporter = pyA2L.catalogue.vd_exporter:main'
