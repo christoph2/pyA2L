@@ -136,12 +136,8 @@ class A2LParser(object):
             if classStack:
                 tos = classStack[-1]
             if tokenType in (TokenType.BEGIN, TokenType.KEYWORD):
-
-                #print(dir(klass))
-
                 fixedAttributes =  klass.fixedAttributes
                 variableAttribute =  klass.variableAttribute
-
                 numParameters = len(fixedAttributes)
 
                 parameters = [tokenizer.getToken() for _ in range(numParameters)]

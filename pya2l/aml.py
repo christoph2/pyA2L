@@ -29,6 +29,8 @@ __version__ = '0.1.0'
 
 import codecs
 import sys
+
+import six
 import antlr4
 import antlr4.tree
 import pya2l.parserlib
@@ -60,7 +62,11 @@ class ParserWrapper(object):
         self.parserModule, self.parserClass = self._load('Parser')
 
     def _load(self, name):
-        moduleName = '%s%s' % (self.grammarName, name)
+        if six.PY2:
+            moduleName = '%s%s' % (self.grammarName, name)
+        else:
+            moduleName = 'pya2l.%s%s' % (self.grammarName, name)
+
         className = '%s%s' % (self.grammarName, name)
         module = __import__(moduleName, globals(), locals())
         cls = getattr(module, className)
