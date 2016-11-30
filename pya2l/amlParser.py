@@ -1,4 +1,4 @@
-# Generated from aml.g by ANTLR 4.5.1
+# Generated from aml.g4 by ANTLR 4.5.1
 # encoding: utf-8
 from __future__ import print_function
 from antlr4 import *
@@ -109,7 +109,7 @@ def serializedATN():
 
 class amlParser ( Parser ):
 
-    grammarFileName = "aml.g"
+    grammarFileName = "aml.g4"
 
     atn = ATNDeserializer().deserialize(serializedATN())
 

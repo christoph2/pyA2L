@@ -1,4 +1,4 @@
-# Generated from aml.g by ANTLR 4.5.1
+# Generated from aml.g4 by ANTLR 4.5.1
 # encoding: utf-8
 from __future__ import print_function
 from antlr4 import *
@@ -217,7 +217,7 @@ class amlLexer(Lexer):
                   u"COMMENT", u"WS", u"STRING", u"EXPONENT", u"HEX_DIGIT", 
                   u"ESC_SEQ", u"OCTAL_ESC" ]
 
-    grammarFileName = u"aml.g"
+    grammarFileName = u"aml.g4"
 
     def __init__(self, input=None):
         super(amlLexer, self).__init__(input)

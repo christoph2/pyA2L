@@ -1,0 +1,2 @@
+#!/bin/sh
+java org.antlr.v4.Tool -verbose -Dlanguage=Python2 -visitor aml.g4
