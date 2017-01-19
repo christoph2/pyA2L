@@ -104,15 +104,17 @@ taggedstruct_type_name:
    ;
 
 taggedstruct_member:
-    (taggedstruct_definition ';')
-    | ('(' taggedstruct_definition ')' '*' ';')
+    //{print(self._input.LA(1))}
+    ('(' taggedstruct_definition ')' '*' ';')   // {self._input.LA(1) == '(' and self._input.LA(2) == self.RULE_taggedstruct_definition}?
+    | ('(' block_definition ')' '*' ';') // {self._input.LA(1) == '(' and self._input.LA(2) == self.RULE_block_definition}?
+    | (taggedstruct_definition ';')
     | (block_definition ';')
-    | ('(' block_definition ')' '*' ';')
    ;
 
 taggedstruct_definition:
+   {print(self._input.LA(1))}
      TAG? member?
-   | TAG '(' member ')' '*' ';'
+   | TAG? '(' member ')' '*' //';'
    ;
 
 taggedunion_type_name:

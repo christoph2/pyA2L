@@ -140,7 +140,7 @@ class Parser(object):
             if member.taggedstructDefinition:
                 if member.taggedstructDefinition.member:
                     members.append(self.doMember(member.taggedstructDefinition.tag, member.taggedstructDefinition.member, mult))
-        return TaggedStruct(tree.name, members, blocks, member.mult)
+        return TaggedStruct(tree.name, members, blocks, False)  # member.mult
 
     def doStruct(self, tree):
         members = []

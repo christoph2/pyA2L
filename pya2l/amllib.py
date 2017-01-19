@@ -252,7 +252,7 @@ class Listener(antlr4.ParseTreeListener):
 
     def exitTaggedstruct_definition(self, ctx):
         mult = len(ctx.children) == 6 and ctx.children[4].getText() == '*'
-        tag = ctx.TAG().getText().replace('"', '')
+        tag = ctx.TAG().getText().replace('"', '') if ctx.TAG() else None
         member = self.getRule(ctx.member)
         ctx.value = TaggedStructDefinition(tag, member, mult)
 

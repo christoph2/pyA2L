@@ -65,17 +65,19 @@ class ParserWrapper(object):
         if six.PY2:
             moduleName = '%s%s' % (self.grammarName, name)
         else:
-            moduleName = 'pya2l.%s%s' % (self.grammarName, name)
+            moduleName = '%s%s' % (self.grammarName, name)
 
         className = '%s%s' % (self.grammarName, name)
         module = __import__(moduleName, globals(), locals())
         cls = getattr(module, className)
+        print(module, className)
         return (module, cls, )
 
-    def parse(self, input):
+    def parse(self, input, trace = False):
         lexer = self.lexerClass(input)
         tokenStream = antlr4.CommonTokenStream(lexer)
         parser = self.parserClass(tokenStream)
+        parser.setTrace(True if trace else False)
         meth = getattr(parser, self.startSymbol)
         self._syntaxErrors = parser._syntaxErrors
         tree = meth()
@@ -84,11 +86,11 @@ class ParserWrapper(object):
         walker.walk(listener, tree)
         return tree
 
-    def parseFromFile(self, fileName):
-        return self.parse(ParserWrapper.stringStream(fileName))
+    def parseFromFile(self, fileName, trace = False):
+        return self.parse(ParserWrapper.stringStream(fileName), trace)
 
-    def parseFromString(self, buffer):
-        return self.parse(antlr4.InputStream(buffer))
+    def parseFromString(self, buffer, trace = False):
+        return self.parse(antlr4.InputStream(buffer), trace)
 
     @staticmethod
     def stringStream(fname):

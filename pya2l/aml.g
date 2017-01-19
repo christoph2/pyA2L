@@ -74,7 +74,7 @@ enum_type_name:
     ;
 
 enumerator_list:
-   enumerator (',' enumerator )*
+   { print(_input.LA(1)) } enumerator (',' enumerator )*
    ;
 
 enumerator:
@@ -99,7 +99,7 @@ array_specifier:
    ;
 
 taggedstruct_type_name:
-    ID? 'taggedstruct' ('{' (taggedstruct_member)* '}'
+    ID? 'taggedstruct' ('{' (taggedstruct_member)* '}' | ID)
    | (taggedstruct_member)*)
    ;
 
@@ -111,7 +111,7 @@ taggedstruct_member:
    ;
 
 taggedstruct_definition:
-     TAG? member?
+   TAG member
    | TAG '(' member ')' '*' ';'
    ;
 
