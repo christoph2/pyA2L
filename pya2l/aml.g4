@@ -112,7 +112,6 @@ taggedstruct_member:
    ;
 
 taggedstruct_definition:
-   {print(self._input.LA(1))}
      TAG? member?
    | TAG? '(' member ')' '*' //';'
    ;

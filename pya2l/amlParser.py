@@ -7,7 +7,7 @@ from io import StringIO
 def serializedATN():
     with StringIO() as buf:
         buf.write(u"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3")
-        buf.write(u"$\u00e6\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t")
+        buf.write(u"$\u00e5\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t")
         buf.write(u"\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\4\r\t\r")
         buf.write(u"\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22\4")
         buf.write(u"\23\t\23\4\24\t\24\3\2\3\2\3\2\7\2,\n\2\f\2\16\2/\13")
@@ -23,45 +23,45 @@ def serializedATN():
         buf.write(u"\u0094\13\17\3\17\3\17\7\17\u0098\n\17\f\17\16\17\u009b")
         buf.write(u"\13\17\5\17\u009d\n\17\3\20\3\20\3\20\3\20\3\20\3\20")
         buf.write(u"\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3")
-        buf.write(u"\20\3\20\5\20\u00b1\n\20\3\21\3\21\5\21\u00b5\n\21\3")
-        buf.write(u"\21\5\21\u00b8\n\21\3\21\5\21\u00bb\n\21\3\21\3\21\3")
-        buf.write(u"\21\3\21\3\21\5\21\u00c2\n\21\3\22\3\22\5\22\u00c6\n")
-        buf.write(u"\22\3\22\3\22\7\22\u00ca\n\22\f\22\16\22\u00cd\13\22")
-        buf.write(u"\3\22\3\22\3\22\5\22\u00d2\n\22\3\23\3\23\5\23\u00d6")
-        buf.write(u"\n\23\3\23\3\23\3\23\3\23\5\23\u00dc\n\23\3\24\3\24\3")
-        buf.write(u"\24\3\24\3\24\3\24\5\24\u00e4\n\24\3\24\2\2\25\2\4\6")
-        buf.write(u"\b\n\f\16\20\22\24\26\30\32\34\36 \"$&\2\2\u00fa\2(\3")
-        buf.write(u"\2\2\2\4\65\3\2\2\2\69\3\2\2\2\b<\3\2\2\2\nM\3\2\2\2")
-        buf.write(u"\fO\3\2\2\2\16]\3\2\2\2\20_\3\2\2\2\22g\3\2\2\2\24z\3")
-        buf.write(u"\2\2\2\26|\3\2\2\2\30\177\3\2\2\2\32\u0086\3\2\2\2\34")
-        buf.write(u"\u008b\3\2\2\2\36\u00b0\3\2\2\2 \u00c1\3\2\2\2\"\u00d1")
-        buf.write(u"\3\2\2\2$\u00db\3\2\2\2&\u00e3\3\2\2\2()\7\3\2\2)-\7")
-        buf.write(u"\4\2\2*,\5\4\3\2+*\3\2\2\2,/\3\2\2\2-+\3\2\2\2-.\3\2")
-        buf.write(u"\2\2.\60\3\2\2\2/-\3\2\2\2\60\61\7\5\2\2\61\62\7\4\2")
-        buf.write(u"\2\62\3\3\2\2\2\63\66\5\6\4\2\64\66\5\f\7\2\65\63\3\2")
-        buf.write(u"\2\2\65\64\3\2\2\2\66\67\3\2\2\2\678\7\6\2\28\5\3\2\2")
-        buf.write(u"\29:\5\b\5\2:\7\3\2\2\2;=\7\36\2\2<;\3\2\2\2<=\3\2\2")
-        buf.write(u"\2=C\3\2\2\2>D\5\n\6\2?D\5\24\13\2@D\5\34\17\2AD\5\"")
-        buf.write(u"\22\2BD\5\16\b\2C>\3\2\2\2C?\3\2\2\2C@\3\2\2\2CA\3\2")
-        buf.write(u"\2\2CB\3\2\2\2D\t\3\2\2\2EN\7\7\2\2FN\7\b\2\2GN\7\t\2")
-        buf.write(u"\2HN\7\n\2\2IN\7\13\2\2JN\7\f\2\2KN\7\r\2\2LN\7\16\2")
-        buf.write(u"\2ME\3\2\2\2MF\3\2\2\2MG\3\2\2\2MH\3\2\2\2MI\3\2\2\2")
-        buf.write(u"MJ\3\2\2\2MK\3\2\2\2ML\3\2\2\2N\13\3\2\2\2OP\7\17\2\2")
-        buf.write(u"PQ\7\36\2\2QR\5\b\5\2R\r\3\2\2\2SU\7\20\2\2TV\7\35\2")
-        buf.write(u"\2UT\3\2\2\2UV\3\2\2\2VW\3\2\2\2WX\7\21\2\2XY\5\20\t")
-        buf.write(u"\2YZ\7\22\2\2Z^\3\2\2\2[\\\7\20\2\2\\^\7\35\2\2]S\3\2")
-        buf.write(u"\2\2][\3\2\2\2^\17\3\2\2\2_d\5\22\n\2`a\7\23\2\2ac\5")
-        buf.write(u"\22\n\2b`\3\2\2\2cf\3\2\2\2db\3\2\2\2de\3\2\2\2e\21\3")
-        buf.write(u"\2\2\2fd\3\2\2\2gj\7\36\2\2hi\7\24\2\2ik\5&\24\2jh\3")
-        buf.write(u"\2\2\2jk\3\2\2\2k\23\3\2\2\2ln\7\25\2\2mo\7\35\2\2nm")
-        buf.write(u"\3\2\2\2no\3\2\2\2op\3\2\2\2pt\7\21\2\2qs\5\26\f\2rq")
-        buf.write(u"\3\2\2\2sv\3\2\2\2tr\3\2\2\2tu\3\2\2\2uw\3\2\2\2vt\3")
-        buf.write(u"\2\2\2w{\7\22\2\2xy\7\25\2\2y{\7\35\2\2zl\3\2\2\2zx\3")
-        buf.write(u"\2\2\2{\25\3\2\2\2|}\5\30\r\2}~\7\6\2\2~\27\3\2\2\2\177")
-        buf.write(u"\u0083\5\b\5\2\u0080\u0082\5\32\16\2\u0081\u0080\3\2")
-        buf.write(u"\2\2\u0082\u0085\3\2\2\2\u0083\u0081\3\2\2\2\u0083\u0084")
-        buf.write(u"\3\2\2\2\u0084\31\3\2\2\2\u0085\u0083\3\2\2\2\u0086\u0087")
-        buf.write(u"\7\26\2\2\u0087\u0088\5&\24\2\u0088\u0089\7\27\2\2\u0089")
+        buf.write(u"\20\3\20\5\20\u00b1\n\20\3\21\5\21\u00b4\n\21\3\21\5")
+        buf.write(u"\21\u00b7\n\21\3\21\5\21\u00ba\n\21\3\21\3\21\3\21\3")
+        buf.write(u"\21\3\21\5\21\u00c1\n\21\3\22\3\22\5\22\u00c5\n\22\3")
+        buf.write(u"\22\3\22\7\22\u00c9\n\22\f\22\16\22\u00cc\13\22\3\22")
+        buf.write(u"\3\22\3\22\5\22\u00d1\n\22\3\23\3\23\5\23\u00d5\n\23")
+        buf.write(u"\3\23\3\23\3\23\3\23\5\23\u00db\n\23\3\24\3\24\3\24\3")
+        buf.write(u"\24\3\24\3\24\5\24\u00e3\n\24\3\24\2\2\25\2\4\6\b\n\f")
+        buf.write(u"\16\20\22\24\26\30\32\34\36 \"$&\2\2\u00f9\2(\3\2\2\2")
+        buf.write(u"\4\65\3\2\2\2\69\3\2\2\2\b<\3\2\2\2\nM\3\2\2\2\fO\3\2")
+        buf.write(u"\2\2\16]\3\2\2\2\20_\3\2\2\2\22g\3\2\2\2\24z\3\2\2\2")
+        buf.write(u"\26|\3\2\2\2\30\177\3\2\2\2\32\u0086\3\2\2\2\34\u008b")
+        buf.write(u"\3\2\2\2\36\u00b0\3\2\2\2 \u00c0\3\2\2\2\"\u00d0\3\2")
+        buf.write(u"\2\2$\u00da\3\2\2\2&\u00e2\3\2\2\2()\7\3\2\2)-\7\4\2")
+        buf.write(u"\2*,\5\4\3\2+*\3\2\2\2,/\3\2\2\2-+\3\2\2\2-.\3\2\2\2")
+        buf.write(u".\60\3\2\2\2/-\3\2\2\2\60\61\7\5\2\2\61\62\7\4\2\2\62")
+        buf.write(u"\3\3\2\2\2\63\66\5\6\4\2\64\66\5\f\7\2\65\63\3\2\2\2")
+        buf.write(u"\65\64\3\2\2\2\66\67\3\2\2\2\678\7\6\2\28\5\3\2\2\29")
+        buf.write(u":\5\b\5\2:\7\3\2\2\2;=\7\36\2\2<;\3\2\2\2<=\3\2\2\2=")
+        buf.write(u"C\3\2\2\2>D\5\n\6\2?D\5\24\13\2@D\5\34\17\2AD\5\"\22")
+        buf.write(u"\2BD\5\16\b\2C>\3\2\2\2C?\3\2\2\2C@\3\2\2\2CA\3\2\2\2")
+        buf.write(u"CB\3\2\2\2D\t\3\2\2\2EN\7\7\2\2FN\7\b\2\2GN\7\t\2\2H")
+        buf.write(u"N\7\n\2\2IN\7\13\2\2JN\7\f\2\2KN\7\r\2\2LN\7\16\2\2M")
+        buf.write(u"E\3\2\2\2MF\3\2\2\2MG\3\2\2\2MH\3\2\2\2MI\3\2\2\2MJ\3")
+        buf.write(u"\2\2\2MK\3\2\2\2ML\3\2\2\2N\13\3\2\2\2OP\7\17\2\2PQ\7")
+        buf.write(u"\36\2\2QR\5\b\5\2R\r\3\2\2\2SU\7\20\2\2TV\7\35\2\2UT")
+        buf.write(u"\3\2\2\2UV\3\2\2\2VW\3\2\2\2WX\7\21\2\2XY\5\20\t\2YZ")
+        buf.write(u"\7\22\2\2Z^\3\2\2\2[\\\7\20\2\2\\^\7\35\2\2]S\3\2\2\2")
+        buf.write(u"][\3\2\2\2^\17\3\2\2\2_d\5\22\n\2`a\7\23\2\2ac\5\22\n")
+        buf.write(u"\2b`\3\2\2\2cf\3\2\2\2db\3\2\2\2de\3\2\2\2e\21\3\2\2")
+        buf.write(u"\2fd\3\2\2\2gj\7\36\2\2hi\7\24\2\2ik\5&\24\2jh\3\2\2")
+        buf.write(u"\2jk\3\2\2\2k\23\3\2\2\2ln\7\25\2\2mo\7\35\2\2nm\3\2")
+        buf.write(u"\2\2no\3\2\2\2op\3\2\2\2pt\7\21\2\2qs\5\26\f\2rq\3\2")
+        buf.write(u"\2\2sv\3\2\2\2tr\3\2\2\2tu\3\2\2\2uw\3\2\2\2vt\3\2\2")
+        buf.write(u"\2w{\7\22\2\2xy\7\25\2\2y{\7\35\2\2zl\3\2\2\2zx\3\2\2")
+        buf.write(u"\2{\25\3\2\2\2|}\5\30\r\2}~\7\6\2\2~\27\3\2\2\2\177\u0083")
+        buf.write(u"\5\b\5\2\u0080\u0082\5\32\16\2\u0081\u0080\3\2\2\2\u0082")
+        buf.write(u"\u0085\3\2\2\2\u0083\u0081\3\2\2\2\u0083\u0084\3\2\2")
+        buf.write(u"\2\u0084\31\3\2\2\2\u0085\u0083\3\2\2\2\u0086\u0087\7")
+        buf.write(u"\26\2\2\u0087\u0088\5&\24\2\u0088\u0089\7\27\2\2\u0089")
         buf.write(u"\33\3\2\2\2\u008a\u008c\7\35\2\2\u008b\u008a\3\2\2\2")
         buf.write(u"\u008b\u008c\3\2\2\2\u008c\u008d\3\2\2\2\u008d\u009c")
         buf.write(u"\7\30\2\2\u008e\u0092\7\21\2\2\u008f\u0091\5\36\20\2")
@@ -80,31 +80,31 @@ def serializedATN():
         buf.write(u"\2\u00ad\u00ae\5\f\7\2\u00ae\u00af\7\6\2\2\u00af\u00b1")
         buf.write(u"\3\2\2\2\u00b0\u009e\3\2\2\2\u00b0\u00a4\3\2\2\2\u00b0")
         buf.write(u"\u00aa\3\2\2\2\u00b0\u00ad\3\2\2\2\u00b1\37\3\2\2\2\u00b2")
-        buf.write(u"\u00b4\b\21\1\2\u00b3\u00b5\7\36\2\2\u00b4\u00b3\3\2")
-        buf.write(u"\2\2\u00b4\u00b5\3\2\2\2\u00b5\u00b7\3\2\2\2\u00b6\u00b8")
-        buf.write(u"\5\30\r\2\u00b7\u00b6\3\2\2\2\u00b7\u00b8\3\2\2\2\u00b8")
-        buf.write(u"\u00c2\3\2\2\2\u00b9\u00bb\7\36\2\2\u00ba\u00b9\3\2\2")
-        buf.write(u"\2\u00ba\u00bb\3\2\2\2\u00bb\u00bc\3\2\2\2\u00bc\u00bd")
-        buf.write(u"\7\31\2\2\u00bd\u00be\5\30\r\2\u00be\u00bf\7\32\2\2\u00bf")
-        buf.write(u"\u00c0\7\33\2\2\u00c0\u00c2\3\2\2\2\u00c1\u00b2\3\2\2")
-        buf.write(u"\2\u00c1\u00ba\3\2\2\2\u00c2!\3\2\2\2\u00c3\u00c5\7\34")
-        buf.write(u"\2\2\u00c4\u00c6\7\35\2\2\u00c5\u00c4\3\2\2\2\u00c5\u00c6")
-        buf.write(u"\3\2\2\2\u00c6\u00c7\3\2\2\2\u00c7\u00cb\7\21\2\2\u00c8")
-        buf.write(u"\u00ca\5$\23\2\u00c9\u00c8\3\2\2\2\u00ca\u00cd\3\2\2")
-        buf.write(u"\2\u00cb\u00c9\3\2\2\2\u00cb\u00cc\3\2\2\2\u00cc\u00ce")
-        buf.write(u"\3\2\2\2\u00cd\u00cb\3\2\2\2\u00ce\u00d2\7\22\2\2\u00cf")
-        buf.write(u"\u00d0\7\34\2\2\u00d0\u00d2\7\35\2\2\u00d1\u00c3\3\2")
-        buf.write(u"\2\2\u00d1\u00cf\3\2\2\2\u00d2#\3\2\2\2\u00d3\u00d5\7")
-        buf.write(u"\36\2\2\u00d4\u00d6\5\30\r\2\u00d5\u00d4\3\2\2\2\u00d5")
-        buf.write(u"\u00d6\3\2\2\2\u00d6\u00d7\3\2\2\2\u00d7\u00dc\7\6\2")
-        buf.write(u"\2\u00d8\u00d9\5\f\7\2\u00d9\u00da\7\6\2\2\u00da\u00dc")
-        buf.write(u"\3\2\2\2\u00db\u00d3\3\2\2\2\u00db\u00d8\3\2\2\2\u00dc")
-        buf.write(u"%\3\2\2\2\u00dd\u00de\7\37\2\2\u00de\u00e4\b\24\1\2\u00df")
-        buf.write(u"\u00e0\7 \2\2\u00e0\u00e4\b\24\1\2\u00e1\u00e2\7!\2\2")
-        buf.write(u"\u00e2\u00e4\b\24\1\2\u00e3\u00dd\3\2\2\2\u00e3\u00df")
-        buf.write(u"\3\2\2\2\u00e3\u00e1\3\2\2\2\u00e4\'\3\2\2\2\36-\65<")
-        buf.write(u"CMU]djntz\u0083\u008b\u0092\u0099\u009c\u00b0\u00b4\u00b7")
-        buf.write(u"\u00ba\u00c1\u00c5\u00cb\u00d1\u00d5\u00db\u00e3")
+        buf.write(u"\u00b4\7\36\2\2\u00b3\u00b2\3\2\2\2\u00b3\u00b4\3\2\2")
+        buf.write(u"\2\u00b4\u00b6\3\2\2\2\u00b5\u00b7\5\30\r\2\u00b6\u00b5")
+        buf.write(u"\3\2\2\2\u00b6\u00b7\3\2\2\2\u00b7\u00c1\3\2\2\2\u00b8")
+        buf.write(u"\u00ba\7\36\2\2\u00b9\u00b8\3\2\2\2\u00b9\u00ba\3\2\2")
+        buf.write(u"\2\u00ba\u00bb\3\2\2\2\u00bb\u00bc\7\31\2\2\u00bc\u00bd")
+        buf.write(u"\5\30\r\2\u00bd\u00be\7\32\2\2\u00be\u00bf\7\33\2\2\u00bf")
+        buf.write(u"\u00c1\3\2\2\2\u00c0\u00b3\3\2\2\2\u00c0\u00b9\3\2\2")
+        buf.write(u"\2\u00c1!\3\2\2\2\u00c2\u00c4\7\34\2\2\u00c3\u00c5\7")
+        buf.write(u"\35\2\2\u00c4\u00c3\3\2\2\2\u00c4\u00c5\3\2\2\2\u00c5")
+        buf.write(u"\u00c6\3\2\2\2\u00c6\u00ca\7\21\2\2\u00c7\u00c9\5$\23")
+        buf.write(u"\2\u00c8\u00c7\3\2\2\2\u00c9\u00cc\3\2\2\2\u00ca\u00c8")
+        buf.write(u"\3\2\2\2\u00ca\u00cb\3\2\2\2\u00cb\u00cd\3\2\2\2\u00cc")
+        buf.write(u"\u00ca\3\2\2\2\u00cd\u00d1\7\22\2\2\u00ce\u00cf\7\34")
+        buf.write(u"\2\2\u00cf\u00d1\7\35\2\2\u00d0\u00c2\3\2\2\2\u00d0\u00ce")
+        buf.write(u"\3\2\2\2\u00d1#\3\2\2\2\u00d2\u00d4\7\36\2\2\u00d3\u00d5")
+        buf.write(u"\5\30\r\2\u00d4\u00d3\3\2\2\2\u00d4\u00d5\3\2\2\2\u00d5")
+        buf.write(u"\u00d6\3\2\2\2\u00d6\u00db\7\6\2\2\u00d7\u00d8\5\f\7")
+        buf.write(u"\2\u00d8\u00d9\7\6\2\2\u00d9\u00db\3\2\2\2\u00da\u00d2")
+        buf.write(u"\3\2\2\2\u00da\u00d7\3\2\2\2\u00db%\3\2\2\2\u00dc\u00dd")
+        buf.write(u"\7\37\2\2\u00dd\u00e3\b\24\1\2\u00de\u00df\7 \2\2\u00df")
+        buf.write(u"\u00e3\b\24\1\2\u00e0\u00e1\7!\2\2\u00e1\u00e3\b\24\1")
+        buf.write(u"\2\u00e2\u00dc\3\2\2\2\u00e2\u00de\3\2\2\2\u00e2\u00e0")
+        buf.write(u"\3\2\2\2\u00e3\'\3\2\2\2\36-\65<CMU]djntz\u0083\u008b")
+        buf.write(u"\u0092\u0099\u009c\u00b0\u00b3\u00b6\u00b9\u00c0\u00c4")
+        buf.write(u"\u00ca\u00d0\u00d4\u00da\u00e2")
         return buf.getvalue()
 
 
@@ -1283,22 +1283,21 @@ class amlParser ( Parser ):
         self.enterRule(localctx, 30, self.RULE_taggedstruct_definition)
         self._la = 0 # Token type
         try:
-            self.state = 191
+            self.state = 190
             la_ = self._interp.adaptivePredict(self._input,21,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                print(self._input.LA(1))
-                self.state = 178
+                self.state = 177
                 la_ = self._interp.adaptivePredict(self._input,18,self._ctx)
                 if la_ == 1:
-                    self.state = 177
+                    self.state = 176
                     self.match(amlParser.TAG)
 
 
-                self.state = 181
+                self.state = 180
                 _la = self._input.LA(1)
                 if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << amlParser.T__4) | (1 << amlParser.T__5) | (1 << amlParser.T__6) | (1 << amlParser.T__7) | (1 << amlParser.T__8) | (1 << amlParser.T__9) | (1 << amlParser.T__10) | (1 << amlParser.T__11) | (1 << amlParser.T__13) | (1 << amlParser.T__18) | (1 << amlParser.T__21) | (1 << amlParser.T__25) | (1 << amlParser.ID) | (1 << amlParser.TAG))) != 0):
-                    self.state = 180
+                    self.state = 179
                     self.member()
 
 
@@ -1306,20 +1305,20 @@ class amlParser ( Parser ):
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 184
+                self.state = 183
                 _la = self._input.LA(1)
                 if _la==amlParser.TAG:
-                    self.state = 183
+                    self.state = 182
                     self.match(amlParser.TAG)
 
 
-                self.state = 186
+                self.state = 185
                 self.match(amlParser.T__22)
-                self.state = 187
+                self.state = 186
                 self.member()
-                self.state = 188
+                self.state = 187
                 self.match(amlParser.T__23)
-                self.state = 189
+                self.state = 188
                 self.match(amlParser.T__24)
                 pass
 
@@ -1375,38 +1374,38 @@ class amlParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 207
+            self.state = 206
             la_ = self._interp.adaptivePredict(self._input,24,self._ctx)
             if la_ == 1:
-                self.state = 193
+                self.state = 192
                 self.match(amlParser.T__25)
-                self.state = 195
+                self.state = 194
                 _la = self._input.LA(1)
                 if _la==amlParser.ID:
-                    self.state = 194
+                    self.state = 193
                     self.match(amlParser.ID)
 
 
-                self.state = 197
+                self.state = 196
                 self.match(amlParser.T__14)
-                self.state = 201
+                self.state = 200
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while _la==amlParser.T__12 or _la==amlParser.TAG:
-                    self.state = 198
+                    self.state = 197
                     self.tagged_union_member()
-                    self.state = 203
+                    self.state = 202
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
 
-                self.state = 204
+                self.state = 203
                 self.match(amlParser.T__15)
                 pass
 
             elif la_ == 2:
-                self.state = 205
+                self.state = 204
                 self.match(amlParser.T__25)
-                self.state = 206
+                self.state = 205
                 self.match(amlParser.ID)
                 pass
 
@@ -1463,25 +1462,25 @@ class amlParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 217
+            self.state = 216
             token = self._input.LA(1)
             if token in [amlParser.TAG]:
-                self.state = 209
+                self.state = 208
                 self.match(amlParser.TAG)
-                self.state = 211
+                self.state = 210
                 _la = self._input.LA(1)
                 if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << amlParser.T__4) | (1 << amlParser.T__5) | (1 << amlParser.T__6) | (1 << amlParser.T__7) | (1 << amlParser.T__8) | (1 << amlParser.T__9) | (1 << amlParser.T__10) | (1 << amlParser.T__11) | (1 << amlParser.T__13) | (1 << amlParser.T__18) | (1 << amlParser.T__21) | (1 << amlParser.T__25) | (1 << amlParser.ID) | (1 << amlParser.TAG))) != 0):
-                    self.state = 210
+                    self.state = 209
                     self.member()
 
 
-                self.state = 213
+                self.state = 212
                 self.match(amlParser.T__3)
 
             elif token in [amlParser.T__12]:
-                self.state = 214
+                self.state = 213
                 self.block_definition()
-                self.state = 215
+                self.state = 214
                 self.match(amlParser.T__3)
 
             else:
@@ -1539,23 +1538,23 @@ class amlParser ( Parser ):
         localctx = amlParser.ConstantContext(self, self._ctx, self.state)
         self.enterRule(localctx, 36, self.RULE_constant)
         try:
-            self.state = 225
+            self.state = 224
             token = self._input.LA(1)
             if token in [amlParser.INT]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 219
+                self.state = 218
                 localctx._INT = self.match(amlParser.INT)
                 localctx.value = int((None if localctx._INT is None else localctx._INT.text))
 
             elif token in [amlParser.HEX]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 221
+                self.state = 220
                 localctx._HEX = self.match(amlParser.HEX)
                 localctx.value = int((None if localctx._HEX is None else localctx._HEX.text), 16)
 
             elif token in [amlParser.FLOAT]:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 223
+                self.state = 222
                 localctx._FLOAT = self.match(amlParser.FLOAT)
                 localctx.value = float((None if localctx._FLOAT is None else localctx._FLOAT.text))
 
