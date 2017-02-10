@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2015 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2017 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -28,6 +28,7 @@ __author__  = 'Christoph Schueler'
 __version__ = '0.1.0'
 
 import codecs
+from pprint import pprint
 import sys
 
 import six
@@ -62,15 +63,18 @@ class ParserWrapper(object):
         self.parserModule, self.parserClass = self._load('Parser')
 
     def _load(self, name):
+        className = '%s%s' % (self.grammarName, name)
         if six.PY2:
             moduleName = '%s%s' % (self.grammarName, name)
         else:
-            moduleName = '%s%s' % (self.grammarName, name)
-
-        className = '%s%s' % (self.grammarName, name)
+            moduleName = 'pya2l.%s%s' % (self.grammarName, name)
         module = __import__(moduleName, globals(), locals())
-        cls = getattr(module, className)
-        print(module, className)
+        if six.PY2:
+            cls = getattr(module, className)
+        else:
+            mod = getattr(module, className)
+            cls = getattr(mod, className)
+        #print(module, className, cls)
         return (module, cls, )
 
     def parse(self, input, trace = False):
@@ -84,6 +88,20 @@ class ParserWrapper(object):
         listener = amllib.Listener()
         walker = antlr4.ParseTreeWalker()
         walker.walk(listener, tree)
+
+        pprint(tree.toStringTree())
+        """
+        JavaLexer lexer = new JavaLexer(input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        JavaParser parser = new JavaParser(tokens);
+
+        ParseTree tree = parser.compilationUnit(); // parse
+        ParseTreeWalker walker = new ParseTreeWalker(); // create standard walker
+        ExtractInterfaceListener extractor = new ExtractInterfaceListener(parser);
+        walker.walk(extractor, tree); // initiate walk of tree with listener
+        """
+
+
         return tree
 
     def parseFromFile(self, fileName, trace = False):
