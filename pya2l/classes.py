@@ -4,7 +4,7 @@
 __copyright__="""
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2016 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2017 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -1764,7 +1764,7 @@ class A2LElement(object):
         result.append("%s {" % self.__class__.__name__)
         for attr in self.attrs:
             value = getattr(self, attr)
-            formatStr = '    %s = "%s";' if isinstance(value, basestring) else "    %s = %s;"
+            formatStr = '    %s = "%s";' if isinstance(value, str) else "    %s = %s;"
             result.append(formatStr % (attr, value))
         result.append("}")
 

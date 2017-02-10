@@ -4,7 +4,7 @@
 __copyright__="""
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2016 by Christoph Schueler <github.com/Christoph2,
+   (C) 2009-2017 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -94,8 +94,7 @@ class A2LParser(object):
         self.parse(fp)
 
     def parseFromString(self, stringObj):
-        stringBuffer = createStringBuffer(stringObj)
-        self.parse(stringBuffer)
+        self.parse(stringObj)
 
     def parse(self, fp):
         keywords = classes.KEYWORD_MAP.keys()
