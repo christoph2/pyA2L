@@ -28,6 +28,7 @@ __author__  = 'Christoph Schueler'
 __version__ = '0.1.0'
 
 import codecs
+import importlib
 from pprint import pprint
 import sys
 
@@ -64,16 +65,19 @@ class ParserWrapper(object):
 
     def _load(self, name):
         className = '%s%s' % (self.grammarName, name)
-        if six.PY2:
-            moduleName = '%s%s' % (self.grammarName, name)
-        else:
-            moduleName = 'pya2l.%s%s' % (self.grammarName, name)
+        #if six.PY2:
+        #    moduleName = '%s%s' % (self.grammarName, name)
+        #else:
+        moduleName = 'pya2l.%s%s' % (self.grammarName, name)
+        m2 = importlib.import_module(moduleName)
+
+        print(m2)
         module = __import__(moduleName, globals(), locals())
-        if six.PY2:
-            cls = getattr(module, className)
-        else:
-            mod = getattr(module, className)
-            cls = getattr(mod, className)
+        #if six.PY2:
+        #    cls = getattr(module, className)
+        #else:
+        mod = getattr(module, className)
+        cls = getattr(mod, className)
         #print(module, className, cls)
         return (module, cls, )
 
@@ -89,7 +93,7 @@ class ParserWrapper(object):
         walker = antlr4.ParseTreeWalker()
         walker.walk(listener, tree)
 
-        pprint(tree.toStringTree())
+        #pprint(tree.toStringTree())
         """
         JavaLexer lexer = new JavaLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
