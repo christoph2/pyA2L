@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2016 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2017 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -251,8 +251,9 @@ class Listener(antlr4.ParseTreeListener):
         ctx.value = TaggedStructMember(taggedstructDefinition, blockDefinition, mult)
 
     def exitTaggedstruct_definition(self, ctx):
-        mult = len(ctx.children) == 6 and ctx.children[4].getText() == '*'
+        mult = len(ctx.children) == 5 and ctx.children[4].getText() == '*'
         tag = ctx.TAG().getText().replace('"', '') if ctx.TAG() else None
+        print("TAG: {} MULT: {}".format(tag, mult))
         member = self.getRule(ctx.member)
         ctx.value = TaggedStructDefinition(tag, member, mult)
 

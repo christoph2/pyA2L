@@ -64,22 +64,12 @@ class ParserWrapper(object):
         self.parserModule, self.parserClass = self._load('Parser')
 
     def _load(self, name):
-        className = '%s%s' % (self.grammarName, name)
-        #if six.PY2:
-        #    moduleName = '%s%s' % (self.grammarName, name)
-        #else:
-        moduleName = 'pya2l.%s%s' % (self.grammarName, name)
-        m2 = importlib.import_module(moduleName)
-
-        print(m2)
-        module = __import__(moduleName, globals(), locals())
-        #if six.PY2:
-        #    cls = getattr(module, className)
-        #else:
-        mod = getattr(module, className)
-        cls = getattr(mod, className)
-        #print(module, className, cls)
-        return (module, cls, )
+        className = '{0}{1}'.format(self.grammarName, name)
+        moduleName = 'pya2l.py{0}.{1}'.format(2 if six.PY2 else 3, className)
+        print(moduleName)
+        module = importlib.import_module(moduleName)
+        klass = getattr(module, className)
+        return (module, klass, )
 
     def parse(self, input, trace = False):
         lexer = self.lexerClass(input)

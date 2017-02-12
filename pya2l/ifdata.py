@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2016 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2017 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -135,11 +135,14 @@ class Parser(object):
         for member in tree.members:
             member = member.value
             mult = member.mult
+            #print(mult)
             if member.blockDefinition:
-                blocks.append(self.doBlockDefinition(member.blockDefinition, mult))
+                print(member.blockDefinition.tag, mult)
+                blocks.append(self.doBlockDefinition(member.blockDefinition, member.mult))
             if member.taggedstructDefinition:
-                if member.taggedstructDefinition.member:
-                    members.append(self.doMember(member.taggedstructDefinition.tag, member.taggedstructDefinition.member, mult))
+                if member.taggedstructDefinition.member:#
+                    print(member.taggedstructDefinition.tag, mult)
+                    members.append(self.doMember(member.taggedstructDefinition.tag, member.taggedstructDefinition.member, member.taggedstructDefinition.mult))
         return TaggedStruct(tree.name, members, blocks, False)  # member.mult
 
     def doStruct(self, tree):
