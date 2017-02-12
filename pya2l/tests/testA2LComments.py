@@ -84,7 +84,7 @@ class TestComment(unittest.TestCase):
     #    _, msg = self.parser.logger.getLastError()
     #    self.assertEqual(msg, "Nested comments are not allowed.")
 
-    @unittest.skip
+    @unittest.skip("skip-me")
     def testShallDetectNotClosedComment(self):
         self.parser.parseFromString(self.UNCLOSED_COMMENT)
         _, msg = self.parser.logger.getLastError()
