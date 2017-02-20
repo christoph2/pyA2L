@@ -27,8 +27,10 @@ __copyright__ = """
 __author__  = 'Christoph Schueler'
 __version__ = '0.1.0'
 
+import enum
 
 class BaseType(object):
+    block = False
 
     def __repr__(self):
         keys = [k for k in self.__dict__ if not (k.startswith('__') and k.endswith('__'))]
@@ -44,27 +46,26 @@ class BaseType(object):
     __str__ = __repr__
 
 
+def simplifyMembers(members):
+    addAttributes = True
+    attributes = []
+    children = []
+    for member in members:
+        if not isinstance(member.typeName, (enum.EnumMeta, Predefined)):
+            addAttributes = False
+            children.append(member)
+        elif addAttributes:
+            attributes.append(member)
+    return (attributes, children)
+
+
 class Block(BaseType):
 
     def __init__(self, tag, typeName, mult = None):
+        self.block = True
         self.tag = tag
         self.typeName = typeName
         self.mult = mult
-
-
-class Enumeration(BaseType):
-
-    def __init__(self, tag, enumerators):
-        self.tag = tag
-        self.enumerators = enumerators
-
-
-class Enumerator(BaseType):
-
-    def __init__(self, tag, constant):
-        self.tag = tag
-        self.constant = constant
-
 
 class Predefined(BaseType):
 
@@ -76,14 +77,14 @@ class Struct(BaseType):
 
     def __init__(self, name, members):
         self.name = name
-        self.members = members
+        self.attrs, self.children = simplifyMembers(members)
 
 
 class TaggedStruct(BaseType):
 
     def __init__(self, name, members, blocks, mult):
         self.name = name
-        self.members = members
+        self.attrs, self.children = simplifyMembers(members)
         self.blocks = blocks
         self.mult = mult
         self.memberTags = {m.tag for m in members}
@@ -94,7 +95,7 @@ class TaggedUnion(BaseType):
 
     def __init__(self, name, members, blocks):
         self.name = name
-        self.members = members
+        self.attrs, self.children = simplifyMembers(members)
         self.blocks = blocks
         self.memberTags = {m.tag for m in members}
         self.blockTags = {m.tag for m in blocks}
@@ -137,11 +138,11 @@ class Parser(object):
             mult = member.mult
             #print(mult)
             if member.blockDefinition:
-                print(member.blockDefinition.tag, mult)
+                #print(member.blockDefinition.tag, mult)
                 blocks.append(self.doBlockDefinition(member.blockDefinition, member.mult))
             if member.taggedstructDefinition:
                 if member.taggedstructDefinition.member:#
-                    print(member.taggedstructDefinition.tag, mult)
+                    #print(member.taggedstructDefinition.tag, mult)
                     members.append(self.doMember(member.taggedstructDefinition.tag, member.taggedstructDefinition.member, member.taggedstructDefinition.mult))
         return TaggedStruct(tree.name, members, blocks, False)  # member.mult
 
@@ -157,10 +158,10 @@ class Parser(object):
         return Predefined(tree.name)
 
     def doEnumeration(self, tree):
-        enumerators = []
-        for enumerator in tree.enumerators:
-            enumerators.append(Enumerator(enumerator.value.tag, enumerator.value.constant))
-        return Enumeration(tree.tag, enumerators)
+        #enumerators = []
+        #for enumerator in tree.enumerators:
+        #    enumerators.append(Enumerator(enumerator.value.tag, enumerator.value.constant))
+        return enum.IntEnum(tree.tag or '', [(e.value.tag, e.value.constant) for e in tree.enumerators]) # Enumeration(tree.tag, enumerators)
 
     def doTypeName(self, tree):
         TYPES = {
@@ -186,6 +187,6 @@ class Parser(object):
                 declarations.append(block)
             if declaration.typeDefinition:
                 td = declaration.typeDefinition
-                print(td)
+                #print(td)
         return declarations
 
