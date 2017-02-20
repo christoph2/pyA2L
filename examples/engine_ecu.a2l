@@ -1,7 +1,7 @@
 /begin MODULE  DIM  "Comment on module"    
            /* Detailed description of a device */ 
  
-    /include "supp1_if.aml"   /* Specification of the interface-specific parts */    
+    // /include "supp1_if.aml"   /* Specification of the interface-specific parts */    
      
     /begin MOD_PAR    "Comment" 
         VERSION      "Test version 09.11.93" 
@@ -139,7 +139,7 @@
       
     /begin COMPU_METHOD    FACTOR01  /* name */ 
                                  "factor 1"  /* long identifier */ 
-                                 RAT_FUNC  / *fractional rational function */ 
+                                 RAT_FUNC  /*fractional rational function */ 
                                  "%4.0"   /* format string */ 
                                  ""    /* unit */ 
                                  /* coefficients for polynome conversion */ 
