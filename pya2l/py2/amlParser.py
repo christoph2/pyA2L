@@ -229,12 +229,6 @@ class amlParser ( Parser ):
             if hasattr(listener, "exitAmlFile"):
                 listener.exitAmlFile(self)
 
-        def accept(self, visitor):
-            if hasattr(visitor, "visitAmlFile"):
-                return visitor.visitAmlFile(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -296,12 +290,6 @@ class amlParser ( Parser ):
             if hasattr(listener, "exitDeclaration"):
                 listener.exitDeclaration(self)
 
-        def accept(self, visitor):
-            if hasattr(visitor, "visitDeclaration"):
-                return visitor.visitDeclaration(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -354,12 +342,6 @@ class amlParser ( Parser ):
         def exitRule(self, listener):
             if hasattr(listener, "exitType_definition"):
                 listener.exitType_definition(self)
-
-        def accept(self, visitor):
-            if hasattr(visitor, "visitType_definition"):
-                return visitor.visitType_definition(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -420,12 +402,6 @@ class amlParser ( Parser ):
         def exitRule(self, listener):
             if hasattr(listener, "exitType_name"):
                 listener.exitType_name(self)
-
-        def accept(self, visitor):
-            if hasattr(visitor, "visitType_name"):
-                return visitor.visitType_name(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -495,12 +471,6 @@ class amlParser ( Parser ):
         def exitRule(self, listener):
             if hasattr(listener, "exitPredefined_type_name"):
                 listener.exitPredefined_type_name(self)
-
-        def accept(self, visitor):
-            if hasattr(visitor, "visitPredefined_type_name"):
-                return visitor.visitPredefined_type_name(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -580,12 +550,6 @@ class amlParser ( Parser ):
             if hasattr(listener, "exitBlock_definition"):
                 listener.exitBlock_definition(self)
 
-        def accept(self, visitor):
-            if hasattr(visitor, "visitBlock_definition"):
-                return visitor.visitBlock_definition(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -632,12 +596,6 @@ class amlParser ( Parser ):
         def exitRule(self, listener):
             if hasattr(listener, "exitEnum_type_name"):
                 listener.exitEnum_type_name(self)
-
-        def accept(self, visitor):
-            if hasattr(visitor, "visitEnum_type_name"):
-                return visitor.visitEnum_type_name(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -710,12 +668,6 @@ class amlParser ( Parser ):
             if hasattr(listener, "exitEnumerator_list"):
                 listener.exitEnumerator_list(self)
 
-        def accept(self, visitor):
-            if hasattr(visitor, "visitEnumerator_list"):
-                return visitor.visitEnumerator_list(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -772,12 +724,6 @@ class amlParser ( Parser ):
             if hasattr(listener, "exitEnumerator"):
                 listener.exitEnumerator(self)
 
-        def accept(self, visitor):
-            if hasattr(visitor, "visitEnumerator"):
-                return visitor.visitEnumerator(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -833,12 +779,6 @@ class amlParser ( Parser ):
         def exitRule(self, listener):
             if hasattr(listener, "exitStruct_type_name"):
                 listener.exitStruct_type_name(self)
-
-        def accept(self, visitor):
-            if hasattr(visitor, "visitStruct_type_name"):
-                return visitor.visitStruct_type_name(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -915,12 +855,6 @@ class amlParser ( Parser ):
             if hasattr(listener, "exitStruct_member"):
                 listener.exitStruct_member(self)
 
-        def accept(self, visitor):
-            if hasattr(visitor, "visitStruct_member"):
-                return visitor.visitStruct_member(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -969,12 +903,6 @@ class amlParser ( Parser ):
         def exitRule(self, listener):
             if hasattr(listener, "exitMember"):
                 listener.exitMember(self)
-
-        def accept(self, visitor):
-            if hasattr(visitor, "visitMember"):
-                return visitor.visitMember(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -1027,12 +955,6 @@ class amlParser ( Parser ):
             if hasattr(listener, "exitArray_specifier"):
                 listener.exitArray_specifier(self)
 
-        def accept(self, visitor):
-            if hasattr(visitor, "visitArray_specifier"):
-                return visitor.visitArray_specifier(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1082,12 +1004,6 @@ class amlParser ( Parser ):
         def exitRule(self, listener):
             if hasattr(listener, "exitTaggedstruct_type_name"):
                 listener.exitTaggedstruct_type_name(self)
-
-        def accept(self, visitor):
-            if hasattr(visitor, "visitTaggedstruct_type_name"):
-                return visitor.visitTaggedstruct_type_name(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -1174,12 +1090,6 @@ class amlParser ( Parser ):
         def exitRule(self, listener):
             if hasattr(listener, "exitTaggedstruct_member"):
                 listener.exitTaggedstruct_member(self)
-
-        def accept(self, visitor):
-            if hasattr(visitor, "visitTaggedstruct_member"):
-                return visitor.visitTaggedstruct_member(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -1268,12 +1178,6 @@ class amlParser ( Parser ):
             if hasattr(listener, "exitTaggedstruct_definition"):
                 listener.exitTaggedstruct_definition(self)
 
-        def accept(self, visitor):
-            if hasattr(visitor, "visitTaggedstruct_definition"):
-                return visitor.visitTaggedstruct_definition(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1358,12 +1262,6 @@ class amlParser ( Parser ):
             if hasattr(listener, "exitTaggedunion_type_name"):
                 listener.exitTaggedunion_type_name(self)
 
-        def accept(self, visitor):
-            if hasattr(visitor, "visitTaggedunion_type_name"):
-                return visitor.visitTaggedunion_type_name(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1446,12 +1344,6 @@ class amlParser ( Parser ):
             if hasattr(listener, "exitTagged_union_member"):
                 listener.exitTagged_union_member(self)
 
-        def accept(self, visitor):
-            if hasattr(visitor, "visitTagged_union_member"):
-                return visitor.visitTagged_union_member(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1523,12 +1415,6 @@ class amlParser ( Parser ):
         def exitRule(self, listener):
             if hasattr(listener, "exitConstant"):
                 listener.exitConstant(self)
-
-        def accept(self, visitor):
-            if hasattr(visitor, "visitConstant"):
-                return visitor.visitConstant(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
