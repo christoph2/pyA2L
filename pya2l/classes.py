@@ -92,6 +92,7 @@ class KeywordType(type):
             fixedAttributes = [attr[1] for attr in attrs if not MULTIPLE in attr]
             variableAttribute = [attr[1] for attr in attrs if MULTIPLE in attr]
             if variableAttribute:
+                #print("VA: {} ==> {}".format(newKlass.__name__, variableAttribute))
                 variableAttribute = variableAttribute[0]
         setattr(newKlass, 'fixedAttributes', fixedAttributes)
         setattr(newKlass, 'variableAttribute', variableAttribute)
@@ -218,12 +219,18 @@ class ANNOTATION_TEXT(Keyword):
     block = True
     textNode = True
 
+    attrs = [
+        (String, "Text", MULTIPLE)
+    ]
+
+
 
 class ARRAY_SIZE(Keyword):
     attrs = [
         (Uint, "Number")    # Number of measurement values included in respective measurement
-                            # object (maximum value of â€˜Numberâ€™: 32767).)
+                            # object  (maximum    value  of  ‘Number’: 32767).
     ]
+    # The use of this keyword should be replaced by MATRIX_DIM.
 
 
 class ASAP2_VERSION(Keyword):
