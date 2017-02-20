@@ -101,8 +101,8 @@ class TypeName(ASTType):
     children = ('name', )
 
     def __init__(self, tag, name, type):
-        if tag:
-            print("TAG: ", tag)
+        #if tag:
+        #    print("TAG: ", tag)
         self.tag = tag
         self.name = name
         self.type = type
@@ -149,7 +149,7 @@ class TaggedStructDefinition(ASTType):
 
 class TaggedStructMember(ASTType):
 
-    atrs = ('mult', )
+    attrs = ('mult', )
     children = ('taggedstructDefinition', 'blockDefinition')
 
     def __init__(self, taggedstructDefinition, blockDefinition, mult):
@@ -253,7 +253,7 @@ class Listener(antlr4.ParseTreeListener):
     def exitTaggedstruct_definition(self, ctx):
         mult = len(ctx.children) == 5 and ctx.children[4].getText() == '*'
         tag = ctx.TAG().getText().replace('"', '') if ctx.TAG() else None
-        print("TAG: {} MULT: {}".format(tag, mult))
+        #print("TAG: {} MULT: {}".format(tag, mult))
         member = self.getRule(ctx.member)
         ctx.value = TaggedStructDefinition(tag, member, mult)
 
