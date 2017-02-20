@@ -66,7 +66,6 @@ class ParserWrapper(object):
     def _load(self, name):
         className = '{0}{1}'.format(self.grammarName, name)
         moduleName = 'pya2l.py{0}.{1}'.format(2 if six.PY2 else 3, className)
-        print(moduleName)
         module = importlib.import_module(moduleName)
         klass = getattr(module, className)
         return (module, klass, )
@@ -79,9 +78,9 @@ class ParserWrapper(object):
         meth = getattr(parser, self.startSymbol)
         self._syntaxErrors = parser._syntaxErrors
         tree = meth()
-        listener = amllib.Listener()
-        walker = antlr4.ParseTreeWalker()
-        walker.walk(listener, tree)
+        #listener = amllib.Listener()
+        #walker = antlr4.ParseTreeWalker()
+        #walker.walk(listener, tree)
 
         #pprint(tree.toStringTree())
         """
