@@ -78,9 +78,9 @@ class ParserWrapper(object):
         meth = getattr(parser, self.startSymbol)
         self._syntaxErrors = parser._syntaxErrors
         tree = meth()
-        #listener = amllib.Listener()
-        #walker = antlr4.ParseTreeWalker()
-        #walker.walk(listener, tree)
+        listener = amllib.Listener()
+        walker = antlr4.ParseTreeWalker()
+        walker.walk(listener, tree)
 
         #pprint(tree.toStringTree())
         """
