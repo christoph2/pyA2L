@@ -26,6 +26,9 @@ install:
   - pip install -r requirements.txt
   - travis_retry pip install pylint
   - travis_retry pip install pytest-cov coverage coveralls codacy-coverage
+  - cd pya2l
+  - ./buildGrammars.sh
+  - cd ..
 
 script:
    coverage run --source=pya2l setup.py test
