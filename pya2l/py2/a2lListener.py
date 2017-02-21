@@ -1,4 +1,4 @@
-# Generated from a2l.g4 by ANTLR 4.5.1
+# Generated from a2l.g4 by ANTLR 4.6
 from antlr4 import *
 
 # This class defines a complete listener for a parse tree produced by a2lParser.

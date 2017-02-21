@@ -1,4 +1,4 @@
-# Generated from a2l.g4 by ANTLR 4.5.1
+# Generated from a2l.g4 by ANTLR 4.6
 # encoding: utf-8
 from __future__ import print_function
 from antlr4 import *
@@ -62,7 +62,7 @@ class a2lParser ( Parser ):
 
     def __init__(self, input):
         super(a2lParser, self).__init__(input)
-        self.checkVersion("4.5.1")
+        self.checkVersion("4.6")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -110,6 +110,7 @@ class a2lParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 9
+            self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==a2lParser.ASAP2_VERSION:
                 self.state = 8
@@ -431,43 +432,44 @@ class a2lParser ( Parser ):
         self.enterRule(localctx, 6, self.RULE_value)
         try:
             self.state = 34
+            self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [a2lParser.IDENT]:
                 localctx = a2lParser.ValueIdentContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
                 self.state = 28
                 self.match(a2lParser.IDENT)
-
+                pass
             elif token in [a2lParser.STRING]:
                 localctx = a2lParser.ValueStringContext(self, localctx)
                 self.enterOuterAlt(localctx, 2)
                 self.state = 29
                 self.match(a2lParser.STRING)
-
+                pass
             elif token in [a2lParser.INT]:
                 localctx = a2lParser.ValueIntContext(self, localctx)
                 self.enterOuterAlt(localctx, 3)
                 self.state = 30
                 self.match(a2lParser.INT)
-
+                pass
             elif token in [a2lParser.HEX]:
                 localctx = a2lParser.ValueHexContext(self, localctx)
                 self.enterOuterAlt(localctx, 4)
                 self.state = 31
                 self.match(a2lParser.HEX)
-
+                pass
             elif token in [a2lParser.FLOAT]:
                 localctx = a2lParser.ValueFloatContext(self, localctx)
                 self.enterOuterAlt(localctx, 5)
                 self.state = 32
                 self.match(a2lParser.FLOAT)
-
+                pass
             elif token in [a2lParser.BEGIN]:
                 localctx = a2lParser.ValueBlockContext(self, localctx)
                 self.enterOuterAlt(localctx, 6)
                 self.state = 33
                 self.block()
-
+                pass
             else:
                 raise NoViableAltException(self)
 

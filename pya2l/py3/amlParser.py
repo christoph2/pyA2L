@@ -364,7 +364,10 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
-            self.name = None # Predefined_type_nameContext
+
+        def predefined_type_name(self):
+            return self.getTypedRuleContext(amlParser.Predefined_type_nameContext,0)
+
 
         def struct_type_name(self):
             return self.getTypedRuleContext(amlParser.Struct_type_nameContext,0)
@@ -384,10 +387,6 @@ class amlParser ( Parser ):
 
         def TAG(self):
             return self.getToken(amlParser.TAG, 0)
-
-        def predefined_type_name(self):
-            return self.getTypedRuleContext(amlParser.Predefined_type_nameContext,0)
-
 
         def getRuleIndex(self):
             return amlParser.RULE_type_name
@@ -423,7 +422,7 @@ class amlParser ( Parser ):
             token = self._input.LA(1)
             if token in [amlParser.T__4, amlParser.T__5, amlParser.T__6, amlParser.T__7, amlParser.T__8, amlParser.T__9, amlParser.T__10, amlParser.T__11]:
                 self.state = 60
-                localctx.name = self.predefined_type_name()
+                self.predefined_type_name()
                 pass
             elif token in [amlParser.T__18]:
                 self.state = 61

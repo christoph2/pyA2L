@@ -1,4 +1,4 @@
-# Generated from aml.g4 by ANTLR 4.5.1
+# Generated from aml.g4 by ANTLR 4.6
 # encoding: utf-8
 from __future__ import print_function
 from antlr4 import *
@@ -221,7 +221,7 @@ class amlLexer(Lexer):
 
     def __init__(self, input=None):
         super(amlLexer, self).__init__(input)
-        self.checkVersion("4.5.1")
+        self.checkVersion("4.6")
         self._interp = LexerATNSimulator(self, self.atn, self.decisionsToDFA, PredictionContextCache())
         self._actions = None
         self._predicates = None

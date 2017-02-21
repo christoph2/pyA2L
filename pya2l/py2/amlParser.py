@@ -1,4 +1,4 @@
-# Generated from aml.g4 by ANTLR 4.5.1
+# Generated from aml.g4 by ANTLR 4.6
 # encoding: utf-8
 from __future__ import print_function
 from antlr4 import *
@@ -199,7 +199,7 @@ class amlParser ( Parser ):
 
     def __init__(self, input):
         super(amlParser, self).__init__(input)
-        self.checkVersion("4.5.1")
+        self.checkVersion("4.6")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -300,15 +300,16 @@ class amlParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 51
+            self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [amlParser.T__4, amlParser.T__5, amlParser.T__6, amlParser.T__7, amlParser.T__8, amlParser.T__9, amlParser.T__10, amlParser.T__11, amlParser.T__13, amlParser.T__18, amlParser.T__21, amlParser.T__25, amlParser.ID, amlParser.TAG]:
                 self.state = 49
                 self.type_definition()
-
+                pass
             elif token in [amlParser.T__12]:
                 self.state = 50
                 self.block_definition()
-
+                pass
             else:
                 raise NoViableAltException(self)
 
@@ -367,10 +368,6 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.Type_nameContext, self).__init__(parent, invokingState)
             self.parser = parser
-            self.name = None # Predefined_type_nameContext
-
-        def TAG(self):
-            return self.getToken(amlParser.TAG, 0)
 
         def predefined_type_name(self):
             return self.getTypedRuleContext(amlParser.Predefined_type_nameContext,0)
@@ -391,6 +388,9 @@ class amlParser ( Parser ):
         def enum_type_name(self):
             return self.getTypedRuleContext(amlParser.Enum_type_nameContext,0)
 
+
+        def TAG(self):
+            return self.getToken(amlParser.TAG, 0)
 
         def getRuleIndex(self):
             return amlParser.RULE_type_name
@@ -414,6 +414,7 @@ class amlParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 58
+            self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==amlParser.TAG:
                 self.state = 57
@@ -421,27 +422,28 @@ class amlParser ( Parser ):
 
 
             self.state = 65
+            self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [amlParser.T__4, amlParser.T__5, amlParser.T__6, amlParser.T__7, amlParser.T__8, amlParser.T__9, amlParser.T__10, amlParser.T__11]:
                 self.state = 60
-                localctx.name = self.predefined_type_name()
-
+                self.predefined_type_name()
+                pass
             elif token in [amlParser.T__18]:
                 self.state = 61
-                localctx.name = self.struct_type_name()
-
+                self.struct_type_name()
+                pass
             elif token in [amlParser.T__21, amlParser.ID]:
                 self.state = 62
-                localctx.name = self.taggedstruct_type_name()
-
+                self.taggedstruct_type_name()
+                pass
             elif token in [amlParser.T__25]:
                 self.state = 63
-                localctx.name = self.taggedunion_type_name()
-
+                self.taggedunion_type_name()
+                pass
             elif token in [amlParser.T__13]:
                 self.state = 64
-                localctx.name = self.enum_type_name()
-
+                self.enum_type_name()
+                pass
             else:
                 raise NoViableAltException(self)
 
@@ -482,39 +484,40 @@ class amlParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 75
+            self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [amlParser.T__4]:
                 self.state = 67
                 localctx.name = self.match(amlParser.T__4)
-
+                pass
             elif token in [amlParser.T__5]:
                 self.state = 68
                 localctx.name = self.match(amlParser.T__5)
-
+                pass
             elif token in [amlParser.T__6]:
                 self.state = 69
                 localctx.name = self.match(amlParser.T__6)
-
+                pass
             elif token in [amlParser.T__7]:
                 self.state = 70
                 localctx.name = self.match(amlParser.T__7)
-
+                pass
             elif token in [amlParser.T__8]:
                 self.state = 71
                 localctx.name = self.match(amlParser.T__8)
-
+                pass
             elif token in [amlParser.T__9]:
                 self.state = 72
                 localctx.name = self.match(amlParser.T__9)
-
+                pass
             elif token in [amlParser.T__10]:
                 self.state = 73
                 localctx.name = self.match(amlParser.T__10)
-
+                pass
             elif token in [amlParser.T__11]:
                 self.state = 74
                 localctx.name = self.match(amlParser.T__11)
-
+                pass
             else:
                 raise NoViableAltException(self)
 
@@ -607,12 +610,14 @@ class amlParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.state = 91
+            self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,6,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 81
                 self.match(amlParser.T__13)
                 self.state = 83
+                self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==amlParser.ID:
                     self.state = 82
@@ -737,6 +742,7 @@ class amlParser ( Parser ):
             self.state = 101
             self.match(amlParser.TAG)
             self.state = 104
+            self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==amlParser.T__17:
                 self.state = 102
@@ -791,11 +797,13 @@ class amlParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 120
+            self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,11,self._ctx)
             if la_ == 1:
                 self.state = 106
                 self.match(amlParser.T__18)
                 self.state = 108
+                self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==amlParser.ID:
                     self.state = 107
@@ -1016,6 +1024,7 @@ class amlParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 137
+            self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==amlParser.ID:
                 self.state = 136
@@ -1025,6 +1034,7 @@ class amlParser ( Parser ):
             self.state = 139
             self.match(amlParser.T__21)
             self.state = 154
+            self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [amlParser.T__14]:
                 self.state = 140
@@ -1041,7 +1051,7 @@ class amlParser ( Parser ):
 
                 self.state = 147
                 self.match(amlParser.T__15)
-
+                pass
             elif token in [amlParser.T__3, amlParser.T__4, amlParser.T__5, amlParser.T__6, amlParser.T__7, amlParser.T__8, amlParser.T__9, amlParser.T__10, amlParser.T__11, amlParser.T__12, amlParser.T__13, amlParser.T__18, amlParser.T__19, amlParser.T__21, amlParser.T__22, amlParser.T__23, amlParser.T__25, amlParser.ID, amlParser.TAG]:
                 self.state = 151
                 self._errHandler.sync(self)
@@ -1054,7 +1064,7 @@ class amlParser ( Parser ):
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,15,self._ctx)
 
-
+                pass
             else:
                 raise NoViableAltException(self)
 
@@ -1100,6 +1110,7 @@ class amlParser ( Parser ):
         self.enterRule(localctx, 28, self.RULE_taggedstruct_member)
         try:
             self.state = 174
+            self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,17,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
@@ -1188,10 +1199,12 @@ class amlParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.state = 190
+            self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,21,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 177
+                self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,18,self._ctx)
                 if la_ == 1:
                     self.state = 176
@@ -1199,6 +1212,7 @@ class amlParser ( Parser ):
 
 
                 self.state = 180
+                self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << amlParser.T__4) | (1 << amlParser.T__5) | (1 << amlParser.T__6) | (1 << amlParser.T__7) | (1 << amlParser.T__8) | (1 << amlParser.T__9) | (1 << amlParser.T__10) | (1 << amlParser.T__11) | (1 << amlParser.T__13) | (1 << amlParser.T__18) | (1 << amlParser.T__21) | (1 << amlParser.T__25) | (1 << amlParser.ID) | (1 << amlParser.TAG))) != 0):
                     self.state = 179
@@ -1210,6 +1224,7 @@ class amlParser ( Parser ):
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 183
+                self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==amlParser.TAG:
                     self.state = 182
@@ -1273,11 +1288,13 @@ class amlParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 206
+            self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,24,self._ctx)
             if la_ == 1:
                 self.state = 192
                 self.match(amlParser.T__25)
                 self.state = 194
+                self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==amlParser.ID:
                     self.state = 193
@@ -1355,11 +1372,13 @@ class amlParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 216
+            self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [amlParser.TAG]:
                 self.state = 208
                 self.match(amlParser.TAG)
                 self.state = 210
+                self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << amlParser.T__4) | (1 << amlParser.T__5) | (1 << amlParser.T__6) | (1 << amlParser.T__7) | (1 << amlParser.T__8) | (1 << amlParser.T__9) | (1 << amlParser.T__10) | (1 << amlParser.T__11) | (1 << amlParser.T__13) | (1 << amlParser.T__18) | (1 << amlParser.T__21) | (1 << amlParser.T__25) | (1 << amlParser.ID) | (1 << amlParser.TAG))) != 0):
                     self.state = 209
@@ -1368,13 +1387,13 @@ class amlParser ( Parser ):
 
                 self.state = 212
                 self.match(amlParser.T__3)
-
+                pass
             elif token in [amlParser.T__12]:
                 self.state = 213
                 self.block_definition()
                 self.state = 214
                 self.match(amlParser.T__3)
-
+                pass
             else:
                 raise NoViableAltException(self)
 
@@ -1425,25 +1444,26 @@ class amlParser ( Parser ):
         self.enterRule(localctx, 36, self.RULE_constant)
         try:
             self.state = 224
+            self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [amlParser.INT]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 218
                 localctx._INT = self.match(amlParser.INT)
                 localctx.value = int((None if localctx._INT is None else localctx._INT.text))
-
+                pass
             elif token in [amlParser.HEX]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 220
                 localctx._HEX = self.match(amlParser.HEX)
                 localctx.value = int((None if localctx._HEX is None else localctx._HEX.text), 16)
-
+                pass
             elif token in [amlParser.FLOAT]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 222
                 localctx._FLOAT = self.match(amlParser.FLOAT)
                 localctx.value = float((None if localctx._FLOAT is None else localctx._FLOAT.text))
-
+                pass
             else:
                 raise NoViableAltException(self)
 
