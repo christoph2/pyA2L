@@ -27,7 +27,7 @@ install:
   - travis_retry pip install pylint
   - travis_retry pip install pytest-cov coverage coveralls codacy-coverage
   - cd pya2l
-  - ./buildGrammars.sh
+  - sudo ./buildGrammars.sh
   - cd ..
 
 script:
