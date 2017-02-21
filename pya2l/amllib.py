@@ -217,7 +217,20 @@ class Listener(antlr4.ParseTreeListener):
         return attr().getText() if attr() else ''
 
     def exitType_name(self, ctx):
-        name = ctx.name.value
+        if ctx.predefined_type_name():
+            name = ctx.predefined_type_name()
+        elif ctx.struct_type_name():
+            name = ctx.struct_type_name()
+        elif ctx.taggedstruct_type_name():
+            name = ctx.taggedstruct_type_name()
+        elif ctx.taggedunion_type_name():
+            name = ctx.taggedunion_type_name()
+        elif ctx.enum_type_name():
+            name = ctx.enum_type_name()
+        else:
+            print()
+        name = name.value
+
         tag = self.getTerminal(ctx.TAG).replace('"', '')
         match = TYPE_NAME.match("{0!r}".format(type(name)))
         if match:
