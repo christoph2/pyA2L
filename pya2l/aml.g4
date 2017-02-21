@@ -43,11 +43,11 @@ type_definition:
 
 type_name:
    TAG? (
-     name = predefined_type_name
-   | name = struct_type_name
-   | name = taggedstruct_type_name
-   | name = taggedunion_type_name
-   | name = enum_type_name
+     predefined_type_name
+   | struct_type_name
+   | taggedstruct_type_name
+   | taggedunion_type_name
+   | enum_type_name
    )
    ;
 
