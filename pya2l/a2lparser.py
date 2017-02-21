@@ -24,7 +24,7 @@ __copyright__="""
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
-from collections import OrderedDict
+from collections import namedtuple, OrderedDict
 import enum
 import itertools
 import io
@@ -32,6 +32,7 @@ import re
 from pprint import pprint
 
 import antlr4
+import six
 
 from pya2l import aml
 from pya2l import classes
@@ -45,6 +46,9 @@ AML = re.compile(r"""
 /end\s+A[23]ML
 """, re.VERBOSE | re.DOTALL | re.MULTILINE)
 
+CompuTab = namedtuple("CompuTabRange", "inVal outVal")
+CompuVTab = namedtuple("CompuVTabRange", "inVal outVal")
+CompuVTabRange = namedtuple("CompuVTabRange", "inValMin inValMax outVal")
 
 class ValueType(enum.IntEnum):
 
@@ -55,6 +59,8 @@ class ValueType(enum.IntEnum):
 
 
 class ValueObject(object):
+
+    __slots__ = ['_value', '_type']
 
     def __init__(self, value, typ):
         self._value = value
@@ -123,6 +129,9 @@ class A2LWalker(object):
         return fkt(ctx)
 
     def traverseBlock(self, tree, level = 0):
+        if not tree.children:
+            return []
+
         if isinstance(tree, self.parser.VersionContext):
             return
 
@@ -144,11 +153,6 @@ class A2LWalker(object):
         numParameters = len(fixedParameters)
 
         children = iter(tree.children[2 : -2])
-
-        # TODO: COMPU_VTAB
-
-        if startTag == 'ANNOTATION':
-            pass
 
         args = []
         optArgs = []
@@ -174,12 +178,26 @@ class A2LWalker(object):
                         optArgs.append((param, self.fetchOptionallArgument(param, children)))
                     else:
                         if variableParameters:
-                            vparams = [self.getValue(child)]
-                            res = self.fetchVariableParameters(param, vparams[0].type, children)
-                            vparams.extend(res)
-                            #print("   VParams: {}".format(vparams))
+                            varArgs = [self.getValue(child)]
+                            res = self.fetchVariableParameters(param, children)
+                            varArgs.extend(res)
+                            #print("   VParams: {}".format(varArgs))
+                        elif startTag == 'COMPU_TAB':
+                            numberValuePairs = [x[1].value for x in args if x[0] == 'NumberValuePairs'][0]   # Fkt!!!
+                            result = self.fetchTuples(numberValuePairs, 2, CompuTab, children, self.getValue(child))
+                            print(result)
+                        elif startTag == 'COMPU_VTAB':
+                            numberValuePairs = [x[1].value for x in args if x[0] == 'NumberValuePairs'][0]   # Fkt!!!
+                            result = self.fetchTuples(numberValuePairs, 2, CompuVTab, children, self.getValue(child))
+                            print(result)
+                        elif startTag == 'COMPU_VTAB_RANGE':
+                            numberOfTriples = [x[1].value for x in args if x[0] == 'NumberValueTriples'][0]   # Fkt!!!
+                            result = self.fetchTuples(numberOfTriples, 3, CompuVTabRange, children, self.getValue(child))
+                            print(result)
                         else:
                             print("      *", param)
+        if varArgs:
+                pass
         inst = classes.instanceFactory(startTag, **OrderedDict(args))
         return inst
 
@@ -199,32 +217,66 @@ class A2LWalker(object):
         print(inst)
         return inst
 
-    def fetchVariableParameters(self, name, type_, iter):
+    def fetchVariableParameters(self, name, iter):
         result  = [self.getValue(x) for x in list(iter)]
         return result
 
+    def fetchTuples(self, count, size, factory, iter, startValue):
+        result = [startValue]
+        result.extend([self.getValue(next(iter)) for _ in range((count * size) - 1  )])
+        tmp = [factory(*result[x : x + size]) for x in range(0, len(result), size)]
+        return tmp
 
-def parse(filename):
+"""
+VA: ANNOTATION_TEXT ==> ['Text']
+VA: CALIBRATION_HANDLE ==> ['Handle']
+VA: DEF_CHARACTERISTIC ==> ['Identifier']
+VA: DEPENDENT_CHARACTERISTIC ==> ['Characteristic']
+VA: FIX_AXIS_PAR_LIST ==> ['AxisPts_Value']
+VA: FRAME_MEASUREMENT ==> ['Identifier']
+VA: FUNCTION_LIST ==> ['Name']
+VA: IN_MEASUREMENT ==> ['Identifier']
+VA: LOC_MEASUREMENT ==> ['Identifier']
+VA: MAP_LIST ==> ['Name']
+VA: OUT_MEASUREMENT ==> ['Identifier']
+VA: REF_CHARACTERISTIC ==> ['Identifier']
+VA: REF_GROUP ==> ['Identifier']
+VA: REF_MEASUREMENT ==> ['Identifier']
+VA: SUB_FUNCTION ==> ['Identifier']
+VA: SUB_GROUP ==> ['Identifier']
+VA: VAR_ADDRESS ==> ['Address']
+VA: VAR_CHARACTERISTIC ==> ['CriterionName']
+VA: VAR_CRITERION ==> ['Value']
+VA: VIRTUAL ==> ['MeasuringChannel']
+VA: VIRTUAL_CHARACTERISTIC ==> ['Characteristic']
+"""
 
-    pa = aml.ParserWrapper('a2l', 'a2lFile')
 
-    data = io.open(filename, encoding = "latin1").read()
+class A2LParser(object):
 
-    match = AML.search(data)
-    if match:
-        header = data[0 : match.start()]
-        amlS = data[match.start() : match.end()]
-        lineCount = amlS.count('\n')
-        footer = data[match.end() : -1]
-        data = header + '\n' * lineCount + footer
+    def __init__(self):
+        self.logger = Logger(self, 'parser')
 
-    tree = pa.parseFromString(data)
-    print("Finished ANTLR parsing.")
+    def parseFromFileName(self, filename):
+        fp = six.io.open(filename, encoding = "latin1")
+        self.parse(fp)
 
-    walker = A2LWalker(tree)
-    walker.run()
-    print("Finished walking.")
+    def parseFromString(self, stringObj):
+        self.parse(six.StringIO(stringObj))
 
-
-
+    def parse(self, fp):
+        pa = aml.ParserWrapper('a2l', 'a2lFile')
+        data = fp.read()
+        match = AML.search(data)
+        if match:
+            header = data[0 : match.start()]
+            amlS = data[match.start() : match.end()]
+            lineCount = amlS.count('\n')
+            footer = data[match.end() : -1]
+            data = header + '\n' * lineCount + footer
+        tree = pa.parseFromString(data)
+        print("Finished ANTLR parsing.")
+        walker = A2LWalker(tree)
+        walker.run()
+        print("Finished walking.")
 

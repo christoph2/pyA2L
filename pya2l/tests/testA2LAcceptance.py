@@ -1,11 +1,10 @@
-
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2016 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2017 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -29,7 +28,7 @@ __author__  = 'Christoph Schueler'
 __version__ = '0.1.0'
 
 import unittest
-from pya2l.a2l_parser import A2LParser
+from pya2l.a2lparser import A2LParser
 
 
 TEST_A2L = """
