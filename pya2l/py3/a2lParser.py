@@ -1,4 +1,4 @@
-# Generated from a2l.g4 by ANTLR 4.5.1
+# Generated from a2l.g4 by ANTLR 4.6
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -6,19 +6,19 @@ from io import StringIO
 def serializedATN():
     with StringIO() as buf:
         buf.write("\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\r")
-        buf.write("&\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\3\2\5\2\f\n\2\3\2\3")
+        buf.write("\'\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\3\2\5\2\f\n\2\3\2\3")
         buf.write("\2\3\3\3\3\3\3\3\3\3\4\3\4\3\4\7\4\27\n\4\f\4\16\4\32")
-        buf.write("\13\4\3\4\3\4\3\5\3\5\3\5\3\5\3\5\3\5\5\5$\n\5\3\5\2\2")
-        buf.write("\6\2\4\6\b\2\2(\2\13\3\2\2\2\4\17\3\2\2\2\6\23\3\2\2\2")
-        buf.write("\b#\3\2\2\2\n\f\5\4\3\2\13\n\3\2\2\2\13\f\3\2\2\2\f\r")
-        buf.write("\3\2\2\2\r\16\5\6\4\2\16\3\3\2\2\2\17\20\7\3\2\2\20\21")
-        buf.write("\7\7\2\2\21\22\7\7\2\2\22\5\3\2\2\2\23\24\7\5\2\2\24\30")
-        buf.write("\7\f\2\2\25\27\5\b\5\2\26\25\3\2\2\2\27\32\3\2\2\2\30")
-        buf.write("\26\3\2\2\2\30\31\3\2\2\2\31\33\3\2\2\2\32\30\3\2\2\2")
-        buf.write("\33\34\7\6\2\2\34\7\3\2\2\2\35$\7\f\2\2\36$\7\r\2\2\37")
-        buf.write("$\7\7\2\2 $\7\b\2\2!$\7\t\2\2\"$\5\6\4\2#\35\3\2\2\2#")
-        buf.write("\36\3\2\2\2#\37\3\2\2\2# \3\2\2\2#!\3\2\2\2#\"\3\2\2\2")
-        buf.write("$\t\3\2\2\2\5\13\30#")
+        buf.write("\13\4\3\4\3\4\3\4\3\5\3\5\3\5\3\5\3\5\3\5\5\5%\n\5\3\5")
+        buf.write("\2\2\6\2\4\6\b\2\2)\2\13\3\2\2\2\4\17\3\2\2\2\6\23\3\2")
+        buf.write("\2\2\b$\3\2\2\2\n\f\5\4\3\2\13\n\3\2\2\2\13\f\3\2\2\2")
+        buf.write("\f\r\3\2\2\2\r\16\5\6\4\2\16\3\3\2\2\2\17\20\7\3\2\2\20")
+        buf.write("\21\7\7\2\2\21\22\7\7\2\2\22\5\3\2\2\2\23\24\7\5\2\2\24")
+        buf.write("\30\7\f\2\2\25\27\5\b\5\2\26\25\3\2\2\2\27\32\3\2\2\2")
+        buf.write("\30\26\3\2\2\2\30\31\3\2\2\2\31\33\3\2\2\2\32\30\3\2\2")
+        buf.write("\2\33\34\7\6\2\2\34\35\7\f\2\2\35\7\3\2\2\2\36%\7\f\2")
+        buf.write("\2\37%\7\r\2\2 %\7\7\2\2!%\7\b\2\2\"%\7\t\2\2#%\5\6\4")
+        buf.write("\2$\36\3\2\2\2$\37\3\2\2\2$ \3\2\2\2$!\3\2\2\2$\"\3\2")
+        buf.write("\2\2$#\3\2\2\2%\t\3\2\2\2\5\13\30$")
         return buf.getvalue()
 
 
@@ -61,7 +61,7 @@ class a2lParser ( Parser ):
 
     def __init__(self, input:TokenStream):
         super().__init__(input)
-        self.checkVersion("4.5.1")
+        self.checkVersion("4.6")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -109,6 +109,7 @@ class a2lParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 9
+            self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==a2lParser.ASAP2_VERSION:
                 self.state = 8
@@ -187,7 +188,8 @@ class a2lParser ( Parser ):
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
-            self.kw = None # Token
+            self.kw0 = None # Token
+            self.kw1 = None # Token
 
         def BEGIN(self):
             return self.getToken(a2lParser.BEGIN, 0)
@@ -195,8 +197,11 @@ class a2lParser ( Parser ):
         def END(self):
             return self.getToken(a2lParser.END, 0)
 
-        def IDENT(self):
-            return self.getToken(a2lParser.IDENT, 0)
+        def IDENT(self, i:int=None):
+            if i is None:
+                return self.getTokens(a2lParser.IDENT)
+            else:
+                return self.getToken(a2lParser.IDENT, i)
 
         def value(self, i:int=None):
             if i is None:
@@ -235,7 +240,7 @@ class a2lParser ( Parser ):
             self.state = 17
             self.match(a2lParser.BEGIN)
             self.state = 18
-            localctx.kw = self.match(a2lParser.IDENT)
+            localctx.kw0 = self.match(a2lParser.IDENT)
             self.state = 22
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -248,6 +253,8 @@ class a2lParser ( Parser ):
 
             self.state = 25
             self.match(a2lParser.END)
+            self.state = 26
+            localctx.kw1 = self.match(a2lParser.IDENT)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -423,44 +430,45 @@ class a2lParser ( Parser ):
         localctx = a2lParser.ValueContext(self, self._ctx, self.state)
         self.enterRule(localctx, 6, self.RULE_value)
         try:
-            self.state = 33
+            self.state = 34
+            self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [a2lParser.IDENT]:
                 localctx = a2lParser.ValueIdentContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
-                self.state = 27
+                self.state = 28
                 self.match(a2lParser.IDENT)
-
+                pass
             elif token in [a2lParser.STRING]:
                 localctx = a2lParser.ValueStringContext(self, localctx)
                 self.enterOuterAlt(localctx, 2)
-                self.state = 28
+                self.state = 29
                 self.match(a2lParser.STRING)
-
+                pass
             elif token in [a2lParser.INT]:
                 localctx = a2lParser.ValueIntContext(self, localctx)
                 self.enterOuterAlt(localctx, 3)
-                self.state = 29
+                self.state = 30
                 self.match(a2lParser.INT)
-
+                pass
             elif token in [a2lParser.HEX]:
                 localctx = a2lParser.ValueHexContext(self, localctx)
                 self.enterOuterAlt(localctx, 4)
-                self.state = 30
+                self.state = 31
                 self.match(a2lParser.HEX)
-
+                pass
             elif token in [a2lParser.FLOAT]:
                 localctx = a2lParser.ValueFloatContext(self, localctx)
                 self.enterOuterAlt(localctx, 5)
-                self.state = 31
+                self.state = 32
                 self.match(a2lParser.FLOAT)
-
+                pass
             elif token in [a2lParser.BEGIN]:
                 localctx = a2lParser.ValueBlockContext(self, localctx)
                 self.enterOuterAlt(localctx, 6)
-                self.state = 32
+                self.state = 33
                 self.block()
-
+                pass
             else:
                 raise NoViableAltException(self)
 

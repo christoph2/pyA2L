@@ -1,4 +1,4 @@
-# Generated from a2l.g4 by ANTLR 4.5.1
+# Generated from a2l.g4 by ANTLR 4.6
 from antlr4 import *
 from io import StringIO
 
@@ -122,7 +122,7 @@ class a2lLexer(Lexer):
 
     def __init__(self, input=None):
         super().__init__(input)
-        self.checkVersion("4.5.1")
+        self.checkVersion("4.6")
         self._interp = LexerATNSimulator(self, self.atn, self.decisionsToDFA, PredictionContextCache())
         self._actions = None
         self._predicates = None
