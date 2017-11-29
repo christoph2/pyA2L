@@ -1,24 +1,26 @@
-# Generated from a2l.g4 by ANTLR 4.6
+# Generated from a2l.g4 by ANTLR 4.7
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
+from typing.io import TextIO
+import sys
 
 def serializedATN():
     with StringIO() as buf:
-        buf.write("\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\r")
+        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\r")
         buf.write("\'\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\3\2\5\2\f\n\2\3\2\3")
         buf.write("\2\3\3\3\3\3\3\3\3\3\4\3\4\3\4\7\4\27\n\4\f\4\16\4\32")
         buf.write("\13\4\3\4\3\4\3\4\3\5\3\5\3\5\3\5\3\5\3\5\5\5%\n\5\3\5")
-        buf.write("\2\2\6\2\4\6\b\2\2)\2\13\3\2\2\2\4\17\3\2\2\2\6\23\3\2")
-        buf.write("\2\2\b$\3\2\2\2\n\f\5\4\3\2\13\n\3\2\2\2\13\f\3\2\2\2")
-        buf.write("\f\r\3\2\2\2\r\16\5\6\4\2\16\3\3\2\2\2\17\20\7\3\2\2\20")
-        buf.write("\21\7\7\2\2\21\22\7\7\2\2\22\5\3\2\2\2\23\24\7\5\2\2\24")
-        buf.write("\30\7\f\2\2\25\27\5\b\5\2\26\25\3\2\2\2\27\32\3\2\2\2")
-        buf.write("\30\26\3\2\2\2\30\31\3\2\2\2\31\33\3\2\2\2\32\30\3\2\2")
-        buf.write("\2\33\34\7\6\2\2\34\35\7\f\2\2\35\7\3\2\2\2\36%\7\f\2")
-        buf.write("\2\37%\7\r\2\2 %\7\7\2\2!%\7\b\2\2\"%\7\t\2\2#%\5\6\4")
-        buf.write("\2$\36\3\2\2\2$\37\3\2\2\2$ \3\2\2\2$!\3\2\2\2$\"\3\2")
-        buf.write("\2\2$#\3\2\2\2%\t\3\2\2\2\5\13\30$")
+        buf.write("\2\2\6\2\4\6\b\2\2\2)\2\13\3\2\2\2\4\17\3\2\2\2\6\23\3")
+        buf.write("\2\2\2\b$\3\2\2\2\n\f\5\4\3\2\13\n\3\2\2\2\13\f\3\2\2")
+        buf.write("\2\f\r\3\2\2\2\r\16\5\6\4\2\16\3\3\2\2\2\17\20\7\3\2\2")
+        buf.write("\20\21\7\7\2\2\21\22\7\7\2\2\22\5\3\2\2\2\23\24\7\5\2")
+        buf.write("\2\24\30\7\f\2\2\25\27\5\b\5\2\26\25\3\2\2\2\27\32\3\2")
+        buf.write("\2\2\30\26\3\2\2\2\30\31\3\2\2\2\31\33\3\2\2\2\32\30\3")
+        buf.write("\2\2\2\33\34\7\6\2\2\34\35\7\f\2\2\35\7\3\2\2\2\36%\7")
+        buf.write("\f\2\2\37%\7\r\2\2 %\7\7\2\2!%\7\b\2\2\"%\7\t\2\2#%\5")
+        buf.write("\6\4\2$\36\3\2\2\2$\37\3\2\2\2$ \3\2\2\2$!\3\2\2\2$\"")
+        buf.write("\3\2\2\2$#\3\2\2\2%\t\3\2\2\2\5\13\30$")
         return buf.getvalue()
 
 
@@ -59,9 +61,9 @@ class a2lParser ( Parser ):
     IDENT=10
     STRING=11
 
-    def __init__(self, input:TokenStream):
-        super().__init__(input)
-        self.checkVersion("4.6")
+    def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
+        super().__init__(input, output)
+        self.checkVersion("4.7")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 

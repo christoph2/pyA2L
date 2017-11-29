@@ -1,12 +1,13 @@
-# Generated from aml.g4 by ANTLR 4.6
+# Generated from aml.g4 by ANTLR 4.7
 # encoding: utf-8
 from __future__ import print_function
 from antlr4 import *
 from io import StringIO
+import sys
 
 def serializedATN():
     with StringIO() as buf:
-        buf.write(u"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3")
+        buf.write(u"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3")
         buf.write(u"$\u00e5\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t")
         buf.write(u"\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\4\r\t\r")
         buf.write(u"\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22\4")
@@ -30,10 +31,10 @@ def serializedATN():
         buf.write(u"\3\22\3\22\5\22\u00d1\n\22\3\23\3\23\5\23\u00d5\n\23")
         buf.write(u"\3\23\3\23\3\23\3\23\5\23\u00db\n\23\3\24\3\24\3\24\3")
         buf.write(u"\24\3\24\3\24\5\24\u00e3\n\24\3\24\2\2\25\2\4\6\b\n\f")
-        buf.write(u"\16\20\22\24\26\30\32\34\36 \"$&\2\2\u00f9\2(\3\2\2\2")
-        buf.write(u"\4\65\3\2\2\2\69\3\2\2\2\b<\3\2\2\2\nM\3\2\2\2\fO\3\2")
-        buf.write(u"\2\2\16]\3\2\2\2\20_\3\2\2\2\22g\3\2\2\2\24z\3\2\2\2")
-        buf.write(u"\26|\3\2\2\2\30\177\3\2\2\2\32\u0086\3\2\2\2\34\u008b")
+        buf.write(u"\16\20\22\24\26\30\32\34\36 \"$&\2\2\2\u00f9\2(\3\2\2")
+        buf.write(u"\2\4\65\3\2\2\2\69\3\2\2\2\b<\3\2\2\2\nM\3\2\2\2\fO\3")
+        buf.write(u"\2\2\2\16]\3\2\2\2\20_\3\2\2\2\22g\3\2\2\2\24z\3\2\2")
+        buf.write(u"\2\26|\3\2\2\2\30\177\3\2\2\2\32\u0086\3\2\2\2\34\u008b")
         buf.write(u"\3\2\2\2\36\u00b0\3\2\2\2 \u00c0\3\2\2\2\"\u00d0\3\2")
         buf.write(u"\2\2$\u00da\3\2\2\2&\u00e2\3\2\2\2()\7\3\2\2)-\7\4\2")
         buf.write(u"\2*,\5\4\3\2+*\3\2\2\2,/\3\2\2\2-+\3\2\2\2-.\3\2\2\2")
@@ -197,9 +198,9 @@ class amlParser ( Parser ):
     WS=33
     STRING=34
 
-    def __init__(self, input):
-        super(amlParser, self).__init__(input)
-        self.checkVersion("4.6")
+    def __init__(self, input, output=sys.stdout):
+        super(amlParser, self).__init__(input, output=output)
+        self.checkVersion("4.7")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 

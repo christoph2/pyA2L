@@ -1,18 +1,19 @@
-# Generated from a2l.g4 by ANTLR 4.6
+# Generated from a2l.g4 by ANTLR 4.7
 # encoding: utf-8
 from __future__ import print_function
 from antlr4 import *
 from io import StringIO
+import sys
 
 def serializedATN():
     with StringIO() as buf:
-        buf.write(u"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3")
+        buf.write(u"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3")
         buf.write(u"\r\'\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\3\2\5\2\f\n\2\3")
         buf.write(u"\2\3\2\3\3\3\3\3\3\3\3\3\4\3\4\3\4\7\4\27\n\4\f\4\16")
         buf.write(u"\4\32\13\4\3\4\3\4\3\4\3\5\3\5\3\5\3\5\3\5\3\5\5\5%\n")
-        buf.write(u"\5\3\5\2\2\6\2\4\6\b\2\2)\2\13\3\2\2\2\4\17\3\2\2\2\6")
-        buf.write(u"\23\3\2\2\2\b$\3\2\2\2\n\f\5\4\3\2\13\n\3\2\2\2\13\f")
-        buf.write(u"\3\2\2\2\f\r\3\2\2\2\r\16\5\6\4\2\16\3\3\2\2\2\17\20")
+        buf.write(u"\5\3\5\2\2\6\2\4\6\b\2\2\2)\2\13\3\2\2\2\4\17\3\2\2\2")
+        buf.write(u"\6\23\3\2\2\2\b$\3\2\2\2\n\f\5\4\3\2\13\n\3\2\2\2\13")
+        buf.write(u"\f\3\2\2\2\f\r\3\2\2\2\r\16\5\6\4\2\16\3\3\2\2\2\17\20")
         buf.write(u"\7\3\2\2\20\21\7\7\2\2\21\22\7\7\2\2\22\5\3\2\2\2\23")
         buf.write(u"\24\7\5\2\2\24\30\7\f\2\2\25\27\5\b\5\2\26\25\3\2\2\2")
         buf.write(u"\27\32\3\2\2\2\30\26\3\2\2\2\30\31\3\2\2\2\31\33\3\2")
@@ -60,9 +61,9 @@ class a2lParser ( Parser ):
     IDENT=10
     STRING=11
 
-    def __init__(self, input):
-        super(a2lParser, self).__init__(input)
-        self.checkVersion("4.6")
+    def __init__(self, input, output=sys.stdout):
+        super(a2lParser, self).__init__(input, output=output)
+        self.checkVersion("4.7")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 

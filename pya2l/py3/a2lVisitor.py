@@ -1,4 +1,4 @@
-# Generated from a2l.g4 by ANTLR 4.6
+# Generated from a2l.g4 by ANTLR 4.7
 from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .a2lParser import a2lParser

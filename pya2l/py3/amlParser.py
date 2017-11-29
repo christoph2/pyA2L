@@ -1,11 +1,13 @@
-# Generated from aml.g4 by ANTLR 4.6
+# Generated from aml.g4 by ANTLR 4.7
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
+from typing.io import TextIO
+import sys
 
 def serializedATN():
     with StringIO() as buf:
-        buf.write("\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3$")
+        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3$")
         buf.write("\u00e5\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
         buf.write("\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\4\r\t\r\4\16")
         buf.write("\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22\4\23\t\23")
@@ -29,14 +31,14 @@ def serializedATN():
         buf.write("\3\23\5\23\u00d5\n\23\3\23\3\23\3\23\3\23\5\23\u00db\n")
         buf.write("\23\3\24\3\24\3\24\3\24\3\24\3\24\5\24\u00e3\n\24\3\24")
         buf.write("\2\2\25\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&\2")
-        buf.write("\2\u00f9\2(\3\2\2\2\4\65\3\2\2\2\69\3\2\2\2\b<\3\2\2\2")
-        buf.write("\nM\3\2\2\2\fO\3\2\2\2\16]\3\2\2\2\20_\3\2\2\2\22g\3\2")
-        buf.write("\2\2\24z\3\2\2\2\26|\3\2\2\2\30\177\3\2\2\2\32\u0086\3")
-        buf.write("\2\2\2\34\u008b\3\2\2\2\36\u00b0\3\2\2\2 \u00c0\3\2\2")
-        buf.write("\2\"\u00d0\3\2\2\2$\u00da\3\2\2\2&\u00e2\3\2\2\2()\7\3")
-        buf.write("\2\2)-\7\4\2\2*,\5\4\3\2+*\3\2\2\2,/\3\2\2\2-+\3\2\2\2")
-        buf.write("-.\3\2\2\2.\60\3\2\2\2/-\3\2\2\2\60\61\7\5\2\2\61\62\7")
-        buf.write("\4\2\2\62\3\3\2\2\2\63\66\5\6\4\2\64\66\5\f\7\2\65\63")
+        buf.write("\2\2\u00f9\2(\3\2\2\2\4\65\3\2\2\2\69\3\2\2\2\b<\3\2\2")
+        buf.write("\2\nM\3\2\2\2\fO\3\2\2\2\16]\3\2\2\2\20_\3\2\2\2\22g\3")
+        buf.write("\2\2\2\24z\3\2\2\2\26|\3\2\2\2\30\177\3\2\2\2\32\u0086")
+        buf.write("\3\2\2\2\34\u008b\3\2\2\2\36\u00b0\3\2\2\2 \u00c0\3\2")
+        buf.write("\2\2\"\u00d0\3\2\2\2$\u00da\3\2\2\2&\u00e2\3\2\2\2()\7")
+        buf.write("\3\2\2)-\7\4\2\2*,\5\4\3\2+*\3\2\2\2,/\3\2\2\2-+\3\2\2")
+        buf.write("\2-.\3\2\2\2.\60\3\2\2\2/-\3\2\2\2\60\61\7\5\2\2\61\62")
+        buf.write("\7\4\2\2\62\3\3\2\2\2\63\66\5\6\4\2\64\66\5\f\7\2\65\63")
         buf.write("\3\2\2\2\65\64\3\2\2\2\66\67\3\2\2\2\678\7\6\2\28\5\3")
         buf.write("\2\2\29:\5\b\5\2:\7\3\2\2\2;=\7\36\2\2<;\3\2\2\2<=\3\2")
         buf.write("\2\2=C\3\2\2\2>D\5\n\6\2?D\5\24\13\2@D\5\34\17\2AD\5\"")
@@ -193,9 +195,9 @@ class amlParser ( Parser ):
     WS=33
     STRING=34
 
-    def __init__(self, input:TokenStream):
-        super().__init__(input)
-        self.checkVersion("4.6")
+    def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
+        super().__init__(input, output)
+        self.checkVersion("4.7")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
