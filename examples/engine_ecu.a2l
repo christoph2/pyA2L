@@ -1,4 +1,8 @@
-/begin MODULE  DIM  "Comment on module"    
+ASAP2_VERSION 1 61
+/begin PROJECT ENGINE_ECU ""
+
+/begin MODULE  DIM  "Com
+ment on module"    
            /* Detailed description of a device */ 
  
     // /include "supp1_if.aml"   /* Specification of the interface-specific parts */    
@@ -275,4 +279,5 @@
   
      /begin FUNCTION        ID_ADJUSTM  "ID adjustment"    /end FUNCTION 
      /begin FUNCTION        FL_ADJUSTM "FL adjustment"         /end FUNCTION 
- /end MODULE 
+  /end MODULE 
+  /end PROJECT
