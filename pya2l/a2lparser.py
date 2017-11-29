@@ -106,6 +106,8 @@ class A2LWalker(object):
 
     def run(self):
         a2lFile = self.tree
+        if not a2lFile.children:
+            return
         for child in a2lFile.children:
             self.traverseBlock(child)
 
