@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2017 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2018 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -272,7 +272,7 @@ class Listener(antlr4.ParseTreeListener):
 
     def exitEnumerator(self, ctx):
         tag = self.getTerminal(ctx.TAG).replace('"', '')
-        constant = ctx.constant().value
+        constant = ctx.constant().value if ctx.constant() else None
         ctx.value = Enumerator(tag, constant)
 
     def exitArray_specifier(self, ctx):
