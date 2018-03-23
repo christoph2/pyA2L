@@ -28,7 +28,7 @@ __author__  = 'Christoph Schueler'
 __version__ = '0.1.0'
 
 
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 import enum
 import json
 from pprint import pprint
@@ -36,175 +36,104 @@ import re
 
 import antlr4
 
-TYPE_NAME = re.compile(r"^<class\s'pya2l\.amllib\.(?P<klass>.*?)(?:Type)?'>$", re.DOTALL)
+
+class AMLDict(OrderedDict):
+
+    def __getattr__(self, attr):
+        return self[attr]
 
 
-class ASTType(object):
-    attrs = []
-    children = []
-    block = False
+def createDict(classname, children, attrs = (), block = False):
+    return AMLDict(classname = classname, children = children, attrs = attrs, block = block)
 
+def createEnumeration(tag, enumerators):
+    res = createDict('Enumeration', children = ('enumerators', ), attrs = ('tag', ))
+    res['tag'] = tag
+    res['enumerators'] = enumerators
+    return res
 
-class Enumeration(ASTType):
+def createEnumerator(tag, constant):
+    res = createDict('Enumerator', (), attrs = ('tag', 'constant'))
+    res['tag'] = tag
+    res['constant'] = constant
+    return res
 
-    attrs = ('tag', )
-    children = ('enumerators', )
+def createTaggedUnion(name, members):
+    res = createDict('TaggedUnion', children = ('members', ), attrs = ('name', ))
+    res['name'] = name
+    res['members'] = members
+    return res
 
-    def __init__(self, tag, enumerators):
-        self.tag = tag
-        self.enumerators = enumerators
+def createTaggedUnionMember(tag, member, blockDefinition):
+    res = createDict('TaggedUnionMember', children = ('member', 'blockDefinition'), attrs = ('tag', ))
+    res['tag'] = tag
+    res['member'] = member
+    res['blockDefinition'] = blockDefinition
+    return res
 
+def createMember(typename, arraySpecifier):
+    res = createDict('Member', children = ('typename', ), attrs = ('arraySpecifier', ))
+    res['typename'] = typename
+    res['arraySpecifier'] = arraySpecifier
+    return res
 
-class Enumerator(ASTType):
+def createTypeName(tag, name, _type):
+    res = createDict('TypeName', children = ('name', ), attrs = ('tag', ))
+    res['tag'] = tag
+    res['name'] = name
+    res['type'] = _type
+    return res
 
-    attrs = ('tag', 'constant')
+def createPredefinedType(name):
+    res = createDict('PredefinedType', (), attrs = ('name', ))
+    res['name'] = name
+    return res
 
-    def __init__(self, tag, constant):
-        self.tag = tag
-        self.constant = constant
+def createStructType(name, members):
+    res = createDict('StructType', children = ('member', ), attrs = ('name', ))
+    res['name'] = name
+    res['members'] = members
+    return res
 
+def createTaggedStructType(name, members):
+    res = createDict('TaggedStructType', children = ('member', ), attrs = ('name', ))
+    res['name'] = name
+    res['members'] = members
+    return res
 
-class TaggedUnion(ASTType):
+def createTaggedStructDefinition(tag, member, mult):
+    res = createDict('TaggedStructDefinition', children = ('member',), attrs = ('tag', 'mult'))
+    res['tag'] = tag
+    res['member'] = member
+    res['mult'] = mult
+    return res
 
-    attrs = ('name', )
-    children = ('members', )
+def createTaggedStructMember(taggedstructDefinition, blockDefinition, mult):
+    res = createDict('TaggedStructMember', children = ('taggedstructDefinition', 'blockDefinition'), attrs = ('mult', ))
+    res['taggedstructDefinition'] = taggedstructDefinition
+    res['blockDefinition'] = blockDefinition
+    res['mult'] = mult
+    return res
 
-    def __init__(self, name, members):
-        self.name = name
-        self.members = members
+def createDeclaration(blockDefinition, typeDefinition):
+    res = createDict('Declaration', ('blockDefinition', 'typeDefinition'))
+    res['blockDefinition'] = blockDefinition
+    res['typeDefinition'] = typeDefinition
+    return res
 
+def createBlockDefinition(tag, typename):
+    res = createDict('BlockDefinition', ('typename', ), attrs = ('tag', ), block = True)
+    res['tag']  = tag
+    res['typename'] = typename
+    return res
 
-class TaggedUnionMember(ASTType):
-
-     attrs = ('tag', )
-     children = ('member', 'blockDefinition')
-
-     def __init__(self, tag, member, blockDefinition):
-         self.tag = tag
-         self.member = member
-         self.blockDefinition = blockDefinition
-
-
-class Member(ASTType):
-
-     attrs = ('arraySpecifier', )
-     children = ('typeName', )
-
-     def __init__(self, typeName, arraySpecifier):
-         self.typeName = typeName
-         self.arraySpecifier = arraySpecifier
-
-
-class TypeName(ASTType):
-
-    attrs = ('tag', )
-    children = ('name', )
-
-    def __init__(self, tag, name, type):
-        #if tag:
-        #    print("TAG: ", tag)
-        self.tag = tag
-        self.name = name
-        self.type = type
-
-
-class PredefinedType(ASTType):
-
-    attrs = ('name', )
-
-    def __init__(self, name):
-        self.name = name
-
-
-class StructType(ASTType):
-
-     attrs = ('name', )
-     children = ('member', )
-
-     def __init__(self, name, members):
-         self.name = name
-         self.members = members
-
-
-class TaggedStructType(ASTType):
-
-     attrs = ('name', )
-     children = ('member', )
-
-     def __init__(self, name, members):
-         self.name = name
-         self.members = members
-
-
-class TaggedStructDefinition(ASTType):
-
-     attrs = ('tag', 'mult')
-     children = ('member',)
-
-     def __init__(self, tag, member, mult):
-        self.tag = tag
-        self.member = member
-        self.mult = mult
-
-
-class TaggedStructMember(ASTType):
-
-    attrs = ('mult', )
-    children = ('taggedstructDefinition', 'blockDefinition')
-
-    def __init__(self, taggedstructDefinition, blockDefinition, mult):
-        self.taggedstructDefinition = taggedstructDefinition
-        self.blockDefinition = blockDefinition
-        self.mult = mult
-
-
-class Declaration(ASTType):
-
-     children = ('blockDefinition', 'typeDefinition')
-
-     def __init__(self, blockDefinition, typeDefinition):
-         self.blockDefinition = blockDefinition
-         self.typeDefinition = typeDefinition
-
-class BlockDefinition(ASTType):
-
-    block = True
-    attrs = ('tag', )
-    children = ('typeName', )
-
-    def __init__(self, tag, typeName):
-        self.tag  = tag
-        self.typeName = typeName
-
-class TypeDefinition(ASTType):
-
-    children = ('typename', )
-
-    def __init__(self, typename):
-        self.typename = typename
-
-
-class DefinitionType(enum.IntEnum):
-    BLOCK           = 0
-    STRUCT          = 1
-    TAGGEDSTRUCT    = 2
-    TAGGEDUNION     = 3
-    ENUM            = 4
-
-
-class TypeDefinitions(object):
-
-    def __init__(self):
-        self.definitions = {}
-
-    def append(self, name, type_, definition):
-        print("APPENDING: {0} {1} {2}".format(name, type_, definition))
-        print()
-
+def createTypeDefinition(typename):
+    res = createDict('TypeDefinition', ('typename', ))
+    res['typename'] = typename
+    return res
 
 class Listener(antlr4.ParseTreeListener):
 
-    typeDefinitions = TypeDefinitions()
     level = 0
 
     def getRule(self, attr):
@@ -218,34 +147,35 @@ class Listener(antlr4.ParseTreeListener):
 
     def exitType_name(self, ctx):
         if ctx.predefined_type_name():
-            name = ctx.predefined_type_name()
+            tp = ctx.predefined_type_name().value
         elif ctx.struct_type_name():
-            name = ctx.struct_type_name()
+            tp = ctx.struct_type_name().value
         elif ctx.taggedstruct_type_name():
-            name = ctx.taggedstruct_type_name()
+            tp = ctx.taggedstruct_type_name().value
         elif ctx.taggedunion_type_name():
-            name = ctx.taggedunion_type_name()
+            tp = ctx.taggedunion_type_name().value
         elif ctx.enum_type_name():
-            name = ctx.enum_type_name()
+            tp = ctx.enum_type_name().value
+            #print("TAG",tp.tag)
         else:
-            print()
-        name = name.value
+            #print()
+            pass
+        try:
+            name = tp.name
+        except:
+            name = "???"
 
         tag = self.getTerminal(ctx.TAG).replace('"', '')
-        match = TYPE_NAME.match("{0!r}".format(type(name)))
-        if match:
-            tn = match.group('klass')
-        else:
-            tn = None
-        ctx.value = TypeName(tag, name, tn)
+        #print("tag: {:10s} name: {:20s} class: {}".format(tag, name, str(tp)))
+        ctx.value = createTypeName(tag, name, tp)
 
     def exitPredefined_type_name(self, ctx):
-        ctx.value =  PredefinedType(ctx.name.text)
+        ctx.value =  createPredefinedType(ctx.name.text)
 
     def exitStruct_type_name(self, ctx):
         name = self.getTerminal(ctx.ID)
-        members = self.getList(ctx.struct_member)
-        value = StructType(name, members)
+        members = [m.value for m in self.getList(ctx.struct_member)]
+        value = createStructType(name, members)
         ctx.value = value
 
     def exitStruct_member(self, ctx):
@@ -254,57 +184,57 @@ class Listener(antlr4.ParseTreeListener):
 
     def exitTaggedstruct_type_name(self, ctx):
         name = self.getTerminal(ctx.ID)
-        members = self.getList(ctx.taggedstruct_member)
-        ctx.value = TaggedStructType(name, members)
+        members = [m.value for m in self.getList(ctx.taggedstruct_member)]
+        ctx.value = createTaggedStructType(name, members)
 
     def exitTaggedstruct_member(self, ctx):
         mult = len(ctx.children) == 5 and ctx.children[3].getText() == '*'
         taggedstructDefinition = self.getRule(ctx.taggedstruct_definition)
         blockDefinition = self.getRule(ctx.block_definition)
-        ctx.value = TaggedStructMember(taggedstructDefinition, blockDefinition, mult)
+        ctx.value = createTaggedStructMember(taggedstructDefinition, blockDefinition, mult)
 
     def exitTaggedstruct_definition(self, ctx):
         mult = len(ctx.children) == 5 and ctx.children[4].getText() == '*'
         tag = ctx.TAG().getText().replace('"', '') if ctx.TAG() else None
         #print("TAG: {} MULT: {}".format(tag, mult))
         member = self.getRule(ctx.member)
-        ctx.value = TaggedStructDefinition(tag, member, mult)
+        ctx.value = createTaggedStructDefinition(tag, member, mult)
 
     def exitEnumerator(self, ctx):
         tag = self.getTerminal(ctx.TAG).replace('"', '')
         constant = ctx.constant().value if ctx.constant() else None
-        ctx.value = Enumerator(tag, constant)
+        ctx.value = createEnumerator(tag, constant)
 
     def exitArray_specifier(self, ctx):
         size = ctx.constant().value
         ctx.value = size
 
     def exitEnumerator_list(self, ctx):
-        ctx.value = self.getList(ctx.enumerator)
+        ctx.value = [e.value for e in self.getList(ctx.enumerator)]
 
     def exitEnum_type_name(self, ctx):
         elements = self.getRule(ctx.enumerator_list)
         id_ = ctx.ID()
-        ctx.value = Enumeration(id_, elements)
+        ctx.value = createEnumeration(id_, elements)
 
     def exitType_definition(self, ctx):
-        ctx.value = TypeDefinition(ctx.type_name().value)
+        ctx.value = createTypeDefinition(ctx.type_name().value)
 
     def exitMember(self, ctx):
-        typeName = ctx.type_name().value
-        arraySpecifier = self.getList(ctx.array_specifier)
-        ctx.value = Member(typeName, arraySpecifier)
+        typename = ctx.type_name().value
+        arraySpecifier = [a.value for a in self.getList(ctx.array_specifier)]
+        ctx.value = createMember(typename, arraySpecifier)
 
     def exitTagged_union_member(self, ctx):
         tag = self.getTerminal(ctx.TAG).replace('"', '')
         member = self.getRule(ctx.member)
         blockDefinition = self.getRule(ctx.block_definition)
-        ctx.value = TaggedUnionMember(tag, member, blockDefinition)
+        ctx.value = createTaggedUnionMember(tag, member, blockDefinition)
 
     def exitTaggedunion_type_name(self, ctx):
         name = self.getTerminal(ctx.ID)
-        members = self.getList(ctx.tagged_union_member)
-        ctx.value = TaggedUnion(name, members)
+        members = [m.value for m in self.getList(ctx.tagged_union_member)]
+        ctx.value = createTaggedUnion(name, members)
 
     def enterBlock_definition(self, ctx):
         self.level += 1
@@ -312,15 +242,15 @@ class Listener(antlr4.ParseTreeListener):
     def exitBlock_definition(self, ctx):
         tag = ctx.TAG().getText().replace('"', '')
         self.level -= 1
-        typeName = ctx.type_name().value
-        ctx.value = BlockDefinition(tag, typeName)
+        typename = ctx.type_name().value
+        ctx.value = createBlockDefinition(tag, typename)
 
     def exitDeclaration(self, ctx):
         blockDefinition = self.getRule(ctx.block_definition)
-        typeDefinition = ctx.type_definition()
-        ctx.value = Declaration(blockDefinition, typeDefinition)
+        typeDefinition = ctx.type_definition().value
+        ctx.value = createDeclaration(blockDefinition, typeDefinition)
 
     def exitAmlFile(self, ctx):
-        declarations = self.getList(ctx.declaration)
+        declarations = [d.value for d in self.getList(ctx.declaration)]
         ctx.value = declarations
 
