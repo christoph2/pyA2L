@@ -24,114 +24,42 @@
 //  Requires ANTLR >= 4.5.1 !!!
 //
 
-grammar a2l;
+lexer grammar a2l;
 
-/*
-
-//amlFile:
-//   BEGIN
-//        (declaration)*
-//   END
-//   ;
-
-
-/*
-json:   obj
-    |   array
+BEGIN:
+    '/begin'
     ;
 
-obj
-    :   '{' pair (',' pair)* '}'    # AnObject
-    |   '{' '}'                     # EmptyObject
+END:
+    '/end'
     ;
-
-array
-    :   '[' value (',' value)* ']'  # ArrayOfValues
-    |   '[' ']'                     # EmptyArray
-    ;
-
-pair:   STRING ':' value ;
-
-value
-    :   STRING      # String
-    |   NUMBER      # Atom
-    |   obj         # ObjectValue
-    |   array       # ArrayValue
-    |   'true'      # Atom
-    |   'false'     # Atom
-    |   'null'      # Atom
-    ;
-*/
-
-a2lFile:
-    version?
-    block;
-
-version:
-    ASAP2_VERSION v0 = INT v1 = INT;
-
-block:
-    BEGIN  kw0 = IDENT value* END kw1 = IDENT
-    //INCLDUE STRING
-    ;
-
-value:
-      IDENT     # valueIdent
-     | STRING   # valueString
-     | INT      # valueInt
-     | HEX      # valueHex
-     | FLOAT    # valueFloat
-     | block    # valueBlock
-    ;
-
-ASAP2_VERSION: 'ASAP2_VERSION';
-
-INCLUDE: '/include';
-
-BEGIN: '/begin';
-
-END: '/end';
-
-
-// constant returns [value]:
-//     INT  {$value = int($INT.text)}
-//   | HEX  {$value = int($HEX.text, 16)}
-//   | FLOAT  {$value = float($FLOAT.text)}
-//   ;
 
 INT: ('+' | '-')? '0'..'9'+
     ;
 
-HEX:   '0'('x' | 'X') ('a' .. 'f' | 'A' .. 'F' | '0' .. '9')+
+HEX:   '0'('x' | 'X') ('a' .. 'f' | 'A' .. 'F' | '0' .. '9')+ -> type(INT)
     ;
 
-FLOAT
-    :   ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
+FLOAT:
+    ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
     |   '.' ('0'..'9')+ EXPONENT?
     |   ('0'..'9')+ EXPONENT
     ;
 
-
-//          \b"(?P<STRING>[^"]*?)"\b
-//       | \b(?P<BEGIN>/begin)\b
-//        | \b(?P<END>/end)\b
-//        | \b(?P<IDENT>[a-zA-Z_][a-zA-Z_0-9.|]*)\b
-//        | \b(?P<NUMBER>
-//                  (0(x|X)?[0-9a-fA-F]+)
-//                | ((\+ | \-)?\d+)
-COMMENT
-    :   ('//' ~('\n'|'\r')* '\r'? '\n'
+COMMENT:
+    ('//' ~('\n'|'\r')* '\r'? '\n'
     |   '/*' .*? '*/')
         -> channel(HIDDEN)
     ;
+
 
 WS  :   (' ' | '\t' | '\r' | '\n') -> channel(HIDDEN)
     ;
 
 IDENT: [a-zA-Z_][a-zA-Z_0-9.]*;
 
-STRING
-    :  '"' ( ESC_SEQ | ~('\\'|'"') )* '"'
+STRING:
+    '"' ( ESC_SEQ | ~('\\'|'"') )* '"'
     ;
 
 fragment
@@ -142,14 +70,28 @@ HEX_DIGIT : ('0'..'9'|'a'..'f'|'A'..'F') ;
 
 fragment
 ESC_SEQ
-    :   '\\' ('b'|'t'|'n'|'f'|'r'|'\"'|'\''|'\\')
-    |   OCTAL_ESC
-    ;
+	:	'\\'
+		(	// The standard escaped character set such as tab, newline, etc.
+			[btnfr"'\\]
+		|	// A Java style Unicode escape sequence
+			UNICODE_ESC
+		|	// Invalid escape
+			.
+		|	// Invalid escape at end of file
+			EOF
+		)
+	;
 
 fragment
-OCTAL_ESC
-    :   '\\' ('0'..'3') ('0'..'7') ('0'..'7')
+UNICODE_ESC
+    :   'u' (HEX_DIGIT (HEX_DIGIT (HEX_DIGIT HEX_DIGIT?)?)?)?
+;
+
+fragment
+OCTAL_ESC:
+    '\\' ('0'..'3') ('0'..'7') ('0'..'7')
     |   '\\' ('0'..'7') ('0'..'7')
     |   '\\' ('0'..'7')
     ;
+
 
