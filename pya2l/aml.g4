@@ -1,7 +1,7 @@
 /*
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2016 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2018 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -65,7 +65,7 @@ predefined_type_name:
    ;
 
 block_definition:
-   'block' TAG type_name
+   'block' TAG (type_name | /* Owed to Vector Informatik... */ '(' member ')' '*')
    ;
 
 enum_type_name:
@@ -82,8 +82,8 @@ enumerator:
    ;
 
 struct_type_name:
-    (('struct' ID? '{' struct_member * '}')
-    | ('struct' ID))
+      'struct' ID? '{' struct_member * '}'
+    | 'struct' ID
     ;
 
 struct_member:
@@ -99,21 +99,20 @@ array_specifier:
    ;
 
 taggedstruct_type_name:
-    ID? 'taggedstruct' ('{' (taggedstruct_member)* '}'
-   | (taggedstruct_member)*)
+     'taggedstruct' ID? ('{' (taggedstruct_member)* '}' | (taggedstruct_member)*)
+   | 'taggedstruct' ID
    ;
 
 taggedstruct_member:
-    //{print(self._input.LA(1))}
-    ('(' taggedstruct_definition ')' '*' ';')   // {self._input.LA(1) == '(' and self._input.LA(2) == self.RULE_taggedstruct_definition}?
-    | ('(' block_definition ')' '*' ';') // {self._input.LA(1) == '(' and self._input.LA(2) == self.RULE_block_definition}?
+    ('(' taggedstruct_definition ')' '*' ';')
+    | ('(' block_definition ')' '*' ';')
     | (taggedstruct_definition ';')
     | (block_definition ';')
    ;
 
 taggedstruct_definition:
      TAG? member?
-   | TAG? '(' member ')' '*' //';'
+   | TAG? '(' member ')' '*'
    ;
 
 taggedunion_type_name:
