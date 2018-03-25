@@ -43,8 +43,8 @@ class AMLDict(OrderedDict):
         return self[attr]
 
 
-def createDict(classname, children, attrs = (), block = False):
-    return AMLDict(classname = classname, children = children, attrs = attrs, block = block)
+def createDict(classname, children, attrs = ()):
+    return AMLDict(classname = classname, children = children, attrs = attrs)
 
 def createEnumeration(tag, enumerators):
     res = createDict('Enumeration', children = ('enumerators', ), attrs = ('tag', ))
@@ -121,10 +121,11 @@ def createDeclaration(blockDefinition, typeDefinition):
     res['typeDefinition'] = typeDefinition
     return res
 
-def createBlockDefinition(tag, typename):
-    res = createDict('BlockDefinition', ('typename', ), attrs = ('tag', ), block = True)
+def createBlockDefinition(tag, typename, member):
+    res = createDict('BlockDefinition', ('typename', 'member'), attrs = ('tag', ))
     res['tag']  = tag
     res['typename'] = typename
+    res['member'] = member
     return res
 
 def createTypeDefinition(typename):
@@ -242,12 +243,13 @@ class Listener(antlr4.ParseTreeListener):
     def exitBlock_definition(self, ctx):
         tag = ctx.TAG().getText().replace('"', '')
         self.level -= 1
-        typename = ctx.type_name().value
-        ctx.value = createBlockDefinition(tag, typename)
+        typename = self.getRule(ctx.type_name)
+        member = self.getRule(ctx.member)
+        ctx.value = createBlockDefinition(tag, typename, member)
 
     def exitDeclaration(self, ctx):
         blockDefinition = self.getRule(ctx.block_definition)
-        typeDefinition = ctx.type_definition().value
+        typeDefinition = self.getRule(ctx.type_definition)
         ctx.value = createDeclaration(blockDefinition, typeDefinition)
 
     def exitAmlFile(self, ctx):
