@@ -1,5 +1,5 @@
 environment:
-  COVERALLS_REPO_TOKEN: 
+  COVERALLS_REPO_TOKEN:
     secure: DFqtaA1FWZtyjkWrLuWo0/fhZjHbiZaQoZw91SYpXhlTuQv08YfiRoL/rwvqDQh9
   CODACY_PROJECT_TOKEN:
     secure: Cx6jEa48Lx4/h9qiwR/N+0zsyf85D1rITrnG44XySbuiYPfg77ZS1wlkGx/B8zdM
@@ -12,9 +12,9 @@ environment:
     # isn't covered by this document) at the time of writing.
 
     - PYTHON: "C:\\Python27"
-    #- PYTHON: "C:\\Python33"
-    #- PYTHON: "C:\\Python34"
-    #- PYTHON: "C:\\Python35"
+    - PYTHON: "C:\\Python33"
+    - PYTHON: "C:\\Python34"
+    - PYTHON: "C:\\Python35"
     - PYTHON: "C:\\Python27-x64"
     #- PYTHON: "C:\\Python33-x64"
     #  DISTUTILS_USE_SDK: "1"
