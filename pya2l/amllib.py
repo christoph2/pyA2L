@@ -43,95 +43,96 @@ class AMLDict(OrderedDict):
         return self[attr]
 
 
-def createDict(classname, children, attrs = ()):
-    return AMLDict(classname = classname, children = children, attrs = attrs)
+def createDict(classname):
+    return AMLDict(classname = classname)
 
-def createEnumeration(tag, enumerators):
-    res = createDict('Enumeration', children = ('enumerators', ), attrs = ('tag', ))
-    res['tag'] = tag
+def createEnumeration(name, enumerators):
+    res = createDict('Enumeration')
+    res['name'] = name
     res['enumerators'] = enumerators
     return res
 
 def createEnumerator(tag, constant):
-    res = createDict('Enumerator', (), attrs = ('tag', 'constant'))
+    res = createDict('Enumerator')
     res['tag'] = tag
     res['constant'] = constant
     return res
 
 def createTaggedUnion(name, members):
-    res = createDict('TaggedUnion', children = ('members', ), attrs = ('name', ))
+    res = createDict('TaggedUnion')
     res['name'] = name
     res['members'] = members
     return res
 
 def createTaggedUnionMember(tag, member, blockDefinition):
-    res = createDict('TaggedUnionMember', children = ('member', 'blockDefinition'), attrs = ('tag', ))
+    res = createDict('TaggedUnionMember')
     res['tag'] = tag
     res['member'] = member
     res['blockDefinition'] = blockDefinition
     return res
 
 def createMember(typename, arraySpecifier):
-    res = createDict('Member', children = ('typename', ), attrs = ('arraySpecifier', ))
+    res = createDict('Member')
     res['typename'] = typename
     res['arraySpecifier'] = arraySpecifier
     return res
 
 def createTypeName(tag, name, _type):
-    res = createDict('TypeName', children = ('name', ), attrs = ('tag', ))
+    res = createDict('TypeName')
     res['tag'] = tag
     res['name'] = name
     res['type'] = _type
     return res
 
 def createPredefinedType(name):
-    res = createDict('PredefinedType', (), attrs = ('name', ))
+    res = createDict('PredefinedType')
     res['name'] = name
     return res
 
 def createStructType(name, members):
-    res = createDict('StructType', children = ('member', ), attrs = ('name', ))
+    res = createDict('StructType')
     res['name'] = name
     res['members'] = members
     return res
 
 def createTaggedStructType(name, members):
-    res = createDict('TaggedStructType', children = ('member', ), attrs = ('name', ))
+    res = createDict('TaggedStructType')
     res['name'] = name
     res['members'] = members
     return res
 
 def createTaggedStructDefinition(tag, member, mult):
-    res = createDict('TaggedStructDefinition', children = ('member',), attrs = ('tag', 'mult'))
+    res = createDict('TaggedStructDefinition')
     res['tag'] = tag
     res['member'] = member
     res['mult'] = mult
     return res
 
 def createTaggedStructMember(taggedstructDefinition, blockDefinition, mult):
-    res = createDict('TaggedStructMember', children = ('taggedstructDefinition', 'blockDefinition'), attrs = ('mult', ))
+    res = createDict('TaggedStructMember')
     res['taggedstructDefinition'] = taggedstructDefinition
     res['blockDefinition'] = blockDefinition
     res['mult'] = mult
     return res
 
 def createDeclaration(blockDefinition, typeDefinition):
-    res = createDict('Declaration', ('blockDefinition', 'typeDefinition'))
+    res = createDict('Declaration')
     res['blockDefinition'] = blockDefinition
     res['typeDefinition'] = typeDefinition
     return res
 
 def createBlockDefinition(tag, typename, member):
-    res = createDict('BlockDefinition', ('typename', 'member'), attrs = ('tag', ))
+    res = createDict('BlockDefinition')
     res['tag']  = tag
     res['typename'] = typename
     res['member'] = member
     return res
 
 def createTypeDefinition(typename):
-    res = createDict('TypeDefinition', ('typename', ))
+    res = createDict('TypeDefinition')
     res['typename'] = typename
     return res
+
 
 class Listener(antlr4.ParseTreeListener):
 
@@ -215,8 +216,8 @@ class Listener(antlr4.ParseTreeListener):
 
     def exitEnum_type_name(self, ctx):
         elements = self.getRule(ctx.enumerator_list)
-        id_ = ctx.ID()
-        ctx.value = createEnumeration(id_, elements)
+        name = self.getTerminal(ctx.ID)
+        ctx.value = createEnumeration(name, elements)
 
     def exitType_definition(self, ctx):
         ctx.value = createTypeDefinition(ctx.type_name().value)
