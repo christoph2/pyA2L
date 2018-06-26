@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2017 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2018 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -81,31 +81,17 @@ class ParserWrapper(object):
         listener = amllib.Listener()
         walker = antlr4.ParseTreeWalker()
         walker.walk(listener, tree)
-
-        #pprint(tree.toStringTree())
-        """
-        JavaLexer lexer = new JavaLexer(input);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        JavaParser parser = new JavaParser(tokens);
-
-        ParseTree tree = parser.compilationUnit(); // parse
-        ParseTreeWalker walker = new ParseTreeWalker(); // create standard walker
-        ExtractInterfaceListener extractor = new ExtractInterfaceListener(parser);
-        walker.walk(extractor, tree); // initiate walk of tree with listener
-        """
-
-
         return tree
 
-    def parseFromFile(self, fileName, trace = False):
-        return self.parse(ParserWrapper.stringStream(fileName), trace)
+    def parseFromFile(self, fileName, encoding = "utf8", trace = False):
+        return self.parse(ParserWrapper.stringStream(fileName, encoding), trace)
 
     def parseFromString(self, buffer, trace = False):
         return self.parse(antlr4.InputStream(buffer), trace)
 
     @staticmethod
-    def stringStream(fname):
-        return antlr4.InputStream(codecs.open(fname, encoding = 'UTF-8').read())
+    def stringStream(fname, encoding = "utf-8"):
+        return antlr4.InputStream(codecs.open(fname).read())
 
     def _getNumberOfSyntaxErrors(self):
         return self._syntaxErrors
