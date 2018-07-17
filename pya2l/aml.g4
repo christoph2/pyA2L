@@ -28,13 +28,13 @@ grammar aml;
 
 amlFile:
    '/begin' 'A2ML'
-        (declaration)*
+        (d += declaration)*
    '/end' 'A2ML'
    ;
 
 declaration:
-   (type_definition
-    | block_definition) ';'
+   ( t = type_definition
+   | b = block_definition) ';'
    ;
 
 type_definition:
@@ -42,12 +42,12 @@ type_definition:
    ;
 
 type_name:
-   TAG? (
-     predefined_type_name
-   | struct_type_name
-   | taggedstruct_type_name
-   | taggedunion_type_name
-   | enum_type_name
+   t = tagValue? (
+     pr = predefined_type_name
+   | st = struct_type_name
+   | ts = taggedstruct_type_name
+   | tu = taggedunion_type_name
+   | en = enum_type_name
    )
    ;
 
@@ -65,75 +65,98 @@ predefined_type_name:
    ;
 
 block_definition:
-   'block' TAG (type_name | /* Owed to Vector Informatik... */ '(' member ')' '*')
+   'block' tag = tagValue (tn = type_name | /* Owed to Vector Informatik... */ '(' mem = member ')' '*')
    ;
 
 enum_type_name:
-      ('enum' ID? '{' enumerator_list '}' )
-    | ('enum' ID)
+      ('enum' t0 = identifierValue? '{' l = enumerator_list '}' )
+    | ('enum' t1 = identifierValue)
     ;
 
 enumerator_list:
-   enumerator (',' enumerator )*
+   ids += enumerator (',' ids += enumerator )*
    ;
 
 enumerator:
-    TAG ('=' constant)?
+   t = tagValue ('=' c = constant)?
    ;
 
 struct_type_name:
-      'struct' ID? '{' struct_member * '}'
-    | 'struct' ID
+      'struct' t0 = identifierValue? '{' l += struct_member* '}'
+    | 'struct' t1 = identifierValue
     ;
 
 struct_member:
-   member ';'
+   m = member ';'
    ;
 
 member:
-    type_name (array_specifier)*
+    t = type_name (a += array_specifier)*
     ;
 
 array_specifier:
-   '[' constant ']'
+   '[' c = constant ']'
    ;
 
 taggedstruct_type_name:
-     'taggedstruct' ID? ('{' (taggedstruct_member)* '}' | (taggedstruct_member)*)
-   | 'taggedstruct' ID
+     'taggedstruct' t0 = identifierValue? ('{' (l += taggedstruct_member)* '}' | (l += taggedstruct_member)*)
+   | 'taggedstruct' t1 = identifierValue
    ;
 
 taggedstruct_member:
-    ('(' taggedstruct_definition ')' '*' ';')
-    | ('(' block_definition ')' '*' ';')
-    | (taggedstruct_definition ';')
-    | (block_definition ';')
+    ('(' ts0 = taggedstruct_definition ')' m0 = '*' ';')
+    | ('(' bl0 = block_definition ')' m1 = '*' ';')
+    | (ts1 = taggedstruct_definition ';')
+    | (bl1 = block_definition ';')
    ;
 
 taggedstruct_definition:
-     TAG? member?
-   | TAG? '(' member ')' '*'
+     tag = tagValue? mem = member?
+   | tag = tagValue? '(' mem = member ')' mult = '*'
    ;
 
 taggedunion_type_name:
-    (('taggedunion' ID? '{' tagged_union_member* '}')
-    | ('taggedunion' ID))
+    (('taggedunion' t0 = identifierValue? '{' l += tagged_union_member* '}')
+    | ('taggedunion' t1 = identifierValue))
     ;
 
 tagged_union_member:
    (
-     TAG  member?  ';'
-   | block_definition ';'
+     t = tagValue  m = member?  ';'
+   | b = block_definition ';'
    )
    ;
 
 constant returns [value]:
-     INT  {$value = int($INT.text)}
-   | HEX  {$value = int($HEX.text, 16)}
-   | FLOAT  {$value = float($FLOAT.text)}
+     i = INT
+   | h = HEX
+   | f = FLOAT
    ;
 
+intValue:
+    i = INT
+    ;
 
+floatValue:
+    f = FLOAT
+    ;
+
+number:
+     i = intValue
+   | f = floatValue
+   ;
+
+stringValue:
+    s = STRING
+    ;
+
+tagValue:
+    s = TAG
+    ;
+
+identifierValue:
+    i = ID
+    ;
 /*
 ** Lexer
 */

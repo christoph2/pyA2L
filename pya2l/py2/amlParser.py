@@ -8,110 +8,121 @@ import sys
 def serializedATN():
     with StringIO() as buf:
         buf.write(u"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3")
-        buf.write(u"$\u00ef\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t")
+        buf.write(u"$\u0107\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t")
         buf.write(u"\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\4\r\t\r")
         buf.write(u"\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22\4")
-        buf.write(u"\23\t\23\4\24\t\24\3\2\3\2\3\2\7\2,\n\2\f\2\16\2/\13")
-        buf.write(u"\2\3\2\3\2\3\2\3\3\3\3\5\3\66\n\3\3\3\3\3\3\4\3\4\3\5")
-        buf.write(u"\5\5=\n\5\3\5\3\5\3\5\3\5\3\5\5\5D\n\5\3\6\3\6\3\6\3")
-        buf.write(u"\6\3\6\3\6\3\6\3\6\5\6N\n\6\3\7\3\7\3\7\3\7\3\7\3\7\3")
-        buf.write(u"\7\3\7\5\7X\n\7\3\b\3\b\5\b\\\n\b\3\b\3\b\3\b\3\b\3\b")
-        buf.write(u"\3\b\5\bd\n\b\3\t\3\t\3\t\7\ti\n\t\f\t\16\tl\13\t\3\n")
-        buf.write(u"\3\n\3\n\5\nq\n\n\3\13\3\13\5\13u\n\13\3\13\3\13\7\13")
-        buf.write(u"y\n\13\f\13\16\13|\13\13\3\13\3\13\3\13\5\13\u0081\n")
-        buf.write(u"\13\3\f\3\f\3\f\3\r\3\r\7\r\u0088\n\r\f\r\16\r\u008b")
-        buf.write(u"\13\r\3\16\3\16\3\16\3\16\3\17\3\17\5\17\u0093\n\17\3")
-        buf.write(u"\17\3\17\7\17\u0097\n\17\f\17\16\17\u009a\13\17\3\17")
-        buf.write(u"\3\17\7\17\u009e\n\17\f\17\16\17\u00a1\13\17\5\17\u00a3")
-        buf.write(u"\n\17\3\17\3\17\5\17\u00a7\n\17\3\20\3\20\3\20\3\20\3")
-        buf.write(u"\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20")
-        buf.write(u"\3\20\3\20\3\20\5\20\u00bb\n\20\3\21\5\21\u00be\n\21")
-        buf.write(u"\3\21\5\21\u00c1\n\21\3\21\5\21\u00c4\n\21\3\21\3\21")
-        buf.write(u"\3\21\3\21\3\21\5\21\u00cb\n\21\3\22\3\22\5\22\u00cf")
-        buf.write(u"\n\22\3\22\3\22\7\22\u00d3\n\22\f\22\16\22\u00d6\13\22")
-        buf.write(u"\3\22\3\22\3\22\5\22\u00db\n\22\3\23\3\23\5\23\u00df")
-        buf.write(u"\n\23\3\23\3\23\3\23\3\23\5\23\u00e5\n\23\3\24\3\24\3")
-        buf.write(u"\24\3\24\3\24\3\24\5\24\u00ed\n\24\3\24\2\2\25\2\4\6")
-        buf.write(u"\b\n\f\16\20\22\24\26\30\32\34\36 \"$&\2\2\2\u0105\2")
-        buf.write(u"(\3\2\2\2\4\65\3\2\2\2\69\3\2\2\2\b<\3\2\2\2\nM\3\2\2")
-        buf.write(u"\2\fO\3\2\2\2\16c\3\2\2\2\20e\3\2\2\2\22m\3\2\2\2\24")
-        buf.write(u"\u0080\3\2\2\2\26\u0082\3\2\2\2\30\u0085\3\2\2\2\32\u008c")
-        buf.write(u"\3\2\2\2\34\u00a6\3\2\2\2\36\u00ba\3\2\2\2 \u00ca\3\2")
-        buf.write(u"\2\2\"\u00da\3\2\2\2$\u00e4\3\2\2\2&\u00ec\3\2\2\2()")
-        buf.write(u"\7\3\2\2)-\7\4\2\2*,\5\4\3\2+*\3\2\2\2,/\3\2\2\2-+\3")
-        buf.write(u"\2\2\2-.\3\2\2\2.\60\3\2\2\2/-\3\2\2\2\60\61\7\5\2\2")
-        buf.write(u"\61\62\7\4\2\2\62\3\3\2\2\2\63\66\5\6\4\2\64\66\5\f\7")
-        buf.write(u"\2\65\63\3\2\2\2\65\64\3\2\2\2\66\67\3\2\2\2\678\7\6")
-        buf.write(u"\2\28\5\3\2\2\29:\5\b\5\2:\7\3\2\2\2;=\7\36\2\2<;\3\2")
-        buf.write(u"\2\2<=\3\2\2\2=C\3\2\2\2>D\5\n\6\2?D\5\24\13\2@D\5\34")
-        buf.write(u"\17\2AD\5\"\22\2BD\5\16\b\2C>\3\2\2\2C?\3\2\2\2C@\3\2")
-        buf.write(u"\2\2CA\3\2\2\2CB\3\2\2\2D\t\3\2\2\2EN\7\7\2\2FN\7\b\2")
-        buf.write(u"\2GN\7\t\2\2HN\7\n\2\2IN\7\13\2\2JN\7\f\2\2KN\7\r\2\2")
-        buf.write(u"LN\7\16\2\2ME\3\2\2\2MF\3\2\2\2MG\3\2\2\2MH\3\2\2\2M")
-        buf.write(u"I\3\2\2\2MJ\3\2\2\2MK\3\2\2\2ML\3\2\2\2N\13\3\2\2\2O")
-        buf.write(u"P\7\17\2\2PW\7\36\2\2QX\5\b\5\2RS\7\20\2\2ST\5\30\r\2")
-        buf.write(u"TU\7\21\2\2UV\7\22\2\2VX\3\2\2\2WQ\3\2\2\2WR\3\2\2\2")
-        buf.write(u"X\r\3\2\2\2Y[\7\23\2\2Z\\\7\35\2\2[Z\3\2\2\2[\\\3\2\2")
-        buf.write(u"\2\\]\3\2\2\2]^\7\24\2\2^_\5\20\t\2_`\7\25\2\2`d\3\2")
-        buf.write(u"\2\2ab\7\23\2\2bd\7\35\2\2cY\3\2\2\2ca\3\2\2\2d\17\3")
-        buf.write(u"\2\2\2ej\5\22\n\2fg\7\26\2\2gi\5\22\n\2hf\3\2\2\2il\3")
-        buf.write(u"\2\2\2jh\3\2\2\2jk\3\2\2\2k\21\3\2\2\2lj\3\2\2\2mp\7")
-        buf.write(u"\36\2\2no\7\27\2\2oq\5&\24\2pn\3\2\2\2pq\3\2\2\2q\23")
-        buf.write(u"\3\2\2\2rt\7\30\2\2su\7\35\2\2ts\3\2\2\2tu\3\2\2\2uv")
-        buf.write(u"\3\2\2\2vz\7\24\2\2wy\5\26\f\2xw\3\2\2\2y|\3\2\2\2zx")
-        buf.write(u"\3\2\2\2z{\3\2\2\2{}\3\2\2\2|z\3\2\2\2}\u0081\7\25\2")
-        buf.write(u"\2~\177\7\30\2\2\177\u0081\7\35\2\2\u0080r\3\2\2\2\u0080")
-        buf.write(u"~\3\2\2\2\u0081\25\3\2\2\2\u0082\u0083\5\30\r\2\u0083")
-        buf.write(u"\u0084\7\6\2\2\u0084\27\3\2\2\2\u0085\u0089\5\b\5\2\u0086")
-        buf.write(u"\u0088\5\32\16\2\u0087\u0086\3\2\2\2\u0088\u008b\3\2")
-        buf.write(u"\2\2\u0089\u0087\3\2\2\2\u0089\u008a\3\2\2\2\u008a\31")
-        buf.write(u"\3\2\2\2\u008b\u0089\3\2\2\2\u008c\u008d\7\31\2\2\u008d")
-        buf.write(u"\u008e\5&\24\2\u008e\u008f\7\32\2\2\u008f\33\3\2\2\2")
-        buf.write(u"\u0090\u0092\7\33\2\2\u0091\u0093\7\35\2\2\u0092\u0091")
-        buf.write(u"\3\2\2\2\u0092\u0093\3\2\2\2\u0093\u00a2\3\2\2\2\u0094")
-        buf.write(u"\u0098\7\24\2\2\u0095\u0097\5\36\20\2\u0096\u0095\3\2")
-        buf.write(u"\2\2\u0097\u009a\3\2\2\2\u0098\u0096\3\2\2\2\u0098\u0099")
-        buf.write(u"\3\2\2\2\u0099\u009b\3\2\2\2\u009a\u0098\3\2\2\2\u009b")
-        buf.write(u"\u00a3\7\25\2\2\u009c\u009e\5\36\20\2\u009d\u009c\3\2")
-        buf.write(u"\2\2\u009e\u00a1\3\2\2\2\u009f\u009d\3\2\2\2\u009f\u00a0")
-        buf.write(u"\3\2\2\2\u00a0\u00a3\3\2\2\2\u00a1\u009f\3\2\2\2\u00a2")
-        buf.write(u"\u0094\3\2\2\2\u00a2\u009f\3\2\2\2\u00a3\u00a7\3\2\2")
-        buf.write(u"\2\u00a4\u00a5\7\33\2\2\u00a5\u00a7\7\35\2\2\u00a6\u0090")
-        buf.write(u"\3\2\2\2\u00a6\u00a4\3\2\2\2\u00a7\35\3\2\2\2\u00a8\u00a9")
-        buf.write(u"\7\20\2\2\u00a9\u00aa\5 \21\2\u00aa\u00ab\7\21\2\2\u00ab")
-        buf.write(u"\u00ac\7\22\2\2\u00ac\u00ad\7\6\2\2\u00ad\u00bb\3\2\2")
-        buf.write(u"\2\u00ae\u00af\7\20\2\2\u00af\u00b0\5\f\7\2\u00b0\u00b1")
-        buf.write(u"\7\21\2\2\u00b1\u00b2\7\22\2\2\u00b2\u00b3\7\6\2\2\u00b3")
-        buf.write(u"\u00bb\3\2\2\2\u00b4\u00b5\5 \21\2\u00b5\u00b6\7\6\2")
-        buf.write(u"\2\u00b6\u00bb\3\2\2\2\u00b7\u00b8\5\f\7\2\u00b8\u00b9")
-        buf.write(u"\7\6\2\2\u00b9\u00bb\3\2\2\2\u00ba\u00a8\3\2\2\2\u00ba")
-        buf.write(u"\u00ae\3\2\2\2\u00ba\u00b4\3\2\2\2\u00ba\u00b7\3\2\2")
-        buf.write(u"\2\u00bb\37\3\2\2\2\u00bc\u00be\7\36\2\2\u00bd\u00bc")
-        buf.write(u"\3\2\2\2\u00bd\u00be\3\2\2\2\u00be\u00c0\3\2\2\2\u00bf")
-        buf.write(u"\u00c1\5\30\r\2\u00c0\u00bf\3\2\2\2\u00c0\u00c1\3\2\2")
-        buf.write(u"\2\u00c1\u00cb\3\2\2\2\u00c2\u00c4\7\36\2\2\u00c3\u00c2")
-        buf.write(u"\3\2\2\2\u00c3\u00c4\3\2\2\2\u00c4\u00c5\3\2\2\2\u00c5")
-        buf.write(u"\u00c6\7\20\2\2\u00c6\u00c7\5\30\r\2\u00c7\u00c8\7\21")
-        buf.write(u"\2\2\u00c8\u00c9\7\22\2\2\u00c9\u00cb\3\2\2\2\u00ca\u00bd")
-        buf.write(u"\3\2\2\2\u00ca\u00c3\3\2\2\2\u00cb!\3\2\2\2\u00cc\u00ce")
-        buf.write(u"\7\34\2\2\u00cd\u00cf\7\35\2\2\u00ce\u00cd\3\2\2\2\u00ce")
-        buf.write(u"\u00cf\3\2\2\2\u00cf\u00d0\3\2\2\2\u00d0\u00d4\7\24\2")
-        buf.write(u"\2\u00d1\u00d3\5$\23\2\u00d2\u00d1\3\2\2\2\u00d3\u00d6")
-        buf.write(u"\3\2\2\2\u00d4\u00d2\3\2\2\2\u00d4\u00d5\3\2\2\2\u00d5")
-        buf.write(u"\u00d7\3\2\2\2\u00d6\u00d4\3\2\2\2\u00d7\u00db\7\25\2")
-        buf.write(u"\2\u00d8\u00d9\7\34\2\2\u00d9\u00db\7\35\2\2\u00da\u00cc")
-        buf.write(u"\3\2\2\2\u00da\u00d8\3\2\2\2\u00db#\3\2\2\2\u00dc\u00de")
-        buf.write(u"\7\36\2\2\u00dd\u00df\5\30\r\2\u00de\u00dd\3\2\2\2\u00de")
-        buf.write(u"\u00df\3\2\2\2\u00df\u00e0\3\2\2\2\u00e0\u00e5\7\6\2")
-        buf.write(u"\2\u00e1\u00e2\5\f\7\2\u00e2\u00e3\7\6\2\2\u00e3\u00e5")
-        buf.write(u"\3\2\2\2\u00e4\u00dc\3\2\2\2\u00e4\u00e1\3\2\2\2\u00e5")
-        buf.write(u"%\3\2\2\2\u00e6\u00e7\7\37\2\2\u00e7\u00ed\b\24\1\2\u00e8")
-        buf.write(u"\u00e9\7 \2\2\u00e9\u00ed\b\24\1\2\u00ea\u00eb\7!\2\2")
-        buf.write(u"\u00eb\u00ed\b\24\1\2\u00ec\u00e6\3\2\2\2\u00ec\u00e8")
-        buf.write(u"\3\2\2\2\u00ec\u00ea\3\2\2\2\u00ed\'\3\2\2\2 -\65<CM")
-        buf.write(u"W[cjptz\u0080\u0089\u0092\u0098\u009f\u00a2\u00a6\u00ba")
-        buf.write(u"\u00bd\u00c0\u00c3\u00ca\u00ce\u00d4\u00da\u00de\u00e4")
-        buf.write(u"\u00ec")
+        buf.write(u"\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30")
+        buf.write(u"\t\30\4\31\t\31\4\32\t\32\3\2\3\2\3\2\7\28\n\2\f\2\16")
+        buf.write(u"\2;\13\2\3\2\3\2\3\2\3\3\3\3\5\3B\n\3\3\3\3\3\3\4\3\4")
+        buf.write(u"\3\5\5\5I\n\5\3\5\3\5\3\5\3\5\3\5\5\5P\n\5\3\6\3\6\3")
+        buf.write(u"\6\3\6\3\6\3\6\3\6\3\6\5\6Z\n\6\3\7\3\7\3\7\3\7\3\7\3")
+        buf.write(u"\7\3\7\3\7\5\7d\n\7\3\b\3\b\5\bh\n\b\3\b\3\b\3\b\3\b")
+        buf.write(u"\3\b\3\b\5\bp\n\b\3\t\3\t\3\t\7\tu\n\t\f\t\16\tx\13\t")
+        buf.write(u"\3\n\3\n\3\n\5\n}\n\n\3\13\3\13\5\13\u0081\n\13\3\13")
+        buf.write(u"\3\13\7\13\u0085\n\13\f\13\16\13\u0088\13\13\3\13\3\13")
+        buf.write(u"\3\13\5\13\u008d\n\13\3\f\3\f\3\f\3\r\3\r\7\r\u0094\n")
+        buf.write(u"\r\f\r\16\r\u0097\13\r\3\16\3\16\3\16\3\16\3\17\3\17")
+        buf.write(u"\5\17\u009f\n\17\3\17\3\17\7\17\u00a3\n\17\f\17\16\17")
+        buf.write(u"\u00a6\13\17\3\17\3\17\7\17\u00aa\n\17\f\17\16\17\u00ad")
+        buf.write(u"\13\17\5\17\u00af\n\17\3\17\3\17\5\17\u00b3\n\17\3\20")
+        buf.write(u"\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3")
+        buf.write(u"\20\3\20\3\20\3\20\3\20\3\20\3\20\5\20\u00c7\n\20\3\21")
+        buf.write(u"\5\21\u00ca\n\21\3\21\5\21\u00cd\n\21\3\21\5\21\u00d0")
+        buf.write(u"\n\21\3\21\3\21\3\21\3\21\3\21\5\21\u00d7\n\21\3\22\3")
+        buf.write(u"\22\5\22\u00db\n\22\3\22\3\22\7\22\u00df\n\22\f\22\16")
+        buf.write(u"\22\u00e2\13\22\3\22\3\22\3\22\5\22\u00e7\n\22\3\23\3")
+        buf.write(u"\23\5\23\u00eb\n\23\3\23\3\23\3\23\3\23\3\23\5\23\u00f2")
+        buf.write(u"\n\23\3\24\3\24\3\24\5\24\u00f7\n\24\3\25\3\25\3\26\3")
+        buf.write(u"\26\3\27\3\27\5\27\u00ff\n\27\3\30\3\30\3\31\3\31\3\32")
+        buf.write(u"\3\32\3\32\2\2\33\2\4\6\b\n\f\16\20\22\24\26\30\32\34")
+        buf.write(u"\36 \"$&(*,.\60\62\2\2\2\u0118\2\64\3\2\2\2\4A\3\2\2")
+        buf.write(u"\2\6E\3\2\2\2\bH\3\2\2\2\nY\3\2\2\2\f[\3\2\2\2\16o\3")
+        buf.write(u"\2\2\2\20q\3\2\2\2\22y\3\2\2\2\24\u008c\3\2\2\2\26\u008e")
+        buf.write(u"\3\2\2\2\30\u0091\3\2\2\2\32\u0098\3\2\2\2\34\u00b2\3")
+        buf.write(u"\2\2\2\36\u00c6\3\2\2\2 \u00d6\3\2\2\2\"\u00e6\3\2\2")
+        buf.write(u"\2$\u00f1\3\2\2\2&\u00f6\3\2\2\2(\u00f8\3\2\2\2*\u00fa")
+        buf.write(u"\3\2\2\2,\u00fe\3\2\2\2.\u0100\3\2\2\2\60\u0102\3\2\2")
+        buf.write(u"\2\62\u0104\3\2\2\2\64\65\7\3\2\2\659\7\4\2\2\668\5\4")
+        buf.write(u"\3\2\67\66\3\2\2\28;\3\2\2\29\67\3\2\2\29:\3\2\2\2:<")
+        buf.write(u"\3\2\2\2;9\3\2\2\2<=\7\5\2\2=>\7\4\2\2>\3\3\2\2\2?B\5")
+        buf.write(u"\6\4\2@B\5\f\7\2A?\3\2\2\2A@\3\2\2\2BC\3\2\2\2CD\7\6")
+        buf.write(u"\2\2D\5\3\2\2\2EF\5\b\5\2F\7\3\2\2\2GI\5\60\31\2HG\3")
+        buf.write(u"\2\2\2HI\3\2\2\2IO\3\2\2\2JP\5\n\6\2KP\5\24\13\2LP\5")
+        buf.write(u"\34\17\2MP\5\"\22\2NP\5\16\b\2OJ\3\2\2\2OK\3\2\2\2OL")
+        buf.write(u"\3\2\2\2OM\3\2\2\2ON\3\2\2\2P\t\3\2\2\2QZ\7\7\2\2RZ\7")
+        buf.write(u"\b\2\2SZ\7\t\2\2TZ\7\n\2\2UZ\7\13\2\2VZ\7\f\2\2WZ\7\r")
+        buf.write(u"\2\2XZ\7\16\2\2YQ\3\2\2\2YR\3\2\2\2YS\3\2\2\2YT\3\2\2")
+        buf.write(u"\2YU\3\2\2\2YV\3\2\2\2YW\3\2\2\2YX\3\2\2\2Z\13\3\2\2")
+        buf.write(u"\2[\\\7\17\2\2\\c\5\60\31\2]d\5\b\5\2^_\7\20\2\2_`\5")
+        buf.write(u"\30\r\2`a\7\21\2\2ab\7\22\2\2bd\3\2\2\2c]\3\2\2\2c^\3")
+        buf.write(u"\2\2\2d\r\3\2\2\2eg\7\23\2\2fh\5\62\32\2gf\3\2\2\2gh")
+        buf.write(u"\3\2\2\2hi\3\2\2\2ij\7\24\2\2jk\5\20\t\2kl\7\25\2\2l")
+        buf.write(u"p\3\2\2\2mn\7\23\2\2np\5\62\32\2oe\3\2\2\2om\3\2\2\2")
+        buf.write(u"p\17\3\2\2\2qv\5\22\n\2rs\7\26\2\2su\5\22\n\2tr\3\2\2")
+        buf.write(u"\2ux\3\2\2\2vt\3\2\2\2vw\3\2\2\2w\21\3\2\2\2xv\3\2\2")
+        buf.write(u"\2y|\5\60\31\2z{\7\27\2\2{}\5&\24\2|z\3\2\2\2|}\3\2\2")
+        buf.write(u"\2}\23\3\2\2\2~\u0080\7\30\2\2\177\u0081\5\62\32\2\u0080")
+        buf.write(u"\177\3\2\2\2\u0080\u0081\3\2\2\2\u0081\u0082\3\2\2\2")
+        buf.write(u"\u0082\u0086\7\24\2\2\u0083\u0085\5\26\f\2\u0084\u0083")
+        buf.write(u"\3\2\2\2\u0085\u0088\3\2\2\2\u0086\u0084\3\2\2\2\u0086")
+        buf.write(u"\u0087\3\2\2\2\u0087\u0089\3\2\2\2\u0088\u0086\3\2\2")
+        buf.write(u"\2\u0089\u008d\7\25\2\2\u008a\u008b\7\30\2\2\u008b\u008d")
+        buf.write(u"\5\62\32\2\u008c~\3\2\2\2\u008c\u008a\3\2\2\2\u008d\25")
+        buf.write(u"\3\2\2\2\u008e\u008f\5\30\r\2\u008f\u0090\7\6\2\2\u0090")
+        buf.write(u"\27\3\2\2\2\u0091\u0095\5\b\5\2\u0092\u0094\5\32\16\2")
+        buf.write(u"\u0093\u0092\3\2\2\2\u0094\u0097\3\2\2\2\u0095\u0093")
+        buf.write(u"\3\2\2\2\u0095\u0096\3\2\2\2\u0096\31\3\2\2\2\u0097\u0095")
+        buf.write(u"\3\2\2\2\u0098\u0099\7\31\2\2\u0099\u009a\5&\24\2\u009a")
+        buf.write(u"\u009b\7\32\2\2\u009b\33\3\2\2\2\u009c\u009e\7\33\2\2")
+        buf.write(u"\u009d\u009f\5\62\32\2\u009e\u009d\3\2\2\2\u009e\u009f")
+        buf.write(u"\3\2\2\2\u009f\u00ae\3\2\2\2\u00a0\u00a4\7\24\2\2\u00a1")
+        buf.write(u"\u00a3\5\36\20\2\u00a2\u00a1\3\2\2\2\u00a3\u00a6\3\2")
+        buf.write(u"\2\2\u00a4\u00a2\3\2\2\2\u00a4\u00a5\3\2\2\2\u00a5\u00a7")
+        buf.write(u"\3\2\2\2\u00a6\u00a4\3\2\2\2\u00a7\u00af\7\25\2\2\u00a8")
+        buf.write(u"\u00aa\5\36\20\2\u00a9\u00a8\3\2\2\2\u00aa\u00ad\3\2")
+        buf.write(u"\2\2\u00ab\u00a9\3\2\2\2\u00ab\u00ac\3\2\2\2\u00ac\u00af")
+        buf.write(u"\3\2\2\2\u00ad\u00ab\3\2\2\2\u00ae\u00a0\3\2\2\2\u00ae")
+        buf.write(u"\u00ab\3\2\2\2\u00af\u00b3\3\2\2\2\u00b0\u00b1\7\33\2")
+        buf.write(u"\2\u00b1\u00b3\5\62\32\2\u00b2\u009c\3\2\2\2\u00b2\u00b0")
+        buf.write(u"\3\2\2\2\u00b3\35\3\2\2\2\u00b4\u00b5\7\20\2\2\u00b5")
+        buf.write(u"\u00b6\5 \21\2\u00b6\u00b7\7\21\2\2\u00b7\u00b8\7\22")
+        buf.write(u"\2\2\u00b8\u00b9\7\6\2\2\u00b9\u00c7\3\2\2\2\u00ba\u00bb")
+        buf.write(u"\7\20\2\2\u00bb\u00bc\5\f\7\2\u00bc\u00bd\7\21\2\2\u00bd")
+        buf.write(u"\u00be\7\22\2\2\u00be\u00bf\7\6\2\2\u00bf\u00c7\3\2\2")
+        buf.write(u"\2\u00c0\u00c1\5 \21\2\u00c1\u00c2\7\6\2\2\u00c2\u00c7")
+        buf.write(u"\3\2\2\2\u00c3\u00c4\5\f\7\2\u00c4\u00c5\7\6\2\2\u00c5")
+        buf.write(u"\u00c7\3\2\2\2\u00c6\u00b4\3\2\2\2\u00c6\u00ba\3\2\2")
+        buf.write(u"\2\u00c6\u00c0\3\2\2\2\u00c6\u00c3\3\2\2\2\u00c7\37\3")
+        buf.write(u"\2\2\2\u00c8\u00ca\5\60\31\2\u00c9\u00c8\3\2\2\2\u00c9")
+        buf.write(u"\u00ca\3\2\2\2\u00ca\u00cc\3\2\2\2\u00cb\u00cd\5\30\r")
+        buf.write(u"\2\u00cc\u00cb\3\2\2\2\u00cc\u00cd\3\2\2\2\u00cd\u00d7")
+        buf.write(u"\3\2\2\2\u00ce\u00d0\5\60\31\2\u00cf\u00ce\3\2\2\2\u00cf")
+        buf.write(u"\u00d0\3\2\2\2\u00d0\u00d1\3\2\2\2\u00d1\u00d2\7\20\2")
+        buf.write(u"\2\u00d2\u00d3\5\30\r\2\u00d3\u00d4\7\21\2\2\u00d4\u00d5")
+        buf.write(u"\7\22\2\2\u00d5\u00d7\3\2\2\2\u00d6\u00c9\3\2\2\2\u00d6")
+        buf.write(u"\u00cf\3\2\2\2\u00d7!\3\2\2\2\u00d8\u00da\7\34\2\2\u00d9")
+        buf.write(u"\u00db\5\62\32\2\u00da\u00d9\3\2\2\2\u00da\u00db\3\2")
+        buf.write(u"\2\2\u00db\u00dc\3\2\2\2\u00dc\u00e0\7\24\2\2\u00dd\u00df")
+        buf.write(u"\5$\23\2\u00de\u00dd\3\2\2\2\u00df\u00e2\3\2\2\2\u00e0")
+        buf.write(u"\u00de\3\2\2\2\u00e0\u00e1\3\2\2\2\u00e1\u00e3\3\2\2")
+        buf.write(u"\2\u00e2\u00e0\3\2\2\2\u00e3\u00e7\7\25\2\2\u00e4\u00e5")
+        buf.write(u"\7\34\2\2\u00e5\u00e7\5\62\32\2\u00e6\u00d8\3\2\2\2\u00e6")
+        buf.write(u"\u00e4\3\2\2\2\u00e7#\3\2\2\2\u00e8\u00ea\5\60\31\2\u00e9")
+        buf.write(u"\u00eb\5\30\r\2\u00ea\u00e9\3\2\2\2\u00ea\u00eb\3\2\2")
+        buf.write(u"\2\u00eb\u00ec\3\2\2\2\u00ec\u00ed\7\6\2\2\u00ed\u00f2")
+        buf.write(u"\3\2\2\2\u00ee\u00ef\5\f\7\2\u00ef\u00f0\7\6\2\2\u00f0")
+        buf.write(u"\u00f2\3\2\2\2\u00f1\u00e8\3\2\2\2\u00f1\u00ee\3\2\2")
+        buf.write(u"\2\u00f2%\3\2\2\2\u00f3\u00f7\7\37\2\2\u00f4\u00f7\7")
+        buf.write(u" \2\2\u00f5\u00f7\7!\2\2\u00f6\u00f3\3\2\2\2\u00f6\u00f4")
+        buf.write(u"\3\2\2\2\u00f6\u00f5\3\2\2\2\u00f7\'\3\2\2\2\u00f8\u00f9")
+        buf.write(u"\7\37\2\2\u00f9)\3\2\2\2\u00fa\u00fb\7!\2\2\u00fb+\3")
+        buf.write(u"\2\2\2\u00fc\u00ff\5(\25\2\u00fd\u00ff\5*\26\2\u00fe")
+        buf.write(u"\u00fc\3\2\2\2\u00fe\u00fd\3\2\2\2\u00ff-\3\2\2\2\u0100")
+        buf.write(u"\u0101\7$\2\2\u0101/\3\2\2\2\u0102\u0103\7\36\2\2\u0103")
+        buf.write(u"\61\3\2\2\2\u0104\u0105\7\35\2\2\u0105\63\3\2\2\2!9A")
+        buf.write(u"HOYcgov|\u0080\u0086\u008c\u0095\u009e\u00a4\u00ab\u00ae")
+        buf.write(u"\u00b2\u00c6\u00c9\u00cc\u00cf\u00d6\u00da\u00e0\u00e6")
+        buf.write(u"\u00ea\u00f1\u00f6\u00fe")
         return buf.getvalue()
 
 
@@ -160,13 +171,20 @@ class amlParser ( Parser ):
     RULE_taggedunion_type_name = 16
     RULE_tagged_union_member = 17
     RULE_constant = 18
+    RULE_intValue = 19
+    RULE_floatValue = 20
+    RULE_number = 21
+    RULE_stringValue = 22
+    RULE_tagValue = 23
+    RULE_identifierValue = 24
 
     ruleNames =  [ u"amlFile", u"declaration", u"type_definition", u"type_name", 
                    u"predefined_type_name", u"block_definition", u"enum_type_name", 
                    u"enumerator_list", u"enumerator", u"struct_type_name", 
                    u"struct_member", u"member", u"array_specifier", u"taggedstruct_type_name", 
                    u"taggedstruct_member", u"taggedstruct_definition", u"taggedunion_type_name", 
-                   u"tagged_union_member", u"constant" ]
+                   u"tagged_union_member", u"constant", u"intValue", u"floatValue", 
+                   u"number", u"stringValue", u"tagValue", u"identifierValue" ]
 
     EOF = Token.EOF
     T__0=1
@@ -217,6 +235,8 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.AmlFileContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self._declaration = None # DeclarationContext
+            self.d = list() # of DeclarationContexts
 
         def declaration(self, i=None):
             if i is None:
@@ -246,23 +266,24 @@ class amlParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 38
+            self.state = 50
             self.match(amlParser.T__0)
-            self.state = 39
+            self.state = 51
             self.match(amlParser.T__1)
-            self.state = 43
+            self.state = 55
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << amlParser.T__4) | (1 << amlParser.T__5) | (1 << amlParser.T__6) | (1 << amlParser.T__7) | (1 << amlParser.T__8) | (1 << amlParser.T__9) | (1 << amlParser.T__10) | (1 << amlParser.T__11) | (1 << amlParser.T__12) | (1 << amlParser.T__16) | (1 << amlParser.T__21) | (1 << amlParser.T__24) | (1 << amlParser.T__25) | (1 << amlParser.TAG))) != 0):
-                self.state = 40
-                self.declaration()
-                self.state = 45
+                self.state = 52
+                localctx._declaration = self.declaration()
+                localctx.d.append(localctx._declaration)
+                self.state = 57
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 46
+            self.state = 58
             self.match(amlParser.T__2)
-            self.state = 47
+            self.state = 59
             self.match(amlParser.T__1)
         except RecognitionException as re:
             localctx.exception = re
@@ -277,6 +298,8 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.DeclarationContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self.t = None # Type_definitionContext
+            self.b = None # Block_definitionContext
 
         def type_definition(self):
             return self.getTypedRuleContext(amlParser.Type_definitionContext,0)
@@ -306,21 +329,21 @@ class amlParser ( Parser ):
         self.enterRule(localctx, 2, self.RULE_declaration)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 51
+            self.state = 63
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [amlParser.T__4, amlParser.T__5, amlParser.T__6, amlParser.T__7, amlParser.T__8, amlParser.T__9, amlParser.T__10, amlParser.T__11, amlParser.T__16, amlParser.T__21, amlParser.T__24, amlParser.T__25, amlParser.TAG]:
-                self.state = 49
-                self.type_definition()
+                self.state = 61
+                localctx.t = self.type_definition()
                 pass
             elif token in [amlParser.T__12]:
-                self.state = 50
-                self.block_definition()
+                self.state = 62
+                localctx.b = self.block_definition()
                 pass
             else:
                 raise NoViableAltException(self)
 
-            self.state = 53
+            self.state = 65
             self.match(amlParser.T__3)
         except RecognitionException as re:
             localctx.exception = re
@@ -360,7 +383,7 @@ class amlParser ( Parser ):
         self.enterRule(localctx, 4, self.RULE_type_definition)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 55
+            self.state = 67
             self.type_name()
         except RecognitionException as re:
             localctx.exception = re
@@ -375,6 +398,12 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.Type_nameContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self.t = None # TagValueContext
+            self.pr = None # Predefined_type_nameContext
+            self.st = None # Struct_type_nameContext
+            self.ts = None # Taggedstruct_type_nameContext
+            self.tu = None # Taggedunion_type_nameContext
+            self.en = None # Enum_type_nameContext
 
         def predefined_type_name(self):
             return self.getTypedRuleContext(amlParser.Predefined_type_nameContext,0)
@@ -396,8 +425,9 @@ class amlParser ( Parser ):
             return self.getTypedRuleContext(amlParser.Enum_type_nameContext,0)
 
 
-        def TAG(self):
-            return self.getToken(amlParser.TAG, 0)
+        def tagValue(self):
+            return self.getTypedRuleContext(amlParser.TagValueContext,0)
+
 
         def getRuleIndex(self):
             return amlParser.RULE_type_name
@@ -420,36 +450,36 @@ class amlParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 58
+            self.state = 70
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==amlParser.TAG:
-                self.state = 57
-                self.match(amlParser.TAG)
+                self.state = 69
+                localctx.t = self.tagValue()
 
 
-            self.state = 65
+            self.state = 77
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [amlParser.T__4, amlParser.T__5, amlParser.T__6, amlParser.T__7, amlParser.T__8, amlParser.T__9, amlParser.T__10, amlParser.T__11]:
-                self.state = 60
-                self.predefined_type_name()
+                self.state = 72
+                localctx.pr = self.predefined_type_name()
                 pass
             elif token in [amlParser.T__21]:
-                self.state = 61
-                self.struct_type_name()
+                self.state = 73
+                localctx.st = self.struct_type_name()
                 pass
             elif token in [amlParser.T__24]:
-                self.state = 62
-                self.taggedstruct_type_name()
+                self.state = 74
+                localctx.ts = self.taggedstruct_type_name()
                 pass
             elif token in [amlParser.T__25]:
-                self.state = 63
-                self.taggedunion_type_name()
+                self.state = 75
+                localctx.tu = self.taggedunion_type_name()
                 pass
             elif token in [amlParser.T__16]:
-                self.state = 64
-                self.enum_type_name()
+                self.state = 76
+                localctx.en = self.enum_type_name()
                 pass
             else:
                 raise NoViableAltException(self)
@@ -490,39 +520,39 @@ class amlParser ( Parser ):
         self.enterRule(localctx, 8, self.RULE_predefined_type_name)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 75
+            self.state = 87
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [amlParser.T__4]:
-                self.state = 67
+                self.state = 79
                 localctx.name = self.match(amlParser.T__4)
                 pass
             elif token in [amlParser.T__5]:
-                self.state = 68
+                self.state = 80
                 localctx.name = self.match(amlParser.T__5)
                 pass
             elif token in [amlParser.T__6]:
-                self.state = 69
+                self.state = 81
                 localctx.name = self.match(amlParser.T__6)
                 pass
             elif token in [amlParser.T__7]:
-                self.state = 70
+                self.state = 82
                 localctx.name = self.match(amlParser.T__7)
                 pass
             elif token in [amlParser.T__8]:
-                self.state = 71
+                self.state = 83
                 localctx.name = self.match(amlParser.T__8)
                 pass
             elif token in [amlParser.T__9]:
-                self.state = 72
+                self.state = 84
                 localctx.name = self.match(amlParser.T__9)
                 pass
             elif token in [amlParser.T__10]:
-                self.state = 73
+                self.state = 85
                 localctx.name = self.match(amlParser.T__10)
                 pass
             elif token in [amlParser.T__11]:
-                self.state = 74
+                self.state = 86
                 localctx.name = self.match(amlParser.T__11)
                 pass
             else:
@@ -541,9 +571,13 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.Block_definitionContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self.tag = None # TagValueContext
+            self.tn = None # Type_nameContext
+            self.mem = None # MemberContext
 
-        def TAG(self):
-            return self.getToken(amlParser.TAG, 0)
+        def tagValue(self):
+            return self.getTypedRuleContext(amlParser.TagValueContext,0)
+
 
         def type_name(self):
             return self.getTypedRuleContext(amlParser.Type_nameContext,0)
@@ -573,25 +607,25 @@ class amlParser ( Parser ):
         self.enterRule(localctx, 10, self.RULE_block_definition)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 77
+            self.state = 89
             self.match(amlParser.T__12)
-            self.state = 78
-            self.match(amlParser.TAG)
-            self.state = 85
+            self.state = 90
+            localctx.tag = self.tagValue()
+            self.state = 97
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [amlParser.T__4, amlParser.T__5, amlParser.T__6, amlParser.T__7, amlParser.T__8, amlParser.T__9, amlParser.T__10, amlParser.T__11, amlParser.T__16, amlParser.T__21, amlParser.T__24, amlParser.T__25, amlParser.TAG]:
-                self.state = 79
-                self.type_name()
+                self.state = 91
+                localctx.tn = self.type_name()
                 pass
             elif token in [amlParser.T__13]:
-                self.state = 80
+                self.state = 92
                 self.match(amlParser.T__13)
-                self.state = 81
-                self.member()
-                self.state = 82
+                self.state = 93
+                localctx.mem = self.member()
+                self.state = 94
                 self.match(amlParser.T__14)
-                self.state = 83
+                self.state = 95
                 self.match(amlParser.T__15)
                 pass
             else:
@@ -610,13 +644,17 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.Enum_type_nameContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self.t0 = None # IdentifierValueContext
+            self.l = None # Enumerator_listContext
+            self.t1 = None # IdentifierValueContext
 
         def enumerator_list(self):
             return self.getTypedRuleContext(amlParser.Enumerator_listContext,0)
 
 
-        def ID(self):
-            return self.getToken(amlParser.ID, 0)
+        def identifierValue(self):
+            return self.getTypedRuleContext(amlParser.IdentifierValueContext,0)
+
 
         def getRuleIndex(self):
             return amlParser.RULE_enum_type_name
@@ -638,35 +676,35 @@ class amlParser ( Parser ):
         self.enterRule(localctx, 12, self.RULE_enum_type_name)
         self._la = 0 # Token type
         try:
-            self.state = 97
+            self.state = 109
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,7,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 87
+                self.state = 99
                 self.match(amlParser.T__16)
-                self.state = 89
+                self.state = 101
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==amlParser.ID:
-                    self.state = 88
-                    self.match(amlParser.ID)
+                    self.state = 100
+                    localctx.t0 = self.identifierValue()
 
 
-                self.state = 91
+                self.state = 103
                 self.match(amlParser.T__17)
-                self.state = 92
-                self.enumerator_list()
-                self.state = 93
+                self.state = 104
+                localctx.l = self.enumerator_list()
+                self.state = 105
                 self.match(amlParser.T__18)
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 95
+                self.state = 107
                 self.match(amlParser.T__16)
-                self.state = 96
-                self.match(amlParser.ID)
+                self.state = 108
+                localctx.t1 = self.identifierValue()
                 pass
 
 
@@ -683,6 +721,8 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.Enumerator_listContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self._enumerator = None # EnumeratorContext
+            self.ids = list() # of EnumeratorContexts
 
         def enumerator(self, i=None):
             if i is None:
@@ -712,17 +752,19 @@ class amlParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 99
-            self.enumerator()
-            self.state = 104
+            self.state = 111
+            localctx._enumerator = self.enumerator()
+            localctx.ids.append(localctx._enumerator)
+            self.state = 116
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==amlParser.T__19:
-                self.state = 100
+                self.state = 112
                 self.match(amlParser.T__19)
-                self.state = 101
-                self.enumerator()
-                self.state = 106
+                self.state = 113
+                localctx._enumerator = self.enumerator()
+                localctx.ids.append(localctx._enumerator)
+                self.state = 118
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -739,9 +781,12 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.EnumeratorContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self.t = None # TagValueContext
+            self.c = None # ConstantContext
 
-        def TAG(self):
-            return self.getToken(amlParser.TAG, 0)
+        def tagValue(self):
+            return self.getTypedRuleContext(amlParser.TagValueContext,0)
+
 
         def constant(self):
             return self.getTypedRuleContext(amlParser.ConstantContext,0)
@@ -768,16 +813,16 @@ class amlParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 107
-            self.match(amlParser.TAG)
-            self.state = 110
+            self.state = 119
+            localctx.t = self.tagValue()
+            self.state = 122
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==amlParser.T__20:
-                self.state = 108
+                self.state = 120
                 self.match(amlParser.T__20)
-                self.state = 109
-                self.constant()
+                self.state = 121
+                localctx.c = self.constant()
 
 
         except RecognitionException as re:
@@ -793,9 +838,14 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.Struct_type_nameContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self.t0 = None # IdentifierValueContext
+            self._struct_member = None # Struct_memberContext
+            self.l = list() # of Struct_memberContexts
+            self.t1 = None # IdentifierValueContext
 
-        def ID(self):
-            return self.getToken(amlParser.ID, 0)
+        def identifierValue(self):
+            return self.getTypedRuleContext(amlParser.IdentifierValueContext,0)
+
 
         def struct_member(self, i=None):
             if i is None:
@@ -824,43 +874,44 @@ class amlParser ( Parser ):
         self.enterRule(localctx, 18, self.RULE_struct_type_name)
         self._la = 0 # Token type
         try:
-            self.state = 126
+            self.state = 138
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,12,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 112
+                self.state = 124
                 self.match(amlParser.T__21)
-                self.state = 114
+                self.state = 126
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==amlParser.ID:
-                    self.state = 113
-                    self.match(amlParser.ID)
+                    self.state = 125
+                    localctx.t0 = self.identifierValue()
 
 
-                self.state = 116
+                self.state = 128
                 self.match(amlParser.T__17)
-                self.state = 120
+                self.state = 132
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << amlParser.T__4) | (1 << amlParser.T__5) | (1 << amlParser.T__6) | (1 << amlParser.T__7) | (1 << amlParser.T__8) | (1 << amlParser.T__9) | (1 << amlParser.T__10) | (1 << amlParser.T__11) | (1 << amlParser.T__16) | (1 << amlParser.T__21) | (1 << amlParser.T__24) | (1 << amlParser.T__25) | (1 << amlParser.TAG))) != 0):
-                    self.state = 117
-                    self.struct_member()
-                    self.state = 122
+                    self.state = 129
+                    localctx._struct_member = self.struct_member()
+                    localctx.l.append(localctx._struct_member)
+                    self.state = 134
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
 
-                self.state = 123
+                self.state = 135
                 self.match(amlParser.T__18)
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 124
+                self.state = 136
                 self.match(amlParser.T__21)
-                self.state = 125
-                self.match(amlParser.ID)
+                self.state = 137
+                localctx.t1 = self.identifierValue()
                 pass
 
 
@@ -877,6 +928,7 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.Struct_memberContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self.m = None # MemberContext
 
         def member(self):
             return self.getTypedRuleContext(amlParser.MemberContext,0)
@@ -902,9 +954,9 @@ class amlParser ( Parser ):
         self.enterRule(localctx, 20, self.RULE_struct_member)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 128
-            self.member()
-            self.state = 129
+            self.state = 140
+            localctx.m = self.member()
+            self.state = 141
             self.match(amlParser.T__3)
         except RecognitionException as re:
             localctx.exception = re
@@ -919,6 +971,9 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.MemberContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self.t = None # Type_nameContext
+            self._array_specifier = None # Array_specifierContext
+            self.a = list() # of Array_specifierContexts
 
         def type_name(self):
             return self.getTypedRuleContext(amlParser.Type_nameContext,0)
@@ -952,15 +1007,16 @@ class amlParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 131
-            self.type_name()
-            self.state = 135
+            self.state = 143
+            localctx.t = self.type_name()
+            self.state = 147
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==amlParser.T__22:
-                self.state = 132
-                self.array_specifier()
-                self.state = 137
+                self.state = 144
+                localctx._array_specifier = self.array_specifier()
+                localctx.a.append(localctx._array_specifier)
+                self.state = 149
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -977,6 +1033,7 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.Array_specifierContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self.c = None # ConstantContext
 
         def constant(self):
             return self.getTypedRuleContext(amlParser.ConstantContext,0)
@@ -1002,11 +1059,11 @@ class amlParser ( Parser ):
         self.enterRule(localctx, 24, self.RULE_array_specifier)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 138
+            self.state = 150
             self.match(amlParser.T__22)
-            self.state = 139
-            self.constant()
-            self.state = 140
+            self.state = 151
+            localctx.c = self.constant()
+            self.state = 152
             self.match(amlParser.T__23)
         except RecognitionException as re:
             localctx.exception = re
@@ -1021,9 +1078,14 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.Taggedstruct_type_nameContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self.t0 = None # IdentifierValueContext
+            self._taggedstruct_member = None # Taggedstruct_memberContext
+            self.l = list() # of Taggedstruct_memberContexts
+            self.t1 = None # IdentifierValueContext
 
-        def ID(self):
-            return self.getToken(amlParser.ID, 0)
+        def identifierValue(self):
+            return self.getTypedRuleContext(amlParser.IdentifierValueContext,0)
+
 
         def taggedstruct_member(self, i=None):
             if i is None:
@@ -1052,49 +1114,51 @@ class amlParser ( Parser ):
         self.enterRule(localctx, 26, self.RULE_taggedstruct_type_name)
         self._la = 0 # Token type
         try:
-            self.state = 164
+            self.state = 176
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,18,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 142
+                self.state = 154
                 self.match(amlParser.T__24)
-                self.state = 144
+                self.state = 156
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==amlParser.ID:
-                    self.state = 143
-                    self.match(amlParser.ID)
+                    self.state = 155
+                    localctx.t0 = self.identifierValue()
 
 
-                self.state = 160
+                self.state = 172
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
                 if token in [amlParser.T__17]:
-                    self.state = 146
+                    self.state = 158
                     self.match(amlParser.T__17)
-                    self.state = 150
+                    self.state = 162
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << amlParser.T__3) | (1 << amlParser.T__4) | (1 << amlParser.T__5) | (1 << amlParser.T__6) | (1 << amlParser.T__7) | (1 << amlParser.T__8) | (1 << amlParser.T__9) | (1 << amlParser.T__10) | (1 << amlParser.T__11) | (1 << amlParser.T__12) | (1 << amlParser.T__13) | (1 << amlParser.T__16) | (1 << amlParser.T__21) | (1 << amlParser.T__24) | (1 << amlParser.T__25) | (1 << amlParser.TAG))) != 0):
-                        self.state = 147
-                        self.taggedstruct_member()
-                        self.state = 152
+                        self.state = 159
+                        localctx._taggedstruct_member = self.taggedstruct_member()
+                        localctx.l.append(localctx._taggedstruct_member)
+                        self.state = 164
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
 
-                    self.state = 153
+                    self.state = 165
                     self.match(amlParser.T__18)
                     pass
                 elif token in [amlParser.T__3, amlParser.T__4, amlParser.T__5, amlParser.T__6, amlParser.T__7, amlParser.T__8, amlParser.T__9, amlParser.T__10, amlParser.T__11, amlParser.T__12, amlParser.T__13, amlParser.T__14, amlParser.T__16, amlParser.T__21, amlParser.T__22, amlParser.T__24, amlParser.T__25, amlParser.TAG]:
-                    self.state = 157
+                    self.state = 169
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,16,self._ctx)
                     while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                         if _alt==1:
-                            self.state = 154
-                            self.taggedstruct_member() 
-                        self.state = 159
+                            self.state = 166
+                            localctx._taggedstruct_member = self.taggedstruct_member()
+                            localctx.l.append(localctx._taggedstruct_member) 
+                        self.state = 171
                         self._errHandler.sync(self)
                         _alt = self._interp.adaptivePredict(self._input,16,self._ctx)
 
@@ -1106,10 +1170,10 @@ class amlParser ( Parser ):
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 162
+                self.state = 174
                 self.match(amlParser.T__24)
-                self.state = 163
-                self.match(amlParser.ID)
+                self.state = 175
+                localctx.t1 = self.identifierValue()
                 pass
 
 
@@ -1126,6 +1190,12 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.Taggedstruct_memberContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self.ts0 = None # Taggedstruct_definitionContext
+            self.m0 = None # Token
+            self.bl0 = None # Block_definitionContext
+            self.m1 = None # Token
+            self.ts1 = None # Taggedstruct_definitionContext
+            self.bl1 = None # Block_definitionContext
 
         def taggedstruct_definition(self):
             return self.getTypedRuleContext(amlParser.Taggedstruct_definitionContext,0)
@@ -1154,50 +1224,50 @@ class amlParser ( Parser ):
         localctx = amlParser.Taggedstruct_memberContext(self, self._ctx, self.state)
         self.enterRule(localctx, 28, self.RULE_taggedstruct_member)
         try:
-            self.state = 184
+            self.state = 196
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,19,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 166
+                self.state = 178
                 self.match(amlParser.T__13)
-                self.state = 167
-                self.taggedstruct_definition()
-                self.state = 168
+                self.state = 179
+                localctx.ts0 = self.taggedstruct_definition()
+                self.state = 180
                 self.match(amlParser.T__14)
-                self.state = 169
-                self.match(amlParser.T__15)
-                self.state = 170
+                self.state = 181
+                localctx.m0 = self.match(amlParser.T__15)
+                self.state = 182
                 self.match(amlParser.T__3)
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 172
+                self.state = 184
                 self.match(amlParser.T__13)
-                self.state = 173
-                self.block_definition()
-                self.state = 174
+                self.state = 185
+                localctx.bl0 = self.block_definition()
+                self.state = 186
                 self.match(amlParser.T__14)
-                self.state = 175
-                self.match(amlParser.T__15)
-                self.state = 176
+                self.state = 187
+                localctx.m1 = self.match(amlParser.T__15)
+                self.state = 188
                 self.match(amlParser.T__3)
                 pass
 
             elif la_ == 3:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 178
-                self.taggedstruct_definition()
-                self.state = 179
+                self.state = 190
+                localctx.ts1 = self.taggedstruct_definition()
+                self.state = 191
                 self.match(amlParser.T__3)
                 pass
 
             elif la_ == 4:
                 self.enterOuterAlt(localctx, 4)
-                self.state = 181
-                self.block_definition()
-                self.state = 182
+                self.state = 193
+                localctx.bl1 = self.block_definition()
+                self.state = 194
                 self.match(amlParser.T__3)
                 pass
 
@@ -1215,9 +1285,13 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.Taggedstruct_definitionContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self.tag = None # TagValueContext
+            self.mem = None # MemberContext
+            self.mult = None # Token
 
-        def TAG(self):
-            return self.getToken(amlParser.TAG, 0)
+        def tagValue(self):
+            return self.getTypedRuleContext(amlParser.TagValueContext,0)
+
 
         def member(self):
             return self.getTypedRuleContext(amlParser.MemberContext,0)
@@ -1243,47 +1317,47 @@ class amlParser ( Parser ):
         self.enterRule(localctx, 30, self.RULE_taggedstruct_definition)
         self._la = 0 # Token type
         try:
-            self.state = 200
+            self.state = 212
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,23,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 187
+                self.state = 199
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,20,self._ctx)
                 if la_ == 1:
-                    self.state = 186
-                    self.match(amlParser.TAG)
+                    self.state = 198
+                    localctx.tag = self.tagValue()
 
 
-                self.state = 190
+                self.state = 202
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << amlParser.T__4) | (1 << amlParser.T__5) | (1 << amlParser.T__6) | (1 << amlParser.T__7) | (1 << amlParser.T__8) | (1 << amlParser.T__9) | (1 << amlParser.T__10) | (1 << amlParser.T__11) | (1 << amlParser.T__16) | (1 << amlParser.T__21) | (1 << amlParser.T__24) | (1 << amlParser.T__25) | (1 << amlParser.TAG))) != 0):
-                    self.state = 189
-                    self.member()
+                    self.state = 201
+                    localctx.mem = self.member()
 
 
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 193
+                self.state = 205
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==amlParser.TAG:
-                    self.state = 192
-                    self.match(amlParser.TAG)
+                    self.state = 204
+                    localctx.tag = self.tagValue()
 
 
-                self.state = 195
+                self.state = 207
                 self.match(amlParser.T__13)
-                self.state = 196
-                self.member()
-                self.state = 197
+                self.state = 208
+                localctx.mem = self.member()
+                self.state = 209
                 self.match(amlParser.T__14)
-                self.state = 198
-                self.match(amlParser.T__15)
+                self.state = 210
+                localctx.mult = self.match(amlParser.T__15)
                 pass
 
 
@@ -1300,9 +1374,14 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.Taggedunion_type_nameContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self.t0 = None # IdentifierValueContext
+            self._tagged_union_member = None # Tagged_union_memberContext
+            self.l = list() # of Tagged_union_memberContexts
+            self.t1 = None # IdentifierValueContext
 
-        def ID(self):
-            return self.getToken(amlParser.ID, 0)
+        def identifierValue(self):
+            return self.getTypedRuleContext(amlParser.IdentifierValueContext,0)
+
 
         def tagged_union_member(self, i=None):
             if i is None:
@@ -1332,41 +1411,42 @@ class amlParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 216
+            self.state = 228
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,26,self._ctx)
             if la_ == 1:
-                self.state = 202
+                self.state = 214
                 self.match(amlParser.T__25)
-                self.state = 204
+                self.state = 216
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==amlParser.ID:
-                    self.state = 203
-                    self.match(amlParser.ID)
+                    self.state = 215
+                    localctx.t0 = self.identifierValue()
 
 
-                self.state = 206
+                self.state = 218
                 self.match(amlParser.T__17)
-                self.state = 210
+                self.state = 222
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while _la==amlParser.T__12 or _la==amlParser.TAG:
-                    self.state = 207
-                    self.tagged_union_member()
-                    self.state = 212
+                    self.state = 219
+                    localctx._tagged_union_member = self.tagged_union_member()
+                    localctx.l.append(localctx._tagged_union_member)
+                    self.state = 224
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
 
-                self.state = 213
+                self.state = 225
                 self.match(amlParser.T__18)
                 pass
 
             elif la_ == 2:
-                self.state = 214
+                self.state = 226
                 self.match(amlParser.T__25)
-                self.state = 215
-                self.match(amlParser.ID)
+                self.state = 227
+                localctx.t1 = self.identifierValue()
                 pass
 
 
@@ -1383,9 +1463,13 @@ class amlParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(amlParser.Tagged_union_memberContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self.t = None # TagValueContext
+            self.m = None # MemberContext
+            self.b = None # Block_definitionContext
 
-        def TAG(self):
-            return self.getToken(amlParser.TAG, 0)
+        def tagValue(self):
+            return self.getTypedRuleContext(amlParser.TagValueContext,0)
+
 
         def block_definition(self):
             return self.getTypedRuleContext(amlParser.Block_definitionContext,0)
@@ -1416,27 +1500,27 @@ class amlParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 226
+            self.state = 239
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [amlParser.TAG]:
-                self.state = 218
-                self.match(amlParser.TAG)
-                self.state = 220
+                self.state = 230
+                localctx.t = self.tagValue()
+                self.state = 232
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << amlParser.T__4) | (1 << amlParser.T__5) | (1 << amlParser.T__6) | (1 << amlParser.T__7) | (1 << amlParser.T__8) | (1 << amlParser.T__9) | (1 << amlParser.T__10) | (1 << amlParser.T__11) | (1 << amlParser.T__16) | (1 << amlParser.T__21) | (1 << amlParser.T__24) | (1 << amlParser.T__25) | (1 << amlParser.TAG))) != 0):
-                    self.state = 219
-                    self.member()
+                    self.state = 231
+                    localctx.m = self.member()
 
 
-                self.state = 222
+                self.state = 234
                 self.match(amlParser.T__3)
                 pass
             elif token in [amlParser.T__12]:
-                self.state = 223
-                self.block_definition()
-                self.state = 224
+                self.state = 236
+                localctx.b = self.block_definition()
+                self.state = 237
                 self.match(amlParser.T__3)
                 pass
             else:
@@ -1456,9 +1540,9 @@ class amlParser ( Parser ):
             super(amlParser.ConstantContext, self).__init__(parent, invokingState)
             self.parser = parser
             self.value = None
-            self._INT = None # Token
-            self._HEX = None # Token
-            self._FLOAT = None # Token
+            self.i = None # Token
+            self.h = None # Token
+            self.f = None # Token
 
         def INT(self):
             return self.getToken(amlParser.INT, 0)
@@ -1488,30 +1572,286 @@ class amlParser ( Parser ):
         localctx = amlParser.ConstantContext(self, self._ctx, self.state)
         self.enterRule(localctx, 36, self.RULE_constant)
         try:
-            self.state = 234
+            self.state = 244
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [amlParser.INT]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 228
-                localctx._INT = self.match(amlParser.INT)
-                localctx.value = int((None if localctx._INT is None else localctx._INT.text))
+                self.state = 241
+                localctx.i = self.match(amlParser.INT)
                 pass
             elif token in [amlParser.HEX]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 230
-                localctx._HEX = self.match(amlParser.HEX)
-                localctx.value = int((None if localctx._HEX is None else localctx._HEX.text), 16)
+                self.state = 242
+                localctx.h = self.match(amlParser.HEX)
                 pass
             elif token in [amlParser.FLOAT]:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 232
-                localctx._FLOAT = self.match(amlParser.FLOAT)
-                localctx.value = float((None if localctx._FLOAT is None else localctx._FLOAT.text))
+                self.state = 243
+                localctx.f = self.match(amlParser.FLOAT)
                 pass
             else:
                 raise NoViableAltException(self)
 
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+    class IntValueContext(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(amlParser.IntValueContext, self).__init__(parent, invokingState)
+            self.parser = parser
+            self.i = None # Token
+
+        def INT(self):
+            return self.getToken(amlParser.INT, 0)
+
+        def getRuleIndex(self):
+            return amlParser.RULE_intValue
+
+        def enterRule(self, listener):
+            if hasattr(listener, "enterIntValue"):
+                listener.enterIntValue(self)
+
+        def exitRule(self, listener):
+            if hasattr(listener, "exitIntValue"):
+                listener.exitIntValue(self)
+
+
+
+
+    def intValue(self):
+
+        localctx = amlParser.IntValueContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 38, self.RULE_intValue)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 246
+            localctx.i = self.match(amlParser.INT)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+    class FloatValueContext(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(amlParser.FloatValueContext, self).__init__(parent, invokingState)
+            self.parser = parser
+            self.f = None # Token
+
+        def FLOAT(self):
+            return self.getToken(amlParser.FLOAT, 0)
+
+        def getRuleIndex(self):
+            return amlParser.RULE_floatValue
+
+        def enterRule(self, listener):
+            if hasattr(listener, "enterFloatValue"):
+                listener.enterFloatValue(self)
+
+        def exitRule(self, listener):
+            if hasattr(listener, "exitFloatValue"):
+                listener.exitFloatValue(self)
+
+
+
+
+    def floatValue(self):
+
+        localctx = amlParser.FloatValueContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 40, self.RULE_floatValue)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 248
+            localctx.f = self.match(amlParser.FLOAT)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+    class NumberContext(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(amlParser.NumberContext, self).__init__(parent, invokingState)
+            self.parser = parser
+            self.i = None # IntValueContext
+            self.f = None # FloatValueContext
+
+        def intValue(self):
+            return self.getTypedRuleContext(amlParser.IntValueContext,0)
+
+
+        def floatValue(self):
+            return self.getTypedRuleContext(amlParser.FloatValueContext,0)
+
+
+        def getRuleIndex(self):
+            return amlParser.RULE_number
+
+        def enterRule(self, listener):
+            if hasattr(listener, "enterNumber"):
+                listener.enterNumber(self)
+
+        def exitRule(self, listener):
+            if hasattr(listener, "exitNumber"):
+                listener.exitNumber(self)
+
+
+
+
+    def number(self):
+
+        localctx = amlParser.NumberContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 42, self.RULE_number)
+        try:
+            self.state = 252
+            self._errHandler.sync(self)
+            token = self._input.LA(1)
+            if token in [amlParser.INT]:
+                self.enterOuterAlt(localctx, 1)
+                self.state = 250
+                localctx.i = self.intValue()
+                pass
+            elif token in [amlParser.FLOAT]:
+                self.enterOuterAlt(localctx, 2)
+                self.state = 251
+                localctx.f = self.floatValue()
+                pass
+            else:
+                raise NoViableAltException(self)
+
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+    class StringValueContext(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(amlParser.StringValueContext, self).__init__(parent, invokingState)
+            self.parser = parser
+            self.s = None # Token
+
+        def STRING(self):
+            return self.getToken(amlParser.STRING, 0)
+
+        def getRuleIndex(self):
+            return amlParser.RULE_stringValue
+
+        def enterRule(self, listener):
+            if hasattr(listener, "enterStringValue"):
+                listener.enterStringValue(self)
+
+        def exitRule(self, listener):
+            if hasattr(listener, "exitStringValue"):
+                listener.exitStringValue(self)
+
+
+
+
+    def stringValue(self):
+
+        localctx = amlParser.StringValueContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 44, self.RULE_stringValue)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 254
+            localctx.s = self.match(amlParser.STRING)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+    class TagValueContext(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(amlParser.TagValueContext, self).__init__(parent, invokingState)
+            self.parser = parser
+            self.s = None # Token
+
+        def TAG(self):
+            return self.getToken(amlParser.TAG, 0)
+
+        def getRuleIndex(self):
+            return amlParser.RULE_tagValue
+
+        def enterRule(self, listener):
+            if hasattr(listener, "enterTagValue"):
+                listener.enterTagValue(self)
+
+        def exitRule(self, listener):
+            if hasattr(listener, "exitTagValue"):
+                listener.exitTagValue(self)
+
+
+
+
+    def tagValue(self):
+
+        localctx = amlParser.TagValueContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 46, self.RULE_tagValue)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 256
+            localctx.s = self.match(amlParser.TAG)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+    class IdentifierValueContext(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(amlParser.IdentifierValueContext, self).__init__(parent, invokingState)
+            self.parser = parser
+            self.i = None # Token
+
+        def ID(self):
+            return self.getToken(amlParser.ID, 0)
+
+        def getRuleIndex(self):
+            return amlParser.RULE_identifierValue
+
+        def enterRule(self, listener):
+            if hasattr(listener, "enterIdentifierValue"):
+                listener.enterIdentifierValue(self)
+
+        def exitRule(self, listener):
+            if hasattr(listener, "exitIdentifierValue"):
+                listener.exitIdentifierValue(self)
+
+
+
+
+    def identifierValue(self):
+
+        localctx = amlParser.IdentifierValueContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 48, self.RULE_identifierValue)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 258
+            localctx.i = self.match(amlParser.ID)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)

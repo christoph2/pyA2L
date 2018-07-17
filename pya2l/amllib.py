@@ -138,26 +138,26 @@ class Listener(antlr4.ParseTreeListener):
 
     level = 0
 
-    def getRule(self, attr):
-        return attr().value if attr() else None
+    #def getRule(self, attr):
+    #    return attr().value if attr() else None
 
-    def getList(self, attr):
-        return [x for x in attr()] if attr() else []
+    #def getList(self, attr):
+    #    return [x for x in attr()] if attr() else []
 
-    def getTerminal(self, attr):
-        return attr().getText() if attr() else ''
+    #def getTerminal(self, attr):
+    #    return attr().getText() if attr() else ''
 
     def exitType_name(self, ctx):
-        if ctx.predefined_type_name():
-            tp = ctx.predefined_type_name().value
-        elif ctx.struct_type_name():
-            tp = ctx.struct_type_name().value
-        elif ctx.taggedstruct_type_name():
-            tp = ctx.taggedstruct_type_name().value
-        elif ctx.taggedunion_type_name():
-            tp = ctx.taggedunion_type_name().value
-        elif ctx.enum_type_name():
-            tp = ctx.enum_type_name().value
+        if ctx.pr:
+            tp = ctx.pr.value
+        elif ctx.st:
+            tp = ctx.st.value
+        elif ctx.ts:
+            tp = ctx.ts.value
+        elif ctx.tu:
+            tp = ctx.tu.value
+        elif ctx.en:
+            tp = ctx.en.value
             #print("TAG",tp.tag)
         else:
             #print()
@@ -167,7 +167,7 @@ class Listener(antlr4.ParseTreeListener):
         except:
             name = "???"
 
-        tag = self.getTerminal(ctx.TAG).replace('"', '')
+        tag = self.ctx.t.value  if ctx.t else None
         #print("tag: {:10s} name: {:20s} class: {}".format(tag, name, str(tp)))
         ctx.value = createTypeName(tag, name, tp)
 
@@ -175,85 +175,140 @@ class Listener(antlr4.ParseTreeListener):
         ctx.value =  createPredefinedType(ctx.name.text)
 
     def exitStruct_type_name(self, ctx):
-        name = self.getTerminal(ctx.ID)
-        members = [m.value for m in self.getList(ctx.struct_member)]
+        if ctx.t0:
+            name = ctx.t0.value
+        elif ctx.t1:
+            name = ctx.t1.value
+        else:
+            name = None
+        members = [l.value for l in ctx.l]
         value = createStructType(name, members)
         ctx.value = value
 
     def exitStruct_member(self, ctx):
-        member = ctx.member()
-        ctx.value = member.value
+        ctx.value = ctx.m.value
 
     def exitTaggedstruct_type_name(self, ctx):
-        name = self.getTerminal(ctx.ID)
-        members = [m.value for m in self.getList(ctx.taggedstruct_member)]
+        if ctx.t0:
+            name = ctx.t0.value
+        elif ctx.t1:
+            name = ctx.t1.value
+        else:
+            name = None
+        members = [l.value for l in ctx.l]
         ctx.value = createTaggedStructType(name, members)
 
     def exitTaggedstruct_member(self, ctx):
-        mult = len(ctx.children) == 5 and ctx.children[3].getText() == '*'
-        taggedstructDefinition = self.getRule(ctx.taggedstruct_definition)
-        blockDefinition = self.getRule(ctx.block_definition)
+        if ctx.ts0:
+            taggedstructDefinition = ctx.ts0.value
+        elif ctx.ts1:
+            taggedstructDefinition = ctx.ts1.value
+        else:
+            taggedstructDefinition = None
+        if ctx.bl0:
+            blockDefinition = ctx.bl0.value
+        elif ctx.bl1:
+            blockDefinition = ctx.bl1.value
+        else:
+            blockDefinition = None
+        mult = ctx.m0 or ctx.m1
         ctx.value = createTaggedStructMember(taggedstructDefinition, blockDefinition, mult)
 
     def exitTaggedstruct_definition(self, ctx):
-        mult = len(ctx.children) == 5 and ctx.children[4].getText() == '*'
-        tag = ctx.TAG().getText().replace('"', '') if ctx.TAG() else None
-        #print("TAG: {} MULT: {}".format(tag, mult))
-        member = self.getRule(ctx.member)
+        mult = True if ctx.mult else False
+        tag = ctx.tag.value if ctx.tag else None
+        member = ctx.mem.value if ctx.mem else None
         ctx.value = createTaggedStructDefinition(tag, member, mult)
 
     def exitEnumerator(self, ctx):
-        tag = self.getTerminal(ctx.TAG).replace('"', '')
-        constant = ctx.constant().value if ctx.constant() else None
+        tag = ctx.t.value
+        constant = ctx.c.value if ctx.c else None
         ctx.value = createEnumerator(tag, constant)
 
     def exitArray_specifier(self, ctx):
-        size = ctx.constant().value
-        ctx.value = size
+        ctx.value = ctx.c.value
 
     def exitEnumerator_list(self, ctx):
-        ctx.value = [e.value for e in self.getList(ctx.enumerator)]
+        ctx.value = [x.value for x in ctx.ids]
 
     def exitEnum_type_name(self, ctx):
-        elements = self.getRule(ctx.enumerator_list)
-        name = self.getTerminal(ctx.ID)
+        elements = ctx.l.value if ctx.l else []
+        if ctx.t0:
+            name = ctx.t0.value
+        elif ctx.t1:
+            name = ctx.t1.value
+        else:
+            name = None
         ctx.value = createEnumeration(name, elements)
 
     def exitType_definition(self, ctx):
         ctx.value = createTypeDefinition(ctx.type_name().value)
 
     def exitMember(self, ctx):
-        typename = ctx.type_name().value
-        arraySpecifier = [a.value for a in self.getList(ctx.array_specifier)]
+        typename = ctx.t.value
+        arraySpecifier = [a.value for a in ctx.a]
         ctx.value = createMember(typename, arraySpecifier)
 
     def exitTagged_union_member(self, ctx):
-        tag = self.getTerminal(ctx.TAG).replace('"', '')
-        member = self.getRule(ctx.member)
-        blockDefinition = self.getRule(ctx.block_definition)
+        tag = ctx.t.value if ctx.t else None
+        member = ctx.m.value if ctx.m else None
+        blockDefinition = ctx.b.value  if ctx.b else None
         ctx.value = createTaggedUnionMember(tag, member, blockDefinition)
 
     def exitTaggedunion_type_name(self, ctx):
-        name = self.getTerminal(ctx.ID)
-        members = [m.value for m in self.getList(ctx.tagged_union_member)]
+        if ctx.t0:
+            name = ctx.t0.value
+        elif ctx.t1:
+            name = ctx.t1.value
+        else:
+            name = None
+        members = [l.value for l in ctx.l]
         ctx.value = createTaggedUnion(name, members)
 
     def enterBlock_definition(self, ctx):
         self.level += 1
 
     def exitBlock_definition(self, ctx):
-        tag = ctx.TAG().getText().replace('"', '')
+        tag = ctx.tag.value
         self.level -= 1
-        typename = self.getRule(ctx.type_name)
-        member = self.getRule(ctx.member)
+        typename = ctx.tn.value if ctx.tn else None
+        member = ctx.mem.value if ctx.mem else None
         ctx.value = createBlockDefinition(tag, typename, member)
 
     def exitDeclaration(self, ctx):
-        blockDefinition = self.getRule(ctx.block_definition)
-        typeDefinition = self.getRule(ctx.type_definition)
+        blockDefinition = ctx.b.value if ctx.b else None
+        typeDefinition = ctx.t.value if ctx.t else None
         ctx.value = createDeclaration(blockDefinition, typeDefinition)
 
     def exitAmlFile(self, ctx):
-        declarations = [d.value for d in self.getList(ctx.declaration)]
+        declarations = [d.value for d in ctx.d]
         ctx.value = declarations
+        self.value = declarations
+
+    def exitIntValue(self, ctx):
+        ctx.value = int(ctx.i.text) if ctx.i else None
+
+    def exitFloatValue(self, ctx):
+        ctx.value = float(ctx.f.text) if ctx.f else None
+
+    def exitNumber(self, ctx):
+        ctx.value = ctx.i.value if ctx.i else ctx.f.value
+
+    def exitStringValue(self, ctx):
+        ctx.value = ctx.s.text.strip('"') if ctx.s else None
+
+    def exitTagValue(self, ctx):
+        ctx.value = ctx.s.text.replace('"', '') if ctx.s else None
+
+    def exitIdentifierValue(self, ctx):
+        ctx.value = ctx.i.text if ctx.i else None
+
+    def exitConstant(self, ctx):
+        if ctx.i:
+            value = int(ctx.i.text)
+        elif ctx.h:
+            value = int(ctx.h, 16)
+        elif ctx.f:
+            value = float(ctx.f)
+        ctx.value = value
 
