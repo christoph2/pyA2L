@@ -6,7 +6,8 @@ import sys
 from setuptools import find_packages
 from glob import glob
 
-ANTLR_RT = "antlr4-python3-runtime" if sys.version_info.major == 3 else "antlr4-python2-runtime"
+ANTLR_VERSION = '4.7.1'
+ANTLR_RT = "antlr4-python3-runtime=={}".format(ANTLR_VERSION) if sys.version_info.major == 3 else "antlr4-python2-runtime=={}".format(ANTLR_VERSION)
 
 def packagez(base):
     return  ["%s%s%s" % (base, os.path.sep, p) for p in find_packages(base)]
