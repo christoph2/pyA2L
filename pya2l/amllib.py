@@ -28,7 +28,7 @@ __author__  = 'Christoph Schueler'
 __version__ = '0.1.0'
 
 
-from collections import namedtuple, OrderedDict
+from collections import namedtuple
 import enum
 import json
 from pprint import pprint
@@ -37,7 +37,7 @@ import re
 import antlr4
 
 
-class AMLDict(OrderedDict):
+class AMLDict(dict):
 
     def __getattr__(self, attr):
         return self[attr]
