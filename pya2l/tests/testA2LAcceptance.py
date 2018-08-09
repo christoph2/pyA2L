@@ -699,9 +699,6 @@ class TestComment(unittest.TestCase):
         self.parser.parseFromString(TEST_A2L)
         self.assertEqual(self.parser.logger.getLastError(), (None, None))
 
-def main():
-  unittest.main()
-
 if __name__ == '__main__':
-  main()
+    unittest.main()
 
