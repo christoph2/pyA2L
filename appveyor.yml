@@ -1,3 +1,5 @@
+version: 1.0.{build}
+
 environment:
   COVERALLS_REPO_TOKEN:
     secure: DFqtaA1FWZtyjkWrLuWo0/fhZjHbiZaQoZw91SYpXhlTuQv08YfiRoL/rwvqDQh9
@@ -11,11 +13,16 @@ environment:
     # The list here is complete (excluding Python 2.6, which
     # isn't covered by this document) at the time of writing.
 
-    - PYTHON: "C:\\Python27"
+      #- PYTHON: "C:\\Python27"
     - PYTHON: "C:\\Python33"
     - PYTHON: "C:\\Python34"
     - PYTHON: "C:\\Python35"
-    - PYTHON: "C:\\Python27-x64"
+    - PYTHON: "C:\\Python36"
+    - PYTHON: "C:\\Python33-x64"
+    - PYTHON: "C:\\Python34-x64"
+    - PYTHON: "C:\\Python35-x64"
+    - PYTHON: "C:\\Python36-x64"
+      #- PYTHON: "C:\\Python27-x64"
     #- PYTHON: "C:\\Python33-x64"
     #  DISTUTILS_USE_SDK: "1"
     #- PYTHON: "C:\\Python34-x64"
@@ -25,8 +32,21 @@ environment:
 install:
   # We need wheel installed to build wheels
   - set PATH=%PYTHON%\Scripts;%PATH%
+  - "%PYTHON%\\python.exe -m pip install --upgrade pip"
   - pip install wheel coveralls coverage codacy-coverage codeclimate-test-reporter"
   - pip install -r requirements.txt
+  - cmd: curl -O https://www.antlr.org/download/antlr-4.7.2-complete.jar
+  - cmd: set CLASSPATH = "%APPVEYOR_BUILD_FOLDER%\antlr-4.7.2-complete.jar"
+  - cmd: set CLASSPATH
+  - cmd: dir
+  - cmd: cd pya2l
+  - cmd: java -jar ..\antlr-4.7.2-complete.jar -Dlanguage=Python2 -long-messages -visitor aml.g4 -o ./py2/
+  - cmd: java -jar ..\antlr-4.7.2-complete.jar -Dlanguage=Python3 -long-messages -visitor aml.g4 -o ./py3/
+  - cmd: java -jar ..\antlr-4.7.2-complete.jar -Dlanguage=Python2 -long-messages -visitor a2l.g4 -o ./py2/
+  - cmd: java -jar ..\antlr-4.7.2-complete.jar -Dlanguage=Python3 -long-messages -visitor a2l.g4 -o ./py3/
+  - cmd: cd ..
+
+
 
 build: off
 
@@ -61,3 +81,12 @@ on_success:
   - coveralls
   - python-codacy-coverage -r coverage.xml
 # - "%PYTHON%\\Scripts\\codeclimate-test-reporter"
+
+deploy:
+- provider: GitHub
+  artifact: '*.*'
+  description: Test release -- do not use
+  auth_token:
+    secure: Wiweaot1JAHzV9mMZ3Zhn/5XUuLe5XYAyfpRZmWNpLW7fMW1FhAdoRliiAhz3Sv6
+  draft: false
+  prerelease: true
