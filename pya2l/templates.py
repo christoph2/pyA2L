@@ -4,7 +4,7 @@
 __copyright__="""
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2016 by Christoph Schueler <github.com/Christoph2,
+   (C) 2009-2019 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -40,7 +40,7 @@ from mako import exceptions
 
 #from csstuff import strings
 
-indentText = lambda text, leftmargin = 0: '\n'.join(["%s%s" % ((" " * leftmargin), line, ) for line in text.splitlines()])
+indentText = lambda text, leftmargin = 0: '\n'.join(["%s%s" % ((" " * leftmargin), line, )  if line else "" for line in text.splitlines()])
 
 # TODO: rename to 'renderTemplate'!
 
