@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2018 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2019 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -91,7 +91,7 @@ class ParserWrapper(object):
 
     @staticmethod
     def stringStream(fname, encoding = "utf-8"):
-        return antlr4.InputStream(codecs.open(fname).read())
+        return antlr4.InputStream(codecs.open(fname, encoding = encoding).read())
 
     def _getNumberOfSyntaxErrors(self):
         return self._syntaxErrors
