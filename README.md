@@ -1,7 +1,6 @@
 pyA2L
 =====
 
-[![Codacy Badge](https://api.codacy.com/project/badge/grade/fbb1b24a23b4434a9811f2582a914df3)](https://www.codacy.com/app/cpu12-gems/pyA2L)
 [![Code Climate](https://codeclimate.com/github/christoph2/pyA2L/badges/gpa.svg)](https://codeclimate.com/github/christoph2/pyA2L)
 [![Coverage Status](https://coveralls.io/repos/github/christoph2/pyA2L/badge.svg?branch=master)](https://coveralls.io/github/christoph2/pyA2L?branch=master)
 [![Build Status](https://travis-ci.org/christoph2/pyA2L.svg)](https://travis-ci.org/christoph2/pyA2L)
