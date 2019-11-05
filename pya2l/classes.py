@@ -4,7 +4,7 @@
 __copyright__="""
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2017 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2019 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -102,6 +102,15 @@ class KeywordType(type):
 
     def __getitem__(self, key):
         return self.attrDict.get(key, None)
+
+    def __eq__(self, other):
+        return self.__class__.__name__ == other.__class__.__name__
+
+    def __lt__(self, other):
+        return self.__class__.__name__ < other.__class__.__name__
+
+    def __hash__(self):
+        return id(self)
 
     @classmethod
     def getClass(klass, name):
@@ -1258,42 +1267,42 @@ class RIGHT_SHIFT(Keyword):
 class RIP_ADDR_W(Keyword):
     attrs = [
         (Uint, "Position"),
-        (Datasize, "DataSize"),
+        (Datatype, "Datatype"),
     ]
 
 
 class RIP_ADDR_X(Keyword):
     attrs = [
         (Uint, "Position"),
-        (Datasize, "DataSize"),
+        (Datatype, "Datatype"),
     ]
 
 
 class RIP_ADDR_Y(Keyword):
     attrs = [
         (Uint, "Position"),
-        (Datasize, "DataSize"),
+        (Datatype, "Datatype"),
     ]
 
 
 class RIP_ADDR_Z(Keyword):
     attrs = [
         (Uint, "Position"),
-        (Datasize, "DataSize"),
+        (Datatype, "Datatype"),
     ]
 
 
 class RIP_ADDR_4(Keyword):
     attrs = [
         (Uint, "Position"),
-        (Datasize, "DataSize"),
+        (Datatype, "Datatype"),
     ]
 
 
 class RIP_ADDR_5(Keyword):
     attrs = [
         (Uint, "Position"),
-        (Datasize, "DataSize"),
+        (Datatype, "Datatype"),
     ]
 
 
@@ -1304,35 +1313,35 @@ class ROOT(Keyword):
 class SHIFT_OP_X(Keyword):
     attrs = [
         (Uint, "Position"),
-        (Datasize, "DataSize"),
+        (Datatype, "Datatype"),
     ]
 
 
 class SHIFT_OP_Y(Keyword):
     attrs = [
         (Uint, "Position"),
-        (Datasize, "DataSize"),
+        (Datatype, "Datatype"),
     ]
 
 
 class SHIFT_OP_Z(Keyword):
     attrs = [
         (Uint, "Position"),
-        (Datasize, "DataSize"),
+        (Datatype, "Datatype"),
     ]
 
 
 class SHIFT_OP_4(Keyword):
     attrs = [
         (Uint, "Position"),
-        (Datasize, "DataSize"),
+        (Datatype, "Datatype"),
     ]
 
 
 class SHIFT_OP_5(Keyword):
     attrs = [
         (Uint, "Position"),
-        (Datasize, "DataSize"),
+        (Datatype, "Datatype"),
     ]
 
 
@@ -1355,35 +1364,35 @@ class SI_EXPONENTS(Keyword):
 class SRC_ADDR_X(Keyword):
     attrs = [
         (Uint, "Position"),
-        (Datasize, "DataSize"),
+        (Datatype, "Datatype"),
     ]
 
 
 class SRC_ADDR_Y(Keyword):
     attrs = [
         (Uint, "Position"),
-        (Datasize, "DataSize"),
+        (Datatype, "Datatype"),
     ]
 
 
 class SRC_ADDR_Z(Keyword):
     attrs = [
         (Uint, "Position"),
-        (Datasize, "DataSize"),
+        (Datatype, "Datatype"),
     ]
 
 
 class SRC_ADDR_4(Keyword):
     attrs = [
         (Uint, "Position"),
-        (Datasize, "DataSize"),
+        (Datatype, "Datatype"),
     ]
 
 
 class SRC_ADDR_5(Keyword):
     attrs = [
         (Uint, "Position"),
-        (Datasize, "DataSize"),
+        (Datatype, "Datatype"),
     ]
 
 
