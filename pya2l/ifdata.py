@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2017 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2018 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -27,7 +27,9 @@ __copyright__ = """
 __author__  = 'Christoph Schueler'
 __version__ = '0.1.0'
 
+
 import enum
+import amllib
 
 class BaseType(object):
     block = False
@@ -165,13 +167,14 @@ class Parser(object):
 
     def doTypeName(self, tree):
         TYPES = {
-            "Enumeration": "doEnumeration",
-            "Predefined": "doPredefined",
-            "Struct": "doStruct",
-            "TaggedStruct": "doTaggedStruct",
-            "TaggedUnion": "doTaggedUnion",
+            amllib.Enumeration: "doEnumeration",
+            amllib.PredefinedType: "doPredefined",
+            amllib.StructType: "doStruct",
+            amllib.TaggedStructType: "doTaggedStruct",
+            amllib.TaggedUnion: "doTaggedUnion",
         }
         method = TYPES.get(tree.type)
+        print("TN", method, tree.name, tree.type)
         return getattr(self, method)(tree.name)
 
     def doBlockDefinition(self, tree, mult = None):
@@ -187,6 +190,7 @@ class Parser(object):
                 declarations.append(block)
             if declaration.typeDefinition:
                 td = declaration.typeDefinition
+                #td.value.typename.name.name
                 #print(td)
         return declarations
 
