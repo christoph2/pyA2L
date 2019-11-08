@@ -28,6 +28,19 @@ import threading
 import sys
 import six
 
+def camel_case(name, upper_first = True):
+    splitty = [n.lower() for n in name.split('_')]
+    result = []
+    result.append(splitty[0])
+    if len(splitty) > 1:
+        for part in splitty[1 : ]:
+            xxx = "{0}{1}".format(part[0].upper(), part[1: ])
+            result.append(xxx)
+    result = ''.join(result)
+    if upper_first:
+        result = "{}{}".format(result[0].upper(), result[1 : ])
+    return result
+
 class SingletonBase(object):
     _lock = threading.Lock()
 
@@ -135,6 +148,28 @@ class Keyword(object):
 
     def __str__(self):
         return "< %s @%0X >" % (self.__class__.__name__, id(self))
+
+    @classmethod
+    def lower_name(cls):
+        return cls.__name__.lower()
+
+    @classmethod
+    def plural_name(cls):
+        name = cls.lower_name()
+        return "{}{}".format(name, "s" if name[-1] != "s" else "")
+
+    @classmethod
+    def assoc_name(cls):
+        return cls.plural_name() if cls.multiple else cls.lower_name()
+
+    @classmethod
+    def camel_case_name(cls):
+        return camel_case(cls.__name__)
+
+    @classmethod
+    def camel_case_plural_name(cls):
+        name = cls.camel_case_name()
+        return "{}{}".format(name, "s" if name[-1] != "s" else "")
 
 ##
 ##
