@@ -1,0 +1,11 @@
+BEGIN=1
+END=2
+IDENT=3
+FLOAT=4
+INT=5
+HEX=6
+COMMENT=7
+WS=8
+STRING=9
+'/begin'=1
+'/end'=2
