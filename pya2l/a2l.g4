@@ -34,16 +34,18 @@ END:
     '/end'
     ;
 
-INT: ('+' | '-')? '0'..'9'+
-    ;
-
-HEX:   '0'('x' | 'X') ('a' .. 'f' | 'A' .. 'F' | '0' .. '9')+
-    ;
+IDENT: [a-zA-Z_][a-zA-Z_0-9.]*;
 
 FLOAT:
     ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
     |   '.' ('0'..'9')+ EXPONENT?
     |   ('0'..'9')+ EXPONENT
+    ;
+
+INT: ('+' | '-')? '0'..'9'+
+    ;
+
+HEX:   '0'('x' | 'X') ('a' .. 'f' | 'A' .. 'F' | '0' .. '9')+
     ;
 
 COMMENT:
@@ -52,11 +54,8 @@ COMMENT:
         -> channel(HIDDEN)
     ;
 
-
 WS  :   (' ' | '\t' | '\r' | '\n') -> channel(HIDDEN)
     ;
-
-IDENT: [a-zA-Z_][a-zA-Z_0-9.]*;
 
 STRING:
     '"' ( ESC_SEQ | ~('\\'|'"') )* '"'
