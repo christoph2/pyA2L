@@ -28,7 +28,6 @@ __author__  = 'Christoph Schueler'
 __version__ = '0.1.0'
 
 
-from collections import namedtuple
 import enum
 import json
 from pprint import pprint
@@ -36,7 +35,6 @@ import re
 
 import antlr4
 
-ValueHolder = namedtuple("ValueHolder", "value multiple")
 
 class AMLDict(dict):
 
@@ -109,6 +107,12 @@ def createTaggedStructDefinition(tag, member, mult):
     res['mult'] = mult
     return res
 
+def createStructMember(value, mult):
+    res = createDict('StructMember')
+    res['value'] = value
+    res['mult'] = mult
+    return res
+
 def createTaggedStructMember(taggedstructDefinition, blockDefinition, mult):
     res = createDict('TaggedStructMember')
     res['taggedstructDefinition'] = taggedstructDefinition
@@ -138,15 +142,6 @@ def createTypeDefinition(typename):
 class Listener(antlr4.ParseTreeListener):
 
     level = 0
-
-    #def getRule(self, attr):
-    #    return attr().value if attr() else None
-
-    #def getList(self, attr):
-    #    return [x for x in attr()] if attr() else []
-
-    #def getTerminal(self, attr):
-    #    return attr().getText() if attr() else ''
 
     def exitType_name(self, ctx):
         if ctx.pr:
@@ -191,7 +186,7 @@ class Listener(antlr4.ParseTreeListener):
         else:
             value = ctx.mstar.value
             multiple = True
-        ctx.value = ValueHolder(value, multiple)
+        ctx.value = createStructMember(value, multiple)
 
     def exitTaggedstruct_type_name(self, ctx):
         if ctx.t0:
@@ -216,7 +211,7 @@ class Listener(antlr4.ParseTreeListener):
             blockDefinition = ctx.bl1.value
         else:
             blockDefinition = None
-        mult = ctx.m0 or ctx.m1
+        mult = True if ctx.m0 or ctx.m1 else False
         ctx.value = createTaggedStructMember(taggedstructDefinition, blockDefinition, mult)
 
     def exitTaggedstruct_definition(self, ctx):
