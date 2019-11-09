@@ -36,10 +36,13 @@ END:
 
 IDENT: [a-zA-Z_][a-zA-Z_0-9.]*;
 
+fragment
+EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;
+
 FLOAT:
-    ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
+   ('+' | '-')? ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
     |   '.' ('0'..'9')+ EXPONENT?
-    |   ('0'..'9')+ EXPONENT
+    |   ('+' | '-')? ('0'..'9')+ EXPONENT
     ;
 
 INT: ('+' | '-')? '0'..'9'+
@@ -61,8 +64,6 @@ STRING:
     '"' ( ESC_SEQ | ~('\\'|'"') )* '"'
     ;
 
-fragment
-EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;
 
 fragment
 HEX_DIGIT : ('0'..'9'|'a'..'f'|'A'..'F') ;
