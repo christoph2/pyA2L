@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2018 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2019 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -36,6 +36,7 @@ import re
 
 import antlr4
 
+ValueHolder = namedtuple("ValueHolder", "value multiple")
 
 class AMLDict(dict):
 
@@ -166,9 +167,7 @@ class Listener(antlr4.ParseTreeListener):
             name = tp.name
         except:
             name = "???"
-
-        tag = self.ctx.t.value  if ctx.t else None
-        #print("tag: {:10s} name: {:20s} class: {}".format(tag, name, str(tp)))
+        tag = ctx.t.value if ctx.t else None
         ctx.value = createTypeName(tag, name, tp)
 
     def exitPredefined_type_name(self, ctx):
@@ -186,7 +185,13 @@ class Listener(antlr4.ParseTreeListener):
         ctx.value = value
 
     def exitStruct_member(self, ctx):
-        ctx.value = ctx.m.value
+        if ctx.m:
+            value = ctx.m.value
+            multiple = False
+        else:
+            value = ctx.mstar.value
+            multiple = True
+        ctx.value = ValueHolder(value, multiple)
 
     def exitTaggedstruct_type_name(self, ctx):
         if ctx.t0:
@@ -307,8 +312,8 @@ class Listener(antlr4.ParseTreeListener):
         if ctx.i:
             value = int(ctx.i.text)
         elif ctx.h:
-            value = int(ctx.h, 16)
+            value = int(ctx.h.text, 16)
         elif ctx.f:
-            value = float(ctx.f)
+            value = float(ctx.f.text)
         ctx.value = value
 

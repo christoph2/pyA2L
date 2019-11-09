@@ -1,7 +1,7 @@
 /*
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2018 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2019 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -87,7 +87,8 @@ struct_type_name:
     ;
 
 struct_member:
-   m = member ';'
+     m = member ';'
+   | '(' mstar = member ')' m0 = '*' ';'
    ;
 
 member:
