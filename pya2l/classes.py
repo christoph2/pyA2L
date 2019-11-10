@@ -24,9 +24,10 @@ __copyright__="""
 """
 
 from collections import namedtuple
-import threading
 import sys
 import six
+
+from pya2l.utils import SingletonBase
 
 def camel_case(name, upper_first = True):
     splitty = [n.lower() for n in name.split('_')]
@@ -40,21 +41,6 @@ def camel_case(name, upper_first = True):
     if upper_first:
         result = "{}{}".format(result[0].upper(), result[1 : ])
     return result
-
-class SingletonBase(object):
-    _lock = threading.Lock()
-
-    def __new__(cls):
-        # Double-Checked Locking
-        if not hasattr(cls, '_instance'):
-            try:
-                cls._lock.acquire()
-                if not hasattr(cls, '_instance'):
-                    cls._instance = super(cls.__class__, cls).__new__(cls)
-            finally:
-                cls._lock.release()
-        return cls._instance
-
 
 
 class MULTIPLE(SingletonBase): pass
@@ -163,12 +149,12 @@ class Keyword(object):
         return cls.plural_name() if cls.multiple else cls.lower_name()
 
     @classmethod
-    def camel_case_name(cls):
-        return camel_case(cls.__name__)
+    def camel_case_name(cls, upper_first = True):
+        return camel_case(cls.__name__, upper_first)
 
     @classmethod
-    def camel_case_plural_name(cls):
-        name = cls.camel_case_name()
+    def camel_case_plural_name(cls, upper_first = True):
+        name = cls.camel_case_name(upper_first)
         return "{}{}".format(name, "s" if name[-1] != "s" else "")
 
 ##
@@ -251,15 +237,6 @@ class ANNOTATION_ORIGIN(Keyword):
 
 
 class ANNOTATION_TEXT(Keyword):
-    """ /begin ANNOTATION_TEXT
-            {string annotation_text}*
-        /end ANNOTATION_TEXT
-    """
-    """
-        One ANNOTATION_TEXT may represent a multi-line ASCII description text (voluminous
-        description). Its purpose is to be an application note which explains the function
-        of an identifier for the calibration engineer.
-    """
     block = True
     textNode = True
 

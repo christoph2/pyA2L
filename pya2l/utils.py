@@ -28,6 +28,7 @@ __author__  = 'Christoph Schueler'
 __version__ = '0.1.0'
 
 import itertools
+import threading
 import os
 
 def slicer(iterable, sliceLength, converter = None):
@@ -63,6 +64,20 @@ def cygpathToWin(path):
         path = "{0}{1}".format(driveLetter, path)
     return path
 
+
+class SingletonBase(object):
+    _lock = threading.Lock()
+
+    def __new__(cls):
+        # Double-Checked Locking
+        if not hasattr(cls, '_instance'):
+            try:
+                cls._lock.acquire()
+                if not hasattr(cls, '_instance'):
+                    cls._instance = super(cls.__class__, cls).__new__(cls)
+            finally:
+                cls._lock.release()
+        return cls._instance
 
 import ctypes
 
