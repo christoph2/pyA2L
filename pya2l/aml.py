@@ -98,3 +98,40 @@ class ParserWrapper(object):
 
     numberOfSyntaxErrors = property(_getNumberOfSyntaxErrors)
 
+
+class LexerWrapper(object):
+    def __init__(self, grammarName, startSymbol):
+        self.grammarName = grammarName
+        self.startSymbol = startSymbol
+        self.lexerModule, self.lexerClass = self._load('Lexer')
+
+    def _load(self, name):
+        className = '{0}'.format(self.grammarName, name)
+        moduleName = 'pya2l.py{0}.{1}'.format(2 if six.PY2 else 3, className)
+        print("LexerWraper", className, moduleName)
+        module = importlib.import_module(moduleName)
+        klass = getattr(module, className)
+        return (module, klass, )
+
+    def lex(self, input, trace = False):
+        lexer = self.lexerClass(input)
+        tokenStream = antlr4.CommonTokenStream(lexer)
+        for token in lexer.getAllTokens():
+            if token.channel == lexer.DEFAULT_TOKEN_CHANNEL:
+                print(token, end = "\n")
+                yield token
+
+    def lexFromFile(self, fileName, encoding = "utf8", trace = False):
+        return self.lex(ParserWrapper.stringStream(fileName, encoding), trace)
+
+    def lexFromString(self, buffer, trace = False):
+        return self.lex(antlr4.InputStream(buffer), trace)
+
+    @staticmethod
+    def stringStream(fname, encoding = "utf-8"):
+        return antlr4.InputStream(codecs.open(fname, encoding = encoding).read())
+
+    def _getNumberOfSyntaxErrors(self):
+        return self._syntaxErrors
+
+    numberOfSyntaxErrors = property(_getNumberOfSyntaxErrors)
