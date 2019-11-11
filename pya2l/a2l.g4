@@ -40,9 +40,12 @@ fragment
 EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;
 
 FLOAT:
-   ('+' | '-')? ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
+   ('+' | '-')?
+    (
+        ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
     |   '.' ('0'..'9')+ EXPONENT?
-    |   ('+' | '-')? ('0'..'9')+ EXPONENT
+    |   ('0'..'9')+ EXPONENT
+    )
     ;
 
 INT: ('+' | '-')? '0'..'9'+
@@ -70,17 +73,17 @@ HEX_DIGIT : ('0'..'9'|'a'..'f'|'A'..'F') ;
 
 fragment
 ESC_SEQ
-	:	'\\'
-		(	// The standard escaped character set such as tab, newline, etc.
-			[btnfr"'\\]
-		|	// A Java style Unicode escape sequence
-			UNICODE_ESC
-		|	// Invalid escape
-			.
-		|	// Invalid escape at end of file
-			EOF
-		)
-	;
+    :   '\\'
+        (   // The standard escaped character set such as tab, newline, etc.
+            [btnfr"'\\]
+        |   // A Java style Unicode escape sequence
+            UNICODE_ESC
+        |   // Invalid escape
+            .
+        |   // Invalid escape at end of file
+            EOF
+        )
+    ;
 
 fragment
 UNICODE_ESC
