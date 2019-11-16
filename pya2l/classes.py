@@ -136,8 +136,12 @@ class Keyword(object):
         return "< %s @%0X >" % (self.__class__.__name__, id(self))
 
     @classmethod
+    def class_name(cls):
+        return cls.__name__
+
+    @classmethod
     def lower_name(cls):
-        return cls.__name__.lower()
+        return cls.class_name().lower()
 
     @classmethod
     def plural_name(cls):
@@ -967,11 +971,11 @@ class MEMORY_LAYOUT(Keyword):
         (Enum, "PrgType", ('PRG_CODE', 'PRG_DATA', 'PRG_RESERVED')),
         (Ulong, "Address"),
         (Ulong, "Size"),
-        (Long, "Offset0"),
-        (Long, "Offset1"),
-        (Long, "Offset2"),
-        (Long, "Offset3"),
-        (Long, "Offset4"),
+        (Long, "Offset_0"),
+        (Long, "Offset_1"),
+        (Long, "Offset_2"),
+        (Long, "Offset_3"),
+        (Long, "Offset_4"),
     ]
 
 
@@ -994,11 +998,11 @@ class MEMORY_SEGMENT(Keyword):
         ),
         (Ulong, "Address"),
         (Ulong, "Size"),
-        (Long, "Offset0"),
-        (Long, "Offset1"),
-        (Long, "Offset2"),
-        (Long, "Offset3"),
-        (Long, "Offset4"),
+        (Long, "Offset_0"),
+        (Long, "Offset_1"),
+        (Long, "Offset_2"),
+        (Long, "Offset_3"),
+        (Long, "Offset_4"),
 
     ]
 
@@ -1530,12 +1534,12 @@ class VAR_CRITERION(Keyword):
 
 
 class VAR_FORBIDDEN_COMB(Keyword):
-    multiple = True
-    attrs = [
-        (Ident, "CriterionName"),
-        (Ident, "CriterionValue")
-        ## Hinweis: die Multiplizität bezieht sich hier auf das Tupel!!!
-    ]
+    block = True
+    #attrs = [
+    #    (Ident, "CriterionName"),
+    #    (Ident, "CriterionValue")
+    #    ## Hinweis: die Multiplizität bezieht sich hier auf das Tupel!!!
+    #]
 
 
 class VAR_MEASUREMENT(Keyword):
