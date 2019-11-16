@@ -28,6 +28,7 @@ __author__  = 'Christoph Schueler'
 __version__ = '0.1.0'
 
 import codecs
+from decimal import Decimal as D
 import importlib
 from pprint import pprint
 import sys
@@ -79,9 +80,9 @@ class BaseListener(antlr4.ParseTreeListener):
 
     def exitFloatValue(self, ctx):
         if ctx.f:
-            ctx.value = float(ctx.f.text)
+            ctx.value = D(ctx.f.text)
         elif ctx.i:
-            ctx.value = float(ctx.i.text)
+            ctx.value = D(ctx.i.text)
         else:
             ctx.value = None
 

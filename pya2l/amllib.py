@@ -28,6 +28,7 @@ __author__  = 'Christoph Schueler'
 __version__ = '0.1.0'
 
 
+from decimal import Decimal as D
 import enum
 import json
 from pprint import pprint
@@ -309,6 +310,6 @@ class Listener(antlr4.ParseTreeListener):
         elif ctx.h:
             value = int(ctx.h.text, 16)
         elif ctx.f:
-            value = float(ctx.f.text)
+            value = D(ctx.f.text)
         ctx.value = value
 
