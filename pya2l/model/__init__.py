@@ -3298,21 +3298,21 @@ class MemoryLayout(Base, HasIfDatas):
     prgType = StdString()
     address = StdULong()
     size = StdULong()
-    offset0 = StdLong()
-    offset1 = StdLong()
-    offset2 = StdLong()
-    offset3 = StdLong()
-    offset4 = StdLong()
+    offset_0 = StdLong()
+    offset_1 = StdLong()
+    offset_2 = StdLong()
+    offset_3 = StdLong()
+    offset_4 = StdLong()
 
     __required_parameters__ = (
         Parameter("prgType", Enum, False),
         Parameter("address", Ulong, False),
         Parameter("size", Ulong, False),
-        Parameter("offset0", Long, False),
-        Parameter("offset1", Long, False),
-        Parameter("offset2", Long, False),
-        Parameter("offset3", Long, False),
-        Parameter("offset4", Long, False),
+        Parameter("offset_0", Long, False),
+        Parameter("offset_1", Long, False),
+        Parameter("offset_2", Long, False),
+        Parameter("offset_3", Long, False),
+        Parameter("offset_4", Long, False),
     )
 
     __optional_elements__ = (
@@ -3334,11 +3334,11 @@ class MemorySegment(Base, HasIfDatas):
     attribute = StdString()
     address = StdULong()
     size = StdULong()
-    offset0 = StdLong()
-    offset1 = StdLong()
-    offset2 = StdLong()
-    offset3 = StdLong()
-    offset4 = StdLong()
+    offset_0 = StdLong()
+    offset_1 = StdLong()
+    offset_2 = StdLong()
+    offset_3 = StdLong()
+    offset_4 = StdLong()
 
     __required_parameters__ = (
         Parameter("name", Ident, False),
@@ -3348,11 +3348,11 @@ class MemorySegment(Base, HasIfDatas):
         Parameter("attribute", Enum, False),
         Parameter("address", Ulong, False),
         Parameter("size", Ulong, False),
-        Parameter("offset0", Long, False),
-        Parameter("offset1", Long, False),
-        Parameter("offset2", Long, False),
-        Parameter("offset3", Long, False),
-        Parameter("offset4", Long, False),
+        Parameter("offset_0", Long, False),
+        Parameter("offset_1", Long, False),
+        Parameter("offset_2", Long, False),
+        Parameter("offset_3", Long, False),
+        Parameter("offset_4", Long, False),
     )
 
     __optional_elements__ = (
@@ -3696,14 +3696,14 @@ class AxisRescaleX(Base):
     datatype = StdIdent()
     maxNumberOfRescalePairs = StdUShort()
     indexIncr = StdIdent()
-    adressing = StdIdent()
+    addressing = StdIdent()
 
     __required_parameters__ = (
         Parameter("position", Uint, False),
         Parameter("datatype", Datatype, False),
         Parameter("maxNumberOfRescalePairs", Uint, False),
         Parameter("indexIncr", Indexorder, False),
-        Parameter("adressing", Addrtype, False),
+        Parameter("addressing", Addrtype, False),
     )
 
     __optional_elements__ = ( )
@@ -3720,14 +3720,14 @@ class AxisRescaleY(Base):
     datatype = StdIdent()
     maxNumberOfRescalePairs = StdUShort()
     indexIncr = StdIdent()
-    adressing = StdIdent()
+    addressing = StdIdent()
 
     __required_parameters__ = (
         Parameter("position", Uint, False),
         Parameter("datatype", Datatype, False),
         Parameter("maxNumberOfRescalePairs", Uint, False),
         Parameter("indexIncr", Indexorder, False),
-        Parameter("adressing", Addrtype, False),
+        Parameter("addressing", Addrtype, False),
     )
 
     __optional_elements__ = ( )
@@ -3744,14 +3744,14 @@ class AxisRescaleZ(Base):
     datatype = StdIdent()
     maxNumberOfRescalePairs = StdUShort()
     indexIncr = StdIdent()
-    adressing = StdIdent()
+    addressing = StdIdent()
 
     __required_parameters__ = (
         Parameter("position", Uint, False),
         Parameter("datatype", Datatype, False),
         Parameter("maxNumberOfRescalePairs", Uint, False),
         Parameter("indexIncr", Indexorder, False),
-        Parameter("adressing", Addrtype, False),
+        Parameter("addressing", Addrtype, False),
     )
 
     __optional_elements__ = ( )
@@ -3768,14 +3768,14 @@ class AxisRescale4(Base):
     datatype = StdIdent()
     maxNumberOfRescalePairs = StdUShort()
     indexIncr = StdIdent()
-    adressing = StdIdent()
+    addressing = StdIdent()
 
     __required_parameters__ = (
         Parameter("position", Uint, False),
         Parameter("datatype", Datatype, False),
         Parameter("maxNumberOfRescalePairs", Uint, False),
         Parameter("indexIncr", Indexorder, False),
-        Parameter("adressing", Addrtype, False),
+        Parameter("addressing", Addrtype, False),
     )
 
     __optional_elements__ = ( )
@@ -3792,14 +3792,14 @@ class AxisRescale5(Base):
     datatype = StdIdent()
     maxNumberOfRescalePairs = StdUShort()
     indexIncr = StdIdent()
-    adressing = StdIdent()
+    addressing = StdIdent()
 
     __required_parameters__ = (
         Parameter("position", Uint, False),
         Parameter("datatype", Datatype, False),
         Parameter("maxNumberOfRescalePairs", Uint, False),
         Parameter("indexIncr", Indexorder, False),
-        Parameter("adressing", Addrtype, False),
+        Parameter("addressing", Addrtype, False),
     )
 
     __optional_elements__ = ( )
@@ -4727,13 +4727,13 @@ class VariantCoding(Base):
     __optional_elements__ = (
         Element("VarCharacteristic", "VAR_CHARACTERISTIC", True),
         Element("VarCriterion", "VAR_CRITERION", True),
-        Element("VarForbiddenComb", "VAR_FORBIDDEN_COMB", True),
+        Element("VarForbiddenComb", "VAR_FORBIDDEN_COMB", False),
         Element("VarNaming", "VAR_NAMING", False),
         Element("VarSeparator", "VAR_SEPARATOR", False),
     )
     var_characteristics = relationship("VarCharacteristic", back_populates = "variant_coding", uselist = True)
     var_criterions = relationship("VarCriterion", back_populates = "variant_coding", uselist = True)
-    var_forbidden_combs = relationship("VarForbiddenComb", back_populates = "variant_coding", uselist = True)
+    var_forbidden_comb = relationship("VarForbiddenComb", back_populates = "variant_coding", uselist = False)
     var_naming = relationship("VarNaming", back_populates = "variant_coding", uselist = False)
     var_separator = relationship("VarSeparator", back_populates = "variant_coding", uselist = False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
@@ -4839,17 +4839,12 @@ class VarForbiddenComb(Base):
     """
     __tablename__ = "var_forbidden_comb"
 
-    criterionName = StdIdent()
-    criterionValue = StdIdent()
 
-    __required_parameters__ = (
-        Parameter("criterionName", Ident, False),
-        Parameter("criterionValue", Ident, False),
-    )
+    __required_parameters__ = ( )
 
     __optional_elements__ = ( )
     _variant_coding_rid = Column(types.Integer, ForeignKey("variant_coding.rid"))
-    variant_coding = relationship("VariantCoding", back_populates = "var_forbidden_combs")
+    variant_coding = relationship("VariantCoding", back_populates = "var_forbidden_comb")
 
 
 class VarNaming(Base):

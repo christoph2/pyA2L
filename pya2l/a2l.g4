@@ -1190,7 +1190,7 @@ axisRescaleX:
     datatype = dataType
     maxNumberOfRescalePairs = integerValue
     indexIncr = indexorder
-    adressing = addrtype
+    addressing = addrtype
     ;
 
 axisRescaleY:
@@ -1199,7 +1199,7 @@ axisRescaleY:
     datatype = dataType
     maxNumberOfRescalePairs = integerValue
     indexIncr = indexorder
-    adressing = addrtype
+    addressing = addrtype
     ;
 
 axisRescaleZ:
@@ -1208,7 +1208,7 @@ axisRescaleZ:
     datatype = dataType
     maxNumberOfRescalePairs = integerValue
     indexIncr = indexorder
-    adressing = addrtype
+    addressing = addrtype
     ;
 
 axisRescale4:
@@ -1217,7 +1217,7 @@ axisRescale4:
     datatype = dataType
     maxNumberOfRescalePairs = integerValue
     indexIncr = indexorder
-    adressing = addrtype
+    addressing = addrtype
     ;
 
 axisRescale5:
@@ -1226,7 +1226,7 @@ axisRescale5:
     datatype = dataType
     maxNumberOfRescalePairs = integerValue
     indexIncr = indexorder
-    adressing = addrtype
+    addressing = addrtype
     ;
 
 distOpX:
@@ -1655,24 +1655,24 @@ identifierValue:
     ;
 
 dataType:
-    'UBYTE' | 'SBYTE' | 'UWORD' | 'SWORD' | 'ULONG' | 'SLONG' |
-    'A_UINT64' | 'A_INT64' | 'FLOAT32_IEEE' | 'FLOAT64_IEEE'
+    v = ('UBYTE' | 'SBYTE' | 'UWORD' | 'SWORD' | 'ULONG' | 'SLONG' |
+    'A_UINT64' | 'A_INT64' | 'FLOAT32_IEEE' | 'FLOAT64_IEEE')
     ;
 
 datasize:
-    'BYTE' | 'WORD' | 'LONG'
+    v = ('BYTE' | 'WORD' | 'LONG')
     ;
 
 addrtype:
-    'PBYTE' | 'PWORD' | 'PLONG' | 'DIRECT'
+    v = ('PBYTE' | 'PWORD' | 'PLONG' | 'DIRECT')
     ;
 
 byteOrderValue:
-    'LITTLE_ENDIAN' | 'BIG_ENDIAN' | 'MSB_LAST' | 'MSB_FIRST'
+    v = ('LITTLE_ENDIAN' | 'BIG_ENDIAN' | 'MSB_LAST' | 'MSB_FIRST')
     ;
 
 indexorder:
-    'INDEX_INCR' | 'INDEX_DECR'
+    v = ('INDEX_INCR' | 'INDEX_DECR')
     ;
 
 BEGIN:

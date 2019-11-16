@@ -363,7 +363,7 @@ class AXIS_RESCALE_X(Keyword):
         (Datatype, "Datatype"),
         (Uint, "MaxNumberOfRescalePairs"),
         (Indexorder, "IndexIncr"),
-        (Addrtype, "Adressing"),
+        (Addrtype, "Addressing"),
     ]
 
 
@@ -373,7 +373,7 @@ class AXIS_RESCALE_Y(Keyword):
         (Datatype, "Datatype"),
         (Uint, "MaxNumberOfRescalePairs"),
         (Indexorder, "IndexIncr"),
-        (Addrtype, "Adressing"),
+        (Addrtype, "Addressing"),
     ]
 
 
@@ -383,7 +383,7 @@ class AXIS_RESCALE_Z(Keyword):
         (Datatype, "Datatype"),
         (Uint, "MaxNumberOfRescalePairs"),
         (Indexorder, "IndexIncr"),
-        (Addrtype, "Adressing"),
+        (Addrtype, "Addressing"),
     ]
 
 
@@ -393,7 +393,7 @@ class AXIS_RESCALE_4(Keyword):
         (Datatype, "Datatype"),
         (Uint, "MaxNumberOfRescalePairs"),
         (Indexorder, "IndexIncr"),
-        (Addrtype, "Adressing"),
+        (Addrtype, "Addressing"),
     ]
 
 
@@ -403,7 +403,7 @@ class AXIS_RESCALE_5(Keyword):
         (Datatype, "Datatype"),
         (Uint, "MaxNumberOfRescalePairs"),
         (Indexorder, "IndexIncr"),
-        (Addrtype, "Adressing"),
+        (Addrtype, "Addressing"),
     ]
 
 

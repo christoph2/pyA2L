@@ -627,44 +627,83 @@ class A2LListener(BaseListener):
 
 
     def exitAxisPtsX(self, ctx):
-        pass
+        position = ctx.position.value
+        datatype = ctx.datatype.value
+        indexIncr = ctx.indexIncr.value
+        addressing = ctx.addressing.value
+        print("PtsX", position, datatype, indexIncr, addressing)
 
 
     def exitAxisPtsY(self, ctx):
-        pass
+        position = ctx.position.value
+        datatype = ctx.datatype.value
+        indexIncr = ctx.indexIncr.value
+        addressing = ctx.addressing.value
+        print("PtsY", position, datatype, indexIncr, addressing)
 
 
     def exitAxisPtsZ(self, ctx):
-        pass
+        position = ctx.position.value
+        datatype = ctx.datatype.value
+        indexIncr = ctx.indexIncr.value
+        addressing = ctx.addressing.value
+        print("PtsZ", position, datatype, indexIncr, addressing)
 
 
     def exitAxisPts4(self, ctx):
-        pass
+        position = ctx.position.value
+        datatype = ctx.datatype.value
+        indexIncr = ctx.indexIncr.value
+        addressing = ctx.addressing.value
+        print("Pts4", position, datatype, indexIncr, addressing)
 
 
     def exitAxisPts5(self, ctx):
-        pass
-
+        position = ctx.position.value
+        datatype = ctx.datatype.value
+        indexIncr = ctx.indexIncr.value
+        addressing = ctx.addressing.value
+        print("Pts5", position, datatype, indexIncr, addressing)
 
     def exitAxisRescaleX(self, ctx):
-        pass
-
+        position = ctx.position.value
+        datatype = ctx.datatype.value
+        maxNumberOfRescalePairs = ctx.maxNumberOfRescalePairs.value
+        indexIncr = ctx.indexIncr.value
+        addressing = ctx.addressing.value
+        print("RescaleX", position, datatype, maxNumberOfRescalePairs, indexIncr, addressing)
 
     def exitAxisRescaleY(self, ctx):
-        pass
-
+        position = ctx.position.value
+        datatype = ctx.datatype.value
+        maxNumberOfRescalePairs = ctx.maxNumberOfRescalePairs.value
+        indexIncr = ctx.indexIncr.value
+        addressing = ctx.addressing.value
+        print("RescaleY", position, datatype, maxNumberOfRescalePairs, indexIncr, addressing)
 
     def exitAxisRescaleZ(self, ctx):
-        pass
-
+        position = ctx.position.value
+        datatype = ctx.datatype.value
+        maxNumberOfRescalePairs = ctx.maxNumberOfRescalePairs.value
+        indexIncr = ctx.indexIncr.value
+        addressing = ctx.addressing.value
+        print("RescaleZ", position, datatype, maxNumberOfRescalePairs, indexIncr, addressing)
 
     def exitAxisRescale4(self, ctx):
-        pass
-
+        position = ctx.position.value
+        datatype = ctx.datatype.value
+        maxNumberOfRescalePairs = ctx.maxNumberOfRescalePairs.value
+        indexIncr = ctx.indexIncr.value
+        addressing = ctx.addressing.value
+        print("Rescale4", position, datatype, maxNumberOfRescalePairs, indexIncr, addressing)
 
     def exitAxisRescale5(self, ctx):
-        pass
-
+        position = ctx.position.value
+        datatype = ctx.datatype.value
+        maxNumberOfRescalePairs = ctx.maxNumberOfRescalePairs.value
+        indexIncr = ctx.indexIncr.value
+        addressing = ctx.addressing.value
+        print("Rescale5", position, datatype, maxNumberOfRescalePairs, indexIncr, addressing)
 
     def exitDistOpX(self, ctx):
         pass
@@ -901,4 +940,18 @@ class A2LListener(BaseListener):
     def exitVarSeparator(self, ctx):
         pass
 
+    def exitDataType(self, ctx):
+        ctx.value = ctx.v.text if ctx.v else None
+
+    def exitIndexorder(self, ctx):
+        ctx.value = ctx.v.text if ctx.v else None
+
+    def exitByteOrderValue(self, ctx):
+        ctx.value = ctx.v.text if ctx.v else None
+
+    def exitDatasize(self, ctx):
+        ctx.value = ctx.v.text if ctx.v else None
+
+    def exitAddrtype(self, ctx):
+        ctx.value = ctx.v.text if ctx.v else None
 
