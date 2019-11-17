@@ -1065,7 +1065,7 @@ supplier:
 systemConstant:
      'SYSTEM_CONSTANT'
     name = stringValue
-    value = stringValue
+    value_ = stringValue
     ;
 
 user:
@@ -1596,7 +1596,7 @@ varCriterion:
     BEGIN 'VAR_CRITERION'
     name = identifierValue
     longIdentifier = stringValue
-    (value += identifierValue)*
+    (value_ += identifierValue)*
     /* optional part */
 
     (
