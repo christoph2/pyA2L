@@ -203,6 +203,154 @@ def StdIdent(default = 0, primary_key = False, unique = False):
         primary_key = primary_key, unique = unique,
     )
 
+class IdentifierAssociation(Base):
+
+    __tablename__ = "identifier_association"
+
+    discriminator = Column(types.String)
+    __mapper_args__ = {"polymorphic_on": discriminator}
+
+class Identifier(Base):
+    """
+    """
+    _association_id = Column(types.Integer, ForeignKey("identifier_association.rid"))
+    association = relationship("IdentifierAssociation", backref="identifier")
+    parent = association_proxy("association", "parent")
+    identifier = StdString()
+
+    __required_parameters__ = (
+        Parameter("identifier", String, False),
+    )
+
+    __optional_elements__ = ( )
+
+class HasIdentifiers(object):
+
+    @declared_attr
+    def identifier_association_id(cls):
+        return Column(types.Integer, ForeignKey("identifier_association.rid"))
+
+    @declared_attr
+    def identifier_association(cls):
+        name = cls.__name__
+        discriminator = name.lower()
+
+        assoc_cls = type(
+            "%sidentifierAssociation" % name, (IdentifierAssociation,),
+            dict(
+                __tablename__ = None,
+                __mapper_args__ = {"polymorphic_identity": discriminator},
+            ),
+        )
+
+        cls.identifier = association_proxy(
+            "identifier_association",
+            "identifier",
+            creator = lambda identifier: assoc_cls(identifier = identifier),
+        )
+        return relationship(
+            assoc_cls, backref = backref("parent", uselist = False)
+        )
+
+class CompuTabPair(Base):
+
+    __tablename__ = "compu_tab_pair"
+
+    ct_rid = Column(types.Integer, ForeignKey("compu_tab.rid"))
+
+    inVal = StdFloat()
+    outVal = StdFloat()
+
+class CompuVtabPair(Base):
+
+    __tablename__ = "compu_vtab_pair"
+
+    ct_rid = Column(types.Integer, ForeignKey("compu_vtab.rid"))
+
+    inVal = StdFloat()
+    outVal = StdString()
+
+class CompuVtabRangeTriple(Base):
+
+    __tablename__ = "compu_vtab_range_triple"
+
+    ct_rid = Column(types.Integer, ForeignKey("compu_vtab_range.rid"))
+
+    inValMin = StdFloat()
+    inValMax = StdFloat()
+    outVal   = StdString()
+
+class CalHandles(Base):
+
+    __tablename__ = "calhandles"
+
+    ch_rid = Column(types.Integer, ForeignKey("calibration_handle.rid"))
+    handle = StdLong()
+
+    def __init__(self, handle):
+        self.handle = handle
+
+class VirtualMeasuringChannels(Base):
+
+    __tablename__ = "virtual_measuring_channel"
+
+    vmc_rid = Column(types.Integer, ForeignKey("virtual.rid"))
+    measuringChannel = StdIdent()
+
+    def __init__(self, measuringChannel):
+        self.measuringChannel = measuringChannel
+
+class FixAxisParListValues(Base):
+
+    __tablename__ = "fix_axis_par_list_value"
+
+    faplv_rid = Column(types.Integer, ForeignKey("fix_axis_par_list.rid"))
+    axisPts_Value = StdFloat()
+
+    def __init__(self, axisPts_Value):
+        self.axisPts_Value = axisPts_Value
+
+
+class VarAddressValues(Base):
+
+    __tablename__ = "var_address_values"
+
+    va_rid = Column(types.Integer, ForeignKey("var_address.rid"))
+    address = StdULong()
+
+    def __init__(self, address):
+        self.address = address
+
+class AnnotationTextValues(Base):
+
+    __tablename__ = "annotation_text_values"
+
+    at_rid = Column(types.Integer, ForeignKey("annotation_text.rid"))
+    text = StdString()
+
+    def __init__(self, text):
+        self.text = text
+
+class FunctionListValues(Base):
+
+    __tablename__ = "function_list_values"
+
+    flv_rid = Column(types.Integer, ForeignKey("functionlist.rid"))
+    name = StdString()
+
+    def __init__(self, name):
+        self.name = name
+
+
+class VarForbiddedCombPair(Base):
+
+    __tablename__ = "var_forbidden_comb_pair"
+
+    vfc_rid = Column(types.Integer, ForeignKey("var_forbidden_comb.rid"))
+
+    criterionName = StdIdent()
+    criterionValue = StdIdent()
+
 class AlignmentByteAssociation(Base):
 
     __tablename__ = "alignment_byte_association"
@@ -215,7 +363,7 @@ class AlignmentByte(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("alignment_byte_association.rid"))
-    association = relationship("AlignmentByteAssociation", backref="alignment_bytes")
+    association = relationship("AlignmentByteAssociation", backref="alignment_byte")
     parent = association_proxy("association", "parent")
     alignmentBorder = StdUShort()
 
@@ -244,10 +392,10 @@ class HasAlignmentBytes(object):
             ),
         )
 
-        cls.alignment_bytes = association_proxy(
+        cls.alignment_byte = association_proxy(
             "alignment_byte_association",
-            "alignment_bytes",
-            creator = lambda alignment_bytes: assoc_cls(alignment_bytes = alignment_bytes),
+            "alignment_byte",
+            creator = lambda alignment_byte: assoc_cls(alignment_byte = alignment_byte),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -265,7 +413,7 @@ class AlignmentFloat32Ieee(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("alignment_float32_ieee_association.rid"))
-    association = relationship("AlignmentFloat32IeeeAssociation", backref="alignment_float32_ieees")
+    association = relationship("AlignmentFloat32IeeeAssociation", backref="alignment_float32_ieee")
     parent = association_proxy("association", "parent")
     alignmentBorder = StdUShort()
 
@@ -294,10 +442,10 @@ class HasAlignmentFloat32Ieees(object):
             ),
         )
 
-        cls.alignment_float32_ieees = association_proxy(
+        cls.alignment_float32_ieee = association_proxy(
             "alignment_float32_ieee_association",
-            "alignment_float32_ieees",
-            creator = lambda alignment_float32_ieees: assoc_cls(alignment_float32_ieees = alignment_float32_ieees),
+            "alignment_float32_ieee",
+            creator = lambda alignment_float32_ieee: assoc_cls(alignment_float32_ieee = alignment_float32_ieee),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -315,7 +463,7 @@ class AlignmentFloat64Ieee(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("alignment_float64_ieee_association.rid"))
-    association = relationship("AlignmentFloat64IeeeAssociation", backref="alignment_float64_ieees")
+    association = relationship("AlignmentFloat64IeeeAssociation", backref="alignment_float64_ieee")
     parent = association_proxy("association", "parent")
     alignmentBorder = StdUShort()
 
@@ -344,10 +492,10 @@ class HasAlignmentFloat64Ieees(object):
             ),
         )
 
-        cls.alignment_float64_ieees = association_proxy(
+        cls.alignment_float64_ieee = association_proxy(
             "alignment_float64_ieee_association",
-            "alignment_float64_ieees",
-            creator = lambda alignment_float64_ieees: assoc_cls(alignment_float64_ieees = alignment_float64_ieees),
+            "alignment_float64_ieee",
+            creator = lambda alignment_float64_ieee: assoc_cls(alignment_float64_ieee = alignment_float64_ieee),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -365,7 +513,7 @@ class AlignmentInt64(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("alignment_int64_association.rid"))
-    association = relationship("AlignmentInt64Association", backref="alignment_int64s")
+    association = relationship("AlignmentInt64Association", backref="alignment_int64")
     parent = association_proxy("association", "parent")
     alignmentBorder = StdUShort()
 
@@ -394,10 +542,10 @@ class HasAlignmentInt64s(object):
             ),
         )
 
-        cls.alignment_int64s = association_proxy(
+        cls.alignment_int64 = association_proxy(
             "alignment_int64_association",
-            "alignment_int64s",
-            creator = lambda alignment_int64s: assoc_cls(alignment_int64s = alignment_int64s),
+            "alignment_int64",
+            creator = lambda alignment_int64: assoc_cls(alignment_int64 = alignment_int64),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -415,7 +563,7 @@ class AlignmentLong(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("alignment_long_association.rid"))
-    association = relationship("AlignmentLongAssociation", backref="alignment_longs")
+    association = relationship("AlignmentLongAssociation", backref="alignment_long")
     parent = association_proxy("association", "parent")
     alignmentBorder = StdUShort()
 
@@ -444,10 +592,10 @@ class HasAlignmentLongs(object):
             ),
         )
 
-        cls.alignment_longs = association_proxy(
+        cls.alignment_long = association_proxy(
             "alignment_long_association",
-            "alignment_longs",
-            creator = lambda alignment_longs: assoc_cls(alignment_longs = alignment_longs),
+            "alignment_long",
+            creator = lambda alignment_long: assoc_cls(alignment_long = alignment_long),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -465,7 +613,7 @@ class AlignmentWord(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("alignment_word_association.rid"))
-    association = relationship("AlignmentWordAssociation", backref="alignment_words")
+    association = relationship("AlignmentWordAssociation", backref="alignment_word")
     parent = association_proxy("association", "parent")
     alignmentBorder = StdUShort()
 
@@ -494,10 +642,10 @@ class HasAlignmentWords(object):
             ),
         )
 
-        cls.alignment_words = association_proxy(
+        cls.alignment_word = association_proxy(
             "alignment_word_association",
-            "alignment_words",
-            creator = lambda alignment_words: assoc_cls(alignment_words = alignment_words),
+            "alignment_word",
+            creator = lambda alignment_word: assoc_cls(alignment_word = alignment_word),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -515,7 +663,7 @@ class Annotation(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("annotation_association.rid"))
-    association = relationship("AnnotationAssociation", backref="annotations")
+    association = relationship("AnnotationAssociation", backref="annotation")
     parent = association_proxy("association", "parent")
 
     __required_parameters__ = ( )
@@ -566,12 +714,10 @@ class AnnotationText(Base):
     """
     """
     __tablename__ = "annotation_text"
+    _text = relationship("AnnotationTextValues", backref = "parent")
+    text = association_proxy("_text", "text")
 
-    text = StdString()
-
-    __required_parameters__ = (
-        Parameter("text", String, True),
-    )
+    __required_parameters__ = ( )
 
     __optional_elements__ = ( )
     _annotation_rid = Column(types.Integer, ForeignKey("annotation.rid"))
@@ -596,10 +742,10 @@ class HasAnnotations(object):
             ),
         )
 
-        cls.annotations = association_proxy(
+        cls.annotation = association_proxy(
             "annotation_association",
-            "annotations",
-            creator = lambda annotations: assoc_cls(annotations = annotations),
+            "annotation",
+            creator = lambda annotation: assoc_cls(annotation = annotation),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -617,7 +763,7 @@ class BitMask(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("bit_mask_association.rid"))
-    association = relationship("BitMaskAssociation", backref="bit_masks")
+    association = relationship("BitMaskAssociation", backref="bit_mask")
     parent = association_proxy("association", "parent")
     mask = StdULong()
 
@@ -646,10 +792,10 @@ class HasBitMasks(object):
             ),
         )
 
-        cls.bit_masks = association_proxy(
+        cls.bit_mask = association_proxy(
             "bit_mask_association",
-            "bit_masks",
-            creator = lambda bit_masks: assoc_cls(bit_masks = bit_masks),
+            "bit_mask",
+            creator = lambda bit_mask: assoc_cls(bit_mask = bit_mask),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -667,7 +813,7 @@ class ByteOrder(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("byte_order_association.rid"))
-    association = relationship("ByteOrderAssociation", backref="byte_orders")
+    association = relationship("ByteOrderAssociation", backref="byte_order")
     parent = association_proxy("association", "parent")
     byteOrder = StdString()
 
@@ -696,10 +842,10 @@ class HasByteOrders(object):
             ),
         )
 
-        cls.byte_orders = association_proxy(
+        cls.byte_order = association_proxy(
             "byte_order_association",
-            "byte_orders",
-            creator = lambda byte_orders: assoc_cls(byte_orders = byte_orders),
+            "byte_order",
+            creator = lambda byte_order: assoc_cls(byte_order = byte_order),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -767,7 +913,7 @@ class DefaultValue(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("default_value_association.rid"))
-    association = relationship("DefaultValueAssociation", backref="default_values")
+    association = relationship("DefaultValueAssociation", backref="default_value")
     parent = association_proxy("association", "parent")
     display_String = StdString()
 
@@ -796,10 +942,10 @@ class HasDefaultValues(object):
             ),
         )
 
-        cls.default_values = association_proxy(
+        cls.default_value = association_proxy(
             "default_value_association",
-            "default_values",
-            creator = lambda default_values: assoc_cls(default_values = default_values),
+            "default_value",
+            creator = lambda default_value: assoc_cls(default_value = default_value),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -817,7 +963,7 @@ class Deposit(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("deposit_association.rid"))
-    association = relationship("DepositAssociation", backref="deposits")
+    association = relationship("DepositAssociation", backref="deposit")
     parent = association_proxy("association", "parent")
     mode = StdString()
 
@@ -846,10 +992,10 @@ class HasDeposits(object):
             ),
         )
 
-        cls.deposits = association_proxy(
+        cls.deposit = association_proxy(
             "deposit_association",
-            "deposits",
-            creator = lambda deposits: assoc_cls(deposits = deposits),
+            "deposit",
+            creator = lambda deposit: assoc_cls(deposit = deposit),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -867,7 +1013,7 @@ class Discrete(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("discrete_association.rid"))
-    association = relationship("DiscreteAssociation", backref="discretes")
+    association = relationship("DiscreteAssociation", backref="discrete")
     parent = association_proxy("association", "parent")
 
     __required_parameters__ = ( )
@@ -893,10 +1039,10 @@ class HasDiscretes(object):
             ),
         )
 
-        cls.discretes = association_proxy(
+        cls.discrete = association_proxy(
             "discrete_association",
-            "discretes",
-            creator = lambda discretes: assoc_cls(discretes = discretes),
+            "discrete",
+            creator = lambda discrete: assoc_cls(discrete = discrete),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -914,7 +1060,7 @@ class DisplayIdentifier(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("display_identifier_association.rid"))
-    association = relationship("DisplayIdentifierAssociation", backref="display_identifiers")
+    association = relationship("DisplayIdentifierAssociation", backref="display_identifier")
     parent = association_proxy("association", "parent")
     display_Name = StdIdent()
 
@@ -943,10 +1089,10 @@ class HasDisplayIdentifiers(object):
             ),
         )
 
-        cls.display_identifiers = association_proxy(
+        cls.display_identifier = association_proxy(
             "display_identifier_association",
-            "display_identifiers",
-            creator = lambda display_identifiers: assoc_cls(display_identifiers = display_identifiers),
+            "display_identifier",
+            creator = lambda display_identifier: assoc_cls(display_identifier = display_identifier),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -964,7 +1110,7 @@ class EcuAddressExtension(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("ecu_address_extension_association.rid"))
-    association = relationship("EcuAddressExtensionAssociation", backref="ecu_address_extensions")
+    association = relationship("EcuAddressExtensionAssociation", backref="ecu_address_extension")
     parent = association_proxy("association", "parent")
     extension = StdShort()
 
@@ -993,10 +1139,10 @@ class HasEcuAddressExtensions(object):
             ),
         )
 
-        cls.ecu_address_extensions = association_proxy(
+        cls.ecu_address_extension = association_proxy(
             "ecu_address_extension_association",
-            "ecu_address_extensions",
-            creator = lambda ecu_address_extensions: assoc_cls(ecu_address_extensions = ecu_address_extensions),
+            "ecu_address_extension",
+            creator = lambda ecu_address_extension: assoc_cls(ecu_address_extension = ecu_address_extension),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -1066,7 +1212,7 @@ class Format(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("format_association.rid"))
-    association = relationship("FormatAssociation", backref="formats")
+    association = relationship("FormatAssociation", backref="format")
     parent = association_proxy("association", "parent")
     formatString = StdString()
 
@@ -1095,10 +1241,10 @@ class HasFormats(object):
             ),
         )
 
-        cls.formats = association_proxy(
+        cls.format = association_proxy(
             "format_association",
-            "formats",
-            creator = lambda formats: assoc_cls(formats = formats),
+            "format",
+            creator = lambda format: assoc_cls(format = format),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -1116,13 +1262,12 @@ class FunctionList(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("function_list_association.rid"))
-    association = relationship("FunctionListAssociation", backref="function_lists")
+    association = relationship("FunctionListAssociation", backref="function_list")
     parent = association_proxy("association", "parent")
-    name = StdIdent()
+    _name = relationship("FunctionListValues", backref = "parent")
+    name = association_proxy("_name", "name")
 
-    __required_parameters__ = (
-        Parameter("name", Ident, True),
-    )
+    __required_parameters__ = ( )
 
     __optional_elements__ = ( )
 
@@ -1145,10 +1290,10 @@ class HasFunctionLists(object):
             ),
         )
 
-        cls.function_lists = association_proxy(
+        cls.function_list = association_proxy(
             "function_list_association",
-            "function_lists",
-            creator = lambda function_lists: assoc_cls(function_lists = function_lists),
+            "function_list",
+            creator = lambda function_list: assoc_cls(function_list = function_list),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -1213,7 +1358,7 @@ class IfData(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("if_data_association.rid"))
-    association = relationship("IfDataAssociation", backref="if_datas")
+    association = relationship("IfDataAssociation", backref="if_data")
     parent = association_proxy("association", "parent")
     name = StdIdent()
 
@@ -1242,10 +1387,10 @@ class HasIfDatas(object):
             ),
         )
 
-        cls.if_datas = association_proxy(
+        cls.if_data = association_proxy(
             "if_data_association",
-            "if_datas",
-            creator = lambda if_datas: assoc_cls(if_datas = if_datas),
+            "if_data",
+            creator = lambda if_data: assoc_cls(if_data = if_data),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -1263,7 +1408,7 @@ class MatrixDim(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("matrix_dim_association.rid"))
-    association = relationship("MatrixDimAssociation", backref="matrix_dims")
+    association = relationship("MatrixDimAssociation", backref="matrix_dim")
     parent = association_proxy("association", "parent")
     xDim = StdUShort()
     yDim = StdUShort()
@@ -1296,10 +1441,10 @@ class HasMatrixDims(object):
             ),
         )
 
-        cls.matrix_dims = association_proxy(
+        cls.matrix_dim = association_proxy(
             "matrix_dim_association",
-            "matrix_dims",
-            creator = lambda matrix_dims: assoc_cls(matrix_dims = matrix_dims),
+            "matrix_dim",
+            creator = lambda matrix_dim: assoc_cls(matrix_dim = matrix_dim),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -1317,7 +1462,7 @@ class MaxRefresh(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("max_refresh_association.rid"))
-    association = relationship("MaxRefreshAssociation", backref="max_refreshs")
+    association = relationship("MaxRefreshAssociation", backref="max_refresh")
     parent = association_proxy("association", "parent")
     scalingUnit = StdUShort()
     rate = StdULong()
@@ -1348,10 +1493,10 @@ class HasMaxRefreshs(object):
             ),
         )
 
-        cls.max_refreshs = association_proxy(
+        cls.max_refresh = association_proxy(
             "max_refresh_association",
-            "max_refreshs",
-            creator = lambda max_refreshs: assoc_cls(max_refreshs = max_refreshs),
+            "max_refresh",
+            creator = lambda max_refresh: assoc_cls(max_refresh = max_refresh),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -1369,7 +1514,7 @@ class Monotony(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("monotony_association.rid"))
-    association = relationship("MonotonyAssociation", backref="monotonys")
+    association = relationship("MonotonyAssociation", backref="monotony")
     parent = association_proxy("association", "parent")
     monotony = StdString()
 
@@ -1398,10 +1543,10 @@ class HasMonotonys(object):
             ),
         )
 
-        cls.monotonys = association_proxy(
+        cls.monotony = association_proxy(
             "monotony_association",
-            "monotonys",
-            creator = lambda monotonys: assoc_cls(monotonys = monotonys),
+            "monotony",
+            creator = lambda monotony: assoc_cls(monotony = monotony),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -1419,7 +1564,7 @@ class PhysUnit(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("phys_unit_association.rid"))
-    association = relationship("PhysUnitAssociation", backref="phys_units")
+    association = relationship("PhysUnitAssociation", backref="phys_unit")
     parent = association_proxy("association", "parent")
     unit = StdString()
 
@@ -1448,10 +1593,10 @@ class HasPhysUnits(object):
             ),
         )
 
-        cls.phys_units = association_proxy(
+        cls.phys_unit = association_proxy(
             "phys_unit_association",
-            "phys_units",
-            creator = lambda phys_units: assoc_cls(phys_units = phys_units),
+            "phys_unit",
+            creator = lambda phys_unit: assoc_cls(phys_unit = phys_unit),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -1469,7 +1614,7 @@ class ReadOnly(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("read_only_association.rid"))
-    association = relationship("ReadOnlyAssociation", backref="read_onlys")
+    association = relationship("ReadOnlyAssociation", backref="read_only")
     parent = association_proxy("association", "parent")
 
     __required_parameters__ = ( )
@@ -1495,10 +1640,10 @@ class HasReadOnlys(object):
             ),
         )
 
-        cls.read_onlys = association_proxy(
+        cls.read_only = association_proxy(
             "read_only_association",
-            "read_onlys",
-            creator = lambda read_onlys: assoc_cls(read_onlys = read_onlys),
+            "read_only",
+            creator = lambda read_only: assoc_cls(read_only = read_only),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -1516,7 +1661,7 @@ class RefCharacteristic(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("ref_characteristic_association.rid"))
-    association = relationship("RefCharacteristicAssociation", backref="ref_characteristics")
+    association = relationship("RefCharacteristicAssociation", backref="ref_characteristic")
     parent = association_proxy("association", "parent")
     identifier = StdIdent()
 
@@ -1545,10 +1690,10 @@ class HasRefCharacteristics(object):
             ),
         )
 
-        cls.ref_characteristics = association_proxy(
+        cls.ref_characteristic = association_proxy(
             "ref_characteristic_association",
-            "ref_characteristics",
-            creator = lambda ref_characteristics: assoc_cls(ref_characteristics = ref_characteristics),
+            "ref_characteristic",
+            creator = lambda ref_characteristic: assoc_cls(ref_characteristic = ref_characteristic),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -1566,7 +1711,7 @@ class RefMemorySegment(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("ref_memory_segment_association.rid"))
-    association = relationship("RefMemorySegmentAssociation", backref="ref_memory_segments")
+    association = relationship("RefMemorySegmentAssociation", backref="ref_memory_segment")
     parent = association_proxy("association", "parent")
     name = StdIdent()
 
@@ -1595,10 +1740,10 @@ class HasRefMemorySegments(object):
             ),
         )
 
-        cls.ref_memory_segments = association_proxy(
+        cls.ref_memory_segment = association_proxy(
             "ref_memory_segment_association",
-            "ref_memory_segments",
-            creator = lambda ref_memory_segments: assoc_cls(ref_memory_segments = ref_memory_segments),
+            "ref_memory_segment",
+            creator = lambda ref_memory_segment: assoc_cls(ref_memory_segment = ref_memory_segment),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -1616,7 +1761,7 @@ class RefUnit(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("ref_unit_association.rid"))
-    association = relationship("RefUnitAssociation", backref="ref_units")
+    association = relationship("RefUnitAssociation", backref="ref_unit")
     parent = association_proxy("association", "parent")
     unit = StdIdent()
 
@@ -1645,10 +1790,10 @@ class HasRefUnits(object):
             ),
         )
 
-        cls.ref_units = association_proxy(
+        cls.ref_unit = association_proxy(
             "ref_unit_association",
-            "ref_units",
-            creator = lambda ref_units: assoc_cls(ref_units = ref_units),
+            "ref_unit",
+            creator = lambda ref_unit: assoc_cls(ref_unit = ref_unit),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -1666,7 +1811,7 @@ class StepSize(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("step_size_association.rid"))
-    association = relationship("StepSizeAssociation", backref="step_sizes")
+    association = relationship("StepSizeAssociation", backref="step_size")
     parent = association_proxy("association", "parent")
     stepSize = StdFloat()
 
@@ -1695,10 +1840,10 @@ class HasStepSizes(object):
             ),
         )
 
-        cls.step_sizes = association_proxy(
+        cls.step_size = association_proxy(
             "step_size_association",
-            "step_sizes",
-            creator = lambda step_sizes: assoc_cls(step_sizes = step_sizes),
+            "step_size",
+            creator = lambda step_size: assoc_cls(step_size = step_size),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -1716,7 +1861,7 @@ class SymbolLink(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("symbol_link_association.rid"))
-    association = relationship("SymbolLinkAssociation", backref="symbol_links")
+    association = relationship("SymbolLinkAssociation", backref="symbol_link")
     parent = association_proxy("association", "parent")
     symbolName = StdString()
     offset = StdLong()
@@ -1747,10 +1892,10 @@ class HasSymbolLinks(object):
             ),
         )
 
-        cls.symbol_links = association_proxy(
+        cls.symbol_link = association_proxy(
             "symbol_link_association",
-            "symbol_links",
-            creator = lambda symbol_links: assoc_cls(symbol_links = symbol_links),
+            "symbol_link",
+            creator = lambda symbol_link: assoc_cls(symbol_link = symbol_link),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -1768,7 +1913,7 @@ class Version(Base):
     """
     """
     _association_id = Column(types.Integer, ForeignKey("version_association.rid"))
-    association = relationship("VersionAssociation", backref="versions")
+    association = relationship("VersionAssociation", backref="version")
     parent = association_proxy("association", "parent")
     versionIdentifier = StdString()
 
@@ -1797,10 +1942,10 @@ class HasVersions(object):
             ),
         )
 
-        cls.versions = association_proxy(
+        cls.version = association_proxy(
             "version_association",
-            "versions",
-            creator = lambda versions: assoc_cls(versions = versions),
+            "version",
+            creator = lambda version: assoc_cls(version = version),
         )
         return relationship(
             assoc_cls, backref = backref("parent", uselist = False)
@@ -1813,6 +1958,7 @@ class Asap2Version(Base):
     __tablename__ = "asap2_version"
 
     versionNo = StdUShort()
+
     upgradeNo = StdUShort()
 
     __required_parameters__ = (
@@ -1829,6 +1975,7 @@ class A2mlVersion(Base):
     __tablename__ = "a2ml_version"
 
     versionNo = StdUShort()
+
     upgradeNo = StdUShort()
 
     __required_parameters__ = (
@@ -1845,6 +1992,7 @@ class Project(Base):
     __tablename__ = "project"
 
     name = StdIdent()
+
     longIdentifier = StdString()
 
     __required_parameters__ = (
@@ -1902,6 +2050,7 @@ class Module(Base, HasIfDatas):
     __tablename__ = "module"
 
     name = StdIdent()
+
     longIdentifier = StdString()
 
     __required_parameters__ = (
@@ -1955,7 +2104,6 @@ class A2ml(Base):
     """
     __tablename__ = "a2ml"
 
-
     __required_parameters__ = ( )
 
     __optional_elements__ = ( )
@@ -1969,14 +2117,23 @@ class AxisPts(Base, HasAnnotations, HasByteOrders, HasCalibrationAccess, HasDepo
     __tablename__ = "axis_pts"
 
     name = StdIdent()
+
     longIdentifier = StdString()
+
     address = StdULong()
+
     inputQuantity = StdIdent()
+
     deposit = StdIdent()
+
     maxDiff = StdFloat()
+
     conversion = StdIdent()
+
     maxAxisPoints = StdUShort()
+
     lowerLimit = StdFloat()
+
     upperLimit = StdFloat()
 
     __required_parameters__ = (
@@ -2021,13 +2178,21 @@ class Characteristic(Base, HasAnnotations, HasBitMasks, HasByteOrders, HasCalibr
     __tablename__ = "characteristic"
 
     name = StdIdent()
+
     longIdentifier = StdString()
+
     type = StdString()
+
     address = StdULong()
+
     deposit = StdIdent()
+
     maxDiff = StdFloat()
+
     conversion = StdIdent()
+
     lowerLimit = StdFloat()
+
     upperLimit = StdFloat()
 
     __required_parameters__ = (
@@ -2085,10 +2250,15 @@ class AxisDescr(Base, HasAnnotations, HasByteOrders, HasDeposits, HasExtendedLim
     __tablename__ = "axis_descr"
 
     attribute = StdString()
+
     inputQuantity = StdIdent()
+
     conversion = StdIdent()
+
     maxAxisPoints = StdUShort()
+
     lowerLimit = StdFloat()
+
     upperLimit = StdFloat()
 
     __required_parameters__ = (
@@ -2165,7 +2335,9 @@ class FixAxisPar(Base):
     __tablename__ = "fix_axis_par"
 
     offset = StdShort()
+
     shift = StdShort()
+
     numberapo = StdUShort()
 
     __required_parameters__ = (
@@ -2185,7 +2357,9 @@ class FixAxisParDist(Base):
     __tablename__ = "fix_axis_par_dist"
 
     offset = StdShort()
+
     distance = StdShort()
+
     numberapo = StdUShort()
 
     __required_parameters__ = (
@@ -2203,12 +2377,10 @@ class FixAxisParList(Base):
     """
     """
     __tablename__ = "fix_axis_par_list"
+    _axisPts_Value = relationship("FixAxisParListValues", backref = "parent")
+    axisPts_Value = association_proxy("_axisPts_Value", "axisPts_Value")
 
-    axisPts_Value = StdFloat()
-
-    __required_parameters__ = (
-        Parameter("axisPts_Value", Float, True),
-    )
+    __required_parameters__ = ( )
 
     __optional_elements__ = ( )
     _axis_descr_rid = Column(types.Integer, ForeignKey("axis_descr.rid"))
@@ -2253,6 +2425,7 @@ class DependentCharacteristic(Base):
     __tablename__ = "dependent_characteristic"
 
     formula = StdString()
+
     characteristic = StdIdent()
 
     __required_parameters__ = (
@@ -2303,6 +2476,7 @@ class VirtualCharacteristic(Base):
     __tablename__ = "virtual_characteristic"
 
     formula = StdString()
+
     characteristic = StdIdent()
 
     __required_parameters__ = (
@@ -2321,9 +2495,13 @@ class CompuMethod(Base, HasRefUnits):
     __tablename__ = "compu_method"
 
     name = StdIdent()
+
     longIdentifier = StdString()
+
     conversionType = StdString()
+
     format = StdString()
+
     unit = StdString()
 
     __required_parameters__ = (
@@ -2357,10 +2535,15 @@ class Coeffs(Base):
     __tablename__ = "coeffs"
 
     a = StdFloat()
+
     b = StdFloat()
+
     c = StdFloat()
+
     d = StdFloat()
+
     e = StdFloat()
+
     f = StdFloat()
 
     __required_parameters__ = (
@@ -2383,6 +2566,7 @@ class CoeffsLinear(Base):
     __tablename__ = "coeffs_linear"
 
     a = StdFloat()
+
     b = StdFloat()
 
     __required_parameters__ = (
@@ -2468,8 +2652,11 @@ class CompuTab(Base, HasDefaultValues):
     __tablename__ = "compu_tab"
 
     name = StdIdent()
+
     longIdentifier = StdString()
+
     conversionType = StdString()
+
     numberValuePairs = StdUShort()
 
     __required_parameters__ = (
@@ -2478,6 +2665,7 @@ class CompuTab(Base, HasDefaultValues):
         Parameter("conversionType", Enum, False),
         Parameter("numberValuePairs", Uint, False),
     )
+    pairs = relationship("CompuTabPair", backref = "parent")
 
     __optional_elements__ = (
         Element("DefaultValue", "DEFAULT_VALUE", False),
@@ -2510,8 +2698,11 @@ class CompuVtab(Base, HasDefaultValues):
     __tablename__ = "compu_vtab"
 
     name = StdIdent()
+
     longIdentifier = StdString()
+
     conversionType = StdString()
+
     numberValuePairs = StdUShort()
 
     __required_parameters__ = (
@@ -2520,6 +2711,7 @@ class CompuVtab(Base, HasDefaultValues):
         Parameter("conversionType", Enum, False),
         Parameter("numberValuePairs", Uint, False),
     )
+    pairs = relationship("CompuVtabPair", backref = "parent")
 
     __optional_elements__ = (
         Element("DefaultValue", "DEFAULT_VALUE", False),
@@ -2534,7 +2726,9 @@ class CompuVtabRange(Base, HasDefaultValues):
     __tablename__ = "compu_vtab_range"
 
     name = StdIdent()
+
     longIdentifier = StdString()
+
     numberValueTriples = StdUShort()
 
     __required_parameters__ = (
@@ -2542,6 +2736,7 @@ class CompuVtabRange(Base, HasDefaultValues):
         Parameter("longIdentifier", String, False),
         Parameter("numberValueTriples", Uint, False),
     )
+    triples = relationship("CompuVtabRangeTriple", backref = "parent")
 
     __optional_elements__ = (
         Element("DefaultValue", "DEFAULT_VALUE", False),
@@ -2556,8 +2751,11 @@ class Frame(Base, HasIfDatas):
     __tablename__ = "frame"
 
     name = StdIdent()
+
     longIdentifier = StdString()
+
     scalingUnit = StdUShort()
+
     rate = StdULong()
 
     __required_parameters__ = (
@@ -2598,6 +2796,7 @@ class Function(Base, HasAnnotations, HasIfDatas, HasRefCharacteristics):
     __tablename__ = "function"
 
     name = StdIdent()
+
     longIdentifier = StdString()
 
     __required_parameters__ = (
@@ -2631,7 +2830,7 @@ class DefCharacteristic(Base):
     """
     __tablename__ = "def_characteristic"
 
-    identifier = StdIdent()
+    # def_characteristic HELLO
 
     __required_parameters__ = (
         Parameter("identifier", Ident, True),
@@ -2663,7 +2862,7 @@ class InMeasurement(Base):
     """
     __tablename__ = "in_measurement"
 
-    identifier = StdIdent()
+    # in_measurement HELLO
 
     __required_parameters__ = (
         Parameter("identifier", Ident, True),
@@ -2679,7 +2878,7 @@ class LocMeasurement(Base):
     """
     __tablename__ = "loc_measurement"
 
-    identifier = StdIdent()
+    # loc_measurement HELLO
 
     __required_parameters__ = (
         Parameter("identifier", Ident, True),
@@ -2695,7 +2894,7 @@ class OutMeasurement(Base):
     """
     __tablename__ = "out_measurement"
 
-    identifier = StdIdent()
+    # out_measurement HELLO
 
     __required_parameters__ = (
         Parameter("identifier", Ident, True),
@@ -2728,6 +2927,7 @@ class Group(Base, HasAnnotations, HasFunctionLists, HasIfDatas, HasRefCharacteri
     __tablename__ = "group"
 
     groupName = StdIdent()
+
     groupLongIdentifier = StdString()
 
     __required_parameters__ = (
@@ -2756,7 +2956,7 @@ class RefMeasurement(Base):
     """
     __tablename__ = "ref_measurement"
 
-    identifier = StdIdent()
+    # ref_measurement HELLO
 
     __required_parameters__ = (
         Parameter("identifier", Ident, True),
@@ -2772,7 +2972,6 @@ class Root(Base):
     """
     __tablename__ = "root"
 
-
     __required_parameters__ = ( )
 
     __optional_elements__ = ( )
@@ -2785,7 +2984,7 @@ class SubGroup(Base):
     """
     __tablename__ = "sub_group"
 
-    identifier = StdIdent()
+    # sub_group HELLO
 
     __required_parameters__ = (
         Parameter("identifier", Ident, True),
@@ -2802,12 +3001,19 @@ class Measurement(Base, HasAnnotations, HasBitMasks, HasByteOrders, HasDiscretes
     __tablename__ = "measurement"
 
     name = StdIdent()
+
     longIdentifier = StdString()
+
     datatype = StdIdent()
+
     conversion = StdIdent()
+
     resolution = StdUShort()
+
     accuracy = StdFloat()
+
     lowerLimit = StdFloat()
+
     upperLimit = StdFloat()
 
     __required_parameters__ = (
@@ -2876,7 +3082,6 @@ class BitOperation(Base):
     """
     __tablename__ = "bit_operation"
 
-
     __required_parameters__ = ( )
 
     __optional_elements__ = (
@@ -2927,7 +3132,6 @@ class SignExtend(Base):
     """
     """
     __tablename__ = "sign_extend"
-
 
     __required_parameters__ = ( )
 
@@ -2989,7 +3193,6 @@ class ReadWrite(Base):
     """
     __tablename__ = "read_write"
 
-
     __required_parameters__ = ( )
 
     __optional_elements__ = ( )
@@ -3001,12 +3204,10 @@ class Virtual(Base):
     """
     """
     __tablename__ = "virtual"
+    _measuringChannel = relationship("VirtualMeasuringChannels", backref = "parent")
+    measuringChannel = association_proxy("_measuringChannel", "measuringChannel")
 
-    measuringChannel = StdIdent()
-
-    __required_parameters__ = (
-        Parameter("measuringChannel", Ident, True),
-    )
+    __required_parameters__ = ( )
 
     __optional_elements__ = ( )
     _measurement_rid = Column(types.Integer, ForeignKey("measurement.rid"))
@@ -3144,6 +3345,7 @@ class CalibrationMethod(Base):
     __tablename__ = "calibration_method"
 
     method = StdString()
+
     version = StdULong()
 
     __required_parameters__ = (
@@ -3163,12 +3365,10 @@ class CalibrationHandle(Base):
     """
     """
     __tablename__ = "calibration_handle"
+    _handle = relationship("CalHandles", backref = "parent")
+    handle = association_proxy("_handle", "handle")
 
-    handle = StdLong()
-
-    __required_parameters__ = (
-        Parameter("handle", Long, True),
-    )
+    __required_parameters__ = ( )
 
     __optional_elements__ = (
         Element("CalibrationHandleText", "CALIBRATION_HANDLE_TEXT", False),
@@ -3296,12 +3496,19 @@ class MemoryLayout(Base, HasIfDatas):
     __tablename__ = "memory_layout"
 
     prgType = StdString()
+
     address = StdULong()
+
     size = StdULong()
+
     offset_0 = StdLong()
+
     offset_1 = StdLong()
+
     offset_2 = StdLong()
+
     offset_3 = StdLong()
+
     offset_4 = StdLong()
 
     __required_parameters__ = (
@@ -3328,16 +3535,27 @@ class MemorySegment(Base, HasIfDatas):
     __tablename__ = "memory_segment"
 
     name = StdIdent()
+
     longIdentifier = StdString()
+
     prgType = StdString()
+
     memoryType = StdString()
+
     attribute = StdString()
+
     address = StdULong()
+
     size = StdULong()
+
     offset_0 = StdLong()
+
     offset_1 = StdLong()
+
     offset_2 = StdLong()
+
     offset_3 = StdLong()
+
     offset_4 = StdLong()
 
     __required_parameters__ = (
@@ -3416,6 +3634,7 @@ class SystemConstant(Base):
     __tablename__ = "system_constant"
 
     name = StdString()
+
     value = StdString()
 
     __required_parameters__ = (
@@ -3583,8 +3802,11 @@ class AxisPtsX(Base):
     __tablename__ = "axis_pts_x"
 
     position = StdUShort()
+
     datatype = StdIdent()
+
     indexIncr = StdIdent()
+
     addressing = StdIdent()
 
     __required_parameters__ = (
@@ -3605,8 +3827,11 @@ class AxisPtsY(Base):
     __tablename__ = "axis_pts_y"
 
     position = StdUShort()
+
     datatype = StdIdent()
+
     indexIncr = StdIdent()
+
     addressing = StdIdent()
 
     __required_parameters__ = (
@@ -3627,8 +3852,11 @@ class AxisPtsZ(Base):
     __tablename__ = "axis_pts_z"
 
     position = StdUShort()
+
     datatype = StdIdent()
+
     indexIncr = StdIdent()
+
     addressing = StdIdent()
 
     __required_parameters__ = (
@@ -3649,8 +3877,11 @@ class AxisPts4(Base):
     __tablename__ = "axis_pts_4"
 
     position = StdUShort()
+
     datatype = StdIdent()
+
     indexIncr = StdIdent()
+
     addressing = StdIdent()
 
     __required_parameters__ = (
@@ -3671,8 +3902,11 @@ class AxisPts5(Base):
     __tablename__ = "axis_pts_5"
 
     position = StdUShort()
+
     datatype = StdIdent()
+
     indexIncr = StdIdent()
+
     addressing = StdIdent()
 
     __required_parameters__ = (
@@ -3693,9 +3927,13 @@ class AxisRescaleX(Base):
     __tablename__ = "axis_rescale_x"
 
     position = StdUShort()
+
     datatype = StdIdent()
+
     maxNumberOfRescalePairs = StdUShort()
+
     indexIncr = StdIdent()
+
     addressing = StdIdent()
 
     __required_parameters__ = (
@@ -3717,9 +3955,13 @@ class AxisRescaleY(Base):
     __tablename__ = "axis_rescale_y"
 
     position = StdUShort()
+
     datatype = StdIdent()
+
     maxNumberOfRescalePairs = StdUShort()
+
     indexIncr = StdIdent()
+
     addressing = StdIdent()
 
     __required_parameters__ = (
@@ -3741,9 +3983,13 @@ class AxisRescaleZ(Base):
     __tablename__ = "axis_rescale_z"
 
     position = StdUShort()
+
     datatype = StdIdent()
+
     maxNumberOfRescalePairs = StdUShort()
+
     indexIncr = StdIdent()
+
     addressing = StdIdent()
 
     __required_parameters__ = (
@@ -3765,9 +4011,13 @@ class AxisRescale4(Base):
     __tablename__ = "axis_rescale_4"
 
     position = StdUShort()
+
     datatype = StdIdent()
+
     maxNumberOfRescalePairs = StdUShort()
+
     indexIncr = StdIdent()
+
     addressing = StdIdent()
 
     __required_parameters__ = (
@@ -3789,9 +4039,13 @@ class AxisRescale5(Base):
     __tablename__ = "axis_rescale_5"
 
     position = StdUShort()
+
     datatype = StdIdent()
+
     maxNumberOfRescalePairs = StdUShort()
+
     indexIncr = StdIdent()
+
     addressing = StdIdent()
 
     __required_parameters__ = (
@@ -3813,6 +4067,7 @@ class DistOpX(Base):
     __tablename__ = "dist_op_x"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -3831,6 +4086,7 @@ class DistOpY(Base):
     __tablename__ = "dist_op_y"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -3849,6 +4105,7 @@ class DistOpZ(Base):
     __tablename__ = "dist_op_z"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -3867,6 +4124,7 @@ class DistOp4(Base):
     __tablename__ = "dist_op_4"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -3885,6 +4143,7 @@ class DistOp5(Base):
     __tablename__ = "dist_op_5"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -3983,8 +4242,11 @@ class FncValues(Base):
     __tablename__ = "fnc_values"
 
     position = StdUShort()
+
     datatype = StdIdent()
+
     indexMode = StdString()
+
     addresstype = StdIdent()
 
     __required_parameters__ = (
@@ -4005,6 +4267,7 @@ class Identification(Base):
     __tablename__ = "identification"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4023,6 +4286,7 @@ class NoAxisPtsX(Base):
     __tablename__ = "no_axis_pts_x"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4041,6 +4305,7 @@ class NoAxisPtsY(Base):
     __tablename__ = "no_axis_pts_y"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4059,6 +4324,7 @@ class NoAxisPtsZ(Base):
     __tablename__ = "no_axis_pts_z"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4077,6 +4343,7 @@ class NoAxisPts4(Base):
     __tablename__ = "no_axis_pts_4"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4095,6 +4362,7 @@ class NoAxisPts5(Base):
     __tablename__ = "no_axis_pts_5"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4112,7 +4380,6 @@ class StaticRecordLayout(Base):
     """
     __tablename__ = "static_record_layout"
 
-
     __required_parameters__ = ( )
 
     __optional_elements__ = ( )
@@ -4126,6 +4393,7 @@ class NoRescaleX(Base):
     __tablename__ = "no_rescale_x"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4144,6 +4412,7 @@ class NoRescaleY(Base):
     __tablename__ = "no_rescale_y"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4162,6 +4431,7 @@ class NoRescaleZ(Base):
     __tablename__ = "no_rescale_z"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4180,6 +4450,7 @@ class NoRescale4(Base):
     __tablename__ = "no_rescale_4"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4198,6 +4469,7 @@ class NoRescale5(Base):
     __tablename__ = "no_rescale_5"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4216,6 +4488,7 @@ class OffsetX(Base):
     __tablename__ = "offset_x"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4234,6 +4507,7 @@ class OffsetY(Base):
     __tablename__ = "offset_y"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4252,6 +4526,7 @@ class OffsetZ(Base):
     __tablename__ = "offset_z"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4270,6 +4545,7 @@ class Offset4(Base):
     __tablename__ = "offset_4"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4288,6 +4564,7 @@ class Offset5(Base):
     __tablename__ = "offset_5"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4306,6 +4583,7 @@ class Reserved(Base):
     __tablename__ = "reserved"
 
     position = StdUShort()
+
     dataSize = StdIdent()
 
     __required_parameters__ = (
@@ -4324,6 +4602,7 @@ class RipAddrW(Base):
     __tablename__ = "rip_addr_w"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4342,6 +4621,7 @@ class RipAddrX(Base):
     __tablename__ = "rip_addr_x"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4360,6 +4640,7 @@ class RipAddrY(Base):
     __tablename__ = "rip_addr_y"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4378,6 +4659,7 @@ class RipAddrZ(Base):
     __tablename__ = "rip_addr_z"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4396,6 +4678,7 @@ class RipAddr4(Base):
     __tablename__ = "rip_addr_4"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4414,6 +4697,7 @@ class RipAddr5(Base):
     __tablename__ = "rip_addr_5"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4432,6 +4716,7 @@ class ShiftOpX(Base):
     __tablename__ = "shift_op_x"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4450,6 +4735,7 @@ class ShiftOpY(Base):
     __tablename__ = "shift_op_y"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4468,6 +4754,7 @@ class ShiftOpZ(Base):
     __tablename__ = "shift_op_z"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4486,6 +4773,7 @@ class ShiftOp4(Base):
     __tablename__ = "shift_op_4"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4504,6 +4792,7 @@ class ShiftOp5(Base):
     __tablename__ = "shift_op_5"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4522,6 +4811,7 @@ class SrcAddrX(Base):
     __tablename__ = "src_addr_x"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4540,6 +4830,7 @@ class SrcAddrY(Base):
     __tablename__ = "src_addr_y"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4558,6 +4849,7 @@ class SrcAddrZ(Base):
     __tablename__ = "src_addr_z"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4576,6 +4868,7 @@ class SrcAddr4(Base):
     __tablename__ = "src_addr_4"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4594,6 +4887,7 @@ class SrcAddr5(Base):
     __tablename__ = "src_addr_5"
 
     position = StdUShort()
+
     datatype = StdIdent()
 
     __required_parameters__ = (
@@ -4612,8 +4906,11 @@ class Unit(Base, HasRefUnits):
     __tablename__ = "unit"
 
     name = StdIdent()
+
     longIdentifier = StdString()
+
     display = StdString()
+
     type = StdString()
 
     __required_parameters__ = (
@@ -4640,11 +4937,17 @@ class SiExponents(Base):
     __tablename__ = "si_exponents"
 
     length = StdShort()
+
     mass = StdShort()
+
     time = StdShort()
+
     electricCurrent = StdShort()
+
     temperature = StdShort()
+
     amountOfSubstance = StdShort()
+
     luminousIntensity = StdShort()
 
     __required_parameters__ = (
@@ -4668,6 +4971,7 @@ class UnitConversion(Base):
     __tablename__ = "unit_conversion"
 
     gradient = StdFloat()
+
     offset = StdFloat()
 
     __required_parameters__ = (
@@ -4705,7 +5009,7 @@ class RefGroup(Base):
     """
     __tablename__ = "ref_group"
 
-    identifier = StdIdent()
+    # ref_group HELLO
 
     __required_parameters__ = (
         Parameter("identifier", Ident, True),
@@ -4720,7 +5024,6 @@ class VariantCoding(Base):
     """
     """
     __tablename__ = "variant_coding"
-
 
     __required_parameters__ = ( )
 
@@ -4746,6 +5049,7 @@ class VarCharacteristic(Base):
     __tablename__ = "var_characteristic"
 
     name = StdIdent()
+
     criterionName = StdIdent()
 
     __required_parameters__ = (
@@ -4783,7 +5087,9 @@ class VarCriterion(Base):
     __tablename__ = "var_criterion"
 
     name = StdIdent()
+
     longIdentifier = StdString()
+
     value = StdIdent()
 
     __required_parameters__ = (
@@ -4839,8 +5145,8 @@ class VarForbiddenComb(Base):
     """
     __tablename__ = "var_forbidden_comb"
 
-
     __required_parameters__ = ( )
+    pairs = relationship("VarForbiddedCombPair", backref = "parent")
 
     __optional_elements__ = ( )
     _variant_coding_rid = Column(types.Integer, ForeignKey("variant_coding.rid"))
