@@ -25,7 +25,7 @@ ASAP2_VERSION 1 61
       Module_01
       "default_Module"
 	  
-	  /include "asam.aml"
+//	  /include "asam.aml"
 	  
       /begin MOD_PAR "default_ModPar"
          ADDR_EPK 0x100100FF
