@@ -116,7 +116,7 @@ calibrationAccess:
 
 defaultValue:
      'DEFAULT_VALUE'
-    display_String = stringValue
+    display_string = stringValue
     ;
 
 deposit:
@@ -609,7 +609,7 @@ compuTab:
 
 defaultValueNumeric:
      'DEFAULT_VALUE_NUMERIC'
-    display_Value = floatValue
+    display_value = floatValue
     ;
 
 compuVtab:

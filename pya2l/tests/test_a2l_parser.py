@@ -1102,6 +1102,7 @@ def test_compu_v_tab_range():
     assert compareCompuVTabRangeTriple(t3, inValMin = 4.0, inValMax = 5.0, outVal = 'second_section') == True
     assert compareCompuVTabRangeTriple(t4, inValMin = 6.0, inValMax = 500.0, outVal = 'usual_case') == True
 
+
 def test_cpu_type():
     parser = ParserWrapper('a2l', 'cpuType', A2LListener, debug = False)
     DATA = """
@@ -1110,6 +1111,7 @@ def test_cpu_type():
     session = parser.parseFromString(DATA)
     cpu = session.query(model.CpuType).first()
     assert cpu.cPU == 'INTEL 4711'
+
 
 def test_curve_axis_ref():
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
@@ -1192,21 +1194,9 @@ def test_curve_axis_ref():
     mod = session.query(model.Module).first()
     assert mod.name == "test"
     assert mod.longIdentifier == ""
-    rl0, rl1 = mod.record_layouts
-    assert rl0.name == "DEP_12E"
-    assert rl0.fnc_values.position == 1
-    assert rl0.fnc_values.datatype == 'FLOAT32_IEEE'
-    assert rl0.fnc_values.indexMode == 'ROW_DIR'
-    assert rl0.fnc_values.addresstype == 'DIRECT'
-    assert rl1.name == "SPD_DEP"
-    assert rl1.fnc_values.position == 2
-    assert rl1.fnc_values.datatype == 'FLOAT32_IEEE'
-    assert rl1.fnc_values.indexMode == 'ALTERNATE_WITH_X'
-    assert rl1.fnc_values.addresstype == 'DIRECT'
     chx = mod.characteristics
     assert len(chx) == 3
     ch0, ch1, ch2 = chx
-
     assert ch0.name == 'FUEL_ADJ'
     assert ch0.longIdentifier == 'Air fuel table'
     assert ch0.type == 'MAP'
@@ -1216,19 +1206,7 @@ def test_curve_axis_ref():
     assert ch0.conversion == 'R_MULT'
     assert ch0.lowerLimit == 0.0
     assert ch0.upperLimit == 2.0
-    ad0, ad1 = ch0.axis_descrs
-    assert ad0.attribute == 'CURVE_AXIS'
-    assert ad0.inputQuantity == 'SPEED'
-    assert ad0.conversion == 'NO_COMPU_METHOD'
-    assert ad0.maxAxisPoints == 13
-    assert ad0.lowerLimit == 0.0
-    assert ad0.upperLimit == 12.0
-    assert ad1.attribute == 'CURVE_AXIS'
-    assert ad1.inputQuantity == 'LOAD'
-    assert ad1.conversion == 'NO_COMPU_METHOD'
-    assert ad1.maxAxisPoints == 17
-    assert ad1.lowerLimit == 0.0
-    assert ad1.upperLimit == 16.0
+
 
     assert ch1.name == 'SPD_NORM'
     assert ch1.longIdentifier == 'Speed normalizing function'
@@ -1239,13 +1217,7 @@ def test_curve_axis_ref():
     assert ch1.conversion == 'R_NORM'
     assert ch1.lowerLimit == 0.0
     assert ch1.upperLimit == 6.0
-    ad0 = ch1.axis_descrs[0]
-    assert ad0.attribute == 'STD_AXIS'
-    assert ad0.inputQuantity == 'SPEED'
-    assert ad0.conversion == 'R_SPEED'
-    assert ad0.maxAxisPoints == 7
-    assert ad0.lowerLimit == 0.0
-    assert ad0.upperLimit == 10000.0
+
 
     assert ch2.name == 'MAF_NORM'
     assert ch2.longIdentifier == 'Load normalizing function'
@@ -1256,50 +1228,7 @@ def test_curve_axis_ref():
     assert ch2.conversion == 'R_NORM'
     assert ch2.lowerLimit == 0.0
     assert ch2.upperLimit == 16.0
-    ad0 = ch2.axis_descrs[0]
-    assert ad0.attribute == 'STD_AXIS'
-    assert ad0.inputQuantity == 'LOAD'
-    assert ad0.conversion == 'R_LOAD'
-    assert ad0.maxAxisPoints == 17
-    assert ad0.lowerLimit == 0.0
-    assert ad0.upperLimit == 100.0
-
-def test_customer():
-    parser = ParserWrapper('a2l', 'customer', A2LListener, debug = False)
-    DATA = """
-    CUSTOMER "LANZ - Landmaschinen"
+ #   print(ch2)
     """
-    session = parser.parseFromString(DATA)
-    cust = session.query(model.Customer).first()
-    assert cust.customer == "LANZ - Landmaschinen"
 
-def test_customer_no():
-    parser = ParserWrapper('a2l', 'customerNo', A2LListener, debug = False)
-    DATA = """
-    CUSTOMER_NO     "191188"
-    """
-    session = parser.parseFromString(DATA)
-    cust = session.query(model.CustomerNo).first()
-    assert cust.number == "191188"
-
-def test_data_size():
-    parser = ParserWrapper('a2l', 'dataSize', A2LListener, debug = False)
-    DATA = """
-    DATA_SIZE   16
-    """
-    session = parser.parseFromString(DATA)
-    ds = session.query(model.DataSize).first()
-    assert ds.size == 16
-
-def test_def_characteristic():
-    parser = ParserWrapper('a2l', 'defCharacteristic', A2LListener, debug = False)
-    DATA = """
-    /begin DEF_CHARACTERISTIC
-        INJECTION_CURVE
-        DELAY_FACTOR
-    /end DEF_CHARACTERISTIC
-    """
-    session = parser.parseFromString(DATA)
-    dc = session.query(model.DefCharacteristic).first()
-    print(dc)
-
+"""

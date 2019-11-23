@@ -606,13 +606,13 @@ class DEF_CHARACTERISTIC(Keyword):
 
 class DEFAULT_VALUE(Keyword):
     attrs = [
-        (String, "Display_String")
+        (String, "display_string")
     ]
 
 
 class DEFAULT_VALUE_NUMERIC(Keyword):
     attrs = [
-        (Float, "Display_Value")
+        (Float, "display_value")
     ]
 
 

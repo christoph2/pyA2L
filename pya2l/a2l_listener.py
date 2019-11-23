@@ -322,8 +322,8 @@ class A2LListener(BaseListener):
         self.db.session.add(ctx.value)
 
     def exitDefaultValue(self, ctx):
-        display_String = ctx.display_String.value
-        ctx.value = model.DefaultValue(display_String = display_String)
+        display_string = ctx.display_string.value
+        ctx.value = model.DefaultValue(display_string = display_string)
         self.db.session.add(ctx.value)
 
     def exitDeposit(self, ctx):
@@ -764,8 +764,8 @@ class A2LListener(BaseListener):
         self.db.session.add(ctx.value)
 
     def exitDefaultValueNumeric(self, ctx):
-        display_Value = ctx.display_Value.value
-        ctx.value = model.DefaultValueNumeric(display_Value = display_Value)
+        display_value = ctx.display_value.value
+        ctx.value = model.DefaultValueNumeric(display_value = display_value)
         self.db.session.add(ctx.value)
 
     def exitCompuVtab(self, ctx):
