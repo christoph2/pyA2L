@@ -136,7 +136,7 @@ discrete:
 
 displayIdentifier:
      'DISPLAY_IDENTIFIER'
-    display_Name = identifierValue
+    display_name = identifierValue
     ;
 
 ecuAddressExtension:

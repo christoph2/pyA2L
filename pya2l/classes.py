@@ -636,7 +636,7 @@ class DISCRETE(Keyword):
 
 class DISPLAY_IDENTIFIER(Keyword):
     attrs = [
-        (Ident, "Display_Name")
+        (Ident, "display_name")
     ]
 
 

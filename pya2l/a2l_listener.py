@@ -87,9 +87,6 @@ def cut_a2ml(data):
     (.*?)
     /end\s+IF_DATA
     """, re.VERBOSE | re.DOTALL | re.MULTILINE)
-
-    print("CUT", type(data))
-
     a2ml = None
     if_data = []
     match = AML.search(data)
@@ -336,8 +333,8 @@ class A2LListener(BaseListener):
         self.db.session.add(ctx.value)
 
     def exitDisplayIdentifier(self, ctx):
-        display_Name = ctx.display_Name.value
-        ctx.value = model.DisplayIdentifier(display_Name = display_Name)
+        display_name = ctx.display_name.value
+        ctx.value = model.DisplayIdentifier(display_name = display_name)
         self.db.session.add(ctx.value)
 
     def exitEcuAddressExtension(self, ctx):
@@ -348,7 +345,6 @@ class A2LListener(BaseListener):
     def exitExtendedLimits(self, ctx):
         lowerLimit = ctx.lowerLimit.value
         upperLimit = ctx.upperLimit.value
-        print("E-LIMITS:", (lowerLimit, upperLimit))
         ctx.value = model.ExtendedLimits(lowerLimit = lowerLimit, upperLimit = upperLimit)
         self.db.session.add(ctx.value)
 
@@ -665,7 +661,7 @@ class A2LListener(BaseListener):
     def exitDependentCharacteristic(self, ctx):
         formula_ = ctx.formula_.value
         characteristic_ = self.getList(ctx.characteristic_)
-        ctx.value = model.DependentCharacteristic(formula = formula_)   # FIXME
+        ctx.value = model.DependentCharacteristic(formula = formula_, characteristic_id = characteristic_)
         self.db.session.add(ctx.value)
 
     def exitMapList(self, ctx):
@@ -681,7 +677,7 @@ class A2LListener(BaseListener):
     def exitVirtualCharacteristic(self, ctx):
         formula_ = ctx.formula_.value
         characteristic_ = self.getList(ctx.characteristic_)
-        ctx.value = model.VirtualCharacteristic(formula = formula_)  # FIXME
+        ctx.value = model.VirtualCharacteristic(formula = formula_, characteristic_id = characteristic_)
         self.db.session.add(ctx.value)
 
     def exitCompuMethod(self, ctx):
@@ -999,7 +995,6 @@ class A2LListener(BaseListener):
 
     def exitVirtual(self, ctx):
         measuringChannel = self.getList(ctx.measuringChannel)
-        print("VIRTUAL", measuringChannel)
         ctx.value = model.Virtual(measuringChannel = measuringChannel)
         self.db.session.add(ctx.value)
 
@@ -1131,7 +1126,6 @@ class A2LListener(BaseListener):
             offset_1 = offset_1, offset_2 = offset_2, offset_3 = offset_3, offset_4 = offset_4, if_data = v_ifData
         )
         self.db.session.add(ctx.value)
-        print(ctx.value)
 
     def exitMemorySegment(self, ctx):
         name = ctx.name.value
@@ -1154,7 +1148,6 @@ class A2LListener(BaseListener):
             offset_1 = offset_1, offset_2 = offset_2, offset_3 = offset_3, offset_4 = offset_4, if_data = v_ifData
         )
         self.db.session.add(ctx.value)
-        print(ctx.value)
 
     def exitNoOfInterfaces(self, ctx):
         num = ctx.num.value
@@ -1176,7 +1169,6 @@ class A2LListener(BaseListener):
         value_ = ctx.value_.value
         ctx.value = model.SystemConstant(name = name, value = value_)
         self.db.session.add(ctx.value)
-        print(ctx.value)
 
     def exitUser(self, ctx):
         userName = ctx.userName.value
@@ -1368,7 +1360,7 @@ class A2LListener(BaseListener):
     def exitDistOpX(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.DistOpX(position, datatype)
+        ctx.value = model.DistOpX(position = position, datatype = datatype)
         self.db.session.add(ctx.value)
 
     def exitDistOpY(self, ctx):
@@ -1700,7 +1692,6 @@ class A2LListener(BaseListener):
     def exitVarAddress(self, ctx):
         address = self.getList(ctx.address)
         ctx.value = model.VarAddress(address = address)
-        print("VAR_ADDRESS", address)
         self.db.session.add(ctx.value)
 
     def exitVarCriterion(self, ctx):
@@ -1730,7 +1721,6 @@ class A2LListener(BaseListener):
         criterionName = self.getList(ctx.criterionName)
         criterionValue = self.getList(ctx.criterionValue)
         pairs = zip(criterionName, criterionValue)
-        print("FORBIDDEN", list(pars))
         ctx.value = model.VarForbiddenComb()
         for name, value in pairs:
             pair = model.VarForbiddedCombPair(criterionName = name, criterionValue = value)
