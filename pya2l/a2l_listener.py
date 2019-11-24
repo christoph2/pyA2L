@@ -121,7 +121,10 @@ class BaseListener(antlr4.ParseTreeListener):
     """
 
     value = []
-    #logger = Logger(__name__)
+
+    def __init__(self, *args, **kws):
+        super(BaseListener, self).__init__(*args, **kws)
+        self.logger = Logger(__name__)
 
     def getList(self, attr):
         return [x.value for x in attr] if attr else []
@@ -173,16 +176,16 @@ class BaseListener(antlr4.ParseTreeListener):
             method(msg)
 
     def info(self, msg, location = None):
-        self._log(self.info.warn, msg, location)
+        self._log(self.logger.info, msg, location)
 
     def warn(self, msg, location = None):
         self._log(self.logger.warn, msg, location)
 
     def error(self, msg, location = None):
-        self._log(self.logger.warn, msg, location)
+        self._log(self.logger.error, msg, location)
 
     def debug(self, msg, location = None):
-        self._log(self.logger.warn, msg, location)
+        self._log(self.logger.debug, msg, location)
 
 
 class ParserWrapper(object):
@@ -427,6 +430,10 @@ class A2LListener(BaseListener):
     def exitAsap2Version(self, ctx):
         versionNo = ctx.versionNo.value
         upgradeNo = ctx.upgradeNo.value
+
+        if versionNo > 1 or (versionNo == 1 and upgradeNo < 60):
+            self.error("ASAP2 Version '{}.{}' may not parsed correctly.".format(versionNo, upgradeNo))
+
         ctx.value = model.Asap2Version(versionNo = versionNo, upgradeNo = upgradeNo)
         self.db.session.add(ctx.value)
 

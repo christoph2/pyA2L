@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2016 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2017 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -30,15 +30,16 @@ __version__ = '0.1.0'
 import logging
 import os
 
+#logging.basicConfig()
 
 class Logger(object):
 
-    LOGGER_BASE_NAME = 'pya2l'
+    LOGGER_BASE_NAME = 'pyxcp'
     FORMAT = "[%(levelname)s (%(name)s)]: %(message)s"
 
-    def __init__(self, parent, name, level = logging.WARN):
-        self.parent = parent
-        self.logger = logging.getLogger("{0}.{1}".format(self.LOGGER_BASE_NAME, name))
+    def __init__(self, name, level=logging.WARN):
+        self.logger = logging.getLogger(
+            "{0}.{1}".format(self.LOGGER_BASE_NAME, name))
         self.logger.setLevel(level)
         handler = logging.StreamHandler()
         handler.setLevel(level)
@@ -56,9 +57,8 @@ class Logger(object):
     def log(self, message, level):
         self.lastSeverity = level
         self.lastMessage = message
-        self.logger.log(level, "{0}:{1}: {2}".format(
-            os.path.split(self.parent.filename)[1], self.parent.lineNo,  message)
-        )
+        self.logger.log(level, "{0}".format(message))
+        # print("{0}{1}".format(level, message))
 
     def info(self, message):
         self.log(message, logging.INFO)
@@ -92,4 +92,3 @@ class Logger(object):
         if isinstance(level, str):
             level = LEVEL_MAP.get(level.upper(), logging.WARN)
         self.logger.setLevel(level)
-
