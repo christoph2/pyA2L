@@ -810,7 +810,7 @@ class A2LListener(BaseListener):
         scalingUnit = ctx.scalingUnit.value
         rate = ctx.rate.value
 
-        v_frameMeasurement = delist(self.getList(ctx.v_frameMeasurement))
+        v_frameMeasurement = delist(self.getList(ctx.v_frameMeasurement), True)
         v_ifData = self.getList(ctx.v_ifData)
         ctx.value = model.Frame(name = name, longIdentifier = longIdentifier, scalingUnit = scalingUnit, rate = rate,
             frame_measurement = v_frameMeasurement, if_data = v_ifData

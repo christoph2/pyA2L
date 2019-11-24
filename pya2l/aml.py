@@ -116,10 +116,7 @@ class LexerWrapper(object):
     def lex(self, input, trace = False):
         lexer = self.lexerClass(input)
         tokenStream = antlr4.CommonTokenStream(lexer)
-        for token in lexer.getAllTokens():
-            if token.channel == lexer.DEFAULT_TOKEN_CHANNEL:
-                print(token, end = "\n")
-                yield token
+        return tokenStream
 
     def lexFromFile(self, fileName, encoding = "utf8", trace = False):
         return self.lex(ParserWrapper.stringStream(fileName, encoding), trace)

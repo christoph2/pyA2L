@@ -1006,7 +1006,7 @@ def test_compu_tab():
     assert ct.longIdentifier == 'conversion table for oil temperatures'
     assert ct.conversionType == 'TAB_NOINTP'
     assert ct.numberValuePairs == 7
-    assert ct.default_value_numeric.display_Value == 99.0
+    assert ct.default_value_numeric.display_value == 99.0
     assert len(ct.pairs) == ct.numberValuePairs
     p0, p1, p2, p3, p4, p5, p6 = ct.pairs
     assert compareCompuTabPair(p0, inVal = 1.0, outVal = 4.3) == True
@@ -1094,14 +1094,13 @@ def test_compu_v_tab_range():
     assert cvr.name == 'TT'
     assert cvr.longIdentifier == 'engine status conversion'
     assert cvr.numberValueTriples == len(cvr.triples)
-    assert cvr.default_value[0].display_String == 'Value_out_of_Range'
+    assert cvr.default_value[0].display_string == 'Value_out_of_Range'
     t0, t1, t2, t3, t4 = cvr.triples
     assert compareCompuVTabRangeTriple(t0, inValMin = 0.0, inValMax = 0.0, outVal = 'ONE') == True
     assert compareCompuVTabRangeTriple(t1, inValMin = 1.0, inValMax = 2.0, outVal = 'first_section') == True
     assert compareCompuVTabRangeTriple(t2, inValMin = 3.0, inValMax = 3.0, outVal = 'THIRD') == True
     assert compareCompuVTabRangeTriple(t3, inValMin = 4.0, inValMax = 5.0, outVal = 'second_section') == True
     assert compareCompuVTabRangeTriple(t4, inValMin = 6.0, inValMax = 500.0, outVal = 'usual_case') == True
-
 
 def test_cpu_type():
     parser = ParserWrapper('a2l', 'cpuType', A2LListener, debug = False)
@@ -1111,7 +1110,6 @@ def test_cpu_type():
     session = parser.parseFromString(DATA)
     cpu = session.query(model.CpuType).first()
     assert cpu.cPU == 'INTEL 4711'
-
 
 def test_curve_axis_ref():
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
@@ -1194,9 +1192,21 @@ def test_curve_axis_ref():
     mod = session.query(model.Module).first()
     assert mod.name == "test"
     assert mod.longIdentifier == ""
+    rl0, rl1 = mod.record_layouts
+    assert rl0.name == "DEP_12E"
+    assert rl0.fnc_values.position == 1
+    assert rl0.fnc_values.datatype == 'FLOAT32_IEEE'
+    assert rl0.fnc_values.indexMode == 'ROW_DIR'
+    assert rl0.fnc_values.addresstype == 'DIRECT'
+    assert rl1.name == "SPD_DEP"
+    assert rl1.fnc_values.position == 2
+    assert rl1.fnc_values.datatype == 'FLOAT32_IEEE'
+    assert rl1.fnc_values.indexMode == 'ALTERNATE_WITH_X'
+    assert rl1.fnc_values.addresstype == 'DIRECT'
     chx = mod.characteristics
     assert len(chx) == 3
     ch0, ch1, ch2 = chx
+
     assert ch0.name == 'FUEL_ADJ'
     assert ch0.longIdentifier == 'Air fuel table'
     assert ch0.type == 'MAP'
@@ -1206,7 +1216,19 @@ def test_curve_axis_ref():
     assert ch0.conversion == 'R_MULT'
     assert ch0.lowerLimit == 0.0
     assert ch0.upperLimit == 2.0
-
+    ad0, ad1 = ch0.axis_descrs
+    assert ad0.attribute == 'CURVE_AXIS'
+    assert ad0.inputQuantity == 'SPEED'
+    assert ad0.conversion == 'NO_COMPU_METHOD'
+    assert ad0.maxAxisPoints == 13
+    assert ad0.lowerLimit == 0.0
+    assert ad0.upperLimit == 12.0
+    assert ad1.attribute == 'CURVE_AXIS'
+    assert ad1.inputQuantity == 'LOAD'
+    assert ad1.conversion == 'NO_COMPU_METHOD'
+    assert ad1.maxAxisPoints == 17
+    assert ad1.lowerLimit == 0.0
+    assert ad1.upperLimit == 16.0
 
     assert ch1.name == 'SPD_NORM'
     assert ch1.longIdentifier == 'Speed normalizing function'
@@ -1217,7 +1239,13 @@ def test_curve_axis_ref():
     assert ch1.conversion == 'R_NORM'
     assert ch1.lowerLimit == 0.0
     assert ch1.upperLimit == 6.0
-
+    ad0 = ch1.axis_descrs[0]
+    assert ad0.attribute == 'STD_AXIS'
+    assert ad0.inputQuantity == 'SPEED'
+    assert ad0.conversion == 'R_SPEED'
+    assert ad0.maxAxisPoints == 7
+    assert ad0.lowerLimit == 0.0
+    assert ad0.upperLimit == 10000.0
 
     assert ch2.name == 'MAF_NORM'
     assert ch2.longIdentifier == 'Load normalizing function'
@@ -1228,7 +1256,672 @@ def test_curve_axis_ref():
     assert ch2.conversion == 'R_NORM'
     assert ch2.lowerLimit == 0.0
     assert ch2.upperLimit == 16.0
- #   print(ch2)
-    """
+    ad0 = ch2.axis_descrs[0]
+    assert ad0.attribute == 'STD_AXIS'
+    assert ad0.inputQuantity == 'LOAD'
+    assert ad0.conversion == 'R_LOAD'
+    assert ad0.maxAxisPoints == 17
+    assert ad0.lowerLimit == 0.0
+    assert ad0.upperLimit == 100.0
 
-"""
+def test_customer():
+    parser = ParserWrapper('a2l', 'customer', A2LListener, debug = False)
+    DATA = """
+    CUSTOMER "LANZ - Landmaschinen"
+    """
+    session = parser.parseFromString(DATA)
+    cust = session.query(model.Customer).first()
+    assert cust.customer == "LANZ - Landmaschinen"
+
+def test_customer_no():
+    parser = ParserWrapper('a2l', 'customerNo', A2LListener, debug = False)
+    DATA = """
+    CUSTOMER_NO     "191188"
+    """
+    session = parser.parseFromString(DATA)
+    cust = session.query(model.CustomerNo).first()
+    assert cust.number == "191188"
+
+def test_data_size():
+    parser = ParserWrapper('a2l', 'dataSize', A2LListener, debug = False)
+    DATA = """
+    DATA_SIZE   16
+    """
+    session = parser.parseFromString(DATA)
+    ds = session.query(model.DataSize).first()
+    assert ds.size == 16
+
+def test_def_characteristic():
+    parser = ParserWrapper('a2l', 'defCharacteristic', A2LListener, debug = False)
+    DATA = """
+    /begin DEF_CHARACTERISTIC
+        INJECTION_CURVE
+        DELAY_FACTOR
+    /end DEF_CHARACTERISTIC
+    """
+    session = parser.parseFromString(DATA)
+    dc = session.query(model.DefCharacteristic).first()
+    ids = dc.identifier
+    assert ids[0] == "INJECTION_CURVE"
+    assert ids[1] == "DELAY_FACTOR"
+
+def test_default_value():
+    parser = ParserWrapper('a2l', 'defaultValue', A2LListener, debug = False)
+    DATA = """
+    DEFAULT_VALUE "overflow_state"
+    """
+    session = parser.parseFromString(DATA)
+    dv = session.query(model.DefaultValue).first()
+    assert dv.display_string == "overflow_state"
+
+def test_default_value_numeric():
+    parser = ParserWrapper('a2l', 'defaultValueNumeric', A2LListener, debug = False)
+    DATA = """
+    DEFAULT_VALUE_NUMERIC 999.0
+    """
+    session = parser.parseFromString(DATA)
+    dv = session.query(model.DefaultValueNumeric).first()
+    assert dv.display_value == 999.0
+
+def test_dependent_characteristic():
+    parser = ParserWrapper('a2l', 'characteristic', A2LListener, debug = False)
+    DATA = """
+    /begin CHARACTERISTIC FUEL_ADJ /* name */
+        "Air fuel table" /* long identifier */
+        MAP /* type */
+        0x7140 /* address */
+        DEP_12E /* deposit */
+        1.0 /* maxdiff */
+        R_MULT /* conversion */
+        0.0 /* lower limit */
+        2.0 /* upper limit */
+/*
+        /begin DEPENDENT_CHARACTERISTIC
+            "sqrt(1-X1*X1)"
+            A
+        /end DEPENDENT_CHARACTERISTIC
+*/
+        /* Example for ParamB - ParamA */
+        /begin DEPENDENT_CHARACTERISTIC
+            "X2-X1"
+            ParamA /* is referenced by X1 */
+            ParamB /* is referenced by X2 */
+        /end DEPENDENT_CHARACTERISTIC
+    /end CHARACTERISTIC
+    """
+    session = parser.parseFromString(DATA)
+    chx = session.query(model.Characteristic).first()
+    assert chx.name == 'FUEL_ADJ'
+    assert chx.longIdentifier == 'Air fuel table'
+    assert chx.type == 'MAP'
+    assert chx.address == 28992
+    assert chx.deposit == 'DEP_12E'
+    assert chx.maxDiff == 1.0
+    assert chx.conversion == 'R_MULT'
+    assert chx.lowerLimit == 0.0
+    assert chx.upperLimit == 2.0
+    dc0 = chx.dependent_characteristic
+    assert dc0.formula == "X2-X1"
+    assert dc0.characteristic_id == ['ParamA', 'ParamB']
+
+def test_deposit():
+    parser = ParserWrapper('a2l', 'deposit', A2LListener, debug = False)
+    DATA = """
+    DEPOSIT DIFFERENCE
+    """
+    session = parser.parseFromString(DATA)
+    ds = session.query(model.Deposit).first()
+    assert ds.mode == 'DIFFERENCE'
+
+def test_discrete():
+    parser = ParserWrapper('a2l', 'measurement', A2LListener, debug = False)
+    DATA = """
+    /begin MEASUREMENT
+        counter
+        "..."
+        UBYTE
+        NO_COMPU_METHOD
+        2
+        1
+        0
+        255
+        DISCRETE
+    /end MEASUREMENT
+    """
+    session = parser.parseFromString(DATA)
+    meas = session.query(model.Measurement).first()
+    assert meas.name == 'counter'
+    assert meas.longIdentifier == '...'
+    assert meas.datatype == 'UBYTE'
+    assert meas.conversion == 'NO_COMPU_METHOD'
+    assert meas.resolution == 2
+    assert meas.accuracy == 1.0
+    assert meas.lowerLimit == 0.0
+    assert meas.upperLimit == 255.0
+    assert meas.discrete is not None
+
+def test_display_identifier():
+    parser = ParserWrapper('a2l', 'displayIdentifier', A2LListener, debug = False)
+    DATA = """
+    DISPLAY_IDENTIFIER load_engine
+    """
+    session = parser.parseFromString(DATA)
+    di = session.query(model.DisplayIdentifier).first()
+    assert di.display_name == "load_engine"
+
+def test_dist_op_x():
+    parser = ParserWrapper('a2l', 'distOpX', A2LListener, debug = False)
+    DATA = """
+    DIST_OP_X   21
+                UWORD
+    """
+    session = parser.parseFromString(DATA)
+    di = session.query(model.DistOpX).first()
+    assert di.position == 21
+    assert di.datatype == "UWORD"
+
+def test_dist_op_y():
+    parser = ParserWrapper('a2l', 'distOpY', A2LListener, debug = False)
+    DATA = """
+    DIST_OP_Y   21
+                UWORD
+    """
+    session = parser.parseFromString(DATA)
+    di = session.query(model.DistOpY).first()
+    assert di.position == 21
+    assert di.datatype == "UWORD"
+
+def test_dist_op_z():
+    parser = ParserWrapper('a2l', 'distOpZ', A2LListener, debug = False)
+    DATA = """
+    DIST_OP_Z   21
+                UWORD
+    """
+    session = parser.parseFromString(DATA)
+    di = session.query(model.DistOpZ).first()
+    assert di.position == 21
+    assert di.datatype == "UWORD"
+
+def test_dist_op_4():
+    parser = ParserWrapper('a2l', 'distOp4', A2LListener, debug = False)
+    DATA = """
+    DIST_OP_4   21
+                UWORD
+    """
+    session = parser.parseFromString(DATA)
+    di = session.query(model.DistOp4).first()
+    assert di.position == 21
+    assert di.datatype == "UWORD"
+
+def test_dist_op_5():
+    parser = ParserWrapper('a2l', 'distOp5', A2LListener, debug = False)
+    DATA = """
+    DIST_OP_5   21
+                UWORD
+    """
+    session = parser.parseFromString(DATA)
+    di = session.query(model.DistOp5).first()
+    assert di.position == 21
+    assert di.datatype == "UWORD"
+
+def test_ecu():
+    parser = ParserWrapper('a2l', 'ecu', A2LListener, debug = False)
+    DATA = 'ECU "Steering control"'
+    session = parser.parseFromString(DATA)
+    ec = session.query(model.Ecu).first()
+    assert ec.controlUnit == "Steering control"
+
+def test_ecu_address():
+    parser = ParserWrapper('a2l', 'ecuAddress', A2LListener, debug = False)
+    DATA = "ECU_ADDRESS 0x12FE"
+    session = parser.parseFromString(DATA)
+    ec = session.query(model.EcuAddress).first()
+    assert ec.address == 0x12FE
+
+def test_ecu_address_extension():
+    parser = ParserWrapper('a2l', 'measurement', A2LListener, debug = False)
+    DATA = """
+    /begin MEASUREMENT N /* name */
+        "Engine speed" /* long identifier */
+        UWORD /* datatype */
+        R_SPEED_3 /* conversion */
+        2 /* resolution */
+        2.5 /* accuracy */
+        120.0 /* lower limit */
+        8400.0 /* upper limit */
+        ECU_ADDRESS 0x12345
+        ECU_ADDRESS_EXTENSION 1
+    /end MEASUREMENT
+    """
+    session = parser.parseFromString(DATA)
+    meas = session.query(model.Measurement).first()
+    assert meas.name == 'N'
+    assert meas.longIdentifier == 'Engine speed'
+    assert meas.datatype == 'UWORD'
+    assert meas.conversion == 'R_SPEED_3'
+    assert meas.resolution == 2
+    assert meas.accuracy == 2.5
+    assert meas.lowerLimit == 120.0
+    assert meas.upperLimit == 8400.0
+    assert meas.ecu_address_extension[0].extension == 1
+    assert meas.ecu_address.address == 0x12345
+
+def test_ecu_calibration_offset():
+    parser = ParserWrapper('a2l', 'ecuCalibrationOffset', A2LListener, debug = False)
+    DATA = "ECU_CALIBRATION_OFFSET 0x1000"
+    session = parser.parseFromString(DATA)
+    ec = session.query(model.EcuCalibrationOffset).first()
+    assert ec.offset == 0x1000
+
+def test_epk():
+    parser = ParserWrapper('a2l', 'epk', A2LListener, debug = False)
+    DATA = 'EPK "EPROM identifier test"'
+    session = parser.parseFromString(DATA)
+    epk = session.query(model.Epk).first()
+    assert epk.identifier == "EPROM identifier test"
+
+def test_error_mask():
+    parser = ParserWrapper('a2l', 'errorMask', A2LListener, debug = False)
+    DATA = 'ERROR_MASK 0x00000001'
+    session = parser.parseFromString(DATA)
+    em = session.query(model.ErrorMask).first()
+    assert em.mask == 0x00000001
+
+def test_extended_limits():
+    parser = ParserWrapper('a2l', 'extendedLimits', A2LListener, debug = False)
+    DATA = """
+        EXTENDED_LIMITS     0
+                            6000.0
+    """
+    session = parser.parseFromString(DATA)
+    el = session.query(model.ExtendedLimits).first()
+    assert el.lowerLimit == 0.0
+    assert el.upperLimit == 6000.0
+
+def test_fix_axis_par():
+    parser = ParserWrapper('a2l', 'fixAxisPar', A2LListener, debug = False)
+    DATA = """
+    /* Define axis points 0, 16, 32, 48, 64, 80 */
+    FIX_AXIS_PAR    0
+                    4
+                    6
+    """
+    session = parser.parseFromString(DATA)
+    fap = session.query(model.FixAxisPar).first()
+    assert fap.offset == 0
+    assert fap.shift == 4
+    assert fap.numberapo == 6
+
+def test_fix_axis_par_dist():
+    parser = ParserWrapper('a2l', 'fixAxisParDist', A2LListener, debug = False)
+    DATA = """
+    FIX_AXIS_PAR_DIST   0
+                        100
+                        8
+    """
+    session = parser.parseFromString(DATA)
+    fap = session.query(model.FixAxisParDist).first()
+    assert fap.offset == 0
+    assert fap.distance == 100
+    assert fap.numberapo == 8
+
+def test_fix_axis_par_list():
+    parser = ParserWrapper('a2l', 'fixAxisParList', A2LListener, debug = False)
+    DATA = """
+    /begin FIX_AXIS_PAR_LIST
+        2 5 9
+    /end FIX_AXIS_PAR_LIST
+    """
+    session = parser.parseFromString(DATA)
+    fal = session.query(model.FixAxisParList).first()
+    assert fal.axisPts_Value == [2.0, 5.0, 9.0]
+
+def test_fix_no_axis_pts_x():
+    parser = ParserWrapper('a2l', 'fixNoAxisPtsX', A2LListener, debug = False)
+    DATA = 'FIX_NO_AXIS_PTS_X   17'
+    session = parser.parseFromString(DATA)
+    fp = session.query(model.FixNoAxisPtsX).first()
+    assert fp.numberOfAxisPoints == 17
+
+def test_fix_no_axis_pts_y():
+    parser = ParserWrapper('a2l', 'fixNoAxisPtsY', A2LListener, debug = False)
+    DATA = 'FIX_NO_AXIS_PTS_Y   17'
+    session = parser.parseFromString(DATA)
+    fp = session.query(model.FixNoAxisPtsY).first()
+    assert fp.numberOfAxisPoints == 17
+
+def test_fix_no_axis_pts_z():
+    parser = ParserWrapper('a2l', 'fixNoAxisPtsZ', A2LListener, debug = False)
+    DATA = 'FIX_NO_AXIS_PTS_Z   17'
+    session = parser.parseFromString(DATA)
+    fp = session.query(model.FixNoAxisPtsZ).first()
+    assert fp.numberOfAxisPoints == 17
+
+def test_fix_no_axis_pts_4():
+    parser = ParserWrapper('a2l', 'fixNoAxisPts4', A2LListener, debug = False)
+    DATA = 'FIX_NO_AXIS_PTS_4   17'
+    session = parser.parseFromString(DATA)
+    fp = session.query(model.FixNoAxisPts4).first()
+    assert fp.numberOfAxisPoints == 17
+
+def test_fix_no_axis_pts_5():
+    parser = ParserWrapper('a2l', 'fixNoAxisPts5', A2LListener, debug = False)
+    DATA = 'FIX_NO_AXIS_PTS_5   17'
+    session = parser.parseFromString(DATA)
+    fp = session.query(model.FixNoAxisPts5).first()
+    assert fp.numberOfAxisPoints == 17
+
+def test_fnc_values():
+    parser = ParserWrapper('a2l', 'fncValues', A2LListener, debug = False)
+    DATA = """
+    FNC_VALUES  7
+                SWORD
+                COLUMN_DIR
+                DIRECT
+    """
+    session = parser.parseFromString(DATA)
+    fv = session.query(model.FncValues).first()
+    assert fv.position == 7
+    assert fv.datatype == 'SWORD'
+    assert fv.indexMode == 'COLUMN_DIR'
+    assert fv.addresstype == 'DIRECT'
+
+def test_format():
+    parser = ParserWrapper('a2l', 'format_', A2LListener, debug = False)
+    DATA = 'FORMAT "%4.2"'
+    session = parser.parseFromString(DATA)
+    fm = session.query(model.Format).first()
+    assert fm.formatString == "%4.2"
+
+def test_formula():
+    parser = ParserWrapper('a2l', 'formula', A2LListener, debug = False)
+    DATA = """
+        /begin FORMULA "sqrt( 3 - 4*sin(X1) )"
+        /end FORMULA
+    """
+    session = parser.parseFromString(DATA)
+    fm = session.query(model.Formula).first()
+    assert fm.f_x == "sqrt( 3 - 4*sin(X1) )"
+
+def test_formula_inv():
+    parser = ParserWrapper('a2l', 'formulaInv', A2LListener, debug = False)
+    DATA = """
+    FORMULA_INV "asin( sqrt( (3 - X1)/4 ) )"
+    """
+    session = parser.parseFromString(DATA)
+    fm = session.query(model.FormulaInv).first()
+    assert fm.g_x == "asin( sqrt( (3 - X1)/4 ) )"
+
+def test_frame():
+    parser = ParserWrapper('a2l', 'frame', A2LListener, debug = False)
+    DATA = """
+    /begin FRAME ABS_ADJUSTM
+        "function group ABS adjustment"
+        3
+        2 /* 2 msec. */
+        FRAME_MEASUREMENT LOOP_COUNTER TEMPORARY_1
+    /end FRAME
+    """
+    session = parser.parseFromString(DATA)
+    frame = session.query(model.Frame).first()
+    assert frame.name == 'ABS_ADJUSTM'
+    assert frame.longIdentifier == 'function group ABS adjustment'
+    assert frame.scalingUnit == 3
+    assert frame.rate == 2
+    assert frame.frame_measurement.identifier == ['LOOP_COUNTER', 'TEMPORARY_1']
+
+def test_frame_measurement():
+    parser = ParserWrapper('a2l', 'frameMeasurement', A2LListener, debug = False)
+    DATA = """
+    FRAME_MEASUREMENT WHEEL_REVOLUTIONS ENGINE_SPEED
+    """
+    session = parser.parseFromString(DATA)
+    fm = session.query(model.FrameMeasurement).first()
+    assert fm.identifier == ['WHEEL_REVOLUTIONS', 'ENGINE_SPEED']
+
+def test_function():
+    parser = ParserWrapper('a2l', 'function', A2LListener, debug = False)
+    DATA = """
+    /begin FUNCTION ID_ADJUSTM /* name */
+        "function group idling adjustment"
+        /begin DEF_CHARACTERISTIC INJECTION_CURVE
+        /end DEF_CHARACTERISTIC
+        /begin REF_CHARACTERISTIC FACTOR_1
+        /end REF_CHARACTERISTIC
+        /begin IN_MEASUREMENT WHEEL_REVOLUTIONS ENGINE_SPEED
+        /end IN_MEASUREMENT
+        /begin OUT_MEASUREMENT OK_FLAG SENSOR_FLAG
+        /end OUT_MEASUREMENT
+        /begin LOC_MEASUREMENT LOOP_COUNTER TEMPORARY_1
+        /end LOC_MEASUREMENT
+        /begin SUB_FUNCTION ID_ADJUSTM_SUB
+        /end SUB_FUNCTION
+    /end FUNCTION
+    """
+    session = parser.parseFromString(DATA)
+    func = session.query(model.Function).first()
+    assert func.name == 'ID_ADJUSTM'
+    assert func.longIdentifier == 'function group idling adjustment'
+    assert func.def_characteristic.identifier == ['INJECTION_CURVE']
+
+    assert func.sub_function.identifier == ['ID_ADJUSTM_SUB']
+    assert func.in_measurement.identifier == ['WHEEL_REVOLUTIONS', 'ENGINE_SPEED']
+    assert func.out_measurement.identifier == ['OK_FLAG', 'SENSOR_FLAG']
+    assert func.loc_measurement.identifier == ['LOOP_COUNTER', 'TEMPORARY_1']
+    print(func.ref_characteristic[0].identifier)
+    #assert func.ref_characteristic[0].identifier == ['FACTOR_1']
+
+
+def test_function_list():
+    parser = ParserWrapper('a2l', 'functionList', A2LListener, debug = False)
+    DATA = """
+    /begin FUNCTION_LIST ID_ADJUSTM
+        FL_ADJUSTM
+        SPEED_LIM
+    /end FUNCTION_LIST
+    """
+    session = parser.parseFromString(DATA)
+    func = session.query(model.FunctionList).first()
+    assert func.name == ['ID_ADJUSTM', 'FL_ADJUSTM', 'SPEED_LIM']
+
+def test_function_version():
+    parser = ParserWrapper('a2l', 'functionVersion', A2LListener, debug = False)
+    DATA = """
+    FUNCTION_VERSION "BG5.0815"
+    """
+    session = parser.parseFromString(DATA)
+    func = session.query(model.FunctionVersion).first()
+    assert func.versionIdentifier == 'BG5.0815'
+
+def test_group():
+    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    DATA = """
+    /begin MODULE testModule ""
+    /begin GROUP SOFTWARE_COMPONENTS
+        "assignment of the definitions to C files"
+        ROOT
+        /begin SUB_GROUP INJE
+            C6TD
+        /end SUB_GROUP
+    /end GROUP
+    /begin GROUP INJE
+        "Subsystem Injection"
+        /begin SUB_GROUP injec1
+            injec2
+        /end SUB_GROUP
+    /end GROUP
+    /begin GROUP Injec1
+        "Module filename Injec1"
+        /begin REF_CHARACTERISTIC
+            INJECTION_CURVE
+        /end REF_CHARACTERISTIC
+        /begin REF_MEASUREMENT
+            LOOP_COUNTER
+            TEMPORARY_1
+        /end REF_MEASUREMENT
+    /end GROUP
+    /begin GROUP Injec2
+        "Module filename Injec2"
+        /begin REF_CHARACTERISTIC
+            INJECTION_ADJUST
+        /end REF_CHARACTERISTIC
+        /begin REF_MEASUREMENT
+            GAS_INPUT
+            WHEEL_SPEED
+        /end REF_MEASUREMENT
+    /end GROUP
+    /begin GROUP C6TD
+        "Shift Point Control"
+        /begin SUB_GROUP c6tdvder
+            c6tdertf
+        /end SUB_GROUP
+    /end GROUP
+    /begin GROUP c6tdvder
+        "Module filename c6tdvder"
+        /begin REF_CHARACTERISTIC
+            SHIFT23_CURVE
+        /end REF_CHARACTERISTIC
+        /begin REF_MEASUREMENT
+            LOOP_COUN2
+            NO_GEAR
+        /end REF_MEASUREMENT
+    /end GROUP
+    /begin GROUP c6tderft
+        "Module filename c6tderft"
+        /begin REF_CHARACTERISTIC
+            LUP23_CURVE
+        /end REF_CHARACTERISTIC
+        /begin REF_MEASUREMENT
+            TRANSMISSION_SP
+            ENGINE_SPEED
+        /end REF_MEASUREMENT
+    /end GROUP
+    /begin GROUP CALIBRATION_COMPONENTS
+        "assignment of the definitions to calibration components"
+        ROOT
+        /begin SUB_GROUP
+            Winter_Test
+            Summer_Test
+        /end SUB_GROUP
+    /end GROUP
+    /begin GROUP CALIBRATION_COMPONENTS_L4
+        "L4-PCM 2002 cals"
+        ROOT
+        /begin SUB_GROUP LUFT
+            CLOSED_LOOP
+        /end SUB_GROUP
+    /end GROUP
+    /begin GROUP LUFT
+        "Cals in LUFT Subsystem"
+        /begin REF_CHARACTERISTIC
+            KfLUFT_n_EngSpdThrsh
+            KtLUFT_ScaledVE
+            KaLUFT_AirPerCylCoeff
+        /end REF_CHARACTERISTIC
+    /end GROUP
+    /begin GROUP CLOSED_LOOP
+        "Cals in FCLS, FCLP & FCLL Subsystem"
+        /begin REF_CHARACTERISTIC
+            KaFCLP_U_O2LeanThrsh
+            KfFCLP_t_O2AgainstMax
+        /end REF_CHARACTERISTIC
+    /end GROUP
+    /begin GROUP Winter_Test
+        "Flash this in winter time"
+        /begin REF_CHARACTERISTIC
+            GASOLINE_CURVE
+        /end REF_CHARACTERISTIC
+    /end GROUP
+    /begin GROUP Summer_Test
+        "Flash that in summer time"
+        /begin REF_CHARACTERISTIC
+            SUPER_CURVE
+        /end REF_CHARACTERISTIC
+    /end GROUP
+    /begin GROUP SOFTWARE_COMPONENTS
+        " L4-PCM 2002 C modules"
+        ROOT
+        /begin SUB_GROUP
+            luftkmgr.c
+            fclpkout.c
+            viosmeng.c
+        /end SUB_GROUP
+    /end GROUP
+    /begin GROUP luftkmgr.c
+        "Objects in luftkmgr.c"
+        /begin REF_CHARACTERISTIC
+            KtLUFT_ScaledVE
+        /end REF_CHARACTERISTIC
+    /end GROUP
+    /begin GROUP fclpkout.c
+        "Objects in fclpkout.c"
+        /begin REF_CHARACTERISTIC
+            KaFCLP_U_O2LeanThrsh
+            KfFCLP_t_O2AgainstMax
+        /end REF_CHARACTERISTIC
+    /end GROUP
+    /begin GROUP viosmeng.c
+        "Objects in viosmeng.c"
+        /begin REF_CHARACTERISTIC
+            VfVIOS_n_EngSpdLORES
+            VfVIOS_p_AmbientAirPres
+        /end REF_CHARACTERISTIC
+    /end GROUP
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    groups = session.query(model.Group).all()
+    assert len(groups) == 17
+    g0, g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11, g12, g13, g14, g15, g16 = groups
+
+    assert g0.groupName == 'SOFTWARE_COMPONENTS'
+    assert g0.groupLongIdentifier == 'assignment of the definitions to C files'
+
+    assert g1.groupName == 'INJE'
+    assert g1.groupLongIdentifier == 'Subsystem Injection'
+
+    assert g2.groupName == 'Injec1'
+    assert g2.groupLongIdentifier == 'Module filename Injec1'
+
+    assert g3.groupName == 'Injec2'
+    assert g3.groupLongIdentifier == 'Module filename Injec2'
+
+    assert g4.groupName == 'C6TD'
+    assert g4.groupLongIdentifier == 'Shift Point Control'
+
+    assert g5.groupName == 'c6tdvder'
+    assert g5.groupLongIdentifier == 'Module filename c6tdvder'
+
+    assert g6.groupName == 'c6tderft'
+    assert g6.groupLongIdentifier == 'Module filename c6tderft'
+
+    assert g7.groupName == 'CALIBRATION_COMPONENTS'
+    assert g7.groupLongIdentifier == 'assignment of the definitions to calibration components'
+
+    assert g8.groupName == 'CALIBRATION_COMPONENTS_L4'
+    assert g8.groupLongIdentifier == 'L4-PCM 2002 cals'
+
+    assert g9.groupName == 'LUFT'
+    assert g9.groupLongIdentifier == 'Cals in LUFT Subsystem'
+
+    assert g10.groupName == 'CLOSED_LOOP'
+    assert g10.groupLongIdentifier == 'Cals in FCLS, FCLP & FCLL Subsystem'
+
+    assert g11.groupName == 'Winter_Test'
+    assert g11.groupLongIdentifier == 'Flash this in winter time'
+
+    assert g12.groupName == 'Summer_Test'
+    assert g12.groupLongIdentifier == 'Flash that in summer time'
+
+    assert g13.groupName == 'SOFTWARE_COMPONENTS'
+    assert g13.groupLongIdentifier == ' L4-PCM 2002 C modules'
+
+    assert g14.groupName == 'luftkmgr.c'
+    assert g14.groupLongIdentifier == 'Objects in luftkmgr.c'
+
+    assert g15.groupName == 'fclpkout.c'
+    assert g15.groupLongIdentifier == 'Objects in fclpkout.c'
+
+    assert g16.groupName == 'viosmeng.c'
+    assert g16.groupLongIdentifier == 'Objects in viosmeng.c'
+

@@ -254,11 +254,31 @@ class RefMeasurementIdentifiers(Base):
     def __init__(self, identifier):
         self.identifier = identifier
 
+class FrameMeasurementIdentifiers(Base):
+
+    __tablename__ = "frame_measurement_identifiers"
+
+    rm_rid = Column(types.Integer, ForeignKey("frame_measurement.rid"))
+    identifier = StdIdent()
+
+    def __init__(self, identifier):
+        self.identifier = identifier
+
 class SubGroupIdentifiers(Base):
 
     __tablename__ = "sub_group_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("sub_group.rid"))
+    identifier = StdIdent()
+
+    def __init__(self, identifier):
+        self.identifier = identifier
+
+class SubFunctionIdentifiers(Base):
+
+    __tablename__ = "sub_function_identifiers"
+
+    rm_rid = Column(types.Integer, ForeignKey("sub_function.rid"))
     identifier = StdIdent()
 
     def __init__(self, identifier):
@@ -1781,6 +1801,8 @@ class RefCharacteristic(Base):
     association = relationship("RefCharacteristicAssociation", backref="ref_characteristic")
     parent = association_proxy("association", "parent")
 
+    _identifier = relationship("RefCharacteristicIdentifiers", backref = "parent")
+    identifier = association_proxy("_identifier", "identifier")
 
     __required_parameters__ = (
         Parameter("identifier", Ident, True),
@@ -2905,7 +2927,8 @@ class FrameMeasurement(Base):
     """
     __tablename__ = "frame_measurement"
 
-    identifier = StdIdent()
+    _identifier = relationship("FrameMeasurementIdentifiers", backref = "parent")
+    identifier = association_proxy("_identifier", "identifier")
 
     __required_parameters__ = (
         Parameter("identifier", Ident, True),
@@ -3040,7 +3063,8 @@ class SubFunction(Base):
     """
     __tablename__ = "sub_function"
 
-    identifier = StdIdent()
+    _identifier = relationship("SubFunctionIdentifiers", backref = "parent")
+    identifier = association_proxy("_identifier", "identifier")
 
     __required_parameters__ = (
         Parameter("identifier", Ident, True),
