@@ -50,12 +50,3 @@ def allocprof(func):
         return res
     return inner
 
-@allocprof
-def make_noize():
-    import random as rnd
-
-    accu = 0
-    for i in range(1000 * 1000):
-        accu += rnd.randint(0, 100)
-
-make_noize()

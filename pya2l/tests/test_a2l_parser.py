@@ -1734,6 +1734,7 @@ def test_function_version():
     assert func.versionIdentifier == 'BG5.0815'
 
 def test_group():
+    # TODO: FIX ref_characteristic and ref_measurement
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
     DATA = """
     /begin MODULE testModule ""
@@ -1876,12 +1877,17 @@ def test_group():
 
     assert g0.groupName == 'SOFTWARE_COMPONENTS'
     assert g0.groupLongIdentifier == 'assignment of the definitions to C files'
+    assert g0.root is not None
+    assert g0.sub_group.identifier == ['INJE', 'C6TD']
 
     assert g1.groupName == 'INJE'
     assert g1.groupLongIdentifier == 'Subsystem Injection'
+    assert g1.sub_group.identifier == ['injec1', 'injec2']
 
     assert g2.groupName == 'Injec1'
     assert g2.groupLongIdentifier == 'Module filename Injec1'
+    #assert g2.ref_characteristic[0].identifier == ['INJECTION_CURVE']
+    #assert g2.ref_measurement.identifier == ['LOOP_COUNTER', 'TEMPORARY_1']
 
     assert g3.groupName == 'Injec2'
     assert g3.groupLongIdentifier == 'Module filename Injec2'
@@ -1925,3 +1931,189 @@ def test_group():
     assert g16.groupName == 'viosmeng.c'
     assert g16.groupLongIdentifier == 'Objects in viosmeng.c'
 
+def test_guard_rails():
+    parser = ParserWrapper('a2l', 'characteristic', A2LListener, debug = False)
+    DATA = """
+    /begin CHARACTERISTIC F_INJ_CORR /* name */
+        "Injector correction factor"
+        /* long identifier */
+        CURVE /* type */
+        0x7140 /* address */
+        REC12 /* deposit */
+        10.0 /* maxdiff */
+        C_INJF /* conversion */
+        0.0 /* lower limit */
+        199.0 /* upper limit */
+        GUARD_RAILS /* uses guard rails */
+        /begin AXIS_DESCR /* description of X-axis points */
+            STD_AXIS /* standard axis points */
+            N /* reference to input quantity*/
+            C_TEMP /* conversion */
+            10 /* maximum number of axis points*/
+            -40.0 /* lower limit */
+            150.0 /* upper limit */
+        /end AXIS_DESCR
+    /end CHARACTERISTIC
+    """
+    session = parser.parseFromString(DATA)
+    chx = session.query(model.Characteristic).first()
+
+    assert chx.name == 'F_INJ_CORR'
+    assert chx.longIdentifier == 'Injector correction factor'
+    assert chx.type == 'CURVE'
+    assert chx.address == 28992
+    assert chx.deposit == 'REC12'
+    assert chx.maxDiff == 10.0
+    assert chx.conversion == 'C_INJF'
+    assert chx.lowerLimit == 0.0
+    assert chx.upperLimit == 199.0
+    assert chx.guard_rails is not None
+    ax = chx.axis_descrs[0]
+    assert ax.attribute == 'STD_AXIS'
+    assert ax.inputQuantity == 'N'
+    assert ax.conversion == 'C_TEMP'
+    assert ax.maxAxisPoints == 10
+    assert ax.lowerLimit == -40.0
+    assert ax.upperLimit == 150.0
+
+def test_header():
+    parser = ParserWrapper('a2l', 'header', A2LListener, debug = False)
+    DATA = """
+    /begin HEADER "see also specification XYZ of 01.02.1994"
+        VERSION "BG5.0815"
+        PROJECT_NO M4711Z1
+    /end HEADER
+    """
+    session = parser.parseFromString(DATA)
+    hdr = session.query(model.Header).first()
+    assert hdr.version[0].versionIdentifier == "BG5.0815"
+    assert hdr.comment == 'see also specification XYZ of 01.02.1994'
+    assert hdr.project_no.projectNumber == "M4711Z1"
+
+def test_identification():
+    parser = ParserWrapper('a2l', 'identification', A2LListener, debug = False)
+    DATA = """
+    IDENTIFICATION
+        1
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    idf = session.query(model.Identification).first()
+    assert idf.position == 1
+    assert idf.datatype == 'UWORD'
+
+def test_in_measurement():
+    parser = ParserWrapper('a2l', 'inMeasurement', A2LListener, debug = False)
+    DATA = """
+    /begin IN_MEASUREMENT WHEEL_REVOLUTIONS
+        ENGINE_SPEED
+    /end IN_MEASUREMENT
+    """
+    session = parser.parseFromString(DATA)
+    im = session.query(model.InMeasurement).first()
+    assert im.identifier == ['WHEEL_REVOLUTIONS', 'ENGINE_SPEED']
+
+def test_loc_measurement():
+    parser = ParserWrapper('a2l', 'locMeasurement', A2LListener, debug = False)
+    DATA = """
+    /begin LOC_MEASUREMENT LOOP_COUNTER
+        TEMPORARY_1
+    /end LOC_MEASUREMENT
+    """
+    session = parser.parseFromString(DATA)
+    lm = session.query(model.LocMeasurement).first()
+    assert lm.identifier == ['LOOP_COUNTER', 'TEMPORARY_1']
+
+def test_matrix_dim():
+    parser = ParserWrapper('a2l', 'matrixDim', A2LListener, debug = False)
+    DATA = """
+    MATRIX_DIM  2
+                4
+                3
+    """
+    session = parser.parseFromString(DATA)
+    md = session.query(model.MatrixDim).first()
+    assert md.xDim == 2
+    assert md.yDim == 4
+    assert md.zDim == 3
+
+def test_max_grad():
+    parser = ParserWrapper('a2l', 'maxGrad', A2LListener, debug = False)
+    DATA = """
+    MAX_GRAD 200.0
+    """
+    session = parser.parseFromString(DATA)
+    mg = session.query(model.MaxGrad).first()
+    assert mg.maxGradient == 200.0
+
+def test_max_refresh():
+    parser = ParserWrapper('a2l', 'maxRefresh', A2LListener, debug = False)
+    DATA = """
+    MAX_REFRESH
+        998 2   /* ScalingUnit = 998 --> Every second frame */
+    """
+    session = parser.parseFromString(DATA)
+    mr = session.query(model.MaxRefresh).first()
+    assert mr.scalingUnit == 998
+    assert mr.rate == 2
+
+def test_measurement():
+    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin MEASUREMENT N /* name */
+            "Engine speed" /* long identifier */
+            UWORD /* datatype */
+            R_SPEED_3 /* conversion */
+            2 /* resolution */
+            2.5 /* accuracy */
+            120.0 /* lower limit */
+            8400.0 /* upper limit */
+            PHYS_UNIT "mph"
+            BIT_MASK 0x0FFF
+            /begin BIT_OPERATION
+                RIGHT_SHIFT 4 /*4 positions*/
+                SIGN_EXTEND
+            /end BIT_OPERATION
+            BYTE_ORDER MSB_FIRST
+            REF_MEMORY_SEGMENT Data2
+            /begin FUNCTION_LIST ID_ADJUSTM
+                FL_ADJUSTM
+            /end FUNCTION_LIST
+/*
+            /begin IF_DATA ISO SND
+                0x10
+                0x00
+                0x05
+                0x08
+                RCV
+                4
+                long
+            /end IF_DATA
+*/
+        /end MEASUREMENT
+        /begin MEASUREMENT VdiagStatus /* name */
+          "VdiagStatus" /* long identifier */
+            SWORD /* datatype */
+            CM_DiagSTatus /* conversion */
+            16 /* resolution */
+            1 /* accuracy */
+            -32768 /* lower limit */
+            32767 /* upper limit */
+            ECU_ADDRESS 0x003FDFE0
+        /end MEASUREMENT
+        /begin MEASUREMENT VfSpinLoss /* name */
+            "VfSpinLoss" /* long identifier */
+            UWORD /* datatype */
+            CM_RPM /* conversion */
+            16 /* resolution */
+            1 /* accuracy */
+            -4096 /* lower limit */
+            4095.875 /* upper limit */
+            ECU_ADDRESS 0x003FE380
+        /end MEASUREMENT
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    meas = session.query(model.Measurement).all()
+    print(meas)

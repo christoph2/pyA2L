@@ -386,7 +386,7 @@ class A2LListener(BaseListener):
 
     def exitPhysUnit(self, ctx):
         unit_ = ctx.unit_.value
-        ctx.value = model.Unit(unit = unit_)
+        ctx.value = model.PhysUnit(unit = unit_)
         self.db.session.add(ctx.value)
 
     def exitReadOnly(self, ctx):
