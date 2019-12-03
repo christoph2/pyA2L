@@ -1534,6 +1534,7 @@ class VAR_CRITERION(Keyword):
 
 
 class VAR_FORBIDDEN_COMB(Keyword):
+    multiple = True
     block = True
     #attrs = [
     #    (Ident, "CriterionName"),
