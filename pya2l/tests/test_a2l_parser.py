@@ -7,7 +7,32 @@
 import pytest
 
 import pya2l.model as model
-from pya2l.a2l_listener import ParserWrapper, A2LListener, cut_a2ml
+from pya2l.a2l_listener import ParserWrapper, A2LListener, cut_a2ml, delist
+
+
+def test_delist_empty():
+    DATA = []
+    assert delist(DATA, False) == []
+
+def test_delist_empty_scalar():
+    DATA = []
+    assert delist(DATA, True) == None
+
+def test_delist_single():
+    DATA = ['1111']
+    assert delist(DATA, False) == ['1111']
+
+def test_delist_single_scalar():
+    DATA = ['1111']
+    assert delist(DATA, True) == '1111'
+
+def test_delist_multiple():
+    DATA = ['1111', '2222', '3333', '4444']
+    assert delist(DATA, False) == ['1111']
+
+def test_delist_multiple_scalar():
+    DATA = ['1111', '2222', '3333', '4444']
+    assert delist(DATA, True) == '1111'
 
 def test_addr_epk():
     parser = ParserWrapper('a2l', 'addrEpk', A2LListener, debug = False)
@@ -129,9 +154,8 @@ def test_annotation_label():
     parser = ParserWrapper('a2l', 'annotationLabel', A2LListener, debug = False)
     DATA = 'ANNOTATION_LABEL    "Calibration Note"'
     session = parser.parseFromString(DATA)
-    res = session.query(model.AnnotationLabel).all()
-    assert len(res) == 1
-    assert res[0].label == 'Calibration Note'
+    res = session.query(model.AnnotationLabel).first()
+    assert res.label == 'Calibration Note'
 
 def test_annotation_origin():
     parser = ParserWrapper('a2l', 'annotationOrigin', A2LListener, debug = False)
@@ -351,7 +375,7 @@ def test_axis_pts_ref():
     assert chx.lowerLimit == 0.0
     assert chx.upperLimit == 43.0
     assert len(chx.axis_descrs) == 1
-    descr = chx.axis_descrs[0]  # TODO: axis_descr
+    descr = chx.axis_descrs[0]  # FIXME: axis_descr
     assert descr.attribute == 'COM_AXIS'
     assert descr.inputQuantity == 'N'
     assert descr.conversion == 'CONV_N'
@@ -1987,6 +2011,7 @@ def test_header():
     session = parser.parseFromString(DATA)
     hdr = session.query(model.Header).first()
     assert hdr.version[0].versionIdentifier == "BG5.0815"
+    #assert hdr.version.versionIdentifier == "BG5.0815"
     assert hdr.comment == 'see also specification XYZ of 01.02.1994'
     assert hdr.project_no.projectNumber == "M4711Z1"
 
@@ -2116,4 +2141,1779 @@ def test_measurement():
     """
     session = parser.parseFromString(DATA)
     meas = session.query(model.Measurement).all()
-    print(meas)
+    assert len(meas) == 3
+    m0, m1, m2 = meas
+    assert m0.name == 'N'
+    assert m0.longIdentifier == 'Engine speed'
+    assert m0.datatype == 'UWORD'
+    assert m0.conversion == 'R_SPEED_3'
+    assert m0.resolution == 2
+    assert m0.accuracy == 2.5
+    assert m0.lowerLimit == 120.0
+    assert m0.upperLimit == 8400.0
+    assert m0.phys_unit[0].unit == 'mph'
+    assert m0.bit_mask[0].mask == 0x0fff
+    assert m0.bit_operation.right_shift.bitcount == 4
+    assert m0.bit_operation.sign_extend is not None
+    assert m0.byte_order[0].byteOrder == 'MSB_FIRST'
+    assert m0.ref_memory_segment[0].name == "Data2"
+    assert m0.function_list[0].name == ['ID_ADJUSTM', 'FL_ADJUSTM']
+
+    assert m1.name == 'VdiagStatus'
+    assert m1.longIdentifier == 'VdiagStatus'
+    assert m1.datatype == 'SWORD'
+    assert m1.conversion == 'CM_DiagSTatus'
+    assert m1.resolution == 16
+    assert m1.accuracy == 1.0
+    assert m1.lowerLimit == -32768.0
+    assert m1.upperLimit == 32767.0
+    assert m1.ecu_address.address == 0x003FDFE0
+
+    assert m2.name == 'VfSpinLoss'
+    assert m2.longIdentifier == 'VfSpinLoss'
+    assert m2.datatype == 'UWORD'
+    assert m2.conversion == 'CM_RPM'
+    assert m2.resolution == 16
+    assert m2.accuracy == 1.0
+    assert m2.lowerLimit == -4096.0
+    assert m2.upperLimit == 4095.875
+    assert m2.ecu_address.address == 0x003FE380
+
+def test_memory_layout():
+    parser = ParserWrapper('a2l', 'modPar', A2LListener, debug = False)
+    DATA = """
+    /begin MOD_PAR ""
+        /begin MEMORY_LAYOUT PRG_RESERVED
+            0x0000
+            0x0400
+            -1 -1 -1 -1 -1
+        /end MEMORY_LAYOUT
+        /begin MEMORY_LAYOUT PRG_CODE
+            0x0400
+            0x3C00
+            -1 -1 -1 -1 -1
+        /end MEMORY_LAYOUT
+        /begin MEMORY_LAYOUT PRG_DATA
+            0x4000
+            0x0200
+            0x10000
+            0x20000
+            -1 -1 -1
+        /end MEMORY_LAYOUT
+        /begin MEMORY_LAYOUT PRG_DATA
+            0x4200
+            0x0E00
+            -1 -1 -1 -1 -1
+        /end MEMORY_LAYOUT
+        /begin MEMORY_LAYOUT PRG_DATA
+            0x14200
+            0x0E00
+            -1 -1 -1 -1 -1
+        /end MEMORY_LAYOUT
+        /begin MEMORY_LAYOUT PRG_DATA
+            0x24200
+            0x0E00
+            -1 -1 -1 -1 -1
+        /end MEMORY_LAYOUT
+    /end MOD_PAR
+    """
+    session = parser.parseFromString(DATA)
+    ly = session.query(model.MemoryLayout).all()
+    l0, l1, l2, l3, l4, l5 = ly
+
+    assert l0.prgType == 'PRG_RESERVED'
+    assert l0.address == 0
+    assert l0.size == 1024
+    assert l0.offset_0 == -1
+    assert l0.offset_1 == -1
+    assert l0.offset_2 == -1
+    assert l0.offset_3 == -1
+    assert l0.offset_4 == -1
+
+    assert l1.prgType == 'PRG_CODE'
+    assert l1.address == 1024
+    assert l1.size == 15360
+    assert l1.offset_0 == -1
+    assert l1.offset_1 == -1
+    assert l1.offset_2 == -1
+    assert l1.offset_3 == -1
+    assert l1.offset_4 == -1
+
+    assert l2.prgType == 'PRG_DATA'
+    assert l2.address == 16384
+    assert l2.size == 512
+    assert l2.offset_0 == 65536
+    assert l2.offset_1 == 131072
+    assert l2.offset_2 == -1
+    assert l2.offset_3 == -1
+    assert l2.offset_4 == -1
+
+    assert l3.prgType == 'PRG_DATA'
+    assert l3.address == 16896
+    assert l3.size == 3584
+    assert l3.offset_0 == -1
+    assert l3.offset_1 == -1
+    assert l3.offset_2 == -1
+    assert l3.offset_3 == -1
+    assert l3.offset_4 == -1
+
+    assert l4.prgType == 'PRG_DATA'
+    assert l4.address == 82432
+    assert l4.size == 3584
+    assert l4.offset_0 == -1
+    assert l4.offset_1 == -1
+    assert l4.offset_2 == -1
+    assert l4.offset_3 == -1
+    assert l4.offset_4 == -1
+
+    assert l5.prgType == 'PRG_DATA'
+    assert l5.address == 147968
+    assert l5.size == 3584
+    assert l5.offset_0 == -1
+    assert l5.offset_1 == -1
+    assert l5.offset_2 == -1
+    assert l5.offset_3 == -1
+    assert l5.offset_4 == -1
+
+def test_memory_segment():
+    parser = ParserWrapper('a2l', 'modPar', A2LListener, debug = False)
+    DATA = """
+    /begin MOD_PAR ""
+        /begin MEMORY_SEGMENT Data1
+            "Data internal Flash"
+            DATA
+            FLASH
+            INTERN
+            0x4000
+            0x0200
+            -1 -1 -1 -1 -1
+        /end MEMORY_SEGMENT
+        /begin MEMORY_SEGMENT Data2
+            "Data external Flash"
+            DATA
+            FLASH
+            EXTERN
+            0x7000
+            0x2000
+            -1 -1 -1 -1 -1
+        /end MEMORY_SEGMENT
+        /begin MEMORY_SEGMENT Code1
+            "Code external Flash"
+            CODE
+            FLASH
+            EXTERN
+            0x9000
+            0x3000
+            -1 -1 -1 -1 -1
+        /end MEMORY_SEGMENT
+        /begin MEMORY_SEGMENT ext_Ram
+            "external RAM"
+            DATA
+            RAM
+            EXTERN
+            0x30000
+            0x1000
+            -1 -1 -1 -1 -1
+        /end MEMORY_SEGMENT
+        /begin MEMORY_SEGMENT int_Ram
+            "internal RAM"
+            DATA
+            RAM
+            INTERN
+            0x0000
+            0x0200
+            -1 -1 -1 -1 -1
+        /end MEMORY_SEGMENT
+        /begin MEMORY_SEGMENT Seram1
+            "emulation RAM 1"
+            SERAM
+            RAM
+            EXTERN
+            0x7000
+            0x1000
+            -1 -1 -1 -1 -1
+        /end MEMORY_SEGMENT
+        /begin MEMORY_SEGMENT Seram2
+            "emulation RAM 2"
+            SERAM
+            RAM
+            INTERN
+            0x8000
+            0x1000
+            -1 -1 -1 -1 -1
+        /end MEMORY_SEGMENT
+    /end MOD_PAR
+    """
+    session = parser.parseFromString(DATA)
+    ms = session.query(model.MemorySegment).all()
+    m0, m1, m2, m3, m4, m5, m6 = ms
+    assert m0.name == 'Data1'
+    assert m0.longIdentifier == 'Data internal Flash'
+    assert m0.prgType == 'DATA'
+    assert m0.memoryType == 'FLASH'
+    assert m0.attribute == 'INTERN'
+    assert m0.address == 16384
+    assert m0.size == 512
+    assert m0.offset_0 == -1
+    assert m0.offset_1 == -1
+    assert m0.offset_2 == -1
+    assert m0.offset_3 == -1
+    assert m0.offset_4 == -1
+
+    assert m1.name == 'Data2'
+    assert m1.longIdentifier == 'Data external Flash'
+    assert m1.prgType == 'DATA'
+    assert m1.memoryType == 'FLASH'
+    assert m1.attribute == 'EXTERN'
+    assert m1.address == 28672
+    assert m1.size == 8192
+    assert m1.offset_0 == -1
+    assert m1.offset_1 == -1
+    assert m1.offset_2 == -1
+    assert m1.offset_3 == -1
+    assert m1.offset_4 == -1
+
+    assert m2.name == 'Code1'
+    assert m2.longIdentifier == 'Code external Flash'
+    assert m2.prgType == 'CODE'
+    assert m2.memoryType == 'FLASH'
+    assert m2.attribute == 'EXTERN'
+    assert m2.address == 36864
+    assert m2.size == 12288
+    assert m2.offset_0 == -1
+    assert m2.offset_1 == -1
+    assert m2.offset_2 == -1
+    assert m2.offset_3 == -1
+    assert m2.offset_4 == -1
+
+    assert m3.name == 'ext_Ram'
+    assert m3.longIdentifier == 'external RAM'
+    assert m3.prgType == 'DATA'
+    assert m3.memoryType == 'RAM'
+    assert m3.attribute == 'EXTERN'
+    assert m3.address == 196608
+    assert m3.size == 4096
+    assert m3.offset_0 == -1
+    assert m3.offset_1 == -1
+    assert m3.offset_2 == -1
+    assert m3.offset_3 == -1
+    assert m3.offset_4 == -1
+
+    assert m4.name == 'int_Ram'
+    assert m4.longIdentifier == 'internal RAM'
+    assert m4.prgType == 'DATA'
+    assert m4.memoryType == 'RAM'
+    assert m4.attribute == 'INTERN'
+    assert m4.address == 0
+    assert m4.size == 512
+    assert m4.offset_0 == -1
+    assert m4.offset_1 == -1
+    assert m4.offset_2 == -1
+    assert m4.offset_3 == -1
+    assert m4.offset_4 == -1
+
+    assert m5.name == 'Seram1'
+    assert m5.longIdentifier == 'emulation RAM 1'
+    assert m5.prgType == 'SERAM'
+    assert m5.memoryType == 'RAM'
+    assert m5.attribute == 'EXTERN'
+    assert m5.address == 28672
+    assert m5.size == 4096
+    assert m5.offset_0 == -1
+    assert m5.offset_1 == -1
+    assert m5.offset_2 == -1
+    assert m5.offset_3 == -1
+    assert m5.offset_4 == -1
+
+    assert m6.name == 'Seram2'
+    assert m6.longIdentifier == 'emulation RAM 2'
+    assert m6.prgType == 'SERAM'
+    assert m6.memoryType == 'RAM'
+    assert m6.attribute == 'INTERN'
+    assert m6.address == 32768
+    assert m6.size == 4096
+    assert m6.offset_0 == -1
+    assert m6.offset_1 == -1
+    assert m6.offset_2 == -1
+    assert m6.offset_3 == -1
+    assert m6.offset_4 == -1
+
+def test_mod_common():
+    parser = ParserWrapper('a2l', 'modCommon', A2LListener, debug = False)
+    DATA = """
+    /begin MOD_COMMON "Characteristic maps always deposited in same mode"
+        S_REC_LAYOUT S_ABL
+        DEPOSIT ABSOLUTE
+        BYTE_ORDER MSB_LAST
+        DATA_SIZE 16
+        ALIGNMENT_BYTE 2
+    /end MOD_COMMON
+    """
+    session = parser.parseFromString(DATA)
+    mc = session.query(model.ModCommon).first()
+    assert mc.comment == 'Characteristic maps always deposited in same mode'
+    assert mc.s_rec_layout.name == "S_ABL"
+    assert mc.deposit[0].mode == 'ABSOLUTE'
+    assert mc.byte_order[0].byteOrder == 'MSB_LAST'
+    assert mc.data_size.size == 16
+    assert mc.alignment_byte[0].alignmentBorder == 2
+
+def test_mod_par():
+    parser = ParserWrapper('a2l', 'modPar', A2LListener, debug = False)
+    DATA = """
+    /begin MOD_PAR "Note: Provisional release for test purposes only!"
+        VERSION "Test version of 01.02.1994"
+        ADDR_EPK 0x45678
+        EPK     "EPROM identifier test"
+        SUPPLIER "M&K GmbH Chemnitz"
+        CUSTOMER "LANZ-Landmaschinen"
+        CUSTOMER_NO "0123456789"
+        USER "A.N.Wender"
+        PHONE_NO "09951 56456"
+        ECU "Engine control"
+        CPU_TYPE "Motorola 0815"
+        NO_OF_INTERFACES 2
+        /begin MEMORY_SEGMENT ext_Ram
+            "external RAM"
+            DATA
+            RAM
+            EXTERN
+            0x30000
+            0x1000
+            -1 -1 -1 -1 -1
+        /end MEMORY_SEGMENT
+        /begin MEMORY_LAYOUT PRG_RESERVED
+            0x0000
+            0x0400
+            -1 -1 -1 -1 -1
+        /end MEMORY_LAYOUT
+        /begin MEMORY_LAYOUT PRG_CODE
+            0x0400
+            0x3C00
+            -1 -1 -1 -1 -1
+        /end MEMORY_LAYOUT
+        /begin MEMORY_LAYOUT PRG_DATA
+            0x4000
+            0x5800
+            -1 -1 -1 -1 -1
+        /end MEMORY_LAYOUT
+        SYSTEM_CONSTANT "CONTROLLERx constant1" "0.33"
+        SYSTEM_CONSTANT "CONTROLLERx constant2" "2.79"
+    /end MOD_PAR
+    """
+    session = parser.parseFromString(DATA)
+    mp = session.query(model.ModPar).first()
+    assert mp.comment == 'Note: Provisional release for test purposes only!'
+
+    assert mp.version[0].versionIdentifier == 'Test version of 01.02.1994'
+    assert mp.addr_epks[0].address == 284280
+    assert mp.epk.identifier == 'EPROM identifier test'
+    assert mp.supplier.manufacturer == 'M&K GmbH Chemnitz'
+    assert mp.customer.customer == 'LANZ-Landmaschinen'
+    assert mp.customer_no.number == '0123456789'
+    assert mp.user.userName == 'A.N.Wender'
+    assert mp.phone_no.telnum == '09951 56456'
+    assert mp.ecu.controlUnit == 'Engine control'
+    assert mp.cpu_type.cPU == 'Motorola 0815'
+    assert mp.no_of_interfaces.num == 2
+    ms = mp.memory_segments[0]
+
+    assert ms.name == 'ext_Ram'
+    assert ms.longIdentifier == 'external RAM'
+    assert ms.prgType == 'DATA'
+    assert ms.memoryType == 'RAM'
+    assert ms.attribute == 'EXTERN'
+    assert ms.address == 196608
+    assert ms.size == 4096
+    assert ms.offset_0 == -1
+    assert ms.offset_1 == -1
+    assert ms.offset_2 == -1
+    assert ms.offset_3 == -1
+    assert ms.offset_4 == -1
+    m0, m1, m2 = mp.memory_layouts
+    assert m0.prgType == 'PRG_RESERVED'
+    assert m0.address == 0
+    assert m0.size == 1024
+    assert m0.offset_0 == -1
+    assert m0.offset_1 == -1
+    assert m0.offset_2 == -1
+    assert m0.offset_3 == -1
+    assert m0.offset_4 == -1
+
+    assert m1.prgType == 'PRG_CODE'
+    assert m1.address == 1024
+    assert m1.size == 15360
+    assert m1.offset_0 == -1
+    assert m1.offset_1 == -1
+    assert m1.offset_2 == -1
+    assert m1.offset_3 == -1
+    assert m1.offset_4 == -1
+
+    assert m2.prgType == 'PRG_DATA'
+    assert m2.address == 16384
+    assert m2.size == 22528
+    assert m2.offset_0 == -1
+    assert m2.offset_1 == -1
+    assert m2.offset_2 == -1
+    assert m2.offset_3 == -1
+    assert m2.offset_4 == -1
+
+    s0, s1 = mp.system_constants
+    assert s0.name == 'CONTROLLERx constant1'
+    assert s0.value == '0.33'
+
+    assert s1.name == 'CONTROLLERx constant2'
+    assert s1.value == '2.79'
+
+def test_monotony():
+    parser = ParserWrapper('a2l', 'monotony', A2LListener, debug = False)
+    DATA = """
+    MONOTONY MON_INCREASE
+    """
+    session = parser.parseFromString(DATA)
+    mn = session.query(model.Monotony).first()
+    assert mn.monotony == "MON_INCREASE"
+
+def test_no_axis_pts_x():
+    parser = ParserWrapper('a2l', 'noAxisPtsX', A2LListener, debug = False)
+    DATA = """
+    NO_AXIS_PTS_X   2
+                    UWORD
+    """
+    session = parser.parseFromString(DATA)
+    na = session.query(model.NoAxisPtsX).first()
+    assert na.position == 2
+    assert na.datatype == 'UWORD'
+
+def test_no_axis_pts_y():
+    parser = ParserWrapper('a2l', 'noAxisPtsY', A2LListener, debug = False)
+    DATA = """
+    NO_AXIS_PTS_Y   2
+                    UWORD
+    """
+    session = parser.parseFromString(DATA)
+    na = session.query(model.NoAxisPtsY).first()
+    assert na.position == 2
+    assert na.datatype == 'UWORD'
+
+def test_no_axis_pts_z():
+    parser = ParserWrapper('a2l', 'noAxisPtsZ', A2LListener, debug = False)
+    DATA = """
+    NO_AXIS_PTS_Z   2
+                    UWORD
+    """
+    session = parser.parseFromString(DATA)
+    na = session.query(model.NoAxisPtsZ).first()
+    assert na.position == 2
+    assert na.datatype == 'UWORD'
+
+def test_no_axis_pts_4():
+    parser = ParserWrapper('a2l', 'noAxisPts4', A2LListener, debug = False)
+    DATA = """
+    NO_AXIS_PTS_4   2
+                    UWORD
+    """
+    session = parser.parseFromString(DATA)
+    na = session.query(model.NoAxisPts4).first()
+    assert na.position == 2
+    assert na.datatype == 'UWORD'
+
+def test_no_axis_pts_5():
+    parser = ParserWrapper('a2l', 'noAxisPts5', A2LListener, debug = False)
+    DATA = """
+    NO_AXIS_PTS_5   2
+                    UWORD
+    """
+    session = parser.parseFromString(DATA)
+    na = session.query(model.NoAxisPts5).first()
+    assert na.position == 2
+    assert na.datatype == 'UWORD'
+
+def test_no_of_interfaces():
+    parser = ParserWrapper('a2l', 'noOfInterfaces', A2LListener, debug = False)
+    DATA = """
+    NO_OF_INTERFACES    2
+    """
+    session = parser.parseFromString(DATA)
+    no = session.query(model.NoOfInterfaces).first()
+    assert no.num == 2
+
+def test_no_rescale_x():
+    parser = ParserWrapper('a2l', 'noRescaleX', A2LListener, debug = False)
+    DATA = """
+    NO_RESCALE_X    1
+                    UBYTE
+    """
+    session = parser.parseFromString(DATA)
+    na = session.query(model.NoRescaleX).first()
+    assert na.position == 1
+    assert na.datatype == 'UBYTE'
+
+def test_no_rescale_y():
+    parser = ParserWrapper('a2l', 'noRescaleY', A2LListener, debug = False)
+    DATA = """
+    NO_RESCALE_Y    1
+                    UBYTE
+    """
+    session = parser.parseFromString(DATA)
+    na = session.query(model.NoRescaleY).first()
+    assert na.position == 1
+    assert na.datatype == 'UBYTE'
+
+def test_no_rescale_z():
+    parser = ParserWrapper('a2l', 'noRescaleZ', A2LListener, debug = False)
+    DATA = """
+    NO_RESCALE_Z    1
+                    UBYTE
+    """
+    session = parser.parseFromString(DATA)
+    na = session.query(model.NoRescaleZ).first()
+    assert na.position == 1
+    assert na.datatype == 'UBYTE'
+
+def test_no_rescale_4():
+    parser = ParserWrapper('a2l', 'noRescale4', A2LListener, debug = False)
+    DATA = """
+    NO_RESCALE_4    1
+                    UBYTE
+    """
+    session = parser.parseFromString(DATA)
+    na = session.query(model.NoRescale4).first()
+    assert na.position == 1
+    assert na.datatype == 'UBYTE'
+
+def test_no_rescale_5():
+    parser = ParserWrapper('a2l', 'noRescale5', A2LListener, debug = False)
+    DATA = """
+    NO_RESCALE_5    1
+                    UBYTE
+    """
+    session = parser.parseFromString(DATA)
+    na = session.query(model.NoRescale5).first()
+    assert na.position == 1
+    assert na.datatype == 'UBYTE'
+
+def test_number():
+    parser = ParserWrapper('a2l', 'number', A2LListener, debug = False)
+    DATA = """
+    NUMBER  7
+    """
+    session = parser.parseFromString(DATA)
+    nu = session.query(model.Number).first()
+    assert nu.number == 7
+
+def test_offset_x():
+    parser = ParserWrapper('a2l', 'offsetX', A2LListener, debug = False)
+    DATA = """
+    OFFSET_X    16
+                UWORD
+    """
+    session = parser.parseFromString(DATA)
+    na = session.query(model.OffsetX).first()
+    assert na.position == 16
+    assert na.datatype == 'UWORD'
+
+def test_offset_y():
+    parser = ParserWrapper('a2l', 'offsetY', A2LListener, debug = False)
+    DATA = """
+    OFFSET_Y    16
+                UWORD
+    """
+    session = parser.parseFromString(DATA)
+    na = session.query(model.OffsetY).first()
+    assert na.position == 16
+    assert na.datatype == 'UWORD'
+
+def test_offset_z():
+    parser = ParserWrapper('a2l', 'offsetZ', A2LListener, debug = False)
+    DATA = """
+    OFFSET_Z    16
+                UWORD
+    """
+    session = parser.parseFromString(DATA)
+    na = session.query(model.OffsetZ).first()
+    assert na.position == 16
+    assert na.datatype == 'UWORD'
+
+def test_offset_4():
+    parser = ParserWrapper('a2l', 'offset4', A2LListener, debug = False)
+    DATA = """
+    OFFSET_4    16
+                UWORD
+    """
+    session = parser.parseFromString(DATA)
+    na = session.query(model.Offset4).first()
+    assert na.position == 16
+    assert na.datatype == 'UWORD'
+
+def test_offset_5():
+    parser = ParserWrapper('a2l', 'offset5', A2LListener, debug = False)
+    DATA = """
+    OFFSET_5    16
+                UWORD
+    """
+    session = parser.parseFromString(DATA)
+    na = session.query(model.Offset5).first()
+    assert na.position == 16
+    assert na.datatype == 'UWORD'
+
+def test_out_measurement():
+    parser = ParserWrapper('a2l', 'outMeasurement', A2LListener, debug = False)
+    DATA = """
+    /begin OUT_MEASUREMENT OK_FLAG
+        SENSOR_FLAG
+    /end OUT_MEASUREMENT
+    """
+    session = parser.parseFromString(DATA)
+    om = session.query(model.OutMeasurement).first()
+    assert om.identifier == ['OK_FLAG', 'SENSOR_FLAG']
+
+def test_phone_no():
+    parser = ParserWrapper('a2l', 'phoneNo', A2LListener, debug = False)
+    DATA = """
+    PHONE_NO "09498 594562"
+    """
+    session = parser.parseFromString(DATA)
+    pn = session.query(model.PhoneNo).first()
+    assert pn.telnum == "09498 594562"
+
+def test_phys_unit():
+    parser = ParserWrapper('a2l', 'physUnit', A2LListener, debug = False)
+    DATA = """
+    PHYS_UNIT "°C"
+    """
+    session = parser.parseFromString(DATA)
+    pn = session.query(model.PhysUnit).first()
+    assert pn.unit == "°C"
+
+def test_project():
+    parser = ParserWrapper('a2l', 'project', A2LListener, debug = False)
+    DATA = """
+    /begin PROJECT RAPE_SEED_ENGINE
+        "Engine tuning for operation with rape oil"
+        /begin HEADER "see also specification XYZ of 01.02.1994"
+            VERSION "BG5.0815"
+            PROJECT_NO M4711Z1
+        /end HEADER
+//        /include ENGINE_ECU.A2L /* Include for engine control module */
+//        /include ABS_ECU.A2L /* Include for ABS module */
+        /end PROJECT
+    """
+    session = parser.parseFromString(DATA)
+    prj = session.query(model.Project).first()
+    assert prj.name == 'RAPE_SEED_ENGINE'
+    assert prj.longIdentifier == 'Engine tuning for operation with rape oil'
+    assert prj.header.comment == 'see also specification XYZ of 01.02.1994'
+    assert prj.header.version[0].versionIdentifier == 'BG5.0815'
+    assert prj.header.project_no.projectNumber == 'M4711Z1'
+
+def test_project_no():
+    parser = ParserWrapper('a2l', 'projectNo', A2LListener, debug = False)
+    DATA = """
+    PROJECT_NO M4711Z1
+    """
+    session = parser.parseFromString(DATA)
+    pn = session.query(model.ProjectNo).first()
+    assert pn.projectNumber == 'M4711Z1'
+
+def test_read_only():
+    parser = ParserWrapper('a2l', 'characteristic', A2LListener, debug = False)
+    DATA = """
+    /begin CHARACTERISTIC KI "I-share for speed limitation"
+        VALUE /* type: fixed value */
+        0x408F /* address */
+        DAMOS_FW /* deposit */
+        0.0 /* max_diff */
+        FACTOR01 /* conversion */
+        0.0 /* lower limit */
+        255.0 /* upper limit */
+        /* interface-specific parameters: address location, addressing */
+/*
+        /begin IF_DATA "DIM" EXTERNAL
+            DIRECT
+        /end IF_DATA
+*/
+        /begin FUNCTION_LIST V_LIM /* Reference to functions */
+        /end FUNCTION_LIST
+        READ_ONLY
+    /end CHARACTERISTIC
+    """
+    session = parser.parseFromString(DATA)
+    chx = session.query(model.Characteristic).first()
+
+    assert chx.name == 'KI'
+    assert chx.longIdentifier == 'I-share for speed limitation'
+    assert chx.type == 'VALUE'
+    assert chx.address == 16527
+    assert chx.deposit == 'DAMOS_FW'
+    assert chx.maxDiff == 0.0
+    assert chx.conversion == 'FACTOR01'
+    assert chx.lowerLimit == 0.0
+    assert chx.upperLimit == 255.0
+    assert chx.function_list[0].name == ['V_LIM']
+    assert chx.read_only[0] is not None
+    """
+    """
+
+def test_read_write():
+    parser = ParserWrapper('a2l', 'measurement', A2LListener, debug = False)
+    DATA = """
+    /begin MEASUREMENT N /* name */
+        "Engine speed" /* long identifier */
+        UWORD /* datatype */
+        R_SPEED_3 /* conversion */
+        2 /* resolution */
+        2.5 /* accuracy */
+        120.0 /* lower limit */
+        8400.0 /* upper limit */
+        READ_WRITE
+/*
+        /begin IF_DATA ISO SND
+            0x10
+            0x00
+            0x05
+            0x08
+            RCV
+            4
+            long
+        /end IF_DATA
+*/
+    /end MEASUREMENT
+    """
+    session = parser.parseFromString(DATA)
+    meas = session.query(model.Measurement).first()
+    assert meas.name == 'N'
+    assert meas.longIdentifier == 'Engine speed'
+    assert meas.datatype == 'UWORD'
+    assert meas.conversion == 'R_SPEED_3'
+    assert meas.resolution == 2
+    assert meas.accuracy == 2.5
+    assert meas.lowerLimit == 120.0
+    assert meas.upperLimit == 8400.0
+    assert meas.read_write is not None
+
+def test_record_layout():
+    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    DATA = """/begin MODULE testModule ""
+        /begin RECORD_LAYOUT DAMOS_KF
+            FNC_VALUES 7 SWORD COLUMN_DIR DIRECT
+            AXIS_PTS_X 3 SWORD INDEX_INCR DIRECT
+            AXIS_PTS_Y 6 UBYTE INDEX_INCR DIRECT
+            NO_AXIS_PTS_X 2 UBYTE
+            NO_AXIS_PTS_Y 5 UBYTE
+//            SRC_ADDR_X 1
+//            SRC_ADDR_Y 4
+            ALIGNMENT_BYTE 2
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT RESCALE_SST
+            NO_RESCALE_X 1 UBYTE
+            RESERVED 2 BYTE
+            AXIS_RESCALE_X 3 UBYTE 5 INDEX_INCR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT SHORTINT
+            FNC_VALUES 1 SBYTE ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT BYTE_
+            FNC_VALUES 1 UBYTE ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT INTEGER
+            FNC_VALUES 1 SWORD ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT WORD_
+            FNC_VALUES 1 UWORD ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT LONGINT
+            FNC_VALUES 1 SLONG ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT LONGWORD
+            FNC_VALUES 1 ULONG ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _2D_structure_table_int    /* FIXME: Accept identifiers starting with numbers!? */
+            NO_AXIS_PTS_X 1 UWORD
+            FNC_VALUES 2 SWORD ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _2D_structure_table_word
+            NO_AXIS_PTS_X 1 UWORD
+            FNC_VALUES 2 UWORD ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _2D_structure_table_byte
+            NO_AXIS_PTS_X 1 UBYTE
+            RESERVED 2 BYTE
+            FNC_VALUES 3 UBYTE ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _2D_structure_table_shortint
+            NO_AXIS_PTS_X 1 UBYTE
+            RESERVED 2 BYTE
+            FNC_VALUES 3 SBYTE ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _3D_structure_table_int
+            NO_AXIS_PTS_X 1 UWORD
+            NO_AXIS_PTS_Y 2 UWORD
+            FNC_VALUES 3 SWORD ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _3D_structure_table_word
+            NO_AXIS_PTS_X 1 UWORD
+            NO_AXIS_PTS_Y 2 UWORD
+            FNC_VALUES 3 UWORD ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _3D_structure_table_byte
+            NO_AXIS_PTS_X 1 UBYTE
+            NO_AXIS_PTS_Y 2 UBYTE
+            RESERVED 3 BYTE
+            FNC_VALUES 4 UBYTE ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _3D_structure_table_shortint
+            NO_AXIS_PTS_X 1 UBYTE
+            NO_AXIS_PTS_Y 2 UBYTE
+            RESERVED 3 BYTE
+            FNC_VALUES 4 SBYTE ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _2D_array_table_int
+            FNC_VALUES 1 SWORD ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _2D_array_table_word
+            FNC_VALUES 1 UWORD ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _2D_array_table_byte
+            FNC_VALUES 1 UBYTE ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _2D_array_table_shortint
+            FNC_VALUES 1 SBYTE ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _3D_array_table_int
+            FNC_VALUES 1 SWORD ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _3D_array_table_word
+            FNC_VALUES 1 UWORD ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _3D_array_table_byte
+            FNC_VALUES 1 UBYTE ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _3D_array_table_shortint
+            FNC_VALUES 1 SBYTE ROW_DIR DIRECT
+        /end RECORD_LAYOUT
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    recs = session.query(model.RecordLayout).all()
+    r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23 = recs
+    assert r0.name == 'DAMOS_KF'
+    assert r0.fnc_values.position == 7
+    assert r0.fnc_values.datatype == 'SWORD'
+    assert r0.fnc_values.indexMode == 'COLUMN_DIR'
+    assert r0.fnc_values.addresstype == 'DIRECT'
+    assert r0.axis_pts_x.position == 3
+    assert r0.axis_pts_x.datatype == 'SWORD'
+    assert r0.axis_pts_x.indexIncr == 'INDEX_INCR'
+    assert r0.axis_pts_x.addressing == 'DIRECT'
+    assert r0.axis_pts_y.position == 6
+    assert r0.axis_pts_y.datatype == 'UBYTE'
+    assert r0.axis_pts_y.indexIncr == 'INDEX_INCR'
+    assert r0.axis_pts_y.addressing == 'DIRECT'
+    assert r0.no_axis_pts_x.position == 2
+    assert r0.no_axis_pts_x.datatype == 'UBYTE'
+    assert r0.no_axis_pts_y.position == 5
+    assert r0.no_axis_pts_y.datatype == 'UBYTE'
+    assert r0.alignment_byte[0].alignmentBorder == 2
+
+    assert r1.name == 'RESCALE_SST'
+    assert r1.no_rescale_x.position == 1
+    assert r1.no_rescale_x.datatype == 'UBYTE'
+    assert r1.reserveds is not None # FIXME
+    assert r1.axis_rescale_x.position == 3
+    assert r1.axis_rescale_x.datatype == 'UBYTE'
+    assert r1.axis_rescale_x.maxNumberOfRescalePairs == 5
+    assert r1.axis_rescale_x.indexIncr == 'INDEX_INCR'
+    assert r1.axis_rescale_x.addressing == 'DIRECT'
+
+    assert r2.name == 'SHORTINT'
+    assert r2.fnc_values.position == 1
+    assert r2.fnc_values.datatype == 'SBYTE'
+    assert r2.fnc_values.indexMode == 'ROW_DIR'
+    assert r2.fnc_values.addresstype == 'DIRECT'
+
+    assert r3.name == 'BYTE_'
+    assert r3.fnc_values.position == 1
+    assert r3.fnc_values.datatype == 'UBYTE'
+    assert r3.fnc_values.indexMode == 'ROW_DIR'
+    assert r3.fnc_values.addresstype == 'DIRECT'
+
+    assert r4.name == 'INTEGER'
+    assert r4.fnc_values.position == 1
+    assert r4.fnc_values.datatype == 'SWORD'
+    assert r4.fnc_values.indexMode == 'ROW_DIR'
+    assert r4.fnc_values.addresstype == 'DIRECT'
+
+    assert r5.name == 'WORD_'
+    assert r5.fnc_values.position == 1
+    assert r5.fnc_values.datatype == 'UWORD'
+    assert r5.fnc_values.indexMode == 'ROW_DIR'
+    assert r5.fnc_values.addresstype == 'DIRECT'
+
+    assert r6.name == 'LONGINT'
+    assert r6.fnc_values.position == 1
+    assert r6.fnc_values.datatype == 'SLONG'
+    assert r6.fnc_values.indexMode == 'ROW_DIR'
+    assert r6.fnc_values.addresstype == 'DIRECT'
+
+    assert r7.name == 'LONGWORD'
+    assert r7.fnc_values.position == 1
+    assert r7.fnc_values.datatype == 'ULONG'
+    assert r7.fnc_values.indexMode == 'ROW_DIR'
+    assert r7.fnc_values.addresstype == 'DIRECT'
+
+    assert r8.name == '_2D_structure_table_int'
+    assert r8.fnc_values.position == 2
+    assert r8.fnc_values.datatype == 'SWORD'
+    assert r8.fnc_values.indexMode == 'ROW_DIR'
+    assert r8.fnc_values.addresstype == 'DIRECT'
+    assert r8.no_axis_pts_x.position == 1
+    assert r8.no_axis_pts_x.datatype == 'UWORD'
+
+    assert r9.name == '_2D_structure_table_word'
+    assert r9.fnc_values.position == 2
+    assert r9.fnc_values.datatype == 'UWORD'
+    assert r9.fnc_values.indexMode == 'ROW_DIR'
+    assert r9.fnc_values.addresstype == 'DIRECT'
+    assert r9.no_axis_pts_x.position == 1
+    assert r9.no_axis_pts_x.datatype == 'UWORD'
+
+    assert r10.name == '_2D_structure_table_byte'
+    assert r10.no_axis_pts_x.position == 1
+    assert r10.no_axis_pts_x.datatype == 'UBYTE'
+    assert r10.reserveds is not None # FIXME
+    assert r10.fnc_values.position == 3
+    assert r10.fnc_values.datatype == 'UBYTE'
+    assert r10.fnc_values.indexMode == 'ROW_DIR'
+    assert r10.fnc_values.addresstype == 'DIRECT'
+
+    assert r11.name == '_2D_structure_table_shortint'
+    assert r11.no_axis_pts_x.position == 1
+    assert r11.no_axis_pts_x.datatype == 'UBYTE'
+    assert r11.reserveds[0].position == 2
+    assert r11.reserveds[0].dataSize == 'BYTE'
+    assert r11.fnc_values.position == 3
+    assert r11.fnc_values.datatype == 'SBYTE'
+    assert r11.fnc_values.indexMode == 'ROW_DIR'
+    assert r11.fnc_values.addresstype == 'DIRECT'
+
+    assert r12.name == '_3D_structure_table_int'
+    assert r12.no_axis_pts_x.position == 1
+    assert r12.no_axis_pts_x.datatype == 'UWORD'
+    assert r12.no_axis_pts_y.position == 2
+    assert r12.no_axis_pts_y.datatype == 'UWORD'
+    assert r12.fnc_values.position == 3
+    assert r12.fnc_values.datatype == 'SWORD'
+    assert r12.fnc_values.indexMode == 'ROW_DIR'
+    assert r12.fnc_values.addresstype == 'DIRECT'
+
+    assert r13.name == '_3D_structure_table_word'
+    assert r13.no_axis_pts_x.position == 1
+    assert r13.no_axis_pts_x.datatype == 'UWORD'
+    assert r13.no_axis_pts_y.position == 2
+    assert r13.no_axis_pts_y.datatype == 'UWORD'
+    assert r13.fnc_values.position == 3
+    assert r13.fnc_values.datatype == 'UWORD'
+    assert r13.fnc_values.indexMode == 'ROW_DIR'
+    assert r13.fnc_values.addresstype == 'DIRECT'
+
+    assert r14.name == '_3D_structure_table_byte'
+    assert r14.no_axis_pts_x.position == 1
+    assert r14.no_axis_pts_x.datatype == 'UBYTE'
+    assert r14.no_axis_pts_y.position == 2
+    assert r14.no_axis_pts_y.datatype == 'UBYTE'
+    assert r14.fnc_values.position == 4
+    assert r14.fnc_values.datatype == 'UBYTE'
+    assert r14.fnc_values.indexMode == 'ROW_DIR'
+    assert r14.fnc_values.addresstype == 'DIRECT'
+    assert r14.reserveds[0].position == 3
+    assert r14.reserveds[0].dataSize == 'BYTE'
+
+    assert r15.name == '_3D_structure_table_shortint'
+    assert r15.no_axis_pts_x.position == 1
+    assert r15.no_axis_pts_x.datatype == 'UBYTE'
+    assert r15.no_axis_pts_y.position == 2
+    assert r15.no_axis_pts_y.datatype == 'UBYTE'
+    assert r15.fnc_values.position == 4
+    assert r15.fnc_values.datatype == 'SBYTE'
+    assert r15.fnc_values.indexMode == 'ROW_DIR'
+    assert r15.fnc_values.addresstype == 'DIRECT'
+    assert r15.reserveds[0].position == 3
+    assert r15.reserveds[0].dataSize == 'BYTE'
+
+    assert r16.name == '_2D_array_table_int'
+    assert r16.fnc_values.position == 1
+    assert r16.fnc_values.datatype == 'SWORD'
+    assert r16.fnc_values.indexMode == 'ROW_DIR'
+    assert r16.fnc_values.addresstype == 'DIRECT'
+
+    assert r17.name == '_2D_array_table_word'
+    assert r17.fnc_values.position == 1
+    assert r17.fnc_values.datatype == 'UWORD'
+    assert r17.fnc_values.indexMode == 'ROW_DIR'
+    assert r17.fnc_values.addresstype == 'DIRECT'
+
+    assert r18.name == '_2D_array_table_byte'
+    assert r18.fnc_values.position == 1
+    assert r18.fnc_values.datatype == 'UBYTE'
+    assert r18.fnc_values.indexMode == 'ROW_DIR'
+    assert r18.fnc_values.addresstype == 'DIRECT'
+
+    assert r19.name == '_2D_array_table_shortint'
+    assert r19.fnc_values.position == 1
+    assert r19.fnc_values.datatype == 'SBYTE'
+    assert r19.fnc_values.indexMode == 'ROW_DIR'
+    assert r19.fnc_values.addresstype == 'DIRECT'
+
+    assert r20.name == '_3D_array_table_int'
+    assert r20.fnc_values.position == 1
+    assert r20.fnc_values.datatype == 'SWORD'
+    assert r20.fnc_values.indexMode == 'ROW_DIR'
+    assert r20.fnc_values.addresstype == 'DIRECT'
+
+    assert r21.name == '_3D_array_table_word'
+    assert r21.fnc_values.position == 1
+    assert r21.fnc_values.datatype == 'UWORD'
+    assert r21.fnc_values.indexMode == 'ROW_DIR'
+    assert r21.fnc_values.addresstype == 'DIRECT'
+
+    assert r22.name == '_3D_array_table_byte'
+    assert r22.fnc_values.position == 1
+    assert r22.fnc_values.datatype == 'UBYTE'
+    assert r22.fnc_values.indexMode == 'ROW_DIR'
+    assert r22.fnc_values.addresstype == 'DIRECT'
+
+    assert r23.name == '_3D_array_table_shortint'
+    assert r23.fnc_values.position == 1
+    assert r23.fnc_values.datatype == 'SBYTE'
+    assert r23.fnc_values.indexMode == 'ROW_DIR'
+    assert r23.fnc_values.addresstype == 'DIRECT'
+
+def test_ref_characteristic():
+    parser = ParserWrapper('a2l', 'refCharacteristic', A2LListener, debug = False)
+    DATA = """
+    /begin REF_CHARACTERISTIC ENG_SPEED_CORR_CURVE
+    /end REF_CHARACTERISTIC
+    """
+    session = parser.parseFromString(DATA)
+    rc = session.query(model.RefCharacteristic).first()
+    assert rc.identifier == ['ENG_SPEED_CORR_CURVE']    # FIXME
+
+def test_ref_group():
+    parser = ParserWrapper('a2l', 'refGroup', A2LListener, debug = False)
+    DATA = """
+    /begin REF_GROUP GROUP_1
+        GROUP_2
+    /end REF_GROUP
+    """
+    session = parser.parseFromString(DATA)
+    rg = session.query(model.RefGroup).first()
+    assert rg.identifier == ['GROUP_1', 'GROUP_2']
+
+def test_ref_measurement():
+    parser = ParserWrapper('a2l', 'refMeasurement', A2LListener, debug = False)
+    DATA = """
+    /begin REF_MEASUREMENT LOOP_COUNTER
+        TEMPORARY_1
+    /end REF_MEASUREMENT
+    """
+    session = parser.parseFromString(DATA)
+    rm = session.query(model.RefMeasurement).first()
+    assert rm.identifier == []  # FIXME
+
+def test_ref_memory_segment():
+    parser = ParserWrapper('a2l', 'refMemorySegment', A2LListener, debug = False)
+    DATA = """
+    REF_MEMORY_SEGMENT Data1
+    """
+    session = parser.parseFromString(DATA)
+    rm = session.query(model.RefMemorySegment).first()
+    assert rm.name == "Data1"
+
+def test_ref_unit():
+    parser = ParserWrapper('a2l', 'compuMethod', A2LListener, debug = False)
+    DATA = """
+    /begin COMPU_METHOD Velocity
+        "conversion method for velocity"
+        RAT_FUNC
+        "%6.2"
+        "[km/h]"
+        COEFFS 0 100 0 0 0 1
+        REF_UNIT kms_per_hour /* new (optional) parameter */
+    /end COMPU_METHOD
+    """
+    session = parser.parseFromString(DATA)
+    cm = session.query(model.CompuMethod).first()
+    assert cm.name == 'Velocity'
+    assert cm.longIdentifier == 'conversion method for velocity'
+    assert cm.conversionType == 'RAT_FUNC'
+    assert cm.format == '%6.2'
+    assert cm.unit == '[km/h]'
+    assert cm.coeffs.a == 0.0
+    assert cm.coeffs.b == 100.0
+    assert cm.coeffs.c == 0.0
+    assert cm.coeffs.d == 0.0
+    assert cm.coeffs.e == 0.0
+    assert cm.coeffs.f == 1.0
+    assert cm.ref_unit[0].unit == 'kms_per_hour'
+
+def test_reserved():
+    parser = ParserWrapper('a2l', 'reserved', A2LListener, debug = False)
+    DATA = """
+    RESERVED 7
+        LONG
+    """
+    session = parser.parseFromString(DATA)
+    rs = session.query(model.Reserved).first()
+    assert rs.position == 7
+    assert rs.dataSize == 'LONG'
+
+def test_rip_addr_w():
+    parser = ParserWrapper('a2l', 'ripAddrW', A2LListener, debug = False)
+    DATA = """
+    RIP_ADDR_W 19
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    ra = session.query(model.RipAddrW).first()
+    assert ra.position == 19
+    assert ra.datatype == 'UWORD'
+
+def test_rip_addr_x():
+    parser = ParserWrapper('a2l', 'ripAddrX', A2LListener, debug = False)
+    DATA = """
+    RIP_ADDR_X 19
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    ra = session.query(model.RipAddrX).first()
+    assert ra.position == 19
+    assert ra.datatype == 'UWORD'
+
+def test_rip_addr_y():
+    parser = ParserWrapper('a2l', 'ripAddrY', A2LListener, debug = False)
+    DATA = """
+    RIP_ADDR_Y 19
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    ra = session.query(model.RipAddrY).first()
+    assert ra.position == 19
+    assert ra.datatype == 'UWORD'
+
+def test_rip_addr_4():
+    parser = ParserWrapper('a2l', 'ripAddr4', A2LListener, debug = False)
+    DATA = """
+    RIP_ADDR_4 19
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    ra = session.query(model.RipAddr4).first()
+    assert ra.position == 19
+    assert ra.datatype == 'UWORD'
+
+def test_rip_addr_5():
+    parser = ParserWrapper('a2l', 'ripAddr5', A2LListener, debug = False)
+    DATA = """
+    RIP_ADDR_5 19
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    ra = session.query(model.RipAddr5).first()
+    assert ra.position == 19
+    assert ra.datatype == 'UWORD'
+
+def test_root():
+    parser = ParserWrapper('a2l', 'group', A2LListener, debug = False)
+    DATA = """
+    /begin GROUP SOFTWARE_COMPONENTS
+        "assignment of the definitions to C files"
+        ROOT
+        /begin SUB_GROUP INJE
+            C6TD
+        /end SUB_GROUP
+    /end GROUP
+    """
+    session = parser.parseFromString(DATA)
+    grp = session.query(model.Group).first()
+    assert grp.groupName == 'SOFTWARE_COMPONENTS'
+    assert grp.groupLongIdentifier == 'assignment of the definitions to C files'
+    assert grp.root is not None
+    assert grp.sub_group.identifier == ['INJE', 'C6TD']
+
+def test_shift_op_x():
+    parser = ParserWrapper('a2l', 'shiftOpX', A2LListener, debug = False)
+    DATA = """
+    SHIFT_OP_X 21
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    ra = session.query(model.ShiftOpX).first()
+    assert ra.position == 21
+    assert ra.datatype == 'UWORD'
+
+def test_shift_op_y():
+    parser = ParserWrapper('a2l', 'shiftOpY', A2LListener, debug = False)
+    DATA = """
+    SHIFT_OP_Y 21
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    ra = session.query(model.ShiftOpY).first()
+    assert ra.position == 21
+    assert ra.datatype == 'UWORD'
+
+def test_shift_op_z():
+    parser = ParserWrapper('a2l', 'shiftOpZ', A2LListener, debug = False)
+    DATA = """
+    SHIFT_OP_Z 21
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    ra = session.query(model.ShiftOpZ).first()
+    assert ra.position == 21
+    assert ra.datatype == 'UWORD'
+
+def test_shift_op_4():
+    parser = ParserWrapper('a2l', 'shiftOp4', A2LListener, debug = False)
+    DATA = """
+    SHIFT_OP_4 21
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    ra = session.query(model.ShiftOp4).first()
+    assert ra.position == 21
+    assert ra.datatype == 'UWORD'
+
+def test_shift_op_5():
+    parser = ParserWrapper('a2l', 'shiftOp5', A2LListener, debug = False)
+    DATA = """
+    SHIFT_OP_5 21
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    ra = session.query(model.ShiftOp5).first()
+    assert ra.position == 21
+    assert ra.datatype == 'UWORD'
+
+def test_si_exponents():
+    parser = ParserWrapper('a2l', 'unit', A2LListener, debug = False)
+    DATA = """
+    /begin UNIT
+        newton
+        "extended SI unit for force"
+        "[N]"
+        EXTENDED_SI
+        SI_EXPONENTS 1 1 -2 0 0 0 0 /*[N] = [m]*[kg]*[s] -2 */
+    /end UNIT
+    """
+    session = parser.parseFromString(DATA)
+    unit = session.query(model.Unit).first()
+    assert unit.name == 'newton'
+    assert unit.longIdentifier == 'extended SI unit for force'
+    assert unit.display == '[N]'
+    assert unit.type == 'EXTENDED_SI'
+    assert unit.si_exponents.length == 1
+    assert unit.si_exponents.mass == 1
+    assert unit.si_exponents.time == -2
+    assert unit.si_exponents.electricCurrent == 0
+    assert unit.si_exponents.temperature == 0
+    assert unit.si_exponents.amountOfSubstance == 0
+    assert unit.si_exponents.luminousIntensity == 0
+
+def test_src_addr_x():
+    parser = ParserWrapper('a2l', 'srcAddrX', A2LListener, debug = False)
+    DATA = """
+    SRC_ADDR_X 1
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    ra = session.query(model.SrcAddrX).first()
+    assert ra.position == 1
+    assert ra.datatype == 'UWORD'
+
+def test_src_addr_y():
+    parser = ParserWrapper('a2l', 'srcAddrY', A2LListener, debug = False)
+    DATA = """
+    SRC_ADDR_Y 1
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    ra = session.query(model.SrcAddrY).first()
+    assert ra.position == 1
+    assert ra.datatype == 'UWORD'
+
+def test_src_addr_z():
+    parser = ParserWrapper('a2l', 'srcAddrZ', A2LListener, debug = False)
+    DATA = """
+    SRC_ADDR_Z 1
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    ra = session.query(model.SrcAddrZ).first()
+    assert ra.position == 1
+    assert ra.datatype == 'UWORD'
+
+def test_src_addr_4():
+    parser = ParserWrapper('a2l', 'srcAddr4', A2LListener, debug = False)
+    DATA = """
+    SRC_ADDR_4 1
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    ra = session.query(model.SrcAddr4).first()
+    assert ra.position == 1
+    assert ra.datatype == 'UWORD'
+
+def test_src_addr_5():
+    parser = ParserWrapper('a2l', 'srcAddr5', A2LListener, debug = False)
+    DATA = """
+    SRC_ADDR_5 1
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    ra = session.query(model.SrcAddr5).first()
+    assert ra.position == 1
+    assert ra.datatype == 'UWORD'
+
+def test_static_record_layout():
+    parser = ParserWrapper('a2l', 'recordLayout', A2LListener, debug = False)
+    DATA = """
+    /begin RECORD_LAYOUT
+        mapLayoutNotCompact
+        NO_AXIS_PTS_X 1 UWORD
+        NO_AXIS_PTS_Y 2 UWORD
+        AXIS_PTS_X 3 UBYTE INDEX_INCR DIRECT
+        AXIS_PTS_Y 4 UBYTE INDEX_INCR DIRECT
+        FNC_VALUES 5 UBYTE ROW_DIR DIRECT
+        STATIC_RECORD_LAYOUT
+    /end RECORD_LAYOUT
+    """
+    session = parser.parseFromString(DATA)
+    rl = session.query(model.RecordLayout).first()
+    assert rl.name == 'mapLayoutNotCompact'
+    assert rl.no_axis_pts_x.position == 1
+    assert rl.no_axis_pts_x.datatype == 'UWORD'
+    assert rl.no_axis_pts_y.position == 2
+    assert rl.no_axis_pts_y.datatype == 'UWORD'
+    assert rl.axis_pts_x.position == 3
+    assert rl.axis_pts_x.datatype == 'UBYTE'
+    assert rl.axis_pts_x.indexIncr == 'INDEX_INCR'
+    assert rl.axis_pts_x.addressing == 'DIRECT'
+    assert rl.axis_pts_y.position == 4
+    assert rl.axis_pts_y.datatype == 'UBYTE'
+    assert rl.axis_pts_y.indexIncr == 'INDEX_INCR'
+    assert rl.axis_pts_y.addressing == 'DIRECT'
+    assert rl.fnc_values.position == 5
+    assert rl.fnc_values.datatype == 'UBYTE'
+    assert rl.fnc_values.indexMode == 'ROW_DIR'
+    assert rl.fnc_values.addresstype == 'DIRECT'
+    assert rl.static_record_layout is not None
+
+def test_status_string_ref():
+    parser = ParserWrapper('a2l', 'compuMethod', A2LListener, debug = False)
+    DATA = """
+    /begin COMPU_METHOD CM_LINFUNC_SENSOR_A /* name */
+        "conversion method for Sensor A"
+        LINEAR /* convers_type */
+        "%4.0" /* display format */
+        "rpm" /* physical unit */
+        COEFFS_LINEAR 2.0 5.0
+        STATUS_STRING_REF CT_SensorStatus
+    /end COMPU_METHOD
+    """
+    session = parser.parseFromString(DATA)
+    cm = session.query(model.CompuMethod).first()
+    assert cm.name == 'CM_LINFUNC_SENSOR_A'
+    assert cm.longIdentifier == 'conversion method for Sensor A'
+    assert cm.conversionType == 'LINEAR'
+    assert cm.format == '%4.0'
+    assert cm.unit == 'rpm'
+    assert cm.coeffs_linear.a == 2.0
+    assert cm.coeffs_linear.b == 5.0
+    assert cm.status_string_ref.conversionTable == 'CT_SensorStatus'
+
+def test_step_size():
+    parser = ParserWrapper('a2l', 'stepSize', A2LListener, debug = False)
+    DATA = """
+    STEP_SIZE 0.025
+    """
+    session = parser.parseFromString(DATA)
+    ss = session.query(model.StepSize).first()
+    assert ss.stepSize == 0.025
+
+def test_sub_function():
+    parser = ParserWrapper('a2l', 'subFunction', A2LListener, debug = False)
+    DATA = """
+    /begin SUB_FUNCTION ID_ADJUSTM_SUB
+    /end SUB_FUNCTION
+    """
+    session = parser.parseFromString(DATA)
+    sf = session.query(model.SubFunction).first()
+    assert sf.identifier == ['ID_ADJUSTM_SUB']
+
+def test_sub_group():
+    parser = ParserWrapper('a2l', 'subGroup', A2LListener, debug = False)
+    DATA = """
+    /begin SUB_GROUP ID_ADJUSTM_SUB
+    /end SUB_GROUP
+    """
+    session = parser.parseFromString(DATA)
+    sf = session.query(model.SubGroup).first()
+    assert sf.identifier == ['ID_ADJUSTM_SUB']
+
+def test_supplier():
+    parser = ParserWrapper('a2l', 'supplier', A2LListener, debug = False)
+    DATA = """
+    SUPPLIER "Smooth and Easy"
+    """
+    session = parser.parseFromString(DATA)
+    sp = session.query(model.Supplier).first()
+    assert sp.manufacturer == "Smooth and Easy"
+
+def test_symbol_link():
+    parser = ParserWrapper('a2l', 'symbolLink', A2LListener, debug = False)
+    DATA = """
+    SYMBOL_LINK "_VehicleSpeed" /* Symbol name */
+                0
+    """
+    session = parser.parseFromString(DATA)
+    sl = session.query(model.SymbolLink).first()
+    assert sl.symbolName == '_VehicleSpeed'
+    assert sl.offset == 0
+
+def test_system_constant():
+    parser = ParserWrapper('a2l', 'systemConstant', A2LListener, debug = False)
+    DATA = """
+    SYSTEM_CONSTANT "CONTROLLER_CONSTANT12"
+        "2.7134"
+    """
+    session = parser.parseFromString(DATA)
+    sc = session.query(model.SystemConstant).first()
+    assert sc.name == 'CONTROLLER_CONSTANT12'
+    assert sc.value == '2.7134'
+
+def test_s_rec_layout():
+    parser = ParserWrapper('a2l', 'sRecLayout', A2LListener, debug = False)
+    DATA = """
+    S_REC_LAYOUT S_ABL /* record layout */
+    """
+    session = parser.parseFromString(DATA)
+    sl = session.query(model.SRecLayout).first()
+    assert sl.name == "S_ABL"
+
+def test_unit():
+    parser = ParserWrapper('a2l', 'unit', A2LListener, debug = False)
+    DATA = """
+    /begin UNIT
+        kms_per_hour
+        "derived unit for velocity: kilometres per hour"
+        "[km/h]"
+        DERIVED
+        REF_UNIT metres_per_second
+        UNIT_CONVERSION 3.6 0.0 /* y [km/h] = (60*60/1000) * x [m/s] + 0.0 */
+    /end UNIT
+    """
+    session = parser.parseFromString(DATA)
+    unit = session.query(model.Unit).first()
+    assert unit.name == 'kms_per_hour'
+    assert unit.longIdentifier == 'derived unit for velocity: kilometres per hour'
+    assert unit.display == '[km/h]'
+    assert unit.type == 'DERIVED'
+    assert unit.ref_unit[0].unit == 'metres_per_second'
+    assert unit.unit_conversion.gradient == 3.6
+    assert unit.unit_conversion.offset == 0.0
+
+def test_unit_conversion():
+    parser = ParserWrapper('a2l', 'unit', A2LListener, debug = False)
+    DATA = """
+    /begin UNIT
+        degC
+        "unit for temperature: degree Celsius"
+        "[°C]"
+        DERIVED
+        REF_UNIT kelvin
+        UNIT_CONVERSION 1.0 -273.15 /* y [°C] = 1.0 * x [K] + (-273.15) */
+    /end UNIT
+    """
+    session = parser.parseFromString(DATA)
+    unit = session.query(model.Unit).first()
+    assert unit.name == 'degC'
+    assert unit.longIdentifier == 'unit for temperature: degree Celsius'
+    assert unit.display == '[°C]'
+    assert unit.type == 'DERIVED'
+    assert unit.ref_unit[0].unit == 'kelvin'
+    assert unit.unit_conversion.gradient == 1.0
+    assert unit.unit_conversion.offset == -273.15
+
+def test_user():
+    parser = ParserWrapper('a2l', 'user', A2LListener, debug = False)
+    DATA = """
+    USER "Nigel Hurst"
+    """
+    session = parser.parseFromString(DATA)
+    sp = session.query(model.User).first()
+    assert sp.userName == "Nigel Hurst"
+
+def test_user_rights():
+    parser = ParserWrapper('a2l', 'userRights', A2LListener, debug = False)
+    DATA = """
+    /begin USER_RIGHTS calibration_engineers
+        /begin REF_GROUP group_1
+        /end REF_GROUP
+    /end USER_RIGHTS
+    """
+    session = parser.parseFromString(DATA)
+    ur = session.query(model.UserRights).first()
+    assert ur.userLevelId == 'calibration_engineers'
+    assert ur.ref_groups[0].identifier == ['group_1']
+
+def test_var_address():
+    parser = ParserWrapper('a2l', 'varAddress', A2LListener, debug = False)
+    DATA = """
+    /begin VAR_ADDRESS
+        0x8840
+        0x8858
+        0x8870
+        0x8888
+    /end VAR_ADDRESS
+    """
+    session = parser.parseFromString(DATA)
+    va = session.query(model.VarAddress).first()
+    assert va.address == [34880, 34904, 34928, 34952]
+
+def test_var_characteristic():
+    parser = ParserWrapper('a2l', 'varCharacteristic', A2LListener, debug = False)
+    DATA = """
+    /begin VAR_CHARACTERISTIC /* define NLLM as variant coded */
+        NLLM
+        Gear Car
+        /* gear box including the 2 variants "Manual" and "Automatic" */
+        /* car body including the 3 variants "Limousine", "Kombi" and
+        "Cabrio" */
+        /* four addresses corresponding to the four valid combinations */
+        /* of criterion 'Gear' and 'Car' (see example for VAR_CRITERION)*/
+        /begin VAR_ADDRESS
+            0x8840
+            0x8858
+            0x8870
+            0x8888
+        /end VAR_ADDRESS
+    /end VAR_CHARACTERISTIC
+    """
+    session = parser.parseFromString(DATA)
+    vc = session.query(model.VarCharacteristic).first()
+    assert vc.name == 'NLLM'
+    assert vc.criterionName == ['Gear', 'Car']
+    va = vc.var_address
+    assert va.address == [34880, 34904, 34928, 34952]
+
+def test_var_criterion():
+    parser = ParserWrapper('a2l', 'varCriterion', A2LListener, debug = False)
+    DATA = """
+    /* variant criterion "Car body" with three variants */
+    /begin VAR_CRITERION Car
+        "Car body"
+        /*Enumeration of criterion values*/
+        Limousine Kombi Cabrio
+        VAR_MEASUREMENT S_CAR
+        VAR_SELECTION_CHARACTERISTIC V_CAR
+    /end VAR_CRITERION
+    """
+    session = parser.parseFromString(DATA)
+    vc = session.query(model.VarCriterion).first()
+    assert vc.name == 'Car'
+    assert vc.longIdentifier == 'Car body'
+    assert vc.var_measurement.name == 'S_CAR'
+    assert vc.var_selection_characteristic.name == "V_CAR"
+
+def test_var_forbidden_comb():
+    parser = ParserWrapper('a2l', 'variantCoding', debug = False)
+    DATA = """
+    /begin VARIANT_CODING
+        /begin VAR_FORBIDDEN_COMB
+            Car Limousine
+            Gear Manual
+        /end VAR_FORBIDDEN_COMB
+    /end VARIANT_CODING
+    """
+    session = parser.parseFromString(DATA)
+    vf = session.query(model.VarForbiddenComb).first()
+    print(vf)
+
+def test_var_measurement():
+    parser = ParserWrapper('a2l', 'varCriterion', A2LListener, debug = False)
+    DATA = """
+    /begin VAR_CRITERION Car
+        "Car body"
+        Limousine Kombi Cabrio
+        VAR_MEASUREMENT S_GEAR_BOX
+    /end VAR_CRITERION
+    """
+    session = parser.parseFromString(DATA)
+    vc = session.query(model.VarCriterion).first()
+    assert vc.name == 'Car'
+    assert vc.longIdentifier == 'Car body'
+    assert vc.var_measurement.name == "S_GEAR_BOX"
+
+def test_var_naming():
+    parser = ParserWrapper('a2l', 'varNaming', A2LListener, debug = False)
+    DATA = """
+    /* variant extension: see example VAR_CRITERION*/
+    VAR_NAMING NUMERIC
+    """
+    session = parser.parseFromString(DATA)
+    vn = session.query(model.VarNaming).first()
+    assert vn.tag == 'NUMERIC'
+
+def test_var_selection_characteristic():
+    parser = ParserWrapper('a2l', 'varCriterion', A2LListener, debug = False)
+    DATA = """
+    /begin VAR_CRITERION Car
+        "Car body"
+        Limousine Kombi Cabrio
+        VAR_SELECTION_CHARACTERISTIC S_GEAR_BOX
+    /end VAR_CRITERION
+    """
+    session = parser.parseFromString(DATA)
+    vs = session.query(model.VarCriterion).first()
+    assert vs.name == 'Car'
+    assert vs.longIdentifier == 'Car body'
+    assert vs.var_selection_characteristic.name == 'S_GEAR_BOX'
+
+def test_var_separator():
+    parser = ParserWrapper('a2l', 'varSeparator', A2LListener, debug = False)
+    DATA = """
+    VAR_SEPARATOR "." /* example: "PUMKF.1" */
+    /* three parts of variant coded adjustable objects name: */
+    /* 1.) Identifier of adjustable object: "PUMKF" */
+    /* 2.) Separator: "." (decimal point) */
+    /* 3.) Variants extension: "1" */
+    """
+    session = parser.parseFromString(DATA)
+    vs = session.query(model.VarSeparator).first()
+    assert vs.separator == '.'
+
+def test_variant_coding():
+    parser = ParserWrapper('a2l', 'variantCoding', A2LListener, debug = False)
+    DATA = """
+    /begin VARIANT_CODING
+        VAR_SEPARATOR "." /* PUMKF.1 */
+        VAR_NAMING NUMERIC
+        /* variant criterion "Car body" with three variants */
+        /begin VAR_CRITERION Car
+            "Car body"
+            Limousine Kombi Cabrio
+        /end VAR_CRITERION
+        /* variant criterion "Type of gear box" with two variants */
+        /begin VAR_CRITERION Gear
+            "Type of gear box"
+            Manual Automatic
+        /end VAR_CRITERION
+        /begin VAR_FORBIDDEN_COMB /* forbidden: Limousine-Manual*/
+            Car Limousine
+            Gear Manual
+        /end VAR_FORBIDDEN_COMB
+        /begin VAR_FORBIDDEN_COMB /* forbidden: Cabrio-Automatic*/
+            Car Cabrio
+            Gear Automatic
+        /end VAR_FORBIDDEN_COMB
+        /begin VAR_CHARACTERISTIC
+            PUMKF /*define PUMKF as variant coded*/
+            Gear /* Gear box variants */
+            /begin VAR_ADDRESS
+                0x7140
+                0x7168
+            /end VAR_ADDRESS
+        /end VAR_CHARACTERISTIC
+        /begin VAR_CHARACTERISTIC
+            NLLM /*define NLLM as variant coded */
+            Gear Car /*car body and gear box
+            variants*/
+            /begin VAR_ADDRESS
+                0x8840
+                0x8858
+                0x8870
+                0x8888
+            /end VAR_ADDRESS
+        /end VAR_CHARACTERISTIC
+    /end VARIANT_CODING
+    """
+    session = parser.parseFromString(DATA)
+    vc = session.query(model.VariantCoding).first()
+    assert vc.var_separator.separator == '.'
+    assert vc.var_naming.tag == 'NUMERIC'
+    c0, c1= vc.var_criterions
+    assert c0.name == 'Car'
+    assert c0.longIdentifier == 'Car body'
+    assert c1.name == 'Gear'
+    assert c1.longIdentifier == 'Type of gear box'
+    fc0, fc1 = vc.var_forbidden_combs
+    fc0 = fc0.pairs
+    fc1 = fc1.pairs
+    assert fc0[0].criterionName == 'Car'
+    assert fc0[0].criterionValue == 'Limousine'
+    assert fc0[1].criterionName == 'Gear'
+    assert fc0[1].criterionValue == 'Manual'
+    assert fc1[0].criterionName == 'Car'
+    assert fc1[0].criterionValue == 'Cabrio'
+    assert fc1[1].criterionName == 'Gear'
+    assert fc1[1].criterionValue == 'Automatic'
+    v0, v1 = vc.var_characteristics
+    assert v0.name == "PUMKF"
+    assert v0.criterionName == ["Gear"]
+    assert v0.var_address.address == [28992, 29032]
+    assert v1.name == "NLLM"
+    assert v1.criterionName == ['Gear', 'Car']
+    assert v1.var_address.address == [34880, 34904, 34928, 34952]
+
+def test_version():
+    parser = ParserWrapper('a2l', 'version', A2LListener, debug = False)
+    DATA = """
+    VERSION "BG5.0815"
+    """
+    session = parser.parseFromString(DATA)
+    vs = session.query(model.Version).first()
+    assert vs.versionIdentifier == 'BG5.0815'
+
+def test_virtual():
+    parser = ParserWrapper('a2l', 'measurement', A2LListener, debug = False)
+    DATA = """
+    /begin MEASUREMENT PHI_FIRING /* Name */
+        "Firing angle" /* Long identifier */
+        UWORD /* Data type */
+        R_PHI_FIRING /* Conversion */
+        1 /* Resolution */
+        0.01 /* Accuracy */
+        120.0 /* Lower limit */
+        8400.0 /* Upper limit */
+        /*Quantities to be linked: 2 measurements */
+        /begin VIRTUAL PHI_BASIS
+            PHI_CORR
+        /end VIRTUAL
+    /end MEASUREMENT
+    """
+    session = parser.parseFromString(DATA)
+    meas = session.query(model.Measurement).first()
+    assert meas.name == 'PHI_FIRING'
+    assert meas.longIdentifier == 'Firing angle'
+    assert meas.datatype == 'UWORD'
+    assert meas.conversion == 'R_PHI_FIRING'
+    assert meas.resolution == 1
+    assert meas.accuracy == 0.01
+    assert meas.lowerLimit == 120.0
+    assert meas.upperLimit == 8400.0
+    assert meas.virtual.measuringChannel == ['PHI_BASIS', 'PHI_CORR']
+
+def test_virtual_characteristic():
+    parser = ParserWrapper('a2l', 'virtualCharacteristic', A2LListener, debug = False)
+    DATA = """
+    /begin VIRTUAL_CHARACTERISTIC
+        "sin(X1)"
+        B
+    /end VIRTUAL_CHARACTERISTIC
+    """
+    session = parser.parseFromString(DATA)
+    vs = session.query(model.VirtualCharacteristic).first()
+    assert vs.characteristic_id == ['B']
+    assert vs.formula == 'sin(X1)'
