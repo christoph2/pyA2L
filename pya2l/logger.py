@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2017 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2019 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -34,7 +34,7 @@ import os
 
 class Logger(object):
 
-    LOGGER_BASE_NAME = 'pyxcp'
+    LOGGER_BASE_NAME = 'pya2l'
     FORMAT = "[%(levelname)s (%(name)s)]: %(message)s"
 
     def __init__(self, name, level=logging.WARN):
