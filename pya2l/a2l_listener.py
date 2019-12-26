@@ -447,7 +447,7 @@ class A2LListener(BaseListener):
         longIdentifier = ctx.longIdentifier.value
         v_header = delist(self.getList(ctx.v_header), True)
         v_module = self.getList(ctx.v_module)
-        ctx.value = model.Project(name = name, longIdentifier = longIdentifier, header = v_header, modules = v_module)
+        ctx.value = model.Project(name = name, longIdentifier = longIdentifier, header = v_header, module = v_module)
         self.db.session.add(ctx.value)
 
     def exitHeader(self, ctx):
@@ -486,10 +486,10 @@ class A2LListener(BaseListener):
         v_variantCoding = delist(self.getList(ctx.v_variantCoding), True)
 
         ctx.value = model.Module(name = name, longIdentifier = longIdentifier, a2ml = v_a2ml, axis_pts = v_axisPts,
-            characteristics = v_characteristic, compu_methods = v_compuMethod, compu_tabs = v_compuTab,
-            compu_vtabs = v_compuVtab, compu_vtab_ranges = v_compuVtabRange, frame = v_frame, functions = v_function,
-            groups = v_group, measurements = v_measurement, mod_common = v_modCommon, mod_par = v_modPar,
-            record_layouts = v_recordLayout, units = v_unit, user_rights = v_userRights, variant_coding = v_variantCoding
+            characteristic = v_characteristic, compu_method = v_compuMethod, compu_tab = v_compuTab,
+            compu_vtab = v_compuVtab, compu_vtab_range = v_compuVtabRange, frame = v_frame, function = v_function,
+            group = v_group, measurement = v_measurement, mod_common = v_modCommon, mod_par = v_modPar,
+            record_layout = v_recordLayout, unit = v_unit, user_rights = v_userRights, variant_coding = v_variantCoding
         )
         self.db.session.add(ctx.value)
 
@@ -579,7 +579,7 @@ class A2LListener(BaseListener):
         ctx.value = model.Characteristic(name = name, longIdentifier = longIdentifier, type = type_, address = address,
             deposit = deposit_, maxDiff = maxDiff, conversion = conversion, lowerLimit = lowerLimit, upperLimit = upperLimit,
 
-            annotation = v_annotation, axis_descrs = v_axisDescr, bit_mask = v_bitMask, byte_order = v_byteOrder,
+            annotation = v_annotation, axis_descr = v_axisDescr, bit_mask = v_bitMask, byte_order = v_byteOrder,
             calibration_access = v_calibrationAccess, comparison_quantity = v_comparisonQuantity,
             dependent_characteristic = v_dependentCharacteristic, discrete = v_discrete, display_identifier = v_displayIdentifier,
             ecu_address_extension = v_ecuAddressExtension, extended_limits = v_extendedLimits, format = v_format_,
@@ -1054,11 +1054,11 @@ class A2LListener(BaseListener):
         v_user = delist(self.getList(ctx.v_user), True)
         v_version = delist(self.getList(ctx.v_version), True)
 
-        ctx.value = model.ModPar(comment = comment, addr_epks = v_addrEpk, calibration_methods = v_calibrationMethod,
+        ctx.value = model.ModPar(comment = comment, addr_epk = v_addrEpk, calibration_method = v_calibrationMethod,
             cpu_type = v_cpuType, customer = v_customer, customer_no = v_customerNo, ecu = v_ecu,
-            ecu_calibration_offset = v_ecuCalibrationOffset, epk = v_epk, memory_layouts = v_memoryLayout,
-            memory_segments = v_memorySegment, no_of_interfaces = v_noOfInterfaces, phone_no = v_phoneNo,
-            supplier = v_supplier, system_constants = v_systemConstant, user = v_user, version = v_version)
+            ecu_calibration_offset = v_ecuCalibrationOffset, epk = v_epk, memory_layout = v_memoryLayout,
+            memory_segment = v_memorySegment, no_of_interfaces = v_noOfInterfaces, phone_no = v_phoneNo,
+            supplier = v_supplier, system_constant = v_systemConstant, user = v_user, version = v_version)
         self.db.session.add(ctx.value)
 
     def exitAddrEpk(self, ctx):
@@ -1070,7 +1070,7 @@ class A2LListener(BaseListener):
         method = ctx.method.value
         version_ = ctx.version_.value
         v_calibrationHandle = self.getList(ctx.v_calibrationHandle)
-        ctx.value = model.CalibrationMethod(method = method, version = version_, calibration_handles = v_calibrationHandle)
+        ctx.value = model.CalibrationMethod(method = method, version = version_, calibration_handle = v_calibrationHandle)
         self.db.session.add(ctx.value)
 
     def exitCalibrationHandle(self, ctx):
@@ -1258,7 +1258,7 @@ class A2LListener(BaseListener):
             no_axis_pts_5 = v_noAxisPts5, static_record_layout = v_staticRecordLayout, no_rescale_x = v_noRescaleX,
             no_rescale_y = v_noRescaleY, no_rescale_z = v_noRescaleZ, no_rescale_4 = v_noRescale4,
             no_rescale_5 = v_noRescale5, offset_x = v_offsetX, offset_y = v_offsetY, offset_z = v_offsetZ,
-            offset_4 = v_offset4, offset_5 = v_offset5, reserveds = v_reserved, rip_addr_w = v_ripAddrW,
+            offset_4 = v_offset4, offset_5 = v_offset5, reserved = v_reserved, rip_addr_w = v_ripAddrW,
             rip_addr_x = v_ripAddrX, rip_addr_y = v_ripAddrY, rip_addr_z = v_ripAddrZ, rip_addr_4 = v_ripAddr4,
             rip_addr_5 = v_ripAddr5, shift_op_x = v_shiftOpX, shift_op_y = v_shiftOpY, shift_op_z = v_shiftOpZ,
             shift_op_4 = v_shiftOp4, shift_op_5 = v_shiftOp5, src_addr_x = v_srcAddrX, src_addr_y = v_srcAddrY,
@@ -1666,7 +1666,7 @@ class A2LListener(BaseListener):
         v_readOnly = delist(self.getList(ctx.v_readOnly), True)
         v_refGroup = self.getList(ctx.v_refGroup)
 
-        ctx.value = model.UserRights(userLevelId = userLevelId, read_only = v_readOnly, ref_groups = v_refGroup)
+        ctx.value = model.UserRights(userLevelId = userLevelId, read_only = v_readOnly, ref_group = v_refGroup)
         self.db.session.add(ctx.value)
 
     def exitRefGroup(self, ctx):
@@ -1688,8 +1688,8 @@ class A2LListener(BaseListener):
         var_naming = relationship("VarNaming", back_populates = "variant_coding", uselist = False)
         var_separator = relationship("VarSeparator", back_populates = "variant_coding", uselist = False)
         """
-        ctx.value = model.VariantCoding(var_characteristics = v_varCharacteristic, var_criterions = v_varCriterion,
-            var_forbidden_combs = v_varForbiddenComb, var_naming = v_varNaming, var_separator = v_varSeparator)
+        ctx.value = model.VariantCoding(var_characteristic = v_varCharacteristic, var_criterion = v_varCriterion,
+            var_forbidden_comb = v_varForbiddenComb, var_naming = v_varNaming, var_separator = v_varSeparator)
         self.db.session.add(ctx.value)
 
     def exitVarCharacteristic(self, ctx):

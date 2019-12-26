@@ -375,8 +375,8 @@ def test_axis_pts_ref():
     assert chx.conversion == 'R_TORQUE'
     assert chx.lowerLimit == 0.0
     assert chx.upperLimit == 43.0
-    assert len(chx.axis_descrs) == 1
-    descr = chx.axis_descrs[0]
+    assert len(chx.axis_descr) == 1
+    descr = chx.axis_descr[0]
     assert descr.attribute == 'COM_AXIS'
     assert descr.inputQuantity == 'N'
     assert descr.conversion == 'CONV_N'
@@ -633,7 +633,7 @@ def test_calibration_method():
     cm = res[0]
     assert cm.method == 'InCircuit'
     assert cm.version == 2
-    assert cm.calibration_handles[0].handle == [65536, 512, 4, 65536, 65536]
+    assert cm.calibration_handle[0].handle == [65536, 512, 4, 65536, 65536]
 
 def test_characteristic():
     parser = ParserWrapper('a2l', 'characteristic', A2LListener, debug = False)
@@ -701,7 +701,7 @@ def test_characteristic():
     assert cr.conversion == 'R_VOLTAGE'
     assert cr.lowerLimit == 0.0
     assert cr.upperLimit == 5000.0
-    ax = cr.axis_descrs
+    ax = cr.axis_descr
     assert ax[0].attribute == 'STD_AXIS'
     assert ax[0].inputQuantity == 'N'
     assert ax[0].conversion == 'CON_N'
@@ -875,7 +875,7 @@ def test_compu_method():
     """
     session = parser.parseFromString(DATA)
     mod = session.query(model.Module).first()
-    cm = mod.compu_methods
+    cm = mod.compu_method
     assert len(cm) == 14
 
     assert cm[0].name == 'TMPCON1'
@@ -1074,7 +1074,7 @@ def test_compu_v_tab():
     module = session.query(model.Module).first()
     assert module.name == "testModule"
     assert module.longIdentifier == ""
-    cvt = module.compu_vtabs
+    cvt = module.compu_vtab
     assert len(cvt) == 2
 
     assert cvt[0].name == 'TT'
@@ -1217,7 +1217,7 @@ def test_curve_axis_ref():
     mod = session.query(model.Module).first()
     assert mod.name == "test"
     assert mod.longIdentifier == ""
-    rl0, rl1 = mod.record_layouts
+    rl0, rl1 = mod.record_layout
     assert rl0.name == "DEP_12E"
     assert rl0.fnc_values.position == 1
     assert rl0.fnc_values.datatype == 'FLOAT32_IEEE'
@@ -1228,7 +1228,7 @@ def test_curve_axis_ref():
     assert rl1.fnc_values.datatype == 'FLOAT32_IEEE'
     assert rl1.fnc_values.indexMode == 'ALTERNATE_WITH_X'
     assert rl1.fnc_values.addresstype == 'DIRECT'
-    chx = mod.characteristics
+    chx = mod.characteristic
     assert len(chx) == 3
     ch0, ch1, ch2 = chx
 
@@ -1241,7 +1241,7 @@ def test_curve_axis_ref():
     assert ch0.conversion == 'R_MULT'
     assert ch0.lowerLimit == 0.0
     assert ch0.upperLimit == 2.0
-    ad0, ad1 = ch0.axis_descrs
+    ad0, ad1 = ch0.axis_descr
     assert ad0.attribute == 'CURVE_AXIS'
     assert ad0.inputQuantity == 'SPEED'
     assert ad0.conversion == 'NO_COMPU_METHOD'
@@ -1264,7 +1264,7 @@ def test_curve_axis_ref():
     assert ch1.conversion == 'R_NORM'
     assert ch1.lowerLimit == 0.0
     assert ch1.upperLimit == 6.0
-    ad0 = ch1.axis_descrs[0]
+    ad0 = ch1.axis_descr[0]
     assert ad0.attribute == 'STD_AXIS'
     assert ad0.inputQuantity == 'SPEED'
     assert ad0.conversion == 'R_SPEED'
@@ -1281,7 +1281,7 @@ def test_curve_axis_ref():
     assert ch2.conversion == 'R_NORM'
     assert ch2.lowerLimit == 0.0
     assert ch2.upperLimit == 16.0
-    ad0 = ch2.axis_descrs[0]
+    ad0 = ch2.axis_descr[0]
     assert ad0.attribute == 'STD_AXIS'
     assert ad0.inputQuantity == 'LOAD'
     assert ad0.conversion == 'R_LOAD'
@@ -1733,7 +1733,6 @@ def test_function():
     assert func.in_measurement.identifier == ['WHEEL_REVOLUTIONS', 'ENGINE_SPEED']
     assert func.out_measurement.identifier == ['OK_FLAG', 'SENSOR_FLAG']
     assert func.loc_measurement.identifier == ['LOOP_COUNTER', 'TEMPORARY_1']
-    #print(func.ref_characteristic)
     assert func.ref_characteristic.identifier == ['FACTOR_1']
 
 
@@ -1759,7 +1758,6 @@ def test_function_version():
     assert func.versionIdentifier == 'BG5.0815'
 
 def test_group():
-    # TODO: FIX ref_characteristic and ref_measurement
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
     DATA = """
     /begin MODULE testModule ""
@@ -1993,7 +1991,7 @@ def test_guard_rails():
     assert chx.lowerLimit == 0.0
     assert chx.upperLimit == 199.0
     assert chx.guard_rails is not None
-    ax = chx.axis_descrs[0]
+    ax = chx.axis_descr[0]
     assert ax.attribute == 'STD_AXIS'
     assert ax.inputQuantity == 'N'
     assert ax.conversion == 'C_TEMP'
@@ -2506,7 +2504,7 @@ def test_mod_par():
     assert mp.comment == 'Note: Provisional release for test purposes only!'
 
     assert mp.version.versionIdentifier == 'Test version of 01.02.1994'
-    assert mp.addr_epks[0].address == 284280
+    assert mp.addr_epk[0].address == 284280
     assert mp.epk.identifier == 'EPROM identifier test'
     assert mp.supplier.manufacturer == 'M&K GmbH Chemnitz'
     assert mp.customer.customer == 'LANZ-Landmaschinen'
@@ -2516,7 +2514,7 @@ def test_mod_par():
     assert mp.ecu.controlUnit == 'Engine control'
     assert mp.cpu_type.cPU == 'Motorola 0815'
     assert mp.no_of_interfaces.num == 2
-    ms = mp.memory_segments[0]
+    ms = mp.memory_segment[0]
 
     assert ms.name == 'ext_Ram'
     assert ms.longIdentifier == 'external RAM'
@@ -2530,7 +2528,7 @@ def test_mod_par():
     assert ms.offset_2 == -1
     assert ms.offset_3 == -1
     assert ms.offset_4 == -1
-    m0, m1, m2 = mp.memory_layouts
+    m0, m1, m2 = mp.memory_layout
     assert m0.prgType == 'PRG_RESERVED'
     assert m0.address == 0
     assert m0.size == 1024
@@ -2558,7 +2556,7 @@ def test_mod_par():
     assert m2.offset_3 == -1
     assert m2.offset_4 == -1
 
-    s0, s1 = mp.system_constants
+    s0, s1 = mp.system_constant
     assert s0.name == 'CONTROLLERx constant1'
     assert s0.value == '0.33'
 
@@ -3019,7 +3017,7 @@ def test_record_layout():
     assert r1.name == 'RESCALE_SST'
     assert r1.no_rescale_x.position == 1
     assert r1.no_rescale_x.datatype == 'UBYTE'
-    assert r1.reserveds is not None # FIXME
+    assert r1.reserved is not None # FIXME
     assert r1.axis_rescale_x.position == 3
     assert r1.axis_rescale_x.datatype == 'UBYTE'
     assert r1.axis_rescale_x.maxNumberOfRescalePairs == 5
@@ -3081,7 +3079,7 @@ def test_record_layout():
     assert r10.name == '_2D_structure_table_byte'
     assert r10.no_axis_pts_x.position == 1
     assert r10.no_axis_pts_x.datatype == 'UBYTE'
-    assert r10.reserveds is not None # FIXME
+    assert r10.reserved is not None # FIXME
     assert r10.fnc_values.position == 3
     assert r10.fnc_values.datatype == 'UBYTE'
     assert r10.fnc_values.indexMode == 'ROW_DIR'
@@ -3090,8 +3088,8 @@ def test_record_layout():
     assert r11.name == '_2D_structure_table_shortint'
     assert r11.no_axis_pts_x.position == 1
     assert r11.no_axis_pts_x.datatype == 'UBYTE'
-    assert r11.reserveds[0].position == 2
-    assert r11.reserveds[0].dataSize == 'BYTE'
+    assert r11.reserved[0].position == 2
+    assert r11.reserved[0].dataSize == 'BYTE'
     assert r11.fnc_values.position == 3
     assert r11.fnc_values.datatype == 'SBYTE'
     assert r11.fnc_values.indexMode == 'ROW_DIR'
@@ -3126,8 +3124,8 @@ def test_record_layout():
     assert r14.fnc_values.datatype == 'UBYTE'
     assert r14.fnc_values.indexMode == 'ROW_DIR'
     assert r14.fnc_values.addresstype == 'DIRECT'
-    assert r14.reserveds[0].position == 3
-    assert r14.reserveds[0].dataSize == 'BYTE'
+    assert r14.reserved[0].position == 3
+    assert r14.reserved[0].dataSize == 'BYTE'
 
     assert r15.name == '_3D_structure_table_shortint'
     assert r15.no_axis_pts_x.position == 1
@@ -3138,8 +3136,8 @@ def test_record_layout():
     assert r15.fnc_values.datatype == 'SBYTE'
     assert r15.fnc_values.indexMode == 'ROW_DIR'
     assert r15.fnc_values.addresstype == 'DIRECT'
-    assert r15.reserveds[0].position == 3
-    assert r15.reserveds[0].dataSize == 'BYTE'
+    assert r15.reserved[0].position == 3
+    assert r15.reserved[0].dataSize == 'BYTE'
 
     assert r16.name == '_2D_array_table_int'
     assert r16.fnc_values.position == 1
@@ -3197,7 +3195,7 @@ def test_ref_characteristic():
     """
     session = parser.parseFromString(DATA)
     rc = session.query(model.RefCharacteristic).first()
-    assert rc.identifier == ['ENG_SPEED_CORR_CURVE']    # FIXME
+    assert rc.identifier == ['ENG_SPEED_CORR_CURVE']
 
 def test_ref_group():
     parser = ParserWrapper('a2l', 'refGroup', A2LListener, debug = False)
@@ -3666,7 +3664,7 @@ def test_user_rights():
     session = parser.parseFromString(DATA)
     ur = session.query(model.UserRights).first()
     assert ur.userLevelId == 'calibration_engineers'
-    assert ur.ref_groups[0].identifier == ['group_1']
+    assert ur.ref_group[0].identifier == ['group_1']
 
 def test_var_address():
     parser = ParserWrapper('a2l', 'varAddress', A2LListener, debug = False)
@@ -3843,12 +3841,12 @@ def test_variant_coding():
     vc = session.query(model.VariantCoding).first()
     assert vc.var_separator.separator == '.'
     assert vc.var_naming.tag == 'NUMERIC'
-    c0, c1= vc.var_criterions
+    c0, c1= vc.var_criterion
     assert c0.name == 'Car'
     assert c0.longIdentifier == 'Car body'
     assert c1.name == 'Gear'
     assert c1.longIdentifier == 'Type of gear box'
-    fc0, fc1 = vc.var_forbidden_combs
+    fc0, fc1 = vc.var_forbidden_comb
     fc0 = fc0.pairs
     fc1 = fc1.pairs
     assert fc0[0].criterionName == 'Car'
@@ -3859,7 +3857,7 @@ def test_variant_coding():
     assert fc1[0].criterionValue == 'Cabrio'
     assert fc1[1].criterionName == 'Gear'
     assert fc1[1].criterionValue == 'Automatic'
-    v0, v1 = vc.var_characteristics
+    v0, v1 = vc.var_characteristic
     assert v0.name == "PUMKF"
     assert v0.criterionName == ["Gear"]
     assert v0.var_address.address == [28992, 29032]
