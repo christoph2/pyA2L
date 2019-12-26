@@ -56,8 +56,10 @@ def delist(iterable, scalar = False):
         else:
             return [iterable[0]]
     elif len(iterable) > 1:
-        return iterable
-
+        if scalar:
+            return iterable[0]
+        else:
+            return [iterable[0]]
 
 PRINTABLES = string.printable[ : string.printable.find(" ")]
 TR_PRINTABLES = str.maketrans(PRINTABLES, " " * len(PRINTABLES))
@@ -156,15 +158,12 @@ class BaseListener(antlr4.ParseTreeListener):
         else:
             value = None
         ctx.value = value
-        #print("NUM", ctx.value)
 
     def exitStringValue(self, ctx):
         ctx.value = ctx.s.text.strip('"') if ctx.s else None
-        #print("STR", ctx.value)
 
     def exitIdentifierValue(self, ctx):
         ctx.value = ctx.i.text if ctx.i else None
-        #print("ID", ctx.value)
 
     def _formatMessage(self, msg, location):
         return "[{0}:{1}] {2}".format(location.start.line, location.start.column + 1, msg)
@@ -224,7 +223,6 @@ class ParserWrapper(object):
             result = listener.value
         else:
             result = tree
-#        self.db.session.flush()
         self.db.session.commit()
         return self.db.session
 
@@ -329,11 +327,12 @@ class A2LListener(BaseListener):
     def exitDeposit(self, ctx):
         mode_ = ctx.mode_.text
         ctx.value = model.Deposit(mode = mode_)
+
         self.db.session.add(ctx.value)
 
     def exitDiscrete(self, ctx):
-        ctx.value = model.Discrete()
-        self.db.session.add(ctx.value)
+        ctx.value = True
+        #self.db.session.add(ctx.value)
 
     def exitDisplayIdentifier(self, ctx):
         display_name = ctx.display_name.value
@@ -362,8 +361,8 @@ class A2LListener(BaseListener):
         self.db.session.add(ctx.value)
 
     def exitGuardRails(self, ctx):
-        ctx.value = model.GuardRails()
-        self.db.session.add(ctx.value)
+        ctx.value = True
+        #self.db.session.add(ctx.value)
 
     def exitIfData(self, ctx):
         ctx.value = model.IfData(name = "")
@@ -393,12 +392,12 @@ class A2LListener(BaseListener):
         self.db.session.add(ctx.value)
 
     def exitReadOnly(self, ctx):
-        ctx.value = model.ReadOnly()
-        self.db.session.add(ctx.value)
+        ctx.value = True
+#        self.db.session.add(ctx.value)
 
     def exitRefCharacteristic(self, ctx):
         identifier = self.getList(ctx.identifier)
-        ctx.value = model.RefCharacteristic()   # TODO: FixMe
+        ctx.value = model.RefCharacteristic(identifier = identifier)
         self.db.session.add(ctx.value)
 
     def exitRefMemorySegment(self, ctx):
@@ -454,7 +453,7 @@ class A2LListener(BaseListener):
     def exitHeader(self, ctx):
         comment = ctx.comment.value
         v_projectNo = delist(self.getList(ctx.v_projectNo), True)
-        v_version = delist(self.getList(ctx.v_version))
+        v_version = delist(self.getList(ctx.v_version), True)
         ctx.value = model.Header(comment = comment, project_no = v_projectNo, version = v_version)
         self.db.session.add(ctx.value)
 
@@ -511,28 +510,27 @@ class A2LListener(BaseListener):
         upperLimit = ctx.upperLimit.value
 
         v_annotation = self.getList(ctx.v_annotation)
-        v_byteOrder = self.getList(ctx.v_byteOrder)
-        v_calibrationAccess = self.getList(ctx.v_calibrationAccess)
-        v_deposit = self.getList(ctx.v_deposit)
-        v_displayIdentifier = self.getList(ctx.v_displayIdentifier)
-        v_ecuAddressExtension = self.getList(ctx.v_ecuAddressExtension)
-        v_extendedLimits = self.getList(ctx.v_extendedLimits)
-        v_format_ = self.getList(ctx.v_format_)
-        v_functionList = self.getList(ctx.v_functionList)
-        v_guardRails = self.getList(ctx.v_guardRails)
+        v_byteOrder = delist(self.getList(ctx.v_byteOrder), True)
+        v_calibrationAccess = delist(self.getList(ctx.v_calibrationAccess), True)
+        v_deposit = delist(self.getList(ctx.v_deposit), True)
+        v_displayIdentifier = delist(self.getList(ctx.v_displayIdentifier), True)
+        v_ecuAddressExtension = delist(self.getList(ctx.v_ecuAddressExtension), True)
+        v_extendedLimits = delist(self.getList(ctx.v_extendedLimits), True)
+        v_format_ = delist(self.getList(ctx.v_format_), True)
+        v_functionList = delist(self.getList(ctx.v_functionList), True)
+        v_guardRails = delist(self.getList(ctx.v_guardRails), True)
         v_ifData = self.getList(ctx.v_ifData)
-        v_monotony = self.getList(ctx.v_monotony)
-        v_physUnit = self.getList(ctx.v_physUnit)
-        v_readOnly = self.getList(ctx.v_readOnly)
-        v_refMemorySegment = self.getList(ctx.v_refMemorySegment)
-        v_stepSize = self.getList(ctx.v_stepSize)
-        v_symbolLink = self.getList(ctx.v_symbolLink)
+        v_monotony = delist(self.getList(ctx.v_monotony), True)
+        v_physUnit = delist(self.getList(ctx.v_physUnit), True)
+        v_readOnly = delist(self.getList(ctx.v_readOnly), True)
+        v_refMemorySegment = delist(self.getList(ctx.v_refMemorySegment), True)
+        v_stepSize = delist(self.getList(ctx.v_stepSize), True)
+        v_symbolLink = delist(self.getList(ctx.v_symbolLink), True)
 
-        #print("AXIS-DEPO:", deposit_, v_deposit)
         ctx.value = model.AxisPts(name = name, longIdentifier = longIdentifier, address = address, inputQuantity = inputQuantity,
             maxDiff = maxDiff, conversion = conversion, maxAxisPoints = maxAxisPoints,
             lowerLimit = lowerLimit, upperLimit = upperLimit, annotation = v_annotation, byte_order = v_byteOrder,
-            calibration_access = v_calibrationAccess, # v_deposit
+            calibration_access = v_calibrationAccess, # TODO: v_deposit
             display_identifier = v_displayIdentifier, ecu_address_extension = v_ecuAddressExtension,
             extended_limits = v_extendedLimits, format = v_format_, function_list = v_functionList, guard_rails = v_guardRails,
             if_data = v_ifData, monotony = v_monotony, phys_unit = v_physUnit, read_only = v_readOnly,
@@ -554,28 +552,28 @@ class A2LListener(BaseListener):
 
         v_annotation = self.getList(ctx.v_annotation)
         v_axisDescr = self.getList(ctx.v_axisDescr)
-        v_bitMask = self.getList(ctx.v_bitMask)
-        v_byteOrder = self.getList(ctx.v_byteOrder)
-        v_calibrationAccess = self.getList(ctx.v_calibrationAccess)
+        v_bitMask = delist(self.getList(ctx.v_bitMask), True)
+        v_byteOrder = delist(self.getList(ctx.v_byteOrder), True)
+        v_calibrationAccess = delist(self.getList(ctx.v_calibrationAccess), True)
         v_comparisonQuantity = delist(self.getList(ctx.v_comparisonQuantity), True)
         v_dependentCharacteristic = delist(self.getList(ctx.v_dependentCharacteristic), True)
-        v_discrete = self.getList(ctx.v_discrete)
-        v_displayIdentifier = self.getList(ctx.v_displayIdentifier)
-        v_ecuAddressExtension = self.getList(ctx.v_ecuAddressExtension)
-        v_extendedLimits = self.getList(ctx.v_extendedLimits)
-        v_format_ = self.getList(ctx.v_format_)
-        v_functionList = self.getList(ctx.v_functionList)
-        v_guardRails = self.getList(ctx.v_guardRails)
+        v_discrete = delist(self.getList(ctx.v_discrete), True)
+        v_displayIdentifier = delist(self.getList(ctx.v_displayIdentifier), True)
+        v_ecuAddressExtension = delist(self.getList(ctx.v_ecuAddressExtension), True)
+        v_extendedLimits = delist(self.getList(ctx.v_extendedLimits), True)
+        v_format_ = delist(self.getList(ctx.v_format_), True)
+        v_functionList = delist(self.getList(ctx.v_functionList), True)
+        v_guardRails = delist(self.getList(ctx.v_guardRails), True)
         v_ifData = self.getList(ctx.v_ifData)
         v_mapList = delist(self.getList(ctx.v_mapList), True)
-        v_matrixDim = self.getList(ctx.v_matrixDim)
-        v_maxRefresh = self.getList(ctx.v_maxRefresh)
+        v_matrixDim = delist(self.getList(ctx.v_matrixDim), True)
+        v_maxRefresh = delist(self.getList(ctx.v_maxRefresh), True)
         v_number = delist(self.getList(ctx.v_number), True)
-        v_physUnit = self.getList(ctx.v_physUnit)
-        v_readOnly = self.getList(ctx.v_readOnly)
-        v_refMemorySegment = self.getList(ctx.v_refMemorySegment)
-        v_stepSize = self.getList(ctx.v_stepSize)
-        v_symbolLink = self.getList(ctx.v_symbolLink)
+        v_physUnit = delist(self.getList(ctx.v_physUnit), True)
+        v_readOnly = delist(self.getList(ctx.v_readOnly), True)
+        v_refMemorySegment = delist(self.getList(ctx.v_refMemorySegment), True)
+        v_stepSize = delist(self.getList(ctx.v_stepSize), True)
+        v_symbolLink = delist(self.getList(ctx.v_symbolLink), True)
         v_virtualCharacteristic = delist(self.getList(ctx.v_virtualCharacteristic), True)
 
         ctx.value = model.Characteristic(name = name, longIdentifier = longIdentifier, type = type_, address = address,
@@ -602,19 +600,19 @@ class A2LListener(BaseListener):
 
         v_annotation = self.getList(ctx.v_annotation)
         v_axisPtsRef = delist(self.getList(ctx.v_axisPtsRef), True)
-        v_byteOrder = self.getList(ctx.v_byteOrder)
+        v_byteOrder = delist(self.getList(ctx.v_byteOrder), True)
         v_curveAxisRef = delist(self.getList(ctx.v_curveAxisRef), True)
-        v_deposit = self.getList(ctx.v_deposit)
-        v_extendedLimits = self.getList(ctx.v_extendedLimits)
+        v_deposit = delist(self.getList(ctx.v_deposit), True)
+        v_extendedLimits = delist(self.getList(ctx.v_extendedLimits), True)
         v_fixAxisPar = delist(self.getList(ctx.v_fixAxisPar), True)
         v_fixAxisParDist = delist(self.getList(ctx.v_fixAxisParDist), True)
         v_fixAxisParList = delist(self.getList(ctx.v_fixAxisParList), True)
-        v_format_ = self.getList(ctx.v_format_)
+        v_format_ = delist(self.getList(ctx.v_format_), True)
         v_maxGrad = delist(self.getList(ctx.v_maxGrad), True)
-        v_monotony = self.getList(ctx.v_monotony)
-        v_physUnit = self.getList(ctx.v_physUnit)
-        v_readOnly = self.getList(ctx.v_readOnly)
-        v_stepSize = self.getList(ctx.v_stepSize)
+        v_monotony = delist(self.getList(ctx.v_monotony), True)
+        v_physUnit = delist(self.getList(ctx.v_physUnit), True)
+        v_readOnly = delist(self.getList(ctx.v_readOnly), True)
+        v_stepSize = delist(self.getList(ctx.v_stepSize), True)
 
         ctx.value = model.AxisDescr(attribute = attribute, inputQuantity = inputQuantity, conversion = conversion,
             maxAxisPoints = maxAxisPoints, lowerLimit = lowerLimit, upperLimit = upperLimit,
@@ -698,7 +696,7 @@ class A2LListener(BaseListener):
         v_coeffsLinear = delist(self.getList(ctx.v_coeffsLinear), True)
         v_compuTabRef = delist(self.getList(ctx.v_compuTabRef), True)
         v_formula = delist(self.getList(ctx.v_formula), True)
-        v_refUnit = delist(self.getList(ctx.v_refUnit), False)
+        v_refUnit = delist(self.getList(ctx.v_refUnit), True)
         v_statusStringRef = delist(self.getList(ctx.v_statusStringRef), True)
 
         ctx.value = model.CompuMethod(name = name, longIdentifier = longIdentifier, conversionType = conversionType,
@@ -754,7 +752,7 @@ class A2LListener(BaseListener):
         outVal = self.getList(ctx.outVal)
         pairs = zip(inVal, outVal)
 
-        v_defaultValue = delist(self.getList(ctx.v_defaultValue))
+        v_defaultValue = delist(self.getList(ctx.v_defaultValue), True)
         v_defaultValueNumeric = delist(self.getList(ctx.v_defaultValueNumeric), True)
 
         ctx.value = model.CompuTab(name = name, longIdentifier = longIdentifier, conversionType = conversionType,
@@ -774,13 +772,13 @@ class A2LListener(BaseListener):
     def exitCompuVtab(self, ctx):
         name = ctx.name.value
         longIdentifier = ctx.longIdentifier.value
-        conversionType = 'TAB_VERB'    # Fixed by Std.
+        conversionType = 'TAB_VERB'    # Fixed value by Std.
 
         numberValuePairs = ctx.numberValuePairs.value       # TODO: check length of following pairs.
         inVal = self.getList(ctx.inVal)
         outVal = self.getList(ctx.outVal)
         pairs = zip(inVal, outVal)
-        v_defaultValue = self.getList(ctx.v_defaultValue)
+        v_defaultValue = delist(self.getList(ctx.v_defaultValue), True)
 
         ctx.value = model.CompuVtab(name = name, longIdentifier = longIdentifier, conversionType = conversionType,
             numberValuePairs = numberValuePairs, default_value = v_defaultValue
@@ -800,7 +798,7 @@ class A2LListener(BaseListener):
         inValMax = self.getList(ctx.inValMax)
         outVal = self.getList(ctx.outVal)
         triples = zip(inValMin, inValMax, outVal)
-        v_defaultValue = self.getList(ctx.v_defaultValue)
+        v_defaultValue = delist(self.getList(ctx.v_defaultValue), True)
 
         ctx.value = model.CompuVtabRange(name = name, longIdentifier = longIdentifier, numberValueTriples = numberValueTriples,
             default_value = v_defaultValue
@@ -840,7 +838,7 @@ class A2LListener(BaseListener):
         v_inMeasurement = delist(self.getList(ctx.v_inMeasurement), True)
         v_locMeasurement = delist(self.getList(ctx.v_locMeasurement), True)
         v_outMeasurement = delist(self.getList(ctx.v_outMeasurement), True)
-        v_refCharacteristic = self.getList(ctx.v_refCharacteristic)
+        v_refCharacteristic = delist(self.getList(ctx.v_refCharacteristic), True)
         v_subFunction = delist(self.getList(ctx.v_subFunction), True)
 
         ctx.value = model.Function(name = name, longIdentifier = longIdentifier, annotation = v_annotation,
@@ -885,9 +883,9 @@ class A2LListener(BaseListener):
         groupLongIdentifier = ctx.groupLongIdentifier.value
 
         v_annotation = self.getList(ctx.v_annotation)
-        v_functionList = self.getList(ctx.v_functionList)
+        v_functionList = delist(self.getList(ctx.v_functionList), True)
         v_ifData = self.getList(ctx.v_ifData)
-        v_refCharacteristic = self.getList(ctx.v_refCharacteristic)
+        v_refCharacteristic = delist(self.getList(ctx.v_refCharacteristic), True)
         v_refMeasurement = delist(self.getList(ctx.v_refMeasurement), True)
         v_root = delist(self.getList(ctx.v_root), True)
         v_subGroup = delist(self.getList(ctx.v_subGroup), True)
@@ -900,7 +898,7 @@ class A2LListener(BaseListener):
 
     def exitRefMeasurement(self, ctx):
         identifier = self.getList(ctx.identifier)
-        ctx.value = model.RefMeasurement()  # FIXME
+        ctx.value = model.RefMeasurement(identifier = identifier)
         self.db.session.add(ctx.value)
 
     def exitRoot(self, ctx):
@@ -924,26 +922,25 @@ class A2LListener(BaseListener):
 
         v_annotation = self.getList(ctx.v_annotation)
         v_arraySize = delist(self.getList(ctx.v_arraySize), True)
-        v_bitMask = self.getList(ctx.v_bitMask)
+        v_bitMask = delist(self.getList(ctx.v_bitMask), True)
         v_bitOperation = delist(self.getList(ctx.v_bitOperation), True)
-        v_byteOrder = self.getList(ctx.v_byteOrder)
-        v_discrete = self.getList(ctx.v_discrete)
-        v_displayIdentifier = self.getList(ctx.v_displayIdentifier)
+        v_byteOrder = delist(self.getList(ctx.v_byteOrder), True)
+        v_discrete = delist(self.getList(ctx.v_discrete), True)
+        v_displayIdentifier = delist(self.getList(ctx.v_displayIdentifier), True)
         v_ecuAddress = delist(self.getList(ctx.v_ecuAddress), True)
-        v_ecuAddressExtension = self.getList(ctx.v_ecuAddressExtension)
+        v_ecuAddressExtension = delist(self.getList(ctx.v_ecuAddressExtension), True)
         v_errorMask = delist(self.getList(ctx.v_errorMask), True)
-        v_format_ = self.getList(ctx.v_format_)
-        v_functionList = self.getList(ctx.v_functionList)
+        v_format_ = delist(self.getList(ctx.v_format_), True)
+        v_functionList = delist(self.getList(ctx.v_functionList), True)
         v_ifData = self.getList(ctx.v_ifData)
         v_layout = delist(self.getList(ctx.v_layout), True)
-        v_matrixDim = self.getList(ctx.v_matrixDim)
-        v_maxRefresh = self.getList(ctx.v_maxRefresh)
-        v_physUnit = self.getList(ctx.v_physUnit)
+        v_matrixDim = delist(self.getList(ctx.v_matrixDim), True)
+        v_maxRefresh = delist(self.getList(ctx.v_maxRefresh), True)
+        v_physUnit = delist(self.getList(ctx.v_physUnit), True)
         v_readWrite = delist(self.getList(ctx.v_readWrite), True)
-        v_refMemorySegment = self.getList(ctx.v_refMemorySegment)
-        v_symbolLink = self.getList(ctx.v_symbolLink)
+        v_refMemorySegment = delist(self.getList(ctx.v_refMemorySegment), True)
+        v_symbolLink = delist(self.getList(ctx.v_symbolLink), True)
         v_virtual = delist(self.getList(ctx.v_virtual), True)
-
         ctx.value = model.Measurement(name = name, longIdentifier = longIdentifier, datatype = datatype,
             conversion = conversion, resolution = resolution, accuracy = accuracy, lowerLimit = lowerLimit,
             upperLimit = upperLimit, annotation = v_annotation, array_size = v_arraySize, bit_mask = v_bitMask,
@@ -1008,15 +1005,15 @@ class A2LListener(BaseListener):
     def exitModCommon(self, ctx):
         comment = ctx.comment.value
 
-        v_alignmentByte = self.getList(ctx.v_alignmentByte)
-        v_alignmentFloat32Ieee = self.getList(ctx.v_alignmentFloat32Ieee)
-        v_alignmentFloat64Ieee = self.getList(ctx.v_alignmentFloat64Ieee)
-        v_alignmentInt64 = self.getList(ctx.v_alignmentInt64)
-        v_alignmentLong = self.getList(ctx.v_alignmentLong)
-        v_alignmentWord = self.getList(ctx.v_alignmentWord)
-        v_byteOrder = self.getList(ctx.v_byteOrder)
+        v_alignmentByte = delist(self.getList(ctx.v_alignmentByte), True)
+        v_alignmentFloat32Ieee = delist(self.getList(ctx.v_alignmentFloat32Ieee), True)
+        v_alignmentFloat64Ieee = delist(self.getList(ctx.v_alignmentFloat64Ieee), True)
+        v_alignmentInt64 = delist(self.getList(ctx.v_alignmentInt64), True)
+        v_alignmentLong = delist(self.getList(ctx.v_alignmentLong), True)
+        v_alignmentWord = delist(self.getList(ctx.v_alignmentWord), True)
+        v_byteOrder = delist(self.getList(ctx.v_byteOrder), True)
         v_dataSize = delist(self.getList(ctx.v_dataSize), True)
-        v_deposit = self.getList(ctx.v_deposit)
+        v_deposit = delist(self.getList(ctx.v_deposit), True)
         v_sRecLayout = delist(self.getList(ctx.v_sRecLayout), True)
 
         ctx.value = model.ModCommon(comment = comment, alignment_byte = v_alignmentByte,
@@ -1055,7 +1052,7 @@ class A2LListener(BaseListener):
         v_supplier = delist(self.getList(ctx.v_supplier), True)
         v_systemConstant = self.getList(ctx.v_systemConstant)
         v_user = delist(self.getList(ctx.v_user), True)
-        v_version = self.getList(ctx.v_version)
+        v_version = delist(self.getList(ctx.v_version), True)
 
         ctx.value = model.ModPar(comment = comment, addr_epks = v_addrEpk, calibration_methods = v_calibrationMethod,
             cpu_type = v_cpuType, customer = v_customer, customer_no = v_customerNo, ecu = v_ecu,
@@ -1185,12 +1182,12 @@ class A2LListener(BaseListener):
     def exitRecordLayout(self, ctx):
         name = ctx.name.value
 
-        v_alignmentByte = self.getList(ctx.v_alignmentByte)
-        v_alignmentFloat32Ieee = self.getList(ctx.v_alignmentFloat32Ieee)
-        v_alignmentFloat64Ieee = self.getList(ctx.v_alignmentFloat64Ieee)
-        v_alignmentInt64 = self.getList(ctx.v_alignmentInt64)
-        v_alignmentLong = self.getList(ctx.v_alignmentLong)
-        v_alignmentWord = self.getList(ctx.v_alignmentWord)
+        v_alignmentByte = delist(self.getList(ctx.v_alignmentByte), True)
+        v_alignmentFloat32Ieee = delist(self.getList(ctx.v_alignmentFloat32Ieee), True)
+        v_alignmentFloat64Ieee = delist(self.getList(ctx.v_alignmentFloat64Ieee), True)
+        v_alignmentInt64 = delist(self.getList(ctx.v_alignmentInt64), True)
+        v_alignmentLong = delist(self.getList(ctx.v_alignmentLong), True)
+        v_alignmentWord = delist(self.getList(ctx.v_alignmentWord), True)
         v_axisPtsX = delist(self.getList(ctx.v_axisPtsX), True)
         v_axisPtsY = delist(self.getList(ctx.v_axisPtsY), True)
         v_axisPtsZ = delist(self.getList(ctx.v_axisPtsZ), True)
@@ -1636,7 +1633,7 @@ class A2LListener(BaseListener):
         type_ = ctx.type_.text
 
         v_siExponents = delist(self.getList(ctx.v_siExponents), True)
-        v_refUnit = self.getList(ctx.v_refUnit)
+        v_refUnit = delist(self.getList(ctx.v_refUnit), True)
         v_unitConversion = delist(self.getList(ctx.v_unitConversion), True)
 
         ctx.value = model.Unit(name = name, longIdentifier = longIdentifier, display = display, type = type_,
@@ -1666,7 +1663,7 @@ class A2LListener(BaseListener):
     def exitUserRights(self, ctx):
         userLevelId = ctx.userLevelId.value
 
-        v_readOnly = self.getList(ctx.v_readOnly)
+        v_readOnly = delist(self.getList(ctx.v_readOnly), True)
         v_refGroup = self.getList(ctx.v_refGroup)
 
         ctx.value = model.UserRights(userLevelId = userLevelId, read_only = v_readOnly, ref_groups = v_refGroup)
@@ -1680,11 +1677,19 @@ class A2LListener(BaseListener):
     def exitVariantCoding(self, ctx):
         v_varCharacteristic = self.getList(ctx.v_varCharacteristic)
         v_varCriterion = self.getList(ctx.v_varCriterion)
-        v_varForbiddenComb = delist(self.getList(ctx.v_varForbiddenComb), True)
+        v_varForbiddenComb = self.getList(ctx.v_varForbiddenComb)
         v_varNaming = delist(self.getList(ctx.v_varNaming), True)
         v_varSeparator = delist(self.getList(ctx.v_varSeparator), True)
 
-        ctx.value = model.VariantCoding()
+        """
+        var_characteristics = relationship("VarCharacteristic", back_populates = "variant_coding", uselist = True)
+        var_criterions = relationship("VarCriterion", back_populates = "variant_coding", uselist = True)
+        var_forbidden_comb = relationship("VarForbiddenComb", back_populates = "variant_coding", uselist = False)
+        var_naming = relationship("VarNaming", back_populates = "variant_coding", uselist = False)
+        var_separator = relationship("VarSeparator", back_populates = "variant_coding", uselist = False)
+        """
+        ctx.value = model.VariantCoding(var_characteristics = v_varCharacteristic, var_criterions = v_varCriterion,
+            var_forbidden_combs = v_varForbiddenComb, var_naming = v_varNaming, var_separator = v_varSeparator)
         self.db.session.add(ctx.value)
 
     def exitVarCharacteristic(self, ctx):
@@ -1721,7 +1726,7 @@ class A2LListener(BaseListener):
 
     def exitVarSelectionCharacteristic(self, ctx):
         name = ctx.name.value
-        ctx.value = model.VarSelectionCharacteristic(name, name)
+        ctx.value = model.VarSelectionCharacteristic(name = name)
         self.db.session.add(ctx.value)
 
     def exitVarForbiddenComb(self, ctx):
