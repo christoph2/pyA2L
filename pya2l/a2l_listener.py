@@ -56,10 +56,8 @@ def delist(iterable, scalar = False):
         else:
             return [iterable[0]]
     elif len(iterable) > 1:
-        if scalar:
-            return iterable[0]
-        else:
-            return [iterable[0]]
+        return iterable
+
 
 PRINTABLES = string.printable[ : string.printable.find(" ")]
 TR_PRINTABLES = str.maketrans(PRINTABLES, " " * len(PRINTABLES))
@@ -456,7 +454,7 @@ class A2LListener(BaseListener):
     def exitHeader(self, ctx):
         comment = ctx.comment.value
         v_projectNo = delist(self.getList(ctx.v_projectNo), True)
-        v_version = delist(self.getList(ctx.v_version), True)
+        v_version = delist(self.getList(ctx.v_version))
         ctx.value = model.Header(comment = comment, project_no = v_projectNo, version = v_version)
         self.db.session.add(ctx.value)
 
@@ -1682,19 +1680,11 @@ class A2LListener(BaseListener):
     def exitVariantCoding(self, ctx):
         v_varCharacteristic = self.getList(ctx.v_varCharacteristic)
         v_varCriterion = self.getList(ctx.v_varCriterion)
-        v_varForbiddenComb = self.getList(ctx.v_varForbiddenComb)
+        v_varForbiddenComb = delist(self.getList(ctx.v_varForbiddenComb), True)
         v_varNaming = delist(self.getList(ctx.v_varNaming), True)
         v_varSeparator = delist(self.getList(ctx.v_varSeparator), True)
 
-        """
-        var_characteristics = relationship("VarCharacteristic", back_populates = "variant_coding", uselist = True)
-        var_criterions = relationship("VarCriterion", back_populates = "variant_coding", uselist = True)
-        var_forbidden_comb = relationship("VarForbiddenComb", back_populates = "variant_coding", uselist = False)
-        var_naming = relationship("VarNaming", back_populates = "variant_coding", uselist = False)
-        var_separator = relationship("VarSeparator", back_populates = "variant_coding", uselist = False)
-        """
-        ctx.value = model.VariantCoding(var_characteristics = v_varCharacteristic, var_criterions = v_varCriterion,
-            var_forbidden_combs = v_varForbiddenComb, var_naming = v_varNaming, var_separator = v_varSeparator)
+        ctx.value = model.VariantCoding()
         self.db.session.add(ctx.value)
 
     def exitVarCharacteristic(self, ctx):
@@ -1731,7 +1721,7 @@ class A2LListener(BaseListener):
 
     def exitVarSelectionCharacteristic(self, ctx):
         name = ctx.name.value
-        ctx.value = model.VarSelectionCharacteristic(name = name)
+        ctx.value = model.VarSelectionCharacteristic(name, name)
         self.db.session.add(ctx.value)
 
     def exitVarForbiddenComb(self, ctx):
