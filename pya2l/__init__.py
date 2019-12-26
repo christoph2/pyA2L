@@ -27,13 +27,9 @@ __copyright__ = """
 __author__  = 'Christoph Schueler'
 __version__ = "0.10.2"
 
-#import pkg_resources
-#pkg_resources.declare_namespace(__name__)
 
-from os import path, unlink
-
-from pya2l.a2l_listener import ParserWrapper, A2LListener, cut_a2ml
 from pya2l.logger import Logger
+import pya2l.model as model
 
 
 class DB(object):
@@ -44,40 +40,60 @@ class DB(object):
 
     def import_a2l(self, file_name, debug = False):
         """
-        """
-        parser = ParserWrapper('a2l', 'a2lFile', A2LListener, debug = debug)
+        Parameters
+        ----------
+        file_name: str
+            Name of the A2L to be imported. If you don't specify an extension ``.a2l`` is added.
 
+        Returns
+        -------
+        SQLAlchemy session object.
+
+        Note
+        ----
+        ``AML`` and ``IF_DATA`` sections are currently not processed.
+        """
+        from os import unlink
+        from pya2l.a2l_listener import ParserWrapper, A2LListener, cut_a2ml
+
+        parser = ParserWrapper('a2l', 'a2lFile', A2LListener, debug = debug)
         self._set_path_components(file_name)
         try:
             unlink(self._dbfn)
         except Exception:
             pass
 
-        #data = open(fname).read()
-        #data, a2ml = cut_a2ml(data)
-
-        #session = parser.parseFromString(data, dbname = dbfn)
-        #return session
+        data = open(self._a2lfn).read()
+        data, a2ml = cut_a2ml(data)
+        self.session = parser.parseFromString(data, dbname = self._dbfn)
+        return self.session
 
     def export_a2l(self, file_name):
         """
         """
         self._set_path_components(file_name)
-        #raise NotImplementedError("Export functionality not implemented yet.")
+        raise NotImplementedError("Export functionality not implemented yet.")
 
-    def open(self, file_name):
+    def open_existing(self, file_name):
         """
         """
         self._set_path_components(file_name)
-
-    def exists(self, file_name):
-        """
-        """
-        self._set_path_components(file_name)
+        if not path.exists(self._dbfn):
+            return None
+        else:
+            self.db = model.A2LDatabase(self._dbfn)
+            self.session = self.db.session
+            res = self.session.query(model.MetaData).first()
+            if res:
+                return self.session
+            else:
+                return None
 
     def _set_path_components(self, file_name):
         """
         """
+        from os import path
+
         self._pth, self._base = path.split(file_name)
         fbase, ext = path.splitext(self._base)
         self._dbfn = "{}.a2ldb".format(fbase)
