@@ -166,6 +166,7 @@ def test_annotation_origin():
     assert res[0].origin == 'from the calibration planning department'
 
 def test_annotation_text():
+    # TODO: Fix lexer ""
     parser = ParserWrapper('a2l', 'characteristic', A2LListener, debug = False)
     DATA = '''
     /begin CHARACTERISTIC PUMCD "Pump characteristic map"
@@ -253,9 +254,9 @@ def test_array_size():
     assert meas.lowerLimit == 120
     assert meas.upperLimit == 8400.0
     assert meas.array_size.number == 8
-    assert meas.bit_mask[0].mask == 0x0fff
-    assert meas.byte_order[0].byteOrder == "MSB_FIRST"
-    fl = meas.function_list[0]
+    assert meas.bit_mask.mask == 0x0fff
+    assert meas.byte_order.byteOrder == "MSB_FIRST"
+    fl = meas.function_list
     assert fl.name == ['ID_ADJUSTM', 'FL_ADJUSTM']
 
 def test_axis_descr():
@@ -319,17 +320,17 @@ def test_axis_pts():
     assert ap.longIdentifier == 'axis points distribution speed'
     assert ap.address == 0x9876
     assert ap.inputQuantity == 'N'
-    #assert ap.deposit == None  # TODO: FIXME!
+    assert ap.deposit == "0" # TODO: FIXME!
     assert ap.maxDiff == 100.0
     assert ap.conversion == 'R_SPEED'
     assert ap.maxAxisPoints == 21
     assert ap.lowerLimit == 0.0
     assert ap.upperLimit == 5800.0
     assert ap.guard_rails is not None
-    assert ap.ref_memory_segment[0].name == 'Data3'
-    fl = ap.function_list[0]
+    assert ap.ref_memory_segment.name == 'Data3'
+    fl = ap.function_list
     assert fl.name == ['ID_ADJUSTM', 'FL_ADJUSTM', 'SPEED_LIM']
-    assert ap.calibration_access[0].type == "CALIBRATION"
+    assert ap.calibration_access.type == "CALIBRATION"
 
 def test_axis_pts_ref():
     parser = ParserWrapper('a2l', 'characteristic', A2LListener, debug = False)
@@ -375,7 +376,7 @@ def test_axis_pts_ref():
     assert chx.lowerLimit == 0.0
     assert chx.upperLimit == 43.0
     assert len(chx.axis_descrs) == 1
-    descr = chx.axis_descrs[0]  # FIXME: axis_descr
+    descr = chx.axis_descrs[0]
     assert descr.attribute == 'COM_AXIS'
     assert descr.inputQuantity == 'N'
     assert descr.conversion == 'CONV_N'
@@ -1118,7 +1119,7 @@ def test_compu_v_tab_range():
     assert cvr.name == 'TT'
     assert cvr.longIdentifier == 'engine status conversion'
     assert cvr.numberValueTriples == len(cvr.triples)
-    assert cvr.default_value[0].display_string == 'Value_out_of_Range'
+    assert cvr.default_value.display_string == 'Value_out_of_Range'
     t0, t1, t2, t3, t4 = cvr.triples
     assert compareCompuVTabRangeTriple(t0, inValMin = 0.0, inValMax = 0.0, outVal = 'ONE') == True
     assert compareCompuVTabRangeTriple(t1, inValMin = 1.0, inValMax = 2.0, outVal = 'first_section') == True
@@ -1527,7 +1528,7 @@ def test_ecu_address_extension():
     assert meas.accuracy == 2.5
     assert meas.lowerLimit == 120.0
     assert meas.upperLimit == 8400.0
-    assert meas.ecu_address_extension[0].extension == 1
+    assert meas.ecu_address_extension.extension == 1
     assert meas.ecu_address.address == 0x12345
 
 def test_ecu_calibration_offset():
@@ -1732,8 +1733,8 @@ def test_function():
     assert func.in_measurement.identifier == ['WHEEL_REVOLUTIONS', 'ENGINE_SPEED']
     assert func.out_measurement.identifier == ['OK_FLAG', 'SENSOR_FLAG']
     assert func.loc_measurement.identifier == ['LOOP_COUNTER', 'TEMPORARY_1']
-    print(func.ref_characteristic[0].identifier)
-    #assert func.ref_characteristic[0].identifier == ['FACTOR_1']
+    #print(func.ref_characteristic)
+    assert func.ref_characteristic.identifier == ['FACTOR_1']
 
 
 def test_function_list():
@@ -1910,8 +1911,8 @@ def test_group():
 
     assert g2.groupName == 'Injec1'
     assert g2.groupLongIdentifier == 'Module filename Injec1'
-    #assert g2.ref_characteristic[0].identifier == ['INJECTION_CURVE']
-    #assert g2.ref_measurement.identifier == ['LOOP_COUNTER', 'TEMPORARY_1']
+    assert g2.ref_characteristic.identifier == ['INJECTION_CURVE']
+    assert g2.ref_measurement.identifier == ['LOOP_COUNTER', 'TEMPORARY_1']
 
     assert g3.groupName == 'Injec2'
     assert g3.groupLongIdentifier == 'Module filename Injec2'
@@ -2010,8 +2011,7 @@ def test_header():
     """
     session = parser.parseFromString(DATA)
     hdr = session.query(model.Header).first()
-    assert hdr.version[0].versionIdentifier == "BG5.0815"
-    #assert hdr.version.versionIdentifier == "BG5.0815"
+    assert hdr.version.versionIdentifier == "BG5.0815"
     assert hdr.comment == 'see also specification XYZ of 01.02.1994'
     assert hdr.project_no.projectNumber == "M4711Z1"
 
@@ -2151,13 +2151,13 @@ def test_measurement():
     assert m0.accuracy == 2.5
     assert m0.lowerLimit == 120.0
     assert m0.upperLimit == 8400.0
-    assert m0.phys_unit[0].unit == 'mph'
-    assert m0.bit_mask[0].mask == 0x0fff
+    assert m0.phys_unit.unit == 'mph'
+    assert m0.bit_mask.mask == 0x0fff
     assert m0.bit_operation.right_shift.bitcount == 4
     assert m0.bit_operation.sign_extend is not None
-    assert m0.byte_order[0].byteOrder == 'MSB_FIRST'
-    assert m0.ref_memory_segment[0].name == "Data2"
-    assert m0.function_list[0].name == ['ID_ADJUSTM', 'FL_ADJUSTM']
+    assert m0.byte_order.byteOrder == 'MSB_FIRST'
+    assert m0.ref_memory_segment.name == "Data2"
+    assert m0.function_list.name == ['ID_ADJUSTM', 'FL_ADJUSTM']
 
     assert m1.name == 'VdiagStatus'
     assert m1.longIdentifier == 'VdiagStatus'
@@ -2453,10 +2453,10 @@ def test_mod_common():
     mc = session.query(model.ModCommon).first()
     assert mc.comment == 'Characteristic maps always deposited in same mode'
     assert mc.s_rec_layout.name == "S_ABL"
-    assert mc.deposit[0].mode == 'ABSOLUTE'
-    assert mc.byte_order[0].byteOrder == 'MSB_LAST'
+    assert mc.deposit.mode == 'ABSOLUTE'
+    assert mc.byte_order.byteOrder == 'MSB_LAST'
     assert mc.data_size.size == 16
-    assert mc.alignment_byte[0].alignmentBorder == 2
+    assert mc.alignment_byte.alignmentBorder == 2
 
 def test_mod_par():
     parser = ParserWrapper('a2l', 'modPar', A2LListener, debug = False)
@@ -2505,7 +2505,7 @@ def test_mod_par():
     mp = session.query(model.ModPar).first()
     assert mp.comment == 'Note: Provisional release for test purposes only!'
 
-    assert mp.version[0].versionIdentifier == 'Test version of 01.02.1994'
+    assert mp.version.versionIdentifier == 'Test version of 01.02.1994'
     assert mp.addr_epks[0].address == 284280
     assert mp.epk.identifier == 'EPROM identifier test'
     assert mp.supplier.manufacturer == 'M&K GmbH Chemnitz'
@@ -2804,7 +2804,7 @@ def test_project():
     assert prj.name == 'RAPE_SEED_ENGINE'
     assert prj.longIdentifier == 'Engine tuning for operation with rape oil'
     assert prj.header.comment == 'see also specification XYZ of 01.02.1994'
-    assert prj.header.version[0].versionIdentifier == 'BG5.0815'
+    assert prj.header.version.versionIdentifier == 'BG5.0815'
     assert prj.header.project_no.projectNumber == 'M4711Z1'
 
 def test_project_no():
@@ -2850,8 +2850,8 @@ def test_read_only():
     assert chx.conversion == 'FACTOR01'
     assert chx.lowerLimit == 0.0
     assert chx.upperLimit == 255.0
-    assert chx.function_list[0].name == ['V_LIM']
-    assert chx.read_only[0] is not None
+    assert chx.function_list.name == ['V_LIM']
+    assert chx.read_only == True
     """
     """
 
@@ -3014,7 +3014,7 @@ def test_record_layout():
     assert r0.no_axis_pts_x.datatype == 'UBYTE'
     assert r0.no_axis_pts_y.position == 5
     assert r0.no_axis_pts_y.datatype == 'UBYTE'
-    assert r0.alignment_byte[0].alignmentBorder == 2
+    assert r0.alignment_byte.alignmentBorder == 2
 
     assert r1.name == 'RESCALE_SST'
     assert r1.no_rescale_x.position == 1
@@ -3219,7 +3219,7 @@ def test_ref_measurement():
     """
     session = parser.parseFromString(DATA)
     rm = session.query(model.RefMeasurement).first()
-    assert rm.identifier == []  # FIXME
+    assert rm.identifier == ["LOOP_COUNTER", "TEMPORARY_1"]
 
 def test_ref_memory_segment():
     parser = ParserWrapper('a2l', 'refMemorySegment', A2LListener, debug = False)
@@ -3255,7 +3255,7 @@ def test_ref_unit():
     assert cm.coeffs.d == 0.0
     assert cm.coeffs.e == 0.0
     assert cm.coeffs.f == 1.0
-    assert cm.ref_unit[0].unit == 'kms_per_hour'
+    assert cm.ref_unit.unit == 'kms_per_hour'
 
 def test_reserved():
     parser = ParserWrapper('a2l', 'reserved', A2LListener, debug = False)
@@ -3620,7 +3620,7 @@ def test_unit():
     assert unit.longIdentifier == 'derived unit for velocity: kilometres per hour'
     assert unit.display == '[km/h]'
     assert unit.type == 'DERIVED'
-    assert unit.ref_unit[0].unit == 'metres_per_second'
+    assert unit.ref_unit.unit == 'metres_per_second'
     assert unit.unit_conversion.gradient == 3.6
     assert unit.unit_conversion.offset == 0.0
 
@@ -3642,7 +3642,7 @@ def test_unit_conversion():
     assert unit.longIdentifier == 'unit for temperature: degree Celsius'
     assert unit.display == '[°C]'
     assert unit.type == 'DERIVED'
-    assert unit.ref_unit[0].unit == 'kelvin'
+    assert unit.ref_unit.unit == 'kelvin'
     assert unit.unit_conversion.gradient == 1.0
     assert unit.unit_conversion.offset == -273.15
 
@@ -3917,3 +3917,17 @@ def test_virtual_characteristic():
     vs = session.query(model.VirtualCharacteristic).first()
     assert vs.characteristic_id == ['B']
     assert vs.formula == 'sin(X1)'
+
+def test_meta_data():
+    parser = ParserWrapper('a2l', 'project', A2LListener, debug = False)
+    DATA = """
+    /begin PROJECT FOO_BAR ""
+
+    /end PROJECT
+    """
+    from pya2l.model import CURRENT_SCHEMA_VERSION
+
+    session = parser.parseFromString(DATA)
+    meta = session.query(model.MetaData).first()
+    assert meta.schema_version == CURRENT_SCHEMA_VERSION
+
