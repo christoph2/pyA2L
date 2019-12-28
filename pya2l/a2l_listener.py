@@ -163,7 +163,25 @@ class BaseListener(antlr4.ParseTreeListener):
         ctx.value = ctx.s.text.strip('"') if ctx.s else None
 
     def exitIdentifierValue(self, ctx):
-        ctx.value = ctx.i.text if ctx.i else None
+        text = '.'.join(self.getList(ctx.i))
+        ctx.value = text
+
+    def exitPartialIdentifier(self, ctx):
+        text = ctx.i.text if ctx.i else None
+        arr = ctx.a.value if ctx.a else None
+        if arr is not None:
+            ctx.value = "{}[{}]".format(text, arr)
+        else:
+            ctx.value = text
+
+    def exitArraySpecifier(self, ctx):
+        if ctx.i is not None:
+            value = ctx.i.text
+        elif ctx.n is not None:
+            value = ctx.n.text
+        else:
+            value = None
+        ctx.value = value
 
     def _formatMessage(self, msg, location):
         return "[{0}:{1}] {2}".format(location.start.line, location.start.column + 1, msg)
