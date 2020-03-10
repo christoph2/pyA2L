@@ -1,9 +1,13 @@
-# Generated from aml.g4 by ANTLR 4.7
+# Generated from aml.g4 by ANTLR 4.8
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
-from typing.io import TextIO
 import sys
+if sys.version_info[1] > 5:
+	from typing import TextIO
+else:
+	from typing.io import TextIO
+
 
 def serializedATN():
     with StringIO() as buf:
@@ -225,9 +229,10 @@ class amlParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.7")
+        self.checkVersion("4.8")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
+
 
 
 
@@ -294,6 +299,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class DeclarationContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -354,6 +360,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class Type_definitionContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -393,6 +400,7 @@ class amlParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
+
 
     class Type_nameContext(ParserRuleContext):
 
@@ -493,6 +501,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class Predefined_type_nameContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -567,6 +576,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class Block_definitionContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -639,6 +649,7 @@ class amlParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
+
 
     class Enum_type_nameContext(ParserRuleContext):
 
@@ -717,6 +728,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class Enumerator_listContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -777,6 +789,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class EnumeratorContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -833,6 +846,7 @@ class amlParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
+
 
     class Struct_type_nameContext(ParserRuleContext):
 
@@ -924,6 +938,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class Struct_memberContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -990,6 +1005,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class MemberContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1052,6 +1068,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class Array_specifierContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1096,6 +1113,7 @@ class amlParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
+
 
     class Taggedstruct_type_nameContext(ParserRuleContext):
 
@@ -1209,6 +1227,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class Taggedstruct_memberContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1304,6 +1323,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class Taggedstruct_definitionContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1392,6 +1412,7 @@ class amlParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
+
 
     class Taggedunion_type_nameContext(ParserRuleContext):
 
@@ -1482,6 +1503,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class Tagged_union_memberContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1558,6 +1580,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class ConstantContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1625,6 +1648,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class IntValueContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1665,6 +1689,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class FloatValueContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1704,6 +1729,7 @@ class amlParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
+
 
     class NumberContext(ParserRuleContext):
 
@@ -1764,6 +1790,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class StringValueContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1804,6 +1831,7 @@ class amlParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class TagValueContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1843,6 +1871,7 @@ class amlParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
+
 
     class IdentifierValueContext(ParserRuleContext):
 

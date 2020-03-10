@@ -2,6 +2,6 @@ enum34
 mock
 mako
 six
-antlr4-python3-runtime == 4.7.2
+antlr4-python3-runtime == 4.8
 SQLAlchemy
 sortedcontainers

@@ -6,7 +6,7 @@ import sys
 from setuptools import find_packages
 from glob import glob
 
-ANTLR_VERSION = '4.7.2'
+ANTLR_VERSION = '4.8'
 ANTLR_RT = "antlr4-python3-runtime=={}".format(ANTLR_VERSION) if sys.version_info.major == 3 else "antlr4-python2-runtime=={}".format(ANTLR_VERSION)
 
 
