@@ -24,9 +24,34 @@ __copyright__="""
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
-from pya2l import model
+from collections import namedtuple
+import bisect
+
+from pya2l.logger import Logger
+
+from sqlalchemy import (event, func)
+from sqlalchemy import sql
+
+##MaxGrad= max(abs((W i,k -W i-1,k )/(X i -X i-1 )))
+
+
+
+class MixInBase:
+    
+    logger = Logger(__name__)
+
+class AxisDescrMixIn(MixInBase):
+    """
+    """
+    def check(self):
+        if self.attribute == "CURVE_AXIS":
+            if self.conversion != "NO_COMPU_METHOD":
+                self.logger.error("CURVE_AXIS have no input conversion, use 'NO_COMPU_METHOD' for argument 'conversion'.")
+                return False
+#            meas = 
+        return True
+    
 
 MIXIN_MAP = {
-
+    "AXIS_DESCR": "AxisDescrMixIn",
 }
-
