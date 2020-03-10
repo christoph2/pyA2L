@@ -27,6 +27,8 @@ __copyright__ = """
 __author__  = 'Christoph Schueler'
 __version__ = "0.10.2"
 
+import bisect
+
 try:
     import numpy
     import scipy
@@ -41,4 +43,29 @@ else:
     from .math_slow import Interpolate1D
 
 
+class Lookup:
+    """
+    """
+
+    def __init__(self, xs, ys, saturate = False, y_low = None, y_high = None):
+        if any(x1 -x0 <= 0 for x0, x1 in zip(xs, xs[1 : ])):
+            raise ValueError("'xs' must be in strictly increasing order.")
+        self.xs = xs
+        self.ys = ys
+        self.saturate = saturate
+        self.y_low = y_low
+        self.y_high = y_high
+    def __call__(self, x):
+        """
+        """
+        if self.saturate:
+            if x <= self.min_x:
+                return self.y_low or self.ys[0]
+            elif x >= self.max_x:
+                return self.y_high or self.ys[-1]
+        else:
+            if not (self.xs[0] <= x <= self.xs[-1]):
+                raise ValueError("x out of bounds")
+        pos = bisect.bisect_right(self.xs, x) - 1
+        return self.ys[pos]
 
