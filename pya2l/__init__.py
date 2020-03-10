@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2019 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2020 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -28,6 +28,7 @@ __author__  = 'Christoph Schueler'
 __version__ = "0.10.2"
 
 
+from os import path
 from pya2l.logger import Logger
 import pya2l.model as model
 
@@ -92,8 +93,6 @@ class DB(object):
     def _set_path_components(self, file_name):
         """
         """
-        from os import path
-
         self._pth, self._base = path.split(file_name)
         fbase, ext = path.splitext(self._base)
         self._dbfn = "{}.a2ldb".format(fbase)
