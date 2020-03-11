@@ -1,5 +1,5 @@
-Installation and Getting Started
-================================
+Installation
+============
 
 **Pythons**: *Python* >= 2.7
 

@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('../pya2l'))
 # -- Project information -----------------------------------------------------
 
 project = 'pyA2L'
-copyright = '2019, Christoph Schueler'
+copyright = '2020, Christoph Schueler'
 author = 'Christoph Schueler'
 
 # The short X.Y version
