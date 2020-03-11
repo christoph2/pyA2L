@@ -33,22 +33,40 @@ from pya2l.logger import Logger
 import pya2l.model as model
 
 
+class InvalidA2LDatabase(Exception):
+    """
+    """
+    pass
+
 class DB(object):
     """
     """
 
     logger = Logger(__name__)
 
-    def import_a2l(self, file_name, debug = False):
-        """
+    def import_a2l(self, file_name, debug = False, remove_existing = False):
+        """Import `.a2l` file to `.a2ldb` database.
+
+
         Parameters
         ----------
         file_name: str
             Name of the A2L to be imported. If you don't specify an extension ``.a2l`` is added.
 
+        debug: bool
+            Additional debugging output.
+
+        remove_existing: bool
+            ** DANGER ZONE **: Remove existing database.
+
         Returns
         -------
         SQLAlchemy session object.
+
+        Raises
+        ------
+        OSError
+            If database already exists.
 
         Note
         ----
@@ -59,11 +77,13 @@ class DB(object):
 
         parser = ParserWrapper('a2l', 'a2lFile', A2LListener, debug = debug)
         self._set_path_components(file_name)
-        try:
-            unlink(self._dbfn)
-        except Exception:
-            pass
-
+        if remove_existing:
+            try:
+                unlink(self._dbfn)
+            except Exception:
+                pass
+        elif path.exists(self._dbfn):
+            raise OSError("file '{}' already exists.".format(self._dbfn))
         data = open(self._a2lfn).read()
         data, a2ml = cut_a2ml(data)
         self.session = parser.parseFromString(data, dbname = self._dbfn)
@@ -76,11 +96,26 @@ class DB(object):
         raise NotImplementedError("Export functionality not implemented yet.")
 
     def open_existing(self, file_name):
-        """
+        """Open an existing `.a2ldb` database.
+
+        Parameters
+        ----------
+        file_name: str
+            Name of your database file, resulting from :meth:`import_a2l`.
+            Extension `.a2ldb` not needed.
+
+        Returns
+        -------
+        SQLAlchemy session object.
+
+        Raises
+        ------
+        OSError
+            If database already exists.
         """
         self._set_path_components(file_name)
         if not path.exists(self._dbfn):
-            return None
+            raise OSError("file '{}' does not exists.".format(file_name))
         else:
             self.db = model.A2LDatabase(self._dbfn)
             self.session = self.db.session
@@ -88,7 +123,7 @@ class DB(object):
             if res:
                 return self.session
             else:
-                return None
+                raise InvalidA2LDatabase("Database seems to be corrupted. No meta-data found.")
 
     def _set_path_components(self, file_name):
         """
@@ -100,4 +135,3 @@ class DB(object):
             self._a2lfn = "{}.a2l".format(fbase)
         else:
             self._a2lfn = "{}{}".format(fbase, ext)
-
