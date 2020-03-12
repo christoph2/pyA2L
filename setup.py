@@ -7,7 +7,7 @@ from setuptools import find_packages
 from glob import glob
 
 ANTLR_VERSION = '4.8'
-ANTLR_RT = "antlr4-python3-runtime=={}".format(ANTLR_VERSION)
+ANTLR_RT = "antlr4-python3-runtime == {}".format(ANTLR_VERSION)
 
 
 install_reqs = [ANTLR_RT, 'mako', 'six', 'SQLAlchemy', 'sortedcontainers']
@@ -32,15 +32,6 @@ setup(
     url = 'https://www.github.com/Christoph2/pyA2L',
     packages = find_packages(),
     install_requires = install_reqs,
-    #entry_points = {
-    #    'console_scripts': [
-    #            'vd_exporter = pyA2L.catalogue.vd_exporter:main'
-    #    ],
-    #},
-    #data_files = [
-    #        ('pya2l/config', glob('pya2l/config/*.*')),
-    #        ('pya2l/imagez', glob('pya2l/imagez/*.bin')),
-    #],
     tests_require=["pytest", "pytest-runner"],
     test_suite="pya2l.tests",
     license='GPLv2',
