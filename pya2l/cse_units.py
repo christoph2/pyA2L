@@ -4,7 +4,7 @@
 __copyright__="""
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2019 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2020 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -27,7 +27,7 @@ __copyright__="""
 """
 
 from collections import namedtuple
-from enum import import IntEnum
+from enum import IntEnum
 
 CSE_Type = namedtuple("CSE_Type", "code unit referred_to comment")
 
