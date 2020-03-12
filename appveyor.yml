@@ -33,17 +33,17 @@ install:
   # We need wheel installed to build wheels
   - set PATH=%PYTHON%\Scripts;%PATH%
   - "%PYTHON%\\python.exe -m pip install --upgrade pip"
-  - pip install wheel coveralls coverage codacy-coverage codeclimate-test-reporter"
+  - pip install wheel coveralls coverage codeclimate-test-reporter"
   - pip install -r requirements.txt
-  - cmd: curl -O https://www.antlr.org/download/antlr-4.7.2-complete.jar
-  - cmd: set CLASSPATH = "%APPVEYOR_BUILD_FOLDER%\antlr-4.7.2-complete.jar"
+  - cmd: curl -O https://www.antlr.org/download/antlr-4.8-complete.jar
+  - cmd: set CLASSPATH = "%APPVEYOR_BUILD_FOLDER%\antlr-4.8-complete.jar"
   - cmd: set CLASSPATH
   - cmd: dir
   - cmd: cd pya2l
-  - cmd: java -jar ..\antlr-4.7.2-complete.jar -Dlanguage=Python2 -long-messages -visitor aml.g4 -o ./py2/
-  - cmd: java -jar ..\antlr-4.7.2-complete.jar -Dlanguage=Python3 -long-messages -visitor aml.g4 -o ./py3/
-  - cmd: java -jar ..\antlr-4.7.2-complete.jar -Dlanguage=Python2 -long-messages -visitor a2l.g4 -o ./py2/
-  - cmd: java -jar ..\antlr-4.7.2-complete.jar -Dlanguage=Python3 -long-messages -visitor a2l.g4 -o ./py3/
+  - cmd: java -jar ..\antlr-4.8-complete.jar -Dlanguage=Python2 -long-messages -visitor aml.g4 -o ./py2/
+  - cmd: java -jar ..\antlr-4.8-complete.jar -Dlanguage=Python3 -long-messages -visitor aml.g4 -o ./py3/
+  - cmd: java -jar ..\antlr-4.8-complete.jar -Dlanguage=Python2 -long-messages -visitor a2l.g4 -o ./py2/
+  - cmd: java -jar ..\antlr-4.8-complete.jar -Dlanguage=Python3 -long-messages -visitor a2l.g4 -o ./py3/
   - cmd: cd ..
 
 
@@ -77,11 +77,10 @@ artifacts:
 on_success:
   #- cmd: dir .
   #- cmd: set
-  - dir "%PYTHON%\\Scripts"
+  #- dir "%PYTHON%\\Scripts"
   - coverage xml
   - coveralls
-  - python-codacy-coverage -r coverage.xml
-# - "%PYTHON%\\Scripts\\codeclimate-test-reporter"
+  #- python-codacy-coverage -r coverage.xml
 
 deploy:
 - provider: GitHub
