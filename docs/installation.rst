@@ -1,7 +1,7 @@
 Installation
 ============
 
-**Pythons**: *Python* >= 2.7
+**Pythons**: *Python* >= 3.4
 
 **Platforms**: No platform-specific restrictions.
 

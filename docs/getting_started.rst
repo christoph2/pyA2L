@@ -1,7 +1,7 @@
 Getting Started with pyA2L
 ==========================
 
-The following code snippets will give you an overview what could be done with pyA2L.
+You'll find the example code `here <../pya2l/examples>`_.
 
 Import an .a2l file to database
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,19 +80,8 @@ Yields the following output:
     ASAM.M.SCALAR.UWORD.IDENTICAL.BITMASK_0FF0       UWORD        0x00013a20
     ASAM.M.VIRTUAL.SCALAR.SWORD.PHYSICAL             SWORD        0x00000000
 
-There are several things to note:
-    - The classes describing an `.a2ldb` database live in `pya2l.model <../pya2l/model/__init__.py>`_, they are required to query, modify, and add model instances.
+The classes describing an `.a2ldb` database live in `pya2l.model <../pya2l/model/__init__.py>`_, they are required to query, modify, and add model instances.
 
-More helpful would be...    / It's more reasonable to consult...
-there's a comprehensive test-suite ??? touching virtually everything
+The test-suite found  `here <../pya2l/tests/test_a2l_parser.py>`_ is a good starting point for further experimentations, because 
+it touches virtually every A2L element/attribute.
 
-You may ask, what about characteristics (parameters, maps, curves, the like), they also have
-addresses 
-
-not to confuse people knowing the ASAP2/ASAM MCD-2MC specification
-
-
-Last words
-~~~~~~~~~~
-
-Creation and manipulation of databases is subject of another document.
