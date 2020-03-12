@@ -7,13 +7,10 @@ from setuptools import find_packages
 from glob import glob
 
 ANTLR_VERSION = '4.8'
-ANTLR_RT = "antlr4-python3-runtime=={}".format(ANTLR_VERSION) if sys.version_info.major == 3 else "antlr4-python2-runtime=={}".format(ANTLR_VERSION)
+ANTLR_RT = "antlr4-python3-runtime=={}".format(ANTLR_VERSION)
 
 
 install_reqs = [ANTLR_RT, 'mako', 'six', 'SQLAlchemy', 'sortedcontainers']
-
-if sys.version_info.major == 2 or (sys.version_info.major == 3 and sys.version_info.minor < 4):
-    install_reqs.extend(['enum34', 'mock'])
 
 with open(os.path.join('pya2l', 'version.py'), 'r') as f:
     for line in f:
