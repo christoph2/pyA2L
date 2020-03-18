@@ -32,7 +32,6 @@ import importlib
 from pprint import pprint
 import sys
 
-import six
 import antlr4
 import antlr4.tree
 import pya2l.parserlib
@@ -65,7 +64,7 @@ class ParserWrapper(object):
 
     def _load(self, name):
         className = '{0}{1}'.format(self.grammarName, name)
-        moduleName = 'pya2l.py{0}.{1}'.format(2 if six.PY2 else 3, className)
+        moduleName = 'pya2l.{0}'.format(className)
         module = importlib.import_module(moduleName)
         klass = getattr(module, className)
         return (module, klass, )
@@ -107,7 +106,7 @@ class LexerWrapper(object):
 
     def _load(self, name):
         className = '{0}'.format(self.grammarName, name)
-        moduleName = 'pya2l.py{0}.{1}'.format(2 if six.PY2 else 3, className)
+        moduleName = 'pya2l.{0}'.format(className)
         print("LexerWraper", className, moduleName)
         module = importlib.import_module(moduleName)
         klass = getattr(module, className)
