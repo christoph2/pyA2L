@@ -31,6 +31,7 @@ install:
   - cmd: curl -O https://www.antlr.org/download/antlr-4.8-complete.jar
   - cmd: set CLASSPATH = "%APPVEYOR_BUILD_FOLDER%\antlr-4.8-complete.jar"
   - cmd: set CLASSPATH
+  - cmd: set ANTLR_JAR = %CLASSPATH%
   - cmd: dir
   - cmd: cd pya2l
   - cmd: cd ..

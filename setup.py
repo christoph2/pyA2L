@@ -1,6 +1,5 @@
 #!/bin/env/python
 
-import setuptools.command.build_py
 import distutils.cmd
 import distutils.log
 from distutils.core import setup, Extension
@@ -10,46 +9,41 @@ from setuptools import find_packages
 from glob import glob
 import subprocess
 import platform
+import setuptools.command.build_py
 
 ANTLR_VERSION = "4.8"
 ANTLR_RT = "antlr4-python3-runtime == {}".format(ANTLR_VERSION)
 
-try:
-    ANTLR_JAR = os.environ["ANTLR_JAR"]
-except KeyError:
-    system = platform.system()
-    jar = "antlr-" + ANTLR_VERSION + "-complete.jar"
+def find_antlr():
+    try:
+        ANTLR_JAR = os.environ["ANTLR_JAR"]
+    except KeyError:
+        system = platform.system()
+        jar = "antlr-" + ANTLR_VERSION + "-complete.jar"
 
-    # Try to guess installation path based on suggestions in ANTLR documentation.
-    if system in ["Darwin", "Linux"]:
-        install_path = "/usr/local/lib/"
-    elif system == "Windows":
-        install_path = "C:\\Javalib\\"
-    else:
-        # Unknown operating system.
-        install_path = ""
+        # Try to guess installation path based on suggestions in ANTLR documentation.
+        if system in ["Darwin", "Linux"]:
+            install_path = "/usr/local/lib/"
+        elif system == "Windows":
+            install_path = "C:\\Javalib\\"
+        else:
+            # Unknown operating system.
+            install_path = ""
 
-    ANTLR_JAR = os.path.join(install_path, jar)
+        ANTLR_JAR = os.path.join(install_path, jar)
 
-if not os.path.exists(ANTLR_JAR):
-    raise FileNotFoundError("ANTLR4 not found: ".format(ANTLR_JAR))
+    if not os.path.exists(ANTLR_JAR):
+        raise FileNotFoundError("ANTLR4 not found: {0}".format(ANTLR_JAR))
+
+    return ANTLR_JAR
+
+ANTLR_JAR = find_antlr()
 
 
 class AntrlAutogen(distutils.cmd.Command):
     """Custom command to autogenerate Python code using ANTLR."""
 
     description = "generate python code using antlr"
-
-    def check_version(self, command):
-        """Check that ANTLR4 is the correct version."""
-        out = subprocess.check_output(command).decode(sys.stdout.encoding)
-        version = out.split("\n")[0].split(" ")[-1]
-
-        if not version == ANTLR_VERSION:
-            found = "Wrong ANTLR version: {}".format(version) + "."
-            required = "pyA2L requires {}".format(ANTLR_VERSION) + "."
-
-            raise ValueError(found + required)
 
     def initialize_options(self):
         """Set default values for options."""
@@ -62,22 +56,35 @@ class AntrlAutogen(distutils.cmd.Command):
     def run(self):
         """Run ANTLR."""
         antlr4 = ["java", "-Xmx500M", "-cp", ANTLR_JAR, "org.antlr.v4.Tool"]
-        self.check_version(antlr4)
+        check_version(antlr4)
         a2l_grammar = os.path.join("pya2l", "a2l.g4")
         aml_grammar = os.path.join("pya2l", "aml.g4")
         arguments = [a2l_grammar, aml_grammar, "-Dlanguage=Python3"]
         self.announce(" ".join(antlr4 + arguments), level=distutils.log.INFO)
         subprocess.check_call(antlr4 + arguments)
-        self.clean()
+        clean()
 
-    def clean(self):
-        """Remove unneeded files."""
-        tokens = glob(os.path.join("pya2l", "*tokens"))
-        interp = glob(os.path.join("pya2l", "*interp"))
-        listener = glob(os.path.join("pya2l", "*Listener.py"))
 
-        for f in tokens + interp + listener:
-            os.remove(f)
+def check_version(command):
+    """Check that ANTLR4 is the correct version."""
+    out = subprocess.check_output(command).decode(sys.stdout.encoding)
+    antlr_version = out.split("\n")[0].split(" ")[-1]
+
+    if not antlr_version == ANTLR_VERSION:
+        found = "Wrong ANTLR version: {}".format(antlr_version) + "."
+        required = "pyA2L requires {}".format(ANTLR_VERSION) + "."
+
+        raise ValueError(found + required)
+
+
+def clean():
+    """Remove unneeded files."""
+    tokens = glob(os.path.join("pya2l", "*tokens"))
+    interp = glob(os.path.join("pya2l", "*interp"))
+    listener = glob(os.path.join("pya2l", "*Listener.py"))
+
+    for unneeded in tokens + interp + listener:
+        os.remove(unneeded)
 
 
 class CustomBuildPy(setuptools.command.build_py.build_py):
