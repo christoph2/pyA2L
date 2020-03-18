@@ -85,3 +85,9 @@ def test_normalization_ident():
     for row_idx, row in enumerate(Z_MAP):
         for col_idx, value in enumerate(row):
             assert value == na(col_idx, row_idx)    # Interpolator should just pick every element from Z_MAP.
+
+
+@pytest.mark.skipif("has_numpy == False or has_scipy == False")
+def test_ratfunc_identity():
+    rf = functions.RatFunc([0, 1, 0, 0, 0, 1])
+    assert rf(21845) == 21845

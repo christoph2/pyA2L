@@ -112,3 +112,37 @@ class NormalizationAxes:
         y_new = self.ip_y(y)
         return self.ip_m((y_new, x_new))
 
+
+
+class CompuMethod:
+    """
+    Parameters
+    ----------
+    """
+
+    def __init__(self, cm):
+        pass
+
+    def __call__(self):
+        pass
+
+
+class RatFunc:
+    """Evaluate rational function.
+
+    Parameters
+    ----------
+    coeffs: list-like of floats
+        a, b, c, d, e, f - coefficients for the specified formula:
+        f(x) = (axx + bx + c) / (dxx + ex + f)
+    """
+
+    def __init__(self, coeffs):
+        if not (len(coeffs) == 6 and all([isinstance(c, (int, float)) for c in coeffs])):
+            raise TypeError("coeffs must be exactly 6 ints/floats")
+
+        self.p = np.poly1d(coeffs[ : 3])
+        self.q = np.poly1d(coeffs[3 : ])
+
+    def __call__(self, x):
+        return self.p(x) / self.q(x)
