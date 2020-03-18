@@ -33,8 +33,6 @@ install:
   - cmd: set CLASSPATH
   - cmd: dir
   - cmd: cd pya2l
-  - cmd: java -jar ..\antlr-4.8-complete.jar -Dlanguage=Python3 -long-messages -visitor aml.g4 -o ./py3/
-  - cmd: java -jar ..\antlr-4.8-complete.jar -Dlanguage=Python3 -long-messages -visitor a2l.g4 -o ./py3/
   - cmd: cd ..
 
 
