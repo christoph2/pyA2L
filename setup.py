@@ -16,7 +16,7 @@ ANTLR_RT = "antlr4-python3-runtime == {}".format(ANTLR_VERSION)
 
 def find_antlr():
     try:
-        ANTLR_JAR = os.environ["ANTLR_JAR"]
+        antlr_jar = os.environ["ANTLR_JAR"]
     except KeyError:
         system = platform.system()
         jar = "antlr-" + ANTLR_VERSION + "-complete.jar"
@@ -30,12 +30,12 @@ def find_antlr():
             # Unknown operating system.
             install_path = ""
 
-        ANTLR_JAR = os.path.join(install_path, jar)
+        antlr_jar = os.path.join(install_path, jar)
 
-    if not os.path.exists(ANTLR_JAR):
-        raise FileNotFoundError("ANTLR4 not found: {0}".format(ANTLR_JAR))
+    if not os.path.exists(antlr_jar):
+        raise FileNotFoundError("ANTLR4 not found: {0}".format(antlr_jar))
 
-    return ANTLR_JAR
+    return antlr_jar
 
 ANTLR_JAR = find_antlr()
 
