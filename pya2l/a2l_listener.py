@@ -36,7 +36,6 @@ import re
 import string
 import sys
 
-import six
 import antlr4
 from antlr4.BufferedTokenStream import BufferedTokenStream
 
@@ -218,7 +217,7 @@ class ParserWrapper(object):
 
     def _load(self, name):
         className = '{0}{1}'.format(self.grammarName, name)
-        moduleName = 'pya2l.py{0}.{1}'.format(2 if six.PY2 else 3, className)
+        moduleName = 'pya2l.{0}'.format(className)
         module = importlib.import_module(moduleName)
         klass = getattr(module, className)
         return (module, klass, )
@@ -764,7 +763,8 @@ class A2LListener(BaseListener):
         name = ctx.name.value
         longIdentifier = ctx.longIdentifier.value
         conversionType = ctx.conversionType.text
-        numberValuePairs = ctx.numberValuePairs.value    # TODO: check length of following pairs.
+        numberValuePairs = ctx.numberValuePairs.value
+    # TODO: check length of following pairs.
 
         inVal = self.getList(ctx.inVal)
         outVal = self.getList(ctx.outVal)
@@ -790,9 +790,11 @@ class A2LListener(BaseListener):
     def exitCompuVtab(self, ctx):
         name = ctx.name.value
         longIdentifier = ctx.longIdentifier.value
-        conversionType = 'TAB_VERB'    # Fixed value by Std.
+        conversionType = 'TAB_VERB'
+    # Fixed value by Std.
 
-        numberValuePairs = ctx.numberValuePairs.value       # TODO: check length of following pairs.
+        numberValuePairs = ctx.numberValuePairs.value
+    # TODO: check length of following pairs.
         inVal = self.getList(ctx.inVal)
         outVal = self.getList(ctx.outVal)
         pairs = zip(inVal, outVal)

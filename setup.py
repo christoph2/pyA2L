@@ -1,64 +1,138 @@
 #!/bin/env/python
 
+import setuptools.command.build_py
+import distutils.cmd
+import distutils.log
 from distutils.core import setup, Extension
 import os
 import sys
 from setuptools import find_packages
 from glob import glob
+import subprocess
+import platform
 
-ANTLR_VERSION = '4.8'
+ANTLR_VERSION = "4.8"
 ANTLR_RT = "antlr4-python3-runtime == {}".format(ANTLR_VERSION)
 
+try:
+    ANTLR_JAR = os.environ["ANTLR_JAR"]
+except KeyError:
+    system = platform.system()
+    jar = "antlr-" + ANTLR_VERSION + "-complete.jar"
 
-install_reqs = [ANTLR_RT, 'mako', 'six', 'SQLAlchemy', 'sortedcontainers']
+    # Try to guess installation path based on suggestions in ANTLR documentation.
+    if system in ["Darwin", "Linux"]:
+        install_path = "/usr/local/lib/"
+    elif system == "Windows":
+        install_path = "C:\\Javalib\\"
+    else:
+        # Unknown operating system.
+        install_path = ""
 
-with open(os.path.join('pya2l', 'version.py'), 'r') as f:
+    ANTLR_JAR = os.path.join(install_path, jar)
+
+if not os.path.exists(ANTLR_JAR):
+    raise FileNotFoundError("ANTLR4 not found: ".format(ANTLR_JAR))
+
+
+class AntrlAutogen(distutils.cmd.Command):
+    """Custom command to autogenerate Python code using ANTLR."""
+
+    description = "generate python code using antlr"
+
+    def check_version(self, command):
+        """Check that ANTLR4 is the correct version."""
+        out = subprocess.check_output(command).decode(sys.stdout.encoding)
+        version = out.split("\n")[0].split(" ")[-1]
+
+        if not version == ANTLR_VERSION:
+            found = "Wrong ANTLR version: {}".format(version) + "."
+            required = "pyA2L requires {}".format(ANTLR_VERSION) + "."
+
+            raise ValueError(found + required)
+
+    def initialize_options(self):
+        """Set default values for options."""
+        pass
+
+    def finalize_options(self):
+        """Post-process options."""
+        pass
+
+    def run(self):
+        """Run ANTLR."""
+        antlr4 = ["java", "-Xmx500M", "-cp", ANTLR_JAR, "org.antlr.v4.Tool"]
+        self.check_version(antlr4)
+        a2l_grammar = os.path.join("pya2l", "a2l.g4")
+        aml_grammar = os.path.join("pya2l", "aml.g4")
+        arguments = [a2l_grammar, aml_grammar, "-Dlanguage=Python3"]
+        self.announce(" ".join(antlr4 + arguments), level=distutils.log.INFO)
+        subprocess.check_call(antlr4 + arguments)
+        self.clean()
+
+    def clean(self):
+        """Remove unneeded files."""
+        tokens = glob(os.path.join("pya2l", "*tokens"))
+        interp = glob(os.path.join("pya2l", "*interp"))
+        listener = glob(os.path.join("pya2l", "*Listener.py"))
+
+        for f in tokens + interp + listener:
+            os.remove(f)
+
+
+class CustomBuildPy(setuptools.command.build_py.build_py):
+    """Extended build_py which also runs ANTLR."""
+
+    def run(self):
+        self.run_command("antlr")
+        super().run()
+
+
+install_reqs = [ANTLR_RT, "mako", "six", "SQLAlchemy", "sortedcontainers"]
+
+with open(os.path.join("pya2l", "version.py"), "r") as f:
     for line in f:
-        if line.startswith('__version__'):
-            version = line.split('=')[-1].strip().strip('"')
+        if line.startswith("__version__"):
+            version = line.split("=")[-1].strip().strip('"')
             break
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name = 'pya2l',
+    name="pya2l",
     version=version,
-    description = "A2L for Python",
+    description="A2L for Python",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author = 'Christoph Schueler',
-    author_email = 'cpu12.gems@googlemail.com',
-    url = 'https://www.github.com/Christoph2/pyA2L',
-    packages = find_packages(),
-    install_requires = install_reqs,
+    author="Christoph Schueler",
+    author_email="cpu12.gems@googlemail.com",
+    url="https://www.github.com/Christoph2/pyA2L",
+    cmdclass={"antlr": AntrlAutogen, "build_py": CustomBuildPy,},
+    packages=find_packages(),
+    install_requires=install_reqs,
     tests_require=["pytest", "pytest-runner"],
     test_suite="pya2l.tests",
-    license='GPLv2',
+    license="GPLv2",
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         # How mature is this project? Common values are
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 4 - Beta',
-
+        "Development Status :: 4 - Beta",
         # Indicate who your project is intended for
-        'Intended Audience :: Developers',
-        'Topic :: Software Development',
-        'Topic :: Scientific/Engineering',
-
+        "Intended Audience :: Developers",
+        "Topic :: Software Development",
+        "Topic :: Scientific/Engineering",
         # Pick your license as you wish (should match "license" above)
-        'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
-
+        "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
     ],
-
 )
-
