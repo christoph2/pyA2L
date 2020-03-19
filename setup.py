@@ -2,13 +2,11 @@
 
 import distutils.cmd
 import distutils.log
-from distutils.core import setup, Extension
+from distutils.core import setup
 import os
-import sys
 from setuptools import find_packages
 from glob import glob
 import subprocess
-import platform
 import setuptools.command.build_py
 
 ANTLR_VERSION = "4.8"
