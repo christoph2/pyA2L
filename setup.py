@@ -15,23 +15,14 @@ ANTLR_VERSION = "4.8"
 ANTLR_RT = "antlr4-python3-runtime == {}".format(ANTLR_VERSION)
 
 def find_antlr():
-    try:
-        antlr_jar = os.environ["ANTLR_JAR"]
-    except KeyError:
-        system = platform.system()
-        jar = "antlr-" + ANTLR_VERSION + "-complete.jar"
-
-        # Try to guess installation path based on suggestions in ANTLR documentation.
-        if system in ["Darwin", "Linux"]:
-            install_path = "/usr/local/lib/"
-        elif system == "Windows":
-            install_path = "C:\\Javalib\\"
-        else:
-            # Unknown operating system.
-            install_path = ""
-
-        antlr_jar = os.path.join(install_path, jar)
-
+    classpath = os.environ.get('CLASSPATH')
+    if not "antlr" in classpath.lower():
+        raise OSError("Could not locate ANTLR4 jar 'CLASSPATH'.")
+    else:
+        for pt in classpath.split(os.pathsep):
+            if "antlr" in pt.lower():
+                antlr_jar = pt
+                break
     if not os.path.exists(antlr_jar):
         raise FileNotFoundError("ANTLR4 not found: {0}".format(antlr_jar))
 
