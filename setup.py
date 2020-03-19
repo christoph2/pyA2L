@@ -13,21 +13,31 @@ import setuptools.command.build_py
 ANTLR_VERSION = "4.8"
 ANTLR_RT = "antlr4-python3-runtime == {}".format(ANTLR_VERSION)
 
+
 def findAntlr():
     """Try to find the ANTLR .jar-file."""
-    classpath = os.environ.get('CLASSPATH')
+    classpath = os.environ.get("CLASSPATH")
+    classpath = classpath if classpath is not None else ""
+
     if not "antlr" in classpath.lower():
-        raise OSError("Could not locate ANTLR4 jar 'CLASSPATH'.")
+        raise OSError("Could not locate ANTLR4 jar in 'CLASSPATH'.")
     else:
         for pt in classpath.split(os.pathsep):
             if "antlr" in pt.lower():
                 antlrJar = pt
+
                 break
+
     if not ANTLR_VERSION in antlrJar:
-        raise ValueError("pyA2L requires Antlr {} -- found '{}'".format(ANTLR_VERSION, antlrJar))
+        raise ValueError(
+            "pyA2L requires Antlr {0} -- found '{1}'".format(ANTLR_VERSION, antlrJar)
+        )
+
     if not os.path.exists(antlrJar):
         raise FileNotFoundError("ANTLR4 not found: {0}".format(antlrJar))
+
     return antlrJar
+
 
 ANTLRPATH = findAntlr()
 
@@ -55,6 +65,7 @@ class AntrlAutogen(distutils.cmd.Command):
         self.announce(" ".join(antlr4 + arguments), level=distutils.log.INFO)
         subprocess.check_call(antlr4 + arguments)
         clean()
+
 
 def clean():
     """Remove unneeded files."""
