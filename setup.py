@@ -24,9 +24,10 @@ ANTLR_RT = "antlr4-python3-runtime == {}".format(ANTLR_VERSION)
 
 def findAntlr():
     """Try to find the ANTLR .jar-file."""
-    classpath = os.environ.get("CLASSPATH")
+    #classpath = os.environ.get("CLASSPATH")
+    #classpath = ENVIRONMENT.get("CLASSPATH")
+    classpath = os.getenv("CLASSPATH")
     #dump_env()
-    classpath = ENVIRONMENT.get("CLASSPATH")
     classpath = classpath if classpath is not None else ""
 
     if not "antlr" in classpath.lower():
