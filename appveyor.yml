@@ -51,7 +51,7 @@ test_script:
   # to put the Python evrsion you want to use on PATH.
   # - "build.cmd %PYTHON%\\python.exe setup.py test"
   - cmd: cmd /C "set "CLASSPATH=%APPVEYOR_BUILD_FOLDER%\antlr-4.8-complete.jar" && %PYTHON%\python.exe setup.py antlr"
-  - cmd: "%PYTHON%\\python.exe setup.py test"
+  - cmd: cmd /C "set "CLASSPATH=%APPVEYOR_BUILD_FOLDER%\antlr-4.8-complete.jar" && %PYTHON%\python.exe setup.py test"
   #- "%PYTHON%\\Scripts\\coverage run --source=pya2l setup.py test"
   #- cmd: dir .
 
