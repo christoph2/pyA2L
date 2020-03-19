@@ -3,13 +3,15 @@
 
 """These test-cases are based on the examples from ASAM MCD-2MC Version 1.6 specification.
 """
-
 import os
-import pytest
 from setuptools import sandbox
+import pytest
 
 import pya2l.model as model
 from pya2l.a2l_listener import ParserWrapper, A2LListener, cut_a2ml, delist
+
+# pylint: disable=C0111
+# pylint: disable=C0103
 
 
 @pytest.mark.first
