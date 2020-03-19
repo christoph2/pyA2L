@@ -10,34 +10,12 @@ from setuptools import find_packages
 import setuptools.command.build_py
 import setuptools.command.develop
 
-from copy import copy
-
-def dump_env():
-    for k, v in sorted(os.environ.items()):
-        print("{:20s} = {}".format(k,v))
-
-#ENVIRONMENT = dict(copy(os.environ))
-#classpath = os.environ.get("CLASSPATH")
-#appveyor = os.environ.get("APPVEYOR")
-#print("CP: {} AV: {}".format(classpath, appveyor))
-
 ANTLR_VERSION = "4.8"
 ANTLR_RT = "antlr4-python3-runtime == {}".format(ANTLR_VERSION)
 
 
 def findAntlr():
     """Try to find the ANTLR .jar-file."""
-    #classpath = os.environ.get("CLASSPATH")
-    #classpath = ENVIRONMENT.get("CLASSPATH")
-    #dump_env()
-    #print("CLASSPATH?", "CLASSPATH" in os.environ)
-    #try:
-    #    cp = os.environ["CLASSPATH"]
-    #except Exception:
-    #    pass
-    #else:
-    #    print("\tCLASSPATH", cp)
-
     if os.environ.get("APPVEYOR"):
         classpath = r"c:\projects\pya2l\antlr-4.8-complete.jar"
     else:
@@ -62,9 +40,6 @@ def findAntlr():
         raise FileNotFoundError("ANTLR4 not found: {0}".format(antlrJar))
 
     return antlrJar
-
-
-ANTLRPATH = findAntlr()
 
 
 class AntrlAutogen(distutils.cmd.Command):
@@ -94,7 +69,8 @@ class AntrlAutogen(distutils.cmd.Command):
 
     def run(self):
         """Run ANTLR."""
-        antlr4 = ["java", "-Xmx500M", "-cp", ANTLRPATH, "org.antlr.v4.Tool"]
+        antlrPath = findAntlr()
+        antlr4 = ["java", "-Xmx500M", "-cp", antlrPath, "org.antlr.v4.Tool"]
         self.announce(" ".join(antlr4 + self.arguments), level=distutils.log.INFO)
         subprocess.check_call(antlr4 + self.arguments)
         clean()
