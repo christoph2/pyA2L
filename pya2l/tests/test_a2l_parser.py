@@ -4,11 +4,21 @@
 """These test-cases are based on the examples from ASAM MCD-2MC Version 1.6 specification.
 """
 
+import os
 import pytest
+from setuptools import sandbox
 
 import pya2l.model as model
 from pya2l.a2l_listener import ParserWrapper, A2LListener, cut_a2ml, delist
 
+
+@pytest.mark.first
+def test_code_generation():
+    """Generate lexers and parsers as a side-effect."""
+    sandbox.run_setup("setup.py", ["antlr"])
+    lexers = [os.path.join("pya2l", p) for p in ["a2lLexer.py", "amlLexer.py"]]
+    parsers = [os.path.join("pya2l", p) for p in ["a2lParser.py", "amlParser.py"]]
+    assert all([os.path.exists(p) for p in lexers + parsers])
 
 def test_delist_empty():
     DATA = []
