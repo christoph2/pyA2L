@@ -48,10 +48,8 @@ test_script:
   # the interpreter you're using - Appveyor does not do anything special
   # to put the Python evrsion you want to use on PATH.
   # - "build.cmd %PYTHON%\\python.exe setup.py test"
-  - cmd: set CLASSPATH = "%APPVEYOR_BUILD_FOLDER%\\antlr-4.8-complete.jar"
-  - cmd: set CLASSPATH
-  - cmd: "%PYTHON%\\python.exe setup.py test"
-  #- "%PYTHON%\\Scripts\\coverage run --source=pya2l setup.py test"
+  # - cmd: "%PYTHON%\\python.exe setup.py test"
+  - "%PYTHON%\\Scripts\\coverage run --source=pya2l setup.py test"
   #- cmd: dir .
 
 after_test:
