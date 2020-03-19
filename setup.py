@@ -21,7 +21,7 @@ ENVIRONMENT = dict(copy(os.environ))
 classpath = os.environ.get("CLASSPATH")
 appveyor = os.environ.get("APPVEYOR")
 
-print("CP: {} AV: {}".format(classpath, appveyor)
+print("CP: {} AV: {}".format(classpath, appveyor))
 
 ANTLR_VERSION = "4.8"
 ANTLR_RT = "antlr4-python3-runtime == {}".format(ANTLR_VERSION)
