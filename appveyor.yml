@@ -68,7 +68,7 @@ on_success:
   #- cmd: dir .
   #- cmd: set
   #- dir "%PYTHON%\\Scripts"
-  - coverage xml
+  - coverage xml -i
   - coveralls
   #- python-codacy-coverage -r coverage.xml
 
