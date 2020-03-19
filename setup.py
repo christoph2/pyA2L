@@ -10,6 +10,8 @@ from setuptools import find_packages
 import setuptools.command.build_py
 import setuptools.command.develop
 
+for k, v in sorted(os.environ.items()):
+    print("{:20s} = {}".format(k,v))
 
 ANTLR_VERSION = "4.8"
 ANTLR_RT = "antlr4-python3-runtime == {}".format(ANTLR_VERSION)

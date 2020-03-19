@@ -28,7 +28,7 @@ install:
   - "%PYTHON%\\python.exe -m pip install --upgrade pip"
   - pip install wheel coveralls coverage codeclimate-test-reporter"
   - pip install -r requirements.txt
-  - cmd: curl -O https://www.antlr.org/download/antlr-4.8-complete.jar
+  - cmd: curl -O -L https://www.antlr.org/download/antlr-4.8-complete.jar
   - cmd: set CLASSPATH = "%APPVEYOR_BUILD_FOLDER%\\antlr-4.8-complete.jar"
   - cmd: set CLASSPATH
   - cmd: set ANTLR_JAR = %CLASSPATH%
@@ -50,7 +50,10 @@ test_script:
   # the interpreter you're using - Appveyor does not do anything special
   # to put the Python evrsion you want to use on PATH.
   # - "build.cmd %PYTHON%\\python.exe setup.py test"
-  - "%PYTHON%\\Scripts\\coverage run --source=pya2l setup.py test"
+  - cmd: set CLASSPATH = "%APPVEYOR_BUILD_FOLDER%\\antlr-4.8-complete.jar"
+  - cmd: set CLASSPATH
+  - cmd: "%PYTHON%\\python.exe setup.py test"
+  #- "%PYTHON%\\Scripts\\coverage run --source=pya2l setup.py test"
   #- cmd: dir .
 
 after_test:
