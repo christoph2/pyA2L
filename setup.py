@@ -1,33 +1,35 @@
 #!/bin/env/python
-
+# pylint: disable=C0111
 import distutils.cmd
 import distutils.log
 from distutils.core import setup
 import os
-from setuptools import find_packages
 from glob import glob
 import subprocess
+from setuptools import find_packages
 import setuptools.command.build_py
+
 
 ANTLR_VERSION = "4.8"
 ANTLR_RT = "antlr4-python3-runtime == {}".format(ANTLR_VERSION)
 
-def find_antlr():
+def findAntlr():
+    """Try to find the ANTLR .jar-file."""
     classpath = os.environ.get('CLASSPATH')
     if not "antlr" in classpath.lower():
         raise OSError("Could not locate ANTLR4 jar 'CLASSPATH'.")
     else:
         for pt in classpath.split(os.pathsep):
             if "antlr" in pt.lower():
-                antlr_jar = pt
+                antlrJar = pt
                 break
-    if not ANTLR_VERSION in antlr_jar:
-        raise ValueError("pyA2L requires Antlr {} -- found '{}'".format(ANTLR_VERSION, antlr_jar))
-    if not os.path.exists(antlr_jar):
-        raise FileNotFoundError("ANTLR4 not found: {0}".format(antlr_jar))
-    return antlr_jar
+    if not ANTLR_VERSION in antlrJar:
+        raise ValueError("pyA2L requires Antlr {} -- found '{}'".format(ANTLR_VERSION, antlrJar))
+    if not os.path.exists(antlrJar):
+        raise FileNotFoundError("ANTLR4 not found: {0}".format(antlrJar))
+    return antlrJar
 
-ANTLR_JAR = find_antlr()
+ANTLRPATH = findAntlr()
 
 
 class AntrlAutogen(distutils.cmd.Command):
@@ -35,6 +37,7 @@ class AntrlAutogen(distutils.cmd.Command):
 
     description = "generate python code using antlr"
 
+    # pylint: disable=W0107
     def initialize_options(self):
         """Set default values for options."""
         pass
@@ -45,10 +48,10 @@ class AntrlAutogen(distutils.cmd.Command):
 
     def run(self):
         """Run ANTLR."""
-        antlr4 = ["java", "-Xmx500M", "-cp", ANTLR_JAR, "org.antlr.v4.Tool"]
-        a2l_grammar = os.path.join("pya2l", "a2l.g4")
-        aml_grammar = os.path.join("pya2l", "aml.g4")
-        arguments = [a2l_grammar, aml_grammar, "-Dlanguage=Python3"]
+        antlr4 = ["java", "-Xmx500M", "-cp", ANTLRPATH, "org.antlr.v4.Tool"]
+        a2lGrammar = os.path.join("pya2l", "a2l.g4")
+        amlGrammar = os.path.join("pya2l", "aml.g4")
+        arguments = [a2lGrammar, amlGrammar, "-Dlanguage=Python3"]
         self.announce(" ".join(antlr4 + arguments), level=distutils.log.INFO)
         subprocess.check_call(antlr4 + arguments)
         clean()
@@ -71,7 +74,7 @@ class CustomBuildPy(setuptools.command.build_py.build_py):
         super().run()
 
 
-install_reqs = [ANTLR_RT, "mako", "six", "SQLAlchemy", "sortedcontainers"]
+INSTALL_REQS = [ANTLR_RT, "mako", "six", "SQLAlchemy", "sortedcontainers"]
 
 with open(os.path.join("pya2l", "version.py"), "r") as f:
     for line in f:
@@ -80,20 +83,20 @@ with open(os.path.join("pya2l", "version.py"), "r") as f:
             break
 
 with open("README.md", "r") as fh:
-    long_description = fh.read()
+    LONG_DESCRIPTION = fh.read()
 
 setup(
     name="pya2l",
     version=version,
     description="A2L for Python",
-    long_description=long_description,
+    long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     author="Christoph Schueler",
     author_email="cpu12.gems@googlemail.com",
     url="https://www.github.com/Christoph2/pyA2L",
     cmdclass={"antlr": AntrlAutogen, "build_py": CustomBuildPy,},
     packages=find_packages(),
-    install_requires=install_reqs,
+    install_requires=INSTALL_REQS,
     tests_require=["pytest", "pytest-runner"],
     test_suite="pya2l.tests",
     license="GPLv2",
