@@ -26,6 +26,15 @@ def findAntlr():
     """Try to find the ANTLR .jar-file."""
     #classpath = os.environ.get("CLASSPATH")
     #classpath = ENVIRONMENT.get("CLASSPATH")
+
+    print("CLASSPATH?", "CLASSPATH" in os.environ)
+    try:
+        cp = os.environ["CLASSPATH"]
+    except Exception:
+        pass
+    else:
+        print("\tCLASSPATH", cp)
+
     classpath = os.getenv("CLASSPATH")
     #dump_env()
     classpath = classpath if classpath is not None else ""
