@@ -23,9 +23,10 @@ def find_antlr():
             if "antlr" in pt.lower():
                 antlr_jar = pt
                 break
+    if not ANTLR_VERSION in antlr_jar:
+        raise ValueError("pyA2L requires Antlr {} -- found '{}'".format(ANTLR_VERSION, antlr_jar))
     if not os.path.exists(antlr_jar):
         raise FileNotFoundError("ANTLR4 not found: {0}".format(antlr_jar))
-
     return antlr_jar
 
 ANTLR_JAR = find_antlr()
@@ -47,26 +48,12 @@ class AntrlAutogen(distutils.cmd.Command):
     def run(self):
         """Run ANTLR."""
         antlr4 = ["java", "-Xmx500M", "-cp", ANTLR_JAR, "org.antlr.v4.Tool"]
-        check_version(antlr4)
         a2l_grammar = os.path.join("pya2l", "a2l.g4")
         aml_grammar = os.path.join("pya2l", "aml.g4")
         arguments = [a2l_grammar, aml_grammar, "-Dlanguage=Python3"]
         self.announce(" ".join(antlr4 + arguments), level=distutils.log.INFO)
         subprocess.check_call(antlr4 + arguments)
         clean()
-
-
-def check_version(command):
-    """Check that ANTLR4 is the correct version."""
-    out = subprocess.check_output(command).decode(sys.stdout.encoding)
-    antlr_version = out.split("\n")[0].split(" ")[-1]
-
-    if not antlr_version == ANTLR_VERSION:
-        found = "Wrong ANTLR version: {}".format(antlr_version) + "."
-        required = "pyA2L requires {}".format(ANTLR_VERSION) + "."
-
-        raise ValueError(found + required)
-
 
 def clean():
     """Remove unneeded files."""
