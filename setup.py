@@ -8,6 +8,7 @@ from glob import glob
 import subprocess
 from setuptools import find_packages
 import setuptools.command.build_py
+import setuptools.command.develop
 
 
 ANTLR_VERSION = "4.8"
@@ -85,6 +86,14 @@ class CustomBuildPy(setuptools.command.build_py.build_py):
         super().run()
 
 
+class CustomDevelop(setuptools.command.develop.develop):
+    """Extended develop which also runs ANTLR"""
+
+    def run(self):
+        self.run_command("antlr")
+        super().run()
+
+
 INSTALL_REQS = [ANTLR_RT, "mako", "six", "SQLAlchemy", "sortedcontainers"]
 
 with open(os.path.join("pya2l", "version.py"), "r") as f:
@@ -105,7 +114,11 @@ setup(
     author="Christoph Schueler",
     author_email="cpu12.gems@googlemail.com",
     url="https://www.github.com/Christoph2/pyA2L",
-    cmdclass={"antlr": AntrlAutogen, "build_py": CustomBuildPy,},
+    cmdclass={
+        "antlr": AntrlAutogen,
+        "build_py": CustomBuildPy,
+        "develop": CustomDevelop,
+    },
     packages=find_packages(),
     install_requires=INSTALL_REQS,
     tests_require=["pytest", "pytest-runner"],
