@@ -22,7 +22,7 @@ def findAntlr():
         classpath = os.getenv("CLASSPATH")
         classpath = classpath if classpath is not None else ""
 
-    if not "antlr" in classpath.lower():
+    if "antlr" not in classpath.lower():
         raise OSError("Could not locate ANTLR4 jar in 'CLASSPATH'.")
     else:
         for pt in classpath.split(os.pathsep):
