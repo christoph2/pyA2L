@@ -1,0 +1,4 @@
+include pya2l/amlLexer.py
+include pya2l/amlParser.py
+include pya2l/a2lLexer.py
+include pya2l/a2lParser.py
