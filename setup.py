@@ -10,8 +10,13 @@ from setuptools import find_packages
 import setuptools.command.build_py
 import setuptools.command.develop
 
-for k, v in sorted(os.environ.items()):
-    print("{:20s} = {}".format(k,v))
+from copy import copy
+
+def dump_env():
+    for k, v in sorted(os.environ.items()):
+        print("{:20s} = {}".format(k,v))
+
+ENVIRONMENT = copy(os.environ)
 
 ANTLR_VERSION = "4.8"
 ANTLR_RT = "antlr4-python3-runtime == {}".format(ANTLR_VERSION)
@@ -19,8 +24,9 @@ ANTLR_RT = "antlr4-python3-runtime == {}".format(ANTLR_VERSION)
 
 def findAntlr():
     """Try to find the ANTLR .jar-file."""
-    classpath = os.environ.get("CLASSPATH")
-    print("*** CLASSPATH", classpath)
+    #classpath = os.environ.get("CLASSPATH")
+    dump_env()
+    classpath = ENVIRONMENT.get("CLASSPATH")
     classpath = classpath if classpath is not None else ""
 
     if not "antlr" in classpath.lower():
