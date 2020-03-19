@@ -16,12 +16,10 @@ def dump_env():
     for k, v in sorted(os.environ.items()):
         print("{:20s} = {}".format(k,v))
 
-ENVIRONMENT = dict(copy(os.environ))
-
-classpath = os.environ.get("CLASSPATH")
-appveyor = os.environ.get("APPVEYOR")
-
-print("CP: {} AV: {}".format(classpath, appveyor))
+#ENVIRONMENT = dict(copy(os.environ))
+#classpath = os.environ.get("CLASSPATH")
+#appveyor = os.environ.get("APPVEYOR")
+#print("CP: {} AV: {}".format(classpath, appveyor))
 
 ANTLR_VERSION = "4.8"
 ANTLR_RT = "antlr4-python3-runtime == {}".format(ANTLR_VERSION)
@@ -31,17 +29,20 @@ def findAntlr():
     """Try to find the ANTLR .jar-file."""
     #classpath = os.environ.get("CLASSPATH")
     #classpath = ENVIRONMENT.get("CLASSPATH")
-    dump_env()
-    print("CLASSPATH?", "CLASSPATH" in os.environ)
-    try:
-        cp = os.environ["CLASSPATH"]
-    except Exception:
-        pass
-    else:
-        print("\tCLASSPATH", cp)
+    #dump_env()
+    #print("CLASSPATH?", "CLASSPATH" in os.environ)
+    #try:
+    #    cp = os.environ["CLASSPATH"]
+    #except Exception:
+    #    pass
+    #else:
+    #    print("\tCLASSPATH", cp)
 
-    classpath = os.getenv("CLASSPATH")
-    classpath = classpath if classpath is not None else ""
+    if os.environ.get("APPVEYOR"):
+        classpath = r"c:\projects\pya2l\antlr-4.8-complete.jar"
+    else:
+        classpath = os.getenv("CLASSPATH")
+        classpath = classpath if classpath is not None else ""
 
     if not "antlr" in classpath.lower():
         raise OSError("Could not locate ANTLR4 jar in 'CLASSPATH'.")
