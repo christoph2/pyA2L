@@ -71,24 +71,32 @@ class AntrlAutogen(distutils.cmd.Command):
     """Custom command to autogenerate Python code using ANTLR."""
 
     description = "generate python code using antlr"
+    user_options = [
+        ("target-dir=", None, "(optional) output directory for antlr artifacts"),
+    ]
 
-    # pylint: disable=W0107
     def initialize_options(self):
         """Set default values for options."""
-        pass
+        # Must be snake_case; variable created from user_options.
+        # pylint: disable=C0103
+        self.target_dir = None
 
     def finalize_options(self):
         """Post-process options."""
-        pass
+        a2lGrammar = os.path.join("pya2l", "a2l.g4")
+        amlGrammar = os.path.join("pya2l", "aml.g4")
+        # distutils.cmd.Command should not have __init__().
+        # pylint: disable=W0201
+        self.arguments = [a2lGrammar, amlGrammar, "-Dlanguage=Python3"]
+
+        if self.target_dir is not None:
+            self.arguments.extend(["-o", self.target_dir])
 
     def run(self):
         """Run ANTLR."""
         antlr4 = ["java", "-Xmx500M", "-cp", ANTLRPATH, "org.antlr.v4.Tool"]
-        a2lGrammar = os.path.join("pya2l", "a2l.g4")
-        amlGrammar = os.path.join("pya2l", "aml.g4")
-        arguments = [a2lGrammar, amlGrammar, "-Dlanguage=Python3"]
-        self.announce(" ".join(antlr4 + arguments), level=distutils.log.INFO)
-        subprocess.check_call(antlr4 + arguments)
+        self.announce(" ".join(antlr4 + self.arguments), level=distutils.log.INFO)
+        subprocess.check_call(antlr4 + self.arguments)
         clean()
 
 
@@ -102,6 +110,7 @@ def clean():
         os.remove(unneeded)
 
 
+# pylint: disable=R0901
 class CustomBuildPy(setuptools.command.build_py.build_py):
     """Extended build_py which also runs ANTLR."""
 
