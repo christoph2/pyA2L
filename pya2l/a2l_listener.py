@@ -33,14 +33,15 @@ import importlib
 import os
 from pprint import pprint
 import re
-import string
 import sys
 
 import antlr4
 from antlr4.BufferedTokenStream import BufferedTokenStream
+from antlr4.error.ErrorListener import ErrorListener
 
 from pya2l.logger import Logger
 import pya2l.model as model
+from pya2l.preprocessor import blank_out
 
 
 def delist(iterable, scalar = False):
@@ -59,19 +60,6 @@ def delist(iterable, scalar = False):
             return iterable[0]
         else:
             return [iterable[0]]
-
-PRINTABLES = string.printable[ : string.printable.find(" ")]
-TR_PRINTABLES = str.maketrans(PRINTABLES, " " * len(PRINTABLES))
-
-def schnipp_schanpp(data, match):
-    """Cut out section and replace with spaces.
-    """
-    header = data[0 : match.start()]
-    section = data[match.start() : match.end()]
-    section = section.translate(TR_PRINTABLES)
-    footer = data[match.end() : ]
-    data = header + section + footer
-    return data
 
 def cut_a2ml(data):
     """
@@ -92,12 +80,12 @@ def cut_a2ml(data):
     if_data = []
     match = AML.search(data)
     if match:
-        data = schnipp_schanpp(data, match)
+        data = blank_out(data, match.span())
 
     matches = list(IF_DATA.finditer(data))
     if matches:
         for idx, match in enumerate(matches):
-            data = schnipp_schanpp(data, match)
+            data = blank_out(data, match.span())
     return data, a2ml
 
 def indent(level):
@@ -115,6 +103,15 @@ def dump(tree, level = 0):
         level -= 1
     indent(level)
     print(")")
+
+
+class MyErrorListener(ErrorListener):
+
+    def __init__(self):
+        super().__init__()
+
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        print("line " + str(line) + ":" + str(column) + " " + msg, file = sys.stderr)
 
 
 class BaseListener(antlr4.ParseTreeListener):
@@ -225,10 +222,14 @@ class ParserWrapper(object):
     def parse(self, input, trace = False):
         self.db = model.A2LDatabase(self.fnbase, debug = self.debug)
         lexer = self.lexerClass(input)
+        lexer.removeErrorListeners()
+        lexer.addErrorListener(MyErrorListener())
         tokenStream = antlr4.CommonTokenStream(lexer)
 #        tokenStream = BufferedTokenStream(lexer)
         parser = self.parserClass(tokenStream)
         parser.setTrace(trace)
+        parser.removeErrorListeners()
+        parser.addErrorListener(MyErrorListener())
         meth = getattr(parser, self.startSymbol)
         self._syntaxErrors = parser._syntaxErrors
         tree = meth()
