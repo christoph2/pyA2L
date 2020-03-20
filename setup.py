@@ -42,7 +42,7 @@ def findAntlr():
     return antlrJar
 
 
-class AntrlAutogen(distutils.cmd.Command):
+class AntlrAutogen(distutils.cmd.Command):
     """Custom command to autogenerate Python code using ANTLR."""
 
     description = "generate python code using antlr"
@@ -70,9 +70,9 @@ class AntrlAutogen(distutils.cmd.Command):
     def run(self):
         """Run ANTLR."""
         antlrPath = findAntlr()
-        antlr4 = ["java", "-Xmx500M", "-cp", antlrPath, "org.antlr.v4.Tool"]
-        self.announce(" ".join(antlr4 + self.arguments), level=distutils.log.INFO)
-        subprocess.check_call(antlr4 + self.arguments)
+        antlrCmd = ["java", "-Xmx500M", "-cp", antlrPath, "org.antlr.v4.Tool"]
+        self.announce(" ".join(antlrCmd + self.arguments), level=distutils.log.INFO)
+        subprocess.check_call(antlrCmd + self.arguments)
         clean()
 
 
@@ -124,7 +124,7 @@ setup(
     author_email="cpu12.gems@googlemail.com",
     url="https://www.github.com/Christoph2/pyA2L",
     cmdclass={
-        "antlr": AntrlAutogen,
+        "antlr": AntlrAutogen,
         "build_py": CustomBuildPy,
         "develop": CustomDevelop,
     },
