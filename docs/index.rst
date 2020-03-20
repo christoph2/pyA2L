@@ -11,6 +11,7 @@ Welcome to pyXCP's documentation!
    :caption: Contents:
 
    installation
+   building
    getting_started
    tutorial
    configuration
