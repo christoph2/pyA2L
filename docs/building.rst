@@ -1,7 +1,7 @@
 Building pyA2L
 ==============
 
-pyA2L uses code generated from ANTLR grammars for much of the heavy lifting when parsing ASAP2 documents. This code is not version controlled, but instead generated during build-time. That means that if you just ``git cloned`` this repository, it is not yet ready to use. You must first build it, which requires a working Java installation to run ANTLR.
+pyA2L uses code generated from ANTLR grammars for much of the heavy lifting when parsing ASAP2 documents. This code is not version controlled, but instead generated during build-time. That means that if you just ``git clone``'d this repository, it is not yet ready to use. You must first build it, which requires a working Java installation to run ANTLR.
 
 Prerequisites
 -------------
