@@ -53,14 +53,11 @@ def test_cpp_comment_containing_a_c_comment2(prep):
 def test_c_comment_containing_a_cpp_comment1(prep):
     assert prep(splitter("C comment. /* containing a // C++ comment */")) == "C comment.                                  "
 
-
-@pytest.mark.skip
 def test_c_comment_containing_a_cpp_comment2(prep):
     assert prep(splitter("C comment / multiline  /* containing a\n// C++ comment */")) == \
-                         "C comment / multiline                 \n                 "
+                         "C comment / multiline                 \n"
 
-"""C comment / multiline. /* containing a
-// C++ comment */
-after comment
-"""
+def test_c_comment_containing_a_cpp_comment3(prep):
+    assert prep(splitter("C comment / multiline  /* containing a\n// C++ comment */after comment")) == \
+                         "C comment / multiline                 \nafter comment"
 

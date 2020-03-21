@@ -23,6 +23,9 @@ else:
     has_scipy = True
 
 
+RUN_MATH_TEST = has_numpy == True and has_scipy == True
+
+
 def test_axis_rescale_ok():
     EXPECTED = [
         0, 16.666666666666668, 33.333333333333336, 50.0, 66.66666666666667, 83.33333333333333, 100.0, 158.9206349206349, 216
@@ -74,20 +77,19 @@ Z_MAP = (
     (1.2, 5.3, 3.2, 3.5, 2.1, 1.4, 4.2),
 )
 
-@pytest.mark.skipif("has_numpy == False or has_scipy == False")
+@pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_normalization_axes():
     na = functions.NormalizationAxes(X_NORM, Y_NORM, Z_MAP)
     assert na(850, 60) == 2.194
 
-@pytest.mark.skipif("has_numpy == False or has_scipy == False")
+@pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_normalization_ident():
     na = functions.NormalizationAxes(X_IDENT, Y_IDENT, Z_MAP)
     for row_idx, row in enumerate(Z_MAP):
         for col_idx, value in enumerate(row):
             assert value == na(col_idx, row_idx)    # Interpolator should just pick every element from Z_MAP.
 
-
-@pytest.mark.skipif("has_numpy == False or has_scipy == False")
+@pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_identity():
     rf = functions.RatFunc([0, 1, 0, 0, 0, 1])
     assert rf(21845) == 21845
