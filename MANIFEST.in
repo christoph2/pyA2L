@@ -2,3 +2,4 @@ include pya2l/amlLexer.py
 include pya2l/amlParser.py
 include pya2l/a2lLexer.py
 include pya2l/a2lParser.py
+include pya2l/examples/ASAP2_Demo_V161.a2l
