@@ -115,7 +115,7 @@ class DB(object):
         """
         self._set_path_components(file_name)
         if not path.exists(self._dbfn):
-            raise OSError("file '{}' does not exists.".format(file_name))
+            raise OSError("file '{}' does not exists.".format(self._dbfn))
         else:
             self.db = model.A2LDatabase(self._dbfn)
             self.session = self.db.session
