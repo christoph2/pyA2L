@@ -83,6 +83,6 @@ deploy:
   prerelease: true
 
 cache:
-    - "%APPDATA%\pip\Cache -> appveyor.yml" 
-    - "%LOCALAPPDATA%\pip\Cache -> appveyor.yml" 
+    - "%APPDATA%\\pip\\Cache -> appveyor.yml" 
+    - "%LOCALAPPDATA%\\pip\\Cache -> appveyor.yml" 
 
