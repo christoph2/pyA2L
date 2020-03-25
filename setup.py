@@ -80,7 +80,9 @@ def clean():
     """Remove unneeded files."""
     tokens = glob(os.path.join("pya2l", "*tokens"))
     interp = glob(os.path.join("pya2l", "*interp"))
-    listener = glob(os.path.join("pya2l", "*Listener.py"))
+    listener = [
+        glob(os.path.join("pya2l", i + "Listener.py"))[0] for i in ["a2l", "aml"]
+    ]
 
     for unneeded in tokens + interp + listener:
         os.remove(unneeded)
