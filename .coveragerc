@@ -1,0 +1,25 @@
+[run]
+branch = True
+omit = 
+    pya2l/tests/*
+    pya2l/model/*
+    pya2l/classes.py
+    pya2l/amlLexer.py
+    pya2l/amlParser.py
+    pya2l/a2lParser.py
+    pya2l/a2lParser.py
+
+[report]
+exclude_lines =
+
+    pragma: no cover
+
+    def __repr__
+    if self\.debug
+
+    raise AssertionError
+    
+    if 0:
+    if __name__ == .__main__.:
+
+ignore_errors = True
