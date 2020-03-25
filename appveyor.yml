@@ -27,6 +27,7 @@ install:
   - set PATH=%PYTHON%\Scripts;%PATH%
   - "%PYTHON%\\python.exe -m pip install --upgrade pip"
   - pip install wheel coveralls coverage codeclimate-test-reporter"
+  - pip install numpy scipy"
   - pip install -r requirements.txt
   - cmd: curl -O -L https://www.antlr.org/download/antlr-4.8-complete.jar
   - cmd: set CLASSPATH = "%APPVEYOR_BUILD_FOLDER%\\antlr-4.8-complete.jar"
@@ -80,3 +81,8 @@ deploy:
     secure: Wiweaot1JAHzV9mMZ3Zhn/5XUuLe5XYAyfpRZmWNpLW7fMW1FhAdoRliiAhz3Sv6
   draft: false
   prerelease: true
+
+cache:
+    - "%APPDATA%\pip\Cache -> appveyor.yml" 
+    - "%LOCALAPPDATA%\pip\Cache -> appveyor.yml" 
+
