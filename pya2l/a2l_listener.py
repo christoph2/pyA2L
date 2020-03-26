@@ -29,16 +29,14 @@ __version__ = '0.1.0'
 
 import codecs
 from decimal import Decimal as D
-import importlib
 import os
 from pprint import pprint
 import re
 import sys
 
 import antlr4
-from antlr4.BufferedTokenStream import BufferedTokenStream
-from antlr4.error.ErrorListener import ErrorListener
 
+from pya2l.parserlib import ParserWrapper
 from pya2l.logger import Logger
 import pya2l.model as model
 from pya2l.preprocessor import blank_out
@@ -87,15 +85,6 @@ def cut_a2ml(data):
         for idx, match in enumerate(matches):
             data = blank_out(data, match.span())
     return data, a2ml
-
-
-class MyErrorListener(ErrorListener):
-
-    def __init__(self):
-        super().__init__()
-
-    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        print("line " + str(line) + ":" + str(column) + " " + msg, file = sys.stderr)
 
 
 class BaseListener(antlr4.ParseTreeListener):
@@ -183,68 +172,6 @@ class BaseListener(antlr4.ParseTreeListener):
 
     def debug(self, msg, location = None):
         self._log(self.logger.debug, msg, location)
-
-
-class ParserWrapper(object):
-    """
-    """
-    def __init__(self, grammarName, startSymbol, listener = None, debug = False):
-        self.debug = debug
-        self.grammarName = grammarName
-        self.startSymbol = startSymbol
-        self.lexerModule, self.lexerClass = self._load('Lexer')
-        self.parserModule, self.parserClass = self._load('Parser')
-        self.listener = listener
-
-    def _load(self, name):
-        className = '{0}{1}'.format(self.grammarName, name)
-        moduleName = 'pya2l.{0}'.format(className)
-        module = importlib.import_module(moduleName)
-        klass = getattr(module, className)
-        return (module, klass, )
-
-    def parse(self, input, trace = False):
-        self.db = model.A2LDatabase(self.fnbase, debug = self.debug)
-        lexer = self.lexerClass(input)
-        lexer.removeErrorListeners()
-        lexer.addErrorListener(MyErrorListener())
-        tokenStream = antlr4.CommonTokenStream(lexer)
-#        tokenStream = BufferedTokenStream(lexer)
-        parser = self.parserClass(tokenStream)
-        parser.setTrace(trace)
-        parser.removeErrorListeners()
-        parser.addErrorListener(MyErrorListener())
-        meth = getattr(parser, self.startSymbol)
-        self._syntaxErrors = parser._syntaxErrors
-        tree = meth()
-        if self.listener:
-            self.listener.db = self.db
-            listener = self.listener()
-            walker = antlr4.ParseTreeWalker()
-            walker.walk(listener, tree)
-            result = listener.value
-        else:
-            result = tree
-        self.db.session.commit()
-        return self.db.session
-
-    def parseFromFile(self, filename, encoding = 'latin-1', trace = False):
-        pth, fname = os.path.split(filename)
-        self.fnbase = os.path.splitext(fname)[0]
-        return self.parse(ParserWrapper.stringStream(filename, encoding), trace)
-
-    def parseFromString(self, buf, encoding = 'latin-1', trace = False, dbname = ":memory:"):
-        self.fnbase = dbname
-        return self.parse(antlr4.InputStream(buf), trace)
-
-    @staticmethod
-    def stringStream(fname, encoding = 'latin-1'):
-        return antlr4.InputStream(codecs.open(fname, encoding = encoding).read())
-
-    def _getNumberOfSyntaxErrors(self):
-        return self._syntaxErrors
-
-    numberOfSyntaxErrors = property(_getNumberOfSyntaxErrors)
 
 
 class A2LListener(BaseListener):
