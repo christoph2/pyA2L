@@ -1,7 +1,7 @@
 /*
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2019 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2020 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -78,7 +78,7 @@ enumerator_list:
    ;
 
 enumerator:
-   t = tagValue ('=' c = constant)?
+   t = tagValue ('=' c = numericValue)?
    ;
 
 struct_type_name:
@@ -96,7 +96,7 @@ member:
     ;
 
 array_specifier:
-   '[' c = constant ']'
+   '[' c = numericValue ']'
    ;
 
 taggedstruct_type_name:
@@ -128,23 +128,10 @@ tagged_union_member:
    )
    ;
 
-constant returns [value]:
+numericValue:
      i = INT
    | h = HEX
    | f = FLOAT
-   ;
-
-intValue:
-    i = INT
-    ;
-
-floatValue:
-    f = FLOAT
-    ;
-
-number:
-     i = intValue
-   | f = floatValue
    ;
 
 stringValue:
@@ -158,6 +145,7 @@ tagValue:
 identifierValue:
     i = ID
     ;
+
 /*
 ** Lexer
 */
