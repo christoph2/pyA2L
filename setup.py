@@ -59,10 +59,11 @@ class AntlrAutogen(distutils.cmd.Command):
     def finalize_options(self):
         """Post-process options."""
         a2lGrammar = os.path.join("pya2l", "a2l.g4")
+        a2llgGrammar = os.path.join("pya2l", "a2llg.g4")
         amlGrammar = os.path.join("pya2l", "aml.g4")
         # distutils.cmd.Command should not have __init__().
         # pylint: disable=W0201
-        self.arguments = [a2lGrammar, amlGrammar, "-Dlanguage=Python3"]
+        self.arguments = [a2lGrammar, a2llgGrammar, amlGrammar, "-Dlanguage=Python3"]
 
         if self.target_dir is not None:
             self.arguments.extend(["-o", self.target_dir])
@@ -81,7 +82,7 @@ def clean():
     tokens = glob(os.path.join("pya2l", "*tokens"))
     interp = glob(os.path.join("pya2l", "*interp"))
     listener = [
-        glob(os.path.join("pya2l", i + "Listener.py"))[0] for i in ["a2l", "aml"]
+        glob(os.path.join("pya2l", i + "Listener.py"))[0] for i in ["a2l", "aml"] # No listener for lexer grammars (a2llg.g4).
     ]
     for unneeded in tokens + interp + listener:
         os.remove(unneeded)
