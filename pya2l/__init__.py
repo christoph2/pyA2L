@@ -130,8 +130,9 @@ class DB(object):
         """
         self._pth, self._base = path.split(file_name)
         fbase, ext = path.splitext(self._base)
-        self._dbfn = "{}.a2ldb".format(fbase)
+        self._dbfn = path.join(self._pth, "{}.a2ldb".format(fbase))
         if not ext or ext.lower() == ".a2l" or ext.lower() == ".a2ldb":
             self._a2lfn = "{}.a2l".format(fbase)
         else:
             self._a2lfn = "{}{}".format(fbase, ext)
+        self._a2lfn = path.join(self._pth, self._a2lfn)
