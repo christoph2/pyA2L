@@ -268,7 +268,7 @@ def test_tab_verb_with_default():
         (3, "Sinus"),
     ]
     default = "unknown signal type"
-    tv = functions.TabVerb(mapping, default = default)
+    tv = functions.LookupTable(mapping, default = default)
     assert tv(2) == "Square"
     assert tv(5) == default
 
@@ -279,7 +279,7 @@ def test_tab_verb_with_default_inv():
         (3, "Sinus"),
     ]
     default = "unknown signal type"
-    tv = functions.TabVerb(mapping, default = default)
+    tv = functions.LookupTable(mapping, default = default)
     assert tv.inv("Square") == 2
     assert tv.inv(default) is None
 
@@ -298,7 +298,7 @@ def test_tab_verb_ranges_with_default():
        (105, 105, "hundredfive")
     ]
     default = "out of range value"
-    tvr = functions.TabVerbRanges(mapping, default = default, dtype = int)
+    tvr = functions.LookupTableWithRanges(mapping, default = default, dtype = int)
     assert tvr(0) == "Zero_to_one"
     assert tvr(6) == "four_to_seven"
     assert tvr(45) == "eigteen_to_ninetynine"
@@ -323,7 +323,7 @@ def test_tab_verb_ranges_with_default_negative():
        (-105, -105, "minus_hundredfive")
     ]
     default = "out of range value"
-    tvr = functions.TabVerbRanges(mapping, default = default, dtype = int)
+    tvr = functions.LookupTableWithRanges(mapping, default = default, dtype = int)
     assert tvr(0) == "minus_one_to_zero"
     assert tvr(-6) == "minus_seven_to_minus_four"
     assert tvr(-45) == "minus_ninetynine_minus_eigteen"
@@ -417,6 +417,45 @@ def test_compu_method_tab_verb_no_vtab():
     module = session.query(model.Module).first()
     with pytest.raises(exceptions.StructuralError):
         compu = functions.CompuMethod(session, module.compu_method[0])
+
+
+def test_compu_method_tab_nointerp_default():
+    parser = ParserWrapper('a2l', 'module', A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.TAB_NOINTP.DEFAULT_VALUE
+          ""
+          TAB_NOINTP "%8.4" "U/  min  "
+          COMPU_TAB_REF CM.TAB_NOINTP.DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+        /begin COMPU_TAB CM.TAB_NOINTP.DEFAULT_VALUE.REF
+           ""
+           TAB_NOINTP
+           12
+           -3 98
+           -1 99
+           0 100
+           2 102
+           4 104
+           5 105
+           6 106
+           7 107
+           8 108
+           9 109
+           10 110
+           13 111
+           DEFAULT_VALUE_NUMERIC 300.56 /* DEFAULT_VALUE_NUME RIC should be used here as the normal output is numeric */
+        /end COMPU_TAB
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    module = session.query(model.Module).first()
+    compu = functions.CompuMethod(session, module.compu_method[0])
+    assert compu(-3) == 98
+    assert compu(8) == 108
+    assert compu.inv(108) == 8
+    assert compu(1) == 300.56
+
 
 def test_compu_method_tab_verb_ranges():
     parser = ParserWrapper('a2l', 'module', A2LListener)

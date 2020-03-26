@@ -296,17 +296,17 @@ class Linear:
             return self._eval_inv(y)
 
 
-class TabVerb:
+class LookupTable:
     """Basic lookup table.
-    An integer value is mapped to a display string.
+    An integer value is mapped to an integer or display string.
 
     Parameters
     ----------
         mapping: iterable of 2-tuples (key, value)
             - keys can be either floats or ints (internaly converted to int)
-            - values are strings.
+            - values are either integers or strings.
 
-        default: str
+        default: int or str
             returned if value is not in mapping.
     """
 
@@ -327,7 +327,7 @@ class TabVerb:
         return self.mapping_inv.get(y)
 
 
-class TabVerbRanges:
+class LookupTableWithRanges:
     """Lookup table where keys define numerical ranges.
 
     A value range is mapped to a display string.
@@ -400,7 +400,7 @@ class CompuMethod:
         'RAT_FUNC'  : RatFunc,
         'TAB_INTP'  : None,
         'TAB_NOINTP': None,
-        'TAB_VERB'  : TabVerb,
+        'TAB_VERB'  : LookupTable,
     }
 
     def __init__(self, session, compu_method: model.CompuMethod):
@@ -422,7 +422,17 @@ class CompuMethod:
         elif conversionType == "TAB_INTP":
             pass
         elif conversionType == "TAB_NOINTP":
-            pass
+            table_name = compu_method.compu_tab_ref.conversionTable
+            table = session.query(model.CompuTab).filter(model.CompuTab.name == table_name).first()
+            if table is None:
+                raise exceptions.StructuralError("'TAB_NOINTP' requires a conversation table.")
+            pairs = [(p.inVal, p.outVal) for p in table.pairs]
+            default_numeric = table.default_value_numeric.display_value if table.default_value_numeric else None
+            default = table.default_value.display_string if table.default_value else None
+            if default_numeric and default:
+                raise exceptions.StructuralError("Cannot use both DEFAULT_VALUE and DEFAULT_VALUE_NUMERIC.")
+            default = default_numeric if not default_numeric is None else default
+            self.evaluator = LookupTable(pairs, default)
         elif conversionType == "TAB_VERB":
             table_name = compu_method.compu_tab_ref.conversionTable
             table = session.query(model.CompuVtab).filter(model.CompuVtab.name == table_name).first()
@@ -433,11 +443,11 @@ class CompuMethod:
                 triples = [(p.inValMin, p.inValMax, p.outVal) for p in table.triples]
                 default = table.default_value.display_string if table.default_value else None
                 # TODO: datatype !?
-                self.evaluator = TabVerbRanges(triples, default)
+                self.evaluator = LookupTableWithRanges(triples, default)
             else:
                 pairs = [(p.inVal, p.outVal) for p in table.pairs]
                 default = table.default_value.display_string if table.default_value else None
-                self.evaluator = TabVerb(pairs, default)
+                self.evaluator = LookupTable(pairs, default)
         else:
             raise ValueError("Unknown conversation type '{}'.".format(conversionType))
 
