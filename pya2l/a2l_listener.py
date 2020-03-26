@@ -88,22 +88,6 @@ def cut_a2ml(data):
             data = blank_out(data, match.span())
     return data, a2ml
 
-def indent(level):
-    print(" " * level,)
-
-def dump(tree, level = 0):
-    indent(level)
-    if isinstance(tree, antlr4.TerminalNode):
-        print(tree.symbol.text)
-    else:
-        print("({}".format(tree.value))
-        level += 1
-        for child in tree.children:
-            dump(child, level)
-        level -= 1
-    indent(level)
-    print(")")
-
 
 class MyErrorListener(ErrorListener):
 
