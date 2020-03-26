@@ -456,6 +456,76 @@ def test_compu_method_tab_nointerp_default():
     assert compu.inv(108) == 8
     assert compu(1) == 300.56
 
+def test_compu_method_tab_nointerp_no_default():
+    parser = ParserWrapper('a2l', 'module', A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.TAB_NOINTP.NO_DEFAULT_VALUE
+          ""
+          TAB_NOINTP "%8.4" "U/  min  "
+          COMPU_TAB_REF CM.TAB_NOINTP.NO_DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+        /begin COMPU_TAB CM.TAB_NOINTP.NO_DEFAULT_VALUE.REF
+           ""
+           TAB_NOINTP
+           12
+           -3 98
+           -1 99
+           0 100
+           2 102
+           4 104
+           5 105
+           6 106
+           7 107
+           8 108
+           9 109
+           10 110
+           13 111
+        /end COMPU_TAB
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    module = session.query(model.Module).first()
+    compu = functions.CompuMethod(session, module.compu_method[0])
+    assert compu(-3) == 98
+    assert compu(8) == 108
+    assert compu.inv(108) == 8
+    assert compu(1) is None
+
+def test_compu_method_tab_nointerp_both_defaults():
+    parser = ParserWrapper('a2l', 'module', A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.TAB_NOINTP.DEFAULT_VALUE
+          ""
+          TAB_NOINTP "%8.4" "U/  min  "
+          COMPU_TAB_REF CM.TAB_NOINTP.DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+        /begin COMPU_TAB CM.TAB_NOINTP.DEFAULT_VALUE.REF
+           ""
+           TAB_NOINTP
+           12
+           -3 98
+           -1 99
+           0 100
+           2 102
+           4 104
+           5 105
+           6 106
+           7 107
+           8 108
+           9 109
+           10 110
+           13 111
+           DEFAULT_VALUE "value out of range"
+           DEFAULT_VALUE_NUMERIC 300.56 /* DEFAULT_VALUE_NUME RIC should be used here as the normal output is numeric */
+        /end COMPU_TAB
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    module = session.query(model.Module).first()
+    with pytest.raises(exceptions.StructuralError):
+        compu = functions.CompuMethod(session, module.compu_method[0])
 
 def test_compu_method_tab_verb_ranges():
     parser = ParserWrapper('a2l', 'module', A2LListener)

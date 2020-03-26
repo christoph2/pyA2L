@@ -86,6 +86,7 @@ class Interpolate1D:
         return float(self.interp(x))
 
 
+'''
 class Lookup:
     """Table lookup
 
@@ -116,7 +117,7 @@ class Lookup:
                 raise ValueError("x out of bounds")
         pos = bisect.bisect_right(self.xs, x) - 1
         return self.ys[pos]
-
+'''
 
 
 def axis_rescale(no_rescale_x : int, no_axis_pts : int, axis, virtual):
