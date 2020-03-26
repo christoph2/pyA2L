@@ -50,13 +50,14 @@ class MyErrorListener(ErrorListener):
 class ParserWrapper:
     """
     """
-    def __init__(self, grammarName, startSymbol, listener = None, debug = False):
+    def __init__(self, grammarName, startSymbol, listener = None, useDatabase = True, debug = False):
         self.debug = debug
         self.grammarName = grammarName
         self.startSymbol = startSymbol
         self.lexerModule, self.lexerClass = self._load('Lexer')
         self.parserModule, self.parserClass = self._load('Parser')
         self.listener = listener
+        self.useDatabase = useDatabase
 
     def _load(self, name):
         className = '{0}{1}'.format(self.grammarName, name)
@@ -66,7 +67,8 @@ class ParserWrapper:
         return (module, klass, )
 
     def parse(self, input, trace = False):
-        self.db = model.A2LDatabase(self.fnbase, debug = self.debug)
+        if self.useDatabase:
+            self.db = model.A2LDatabase(self.fnbase, debug = self.debug)
         lexer = self.lexerClass(input)
         lexer.removeErrorListeners()
         lexer.addErrorListener(MyErrorListener())
@@ -80,15 +82,14 @@ class ParserWrapper:
         self._syntaxErrors = parser._syntaxErrors
         tree = meth()
         if self.listener:
-            self.listener.db = self.db
+            if self.useDatabase:
+                self.listener.db = self.db
             listener = self.listener()
             walker = antlr4.ParseTreeWalker()
             walker.walk(listener, tree)
-            result = listener.value
-        else:
-            result = tree
-        self.db.session.commit()
-        return self.db.session
+        if self.useDatabase:
+            self.db.session.commit()
+            return self.db.session
 
     def parseFromFile(self, filename, encoding = 'latin-1', trace = False):
         pth, fname = os.path.split(filename)
@@ -101,6 +102,44 @@ class ParserWrapper:
 
     @staticmethod
     def stringStream(fname, encoding = 'latin-1'):
+        return antlr4.InputStream(codecs.open(fname, encoding = encoding).read())
+
+    def _getNumberOfSyntaxErrors(self):
+        return self._syntaxErrors
+
+    numberOfSyntaxErrors = property(_getNumberOfSyntaxErrors)
+
+
+class LexerWrapper(object):
+    """
+
+    """
+
+    def __init__(self, grammarName, startSymbol):
+        self.grammarName = grammarName
+        self.startSymbol = startSymbol
+        self.lexerModule, self.lexerClass = self._load('Lexer')
+
+    def _load(self, name):
+        className = '{0}'.format(self.grammarName, name)
+        moduleName = 'pya2l.{0}'.format(className)
+        module = importlib.import_module(moduleName)
+        klass = getattr(module, className)
+        return (module, klass, )
+
+    def lex(self, input, trace = False):
+        lexer = self.lexerClass(input)
+        tokenStream = antlr4.CommonTokenStream(lexer)
+        return tokenStream
+
+    def lexFromFile(self, fileName, encoding = "utf8", trace = False):
+        return self.lex(ParserWrapper.stringStream(fileName, encoding), trace)
+
+    def lexFromString(self, buffer, trace = False):
+        return self.lex(antlr4.InputStream(buffer), trace)
+
+    @staticmethod
+    def stringStream(fname, encoding = "utf-8"):
         return antlr4.InputStream(codecs.open(fname, encoding = encoding).read())
 
     def _getNumberOfSyntaxErrors(self):
