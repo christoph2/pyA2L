@@ -1,0 +1,23 @@
+---
+engines:
+    duplication:
+        enabled: true
+        config:
+            languages:
+            - python
+    fixme:
+        enabled: true
+    radon:
+        enabled: true
+ratings:
+    paths:
+    - "**.py"
+exclude_paths:
+    - "pya2l/tests/**"
+    - "pya2l/model/**"
+    - "pya2l/classes.py"
+    - "pya2l/amlLexer.py"
+    - "pya2l/amlParser.py"
+    - "pya2l/a2lParser.py"
+    - "pya2l/a2lParser.py"
+    - "docs/**py"
