@@ -83,7 +83,6 @@ def clean():
     listener = [
         glob(os.path.join("pya2l", i + "Listener.py"))[0] for i in ["a2l", "aml"]
     ]
-
     for unneeded in tokens + interp + listener:
         os.remove(unneeded)
 
