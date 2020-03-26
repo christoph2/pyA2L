@@ -49,5 +49,5 @@ exclude_patterns:
 - "pya2l/classes.py"
 - "pya2l/amlLexer.py"
 - "pya2l/amlParser.py"
-- "pya2l/a2lParser.py"
+- "pya2l/a2lLexer.py"
 - "pya2l/a2lParser.py"

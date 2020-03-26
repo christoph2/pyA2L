@@ -7,7 +7,7 @@ omit =
     pya2l/amlLexer.py
     pya2l/amlParser.py
     pya2l/a2lParser.py
-    pya2l/a2lParser.py
+    pya2l/a2lLexer.py
 
 [report]
 exclude_lines =
@@ -16,6 +16,8 @@ exclude_lines =
 
     def __repr__
     if self\.debug
+
+    except ImportError
 
     raise AssertionError
     
