@@ -111,22 +111,13 @@ class BaseListener(antlr4.ParseTreeListener):
         else:
             ctx.value = None
 
-    def exitFloatValue(self, ctx):
+    def exitNumericValue(self, ctx):
         if ctx.f:
             ctx.value = D(ctx.f.text)
         elif ctx.i:
             ctx.value = D(ctx.i.text)
         else:
             ctx.value = None
-
-    def exitNumber(self, ctx):
-        if ctx.i:
-            value = ctx.i.value
-        elif ctx.f:
-            value = ctx.f.value
-        else:
-            value = None
-        ctx.value = value
 
     def exitStringValue(self, ctx):
         ctx.value = ctx.s.text.strip('"') if ctx.s else None

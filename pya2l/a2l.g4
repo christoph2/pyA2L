@@ -1,7 +1,7 @@
 /*
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2019 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2020 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -104,7 +104,7 @@ byteOrder:
 
 calibrationAccess:
      'CALIBRATION_ACCESS'
-
+    
     type_ =
     (
         'CALIBRATION' |
@@ -122,7 +122,7 @@ defaultValue:
 
 deposit:
      'DEPOSIT'
-
+    
     mode_ =
     (
         'ABSOLUTE' |
@@ -147,8 +147,8 @@ ecuAddressExtension:
 
 extendedLimits:
      'EXTENDED_LIMITS'
-    lowerLimit = floatValue
-    upperLimit = floatValue
+    lowerLimit = numericValue
+    upperLimit = numericValue
     ;
 
 format_:
@@ -187,7 +187,7 @@ maxRefresh:
 
 monotony:
      'MONOTONY'
-
+    
     monotony_ =
     (
         'MON_DECREASE' |
@@ -228,7 +228,7 @@ refUnit:
 
 stepSize:
      'STEP_SIZE'
-    stepSize_ = floatValue
+    stepSize_ = numericValue
     ;
 
 symbolLink:
@@ -325,11 +325,11 @@ axisPts:
     address = integerValue
     inputQuantity = identifierValue
     deposit_ = identifierValue
-    maxDiff = floatValue
+    maxDiff = numericValue
     conversion = identifierValue
     maxAxisPoints = integerValue
-    lowerLimit = floatValue
-    upperLimit = floatValue
+    lowerLimit = numericValue
+    upperLimit = numericValue
     /* optional part */
 
     (
@@ -358,7 +358,7 @@ characteristic:
     BEGIN 'CHARACTERISTIC'
     name = identifierValue
     longIdentifier = stringValue
-
+    
     type_ =
     (
         'ASCII' |
@@ -373,10 +373,10 @@ characteristic:
 
     address = integerValue
     deposit_ = identifierValue
-    maxDiff = floatValue
+    maxDiff = numericValue
     conversion = identifierValue
-    lowerLimit = floatValue
-    upperLimit = floatValue
+    lowerLimit = numericValue
+    upperLimit = numericValue
     /* optional part */
 
     (
@@ -411,7 +411,7 @@ characteristic:
 
 axisDescr:
     BEGIN 'AXIS_DESCR'
-
+    
     attribute =
     (
         'CURVE_AXIS' |
@@ -424,8 +424,8 @@ axisDescr:
     inputQuantity = identifierValue
     conversion = identifierValue
     maxAxisPoints = integerValue
-    lowerLimit = floatValue
-    upperLimit = floatValue
+    lowerLimit = numericValue
+    upperLimit = numericValue
     /* optional part */
 
     (
@@ -474,13 +474,13 @@ fixAxisParDist:
 
 fixAxisParList:
     BEGIN 'FIX_AXIS_PAR_LIST'
-    (axisPts_Value += floatValue)*
+    (axisPts_Value += numericValue)*
     END 'FIX_AXIS_PAR_LIST'
     ;
 
 maxGrad:
      'MAX_GRAD'
-    maxGradient = floatValue
+    maxGradient = numericValue
     ;
 
 comparisonQuantity:
@@ -517,7 +517,7 @@ compuMethod:
     BEGIN 'COMPU_METHOD'
     name = identifierValue
     longIdentifier = stringValue
-
+    
     conversionType =
     (
         'IDENTICAL' |
@@ -546,18 +546,18 @@ compuMethod:
 
 coeffs:
      'COEFFS'
-    a = floatValue
-    b = floatValue
-    c = floatValue
-    d = floatValue
-    e = floatValue
-    f = floatValue
+    a = numericValue
+    b = numericValue
+    c = numericValue
+    d = numericValue
+    e = numericValue
+    f = numericValue
     ;
 
 coeffsLinear:
      'COEFFS_LINEAR'
-    a = floatValue
-    b = floatValue
+    a = numericValue
+    b = numericValue
     ;
 
 compuTabRef:
@@ -590,7 +590,7 @@ compuTab:
     BEGIN 'COMPU_TAB'
     name = identifierValue
     longIdentifier = stringValue
-
+    
     conversionType =
     (
         'TAB_INTP' |
@@ -598,7 +598,7 @@ compuTab:
     )
 
     numberValuePairs = integerValue
-    (inVal += floatValue outVal += floatValue)*
+    (inVal += numericValue outVal += numericValue)*
     /* optional part */
 
     (
@@ -610,19 +610,19 @@ compuTab:
 
 defaultValueNumeric:
      'DEFAULT_VALUE_NUMERIC'
-    display_value = floatValue
+    display_value = numericValue
     ;
 
 compuVtab:
     BEGIN 'COMPU_VTAB'
     name = identifierValue
     longIdentifier = stringValue
-
+    
     conversionType =
         'TAB_VERB'
 
     numberValuePairs = integerValue
-    (inVal += floatValue outVal += stringValue)*
+    (inVal += numericValue outVal += stringValue)*
     /* optional part */
 
     (
@@ -636,7 +636,7 @@ compuVtabRange:
     name = identifierValue
     longIdentifier = stringValue
     numberValueTriples = integerValue
-    (inValMin += floatValue inValMax += floatValue outVal += stringValue)*
+    (inValMin += numericValue inValMax += numericValue outVal += stringValue)*
     /* optional part */
 
     (
@@ -761,9 +761,9 @@ measurement:
     datatype = dataType
     conversion = identifierValue
     resolution = integerValue
-    accuracy = floatValue
-    lowerLimit = floatValue
-    upperLimit = floatValue
+    accuracy = numericValue
+    lowerLimit = numericValue
+    upperLimit = numericValue
     /* optional part */
 
     (
@@ -835,7 +835,7 @@ errorMask:
 
 layout:
      'LAYOUT'
-
+    
     indexMode =
     (
         'ROW_DIR' |
@@ -975,7 +975,7 @@ epk:
 
 memoryLayout:
     BEGIN 'MEMORY_LAYOUT'
-
+    
     prgType =
     (
         'PRG_CODE' |
@@ -1002,7 +1002,7 @@ memorySegment:
     BEGIN 'MEMORY_SEGMENT'
     name = identifierValue
     longIdentifier = stringValue
-
+    
     prgType =
     (
         'CALIBRATION_VARIABLES' |
@@ -1015,7 +1015,7 @@ memorySegment:
         'VARIABLES'
     )
 
-
+    
     memoryType =
     (
         'EEPROM' |
@@ -1026,7 +1026,7 @@ memorySegment:
         'REGISTER'
     )
 
-
+    
     attribute =
     (
         'INTERN' |
@@ -1289,7 +1289,7 @@ fncValues:
      'FNC_VALUES'
     position = integerValue
     datatype = dataType
-
+    
     indexMode =
     (
         'ALTERNATE_CURVES' |
@@ -1509,7 +1509,7 @@ unit:
     name = identifierValue
     longIdentifier = stringValue
     display = stringValue
-
+    
     type_ =
     (
         'DERIVED' |
@@ -1539,8 +1539,8 @@ siExponents:
 
 unitConversion:
      'UNIT_CONVERSION'
-    gradient = floatValue
-    offset = floatValue
+    gradient = numericValue
+    offset = numericValue
     ;
 
 userRights:
@@ -1625,7 +1625,7 @@ varForbiddenComb:
 
 varNaming:
      'VAR_NAMING'
-
+    
     tag =
     (
         'NUMERIC' |
@@ -1643,7 +1643,7 @@ integerValue:
     h = HEX | i = INT
     ;
 
-floatValue:
+numericValue:
     f = FLOAT | i = INT
     ;
 
@@ -1724,7 +1724,6 @@ WS  :   (' ' | '\t' | '\r' | '\n') -> channel(HIDDEN)
 STRING:
     '"' ( ESC_SEQ | ~('\\'|'"') )* '"'
     ;
-
 
 fragment
 HEX_DIGIT : ('0'..'9'|'a'..'f'|'A'..'F') ;
