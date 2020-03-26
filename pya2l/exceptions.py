@@ -34,4 +34,8 @@ class StructuralError(Exception):
     """Structural error, e.g. missing model element.
     """
 
+class RangeError(Exception):
+    """A numerical value is out of range.
+    """
+
 

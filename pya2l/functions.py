@@ -26,7 +26,9 @@ __copyright__="""
 """Functions adding semantics to model elements.
 """
 
+import bisect
 from collections import OrderedDict
+from operator import itemgetter
 
 try:
     import numpy as np
@@ -295,12 +297,17 @@ class Linear:
 
 
 class TabVerb:
-    """
+    """Basic lookup table.
+    An integer value is mapped to a display string.
+
     Parameters
     ----------
         mapping: iterable of 2-tuples (key, value)
             - keys can be either floats or ints (internaly converted to int)
             - values are strings.
+
+        default: str
+            returned if value is not in mapping.
     """
 
     def __init__(self, mapping, default = None):
@@ -318,6 +325,61 @@ class TabVerb:
         """
         """
         return self.mapping_inv.get(y)
+
+
+class TabVerbRanges:
+    """Lookup table where keys define numerical ranges.
+
+    A value range is mapped to a display string.
+
+    Parameters
+    ----------
+        mapping: iterable of 3-tuples (key_min, key_max, value)
+            - keys can be either floats or ints (s. `dtype`).
+            - values are strings.
+
+        default: str
+            returned if value is out of any declared range.
+
+        dtype: int | float
+            Datatype of keys.
+    """
+
+    def __init__(self, mapping, default = None, dtype = int):
+        if not (dtype is int or dtype is float):
+            raise ValueError("dtype must be either int or float")
+        mapping = ((dtype(item[0]), dtype(item[1]), item[2]) for item in mapping)
+        self.mapping = sorted(mapping, key = itemgetter(0))
+        self.min_values = [item[0] for item in self.mapping]
+        self.max_values = [item[1] for item in self.mapping]
+        self.minimum = min(self.min_values)
+        self.maximum = max(self.max_values)
+        self.display_values = [item[2] for item in self.mapping]
+        self.dict_inv = dict(zip(self.display_values, self.min_values)) # min_value, according to spec.
+        self.default = default
+        if dtype == int:
+            self.in_range = lambda x, l, r: l <= x <= r
+        else:
+            self.in_range = lambda x, l, r: l <= x < r
+
+    def __call__(self, x):
+        """
+        """
+        if not (self.minimum <= x <= self.maximum):
+            return self.default
+        pos = bisect.bisect_right(self.min_values, x) - 1
+        display_value = self.display_values[pos]
+        min_value = self.min_values[pos]
+        max_value = self.max_values[pos]
+        if self.in_range(x, min_value, max_value):
+            return display_value
+        else:
+            return self.default
+
+    def inv(self, y):
+        """
+        """
+        return self.dict_inv.get(y, None)
 
 
 class CompuMethod:
@@ -350,12 +412,12 @@ class CompuMethod:
         elif conversionType == "LINEAR":
             coeffs = compu_method.coeffs_linear
             if coeffs is None:
-                raise exceptions.StructuralError("'LINEAR' requires a coefficients (COEFFS_LINEAR).")
+                raise exceptions.StructuralError("'LINEAR' requires coefficients (COEFFS_LINEAR).")
             self.evaluator = Linear(coeffs)
         elif conversionType == "RAT_FUNC":
             coeffs = compu_method.coeffs
             if coeffs is None:
-                raise exceptions.StructuralError("'RAT_FUNC' requires a coefficients (COEFFS).")
+                raise exceptions.StructuralError("'RAT_FUNC' requires coefficients (COEFFS).")
             self.evaluator = RatFunc(coeffs)
         elif conversionType == "TAB_INTP":
             pass
@@ -365,19 +427,34 @@ class CompuMethod:
             table_name = compu_method.compu_tab_ref.conversionTable
             table = session.query(model.CompuVtab).filter(model.CompuVtab.name == table_name).first()
             if table is None:
-                raise exceptions.StructuralError("'TAB_VERB' requires a conversation table.")
-            pairs = [(p.inVal, p.outVal) for p in table.pairs]
-            default = table.default_value.display_string if table.default_value else None
-            self.evaluator = TabVerb(pairs, default)
+                table = session.query(model.CompuVtabRange).filter(model.CompuVtabRange.name == table_name).first()
+                if table is None:
+                    raise exceptions.StructuralError("'TAB_VERB' requires a conversation table.")
+                triples = [(p.inValMin, p.inValMax, p.outVal) for p in table.triples]
+                default = table.default_value.display_string if table.default_value else None
+                # TODO: datatype !?
+                self.evaluator = TabVerbRanges(triples, default)
+            else:
+                pairs = [(p.inVal, p.outVal) for p in table.pairs]
+                default = table.default_value.display_string if table.default_value else None
+                self.evaluator = TabVerb(pairs, default)
         else:
             raise ValueError("Unknown conversation type '{}'.".format(conversionType))
 
     def __call__(self, x):
-        """
+        """Evaluate computation method.
+
+        Parameters
+        ----------
+            x: int or float, scalar or array
         """
         return self.evaluator(x)
 
     def inv(self, y):
-        """
+        """Inverse computation method.
+
+        Parameters
+        ----------
+            y: int or float, scalar or array
         """
         return self.evaluator.inv(y)

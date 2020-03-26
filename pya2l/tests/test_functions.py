@@ -283,10 +283,74 @@ def test_tab_verb_with_default_inv():
     assert tv.inv("Square") == 2
     assert tv.inv(default) is None
 
+def test_tab_verb_ranges_with_default():
+    mapping = [
+       (0, 1, "Zero_to_one"),
+       (2, 3, "two_to_three"),
+       (4, 7, "four_to_seven"),
+       (14, 17, "fourteen_to_seventeen"),
+       (18, 99, "eigteen_to_ninetynine"),
+       (100, 100, "hundred"),
+       (101, 101, "hundredone"),
+       (102, 102, "hundredtwo"),
+       (103, 103, "hundredthree"),
+       (104, 104, "hundredfour"),
+       (105, 105, "hundredfive")
+    ]
+    default = "out of range value"
+    tvr = functions.TabVerbRanges(mapping, default = default, dtype = int)
+    assert tvr(0) == "Zero_to_one"
+    assert tvr(6) == "four_to_seven"
+    assert tvr(45) == "eigteen_to_ninetynine"
+    assert tvr(100) == "hundred"
+    assert tvr(105) == "hundredfive"
+    assert tvr(-1) == "out of range value"
+    assert tvr(106) == "out of range value"
+    assert tvr(10) == "out of range value"
+
+def test_tab_verb_ranges_with_default_negative():
+    mapping = [
+       (-1, 0, "minus_one_to_zero"),
+       (-3, -2, "minus_three_minus_two"),
+       (-7, -4, "minus_seven_to_minus_four"),
+       (-17, -14, "minus_seventeen_minus_fourteen"),
+       (-99, -18, "minus_ninetynine_minus_eigteen"),
+       (-100, -100, "minus_hundred"),
+       (-101, -101, "minus_hundredone"),
+       (-102, -102, "minus_hundredtwo"),
+       (-103, -103, "minus_hundredthree"),
+       (-104, -104, "minus_hundredfour"),
+       (-105, -105, "minus_hundredfive")
+    ]
+    default = "out of range value"
+    tvr = functions.TabVerbRanges(mapping, default = default, dtype = int)
+    assert tvr(0) == "minus_one_to_zero"
+    assert tvr(-6) == "minus_seven_to_minus_four"
+    assert tvr(-45) == "minus_ninetynine_minus_eigteen"
+    assert tvr(-100) == "minus_hundred"
+    assert tvr(-105) == "minus_hundredfive"
+    assert tvr(1) == "out of range value"
+    assert tvr(-106) == "out of range value"
+    assert tvr(-10) == "out of range value"
 
 ##
 ## Basic Integration Tests.
 ##
+@pytest.mark.skip
+def test_compu_method_invalid():
+    parser = ParserWrapper('a2l', 'module', A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.TAB_VERB.DEFAULT_VALUE
+          "Verbal conversion with default value"
+          FOO_BAR "%12.0" ""
+        /end COMPU_METHOD
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    module = session.query(model.Module).first()
+    compu = functions.CompuMethod(session, module.compu_method[0])
+
 def test_compu_method_tab_verb():
     parser = ParserWrapper('a2l', 'module', A2LListener)
     DATA = """
@@ -353,6 +417,126 @@ def test_compu_method_tab_verb_no_vtab():
     module = session.query(model.Module).first()
     with pytest.raises(exceptions.StructuralError):
         compu = functions.CompuMethod(session, module.compu_method[0])
+
+def test_compu_method_tab_verb_ranges():
+    parser = ParserWrapper('a2l', 'module', A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.VTAB_RANGE.DEFAULT_VALUE
+           "verbal range with default value"
+           TAB_VERB
+           "%4.2"
+           ""
+           COMPU_TAB_REF CM.VTAB_RANGE.DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+        /begin COMPU_VTAB_RANGE CM.VTAB_RANGE.DEFAULT_VALUE.REF
+           ""
+           11
+           0 1 "Zero_to_one"
+           2 3 "two_to_three"
+           4 7 "four_to_seven"
+           14 17 "fourteen_to_seventeen"
+           18 99 "eigteen_to_ninetynine"
+           100 100 "hundred"
+           101 101 "hundredone"
+           102 102 "hundredtwo"
+           103 103 "hundredthree"
+           104 104 "hundredfour"
+           105 105 "hundredfive"
+           DEFAULT_VALUE "out of range value"
+        /end COMPU_VTAB_RANGE
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    module = session.query(model.Module).first()
+    compu = functions.CompuMethod(session, module.compu_method[0])
+    assert compu(0) == "Zero_to_one"
+    assert compu(6) == "four_to_seven"
+    assert compu(45) == "eigteen_to_ninetynine"
+    assert compu(100) == "hundred"
+    assert compu(105) == "hundredfive"
+    assert compu(-1) == "out of range value"
+    assert compu(106) == "out of range value"
+    assert compu(10) == "out of range value"
+
+def test_compu_method_tab_verb_ranges_no_default():
+    parser = ParserWrapper('a2l', 'module', A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.VTAB_RANGE.NO_DEFAULT_VALUE
+           "verbal range without default value"
+           TAB_VERB
+           "%4.2"
+           ""
+           COMPU_TAB_REF CM.VTAB_RANGE.NO_DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+        /begin COMPU_VTAB_RANGE CM.VTAB_RANGE.NO_DEFAULT_VALUE.REF
+           ""
+           11
+           0 1 "Zero_to_one"
+           2 3 "two_to_three"
+           4 7 "four_to_seven"
+           14 17 "fourteen_to_seventeen"
+           18 99 "eigteen_to_ninetynine"
+           100 100 "hundred"
+           101 101 "hundredone"
+           102 102 "hundredtwo"
+           103 103 "hundredthree"
+           104 104 "hundredfour"
+           105 105 "hundredfive"
+        /end COMPU_VTAB_RANGE
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    module = session.query(model.Module).first()
+    compu = functions.CompuMethod(session, module.compu_method[0])
+    assert compu(0) == "Zero_to_one"
+    assert compu(6) == "four_to_seven"
+    assert compu(45) == "eigteen_to_ninetynine"
+    assert compu(100) == "hundred"
+    assert compu(105) == "hundredfive"
+    assert compu(-1) is None
+    assert compu(106) is None
+    assert compu(10) is None
+
+def test_compu_method_tab_verb_ranges_inv():
+    parser = ParserWrapper('a2l', 'module', A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.VTAB_RANGE.DEFAULT_VALUE
+           "verbal range with default value"
+           TAB_VERB
+           "%4.2"
+           ""
+           COMPU_TAB_REF CM.VTAB_RANGE.DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+        /begin COMPU_VTAB_RANGE CM.VTAB_RANGE.DEFAULT_VALUE.REF
+           ""
+           11
+           0 1 "Zero_to_one"
+           2 3 "two_to_three"
+           4 7 "four_to_seven"
+           14 17 "fourteen_to_seventeen"
+           18 99 "eigteen_to_ninetynine"
+           100 100 "hundred"
+           101 101 "hundredone"
+           102 102 "hundredtwo"
+           103 103 "hundredthree"
+           104 104 "hundredfour"
+           105 105 "hundredfive"
+           DEFAULT_VALUE "out of range value"
+        /end COMPU_VTAB_RANGE
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    module = session.query(model.Module).first()
+    compu = functions.CompuMethod(session, module.compu_method[0])
+    assert compu.inv("Zero_to_one") == 0
+    assert compu.inv("four_to_seven") == 4
+    assert compu.inv("eigteen_to_ninetynine") == 18
+    assert compu.inv("hundred") == 100
+    assert compu.inv("hundredfive") == 105
+    assert compu.inv("out of range value") is None
 
 def test_compu_method_identical():
     parser = ParserWrapper('a2l', 'module', A2LListener)
@@ -465,35 +649,3 @@ def test_compu_method_linear_no_coeffs():
     module = session.query(model.Module).first()
     with pytest.raises(exceptions.StructuralError):
         compu = functions.CompuMethod(session, module.compu_method[0])
-"""
-
-
-"""
-
-
-"""
-    /begin COMPU_METHOD CM.VTAB_RANGE.DEFAULT_VALUE
-       "verbal range with default value"
-       TAB_VERB
-       "%4.2"
-       ""
-       COMPU_TAB_REF CM.VTAB_RANGE.DEFAULT_VALUE.REF
-    /end COMPU_METHOD
-
-    /begin COMPU_VTAB_RANGE CM.VTAB_RANGE.DEFAULT_VALUE.REF
-       ""
-       11
-       0 1 "Zero_to_one"
-       2 3 "two_to_three"
-       4 7 "four_to_seven"
-       14 17 "fourteen_to_seventeen"
-       18 99 "eigteen_to_ninetynine"
-       100 100 "hundred"
-       101 101 "hundredone"
-       102 102 "hundredtwo"
-       103 103 "hundredthree"
-       104 104 "hundredfour"
-       105 105 "hundredfive"
-       DEFAULT_VALUE "out of range value"
-    /end COMPU_VTAB_RANGE
-"""
