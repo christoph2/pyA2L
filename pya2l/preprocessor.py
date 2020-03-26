@@ -114,3 +114,12 @@ class Preprocessor:
             else:
                 result.append(line)
         return '\n'.join(result)
+
+    def uncomment(self):
+        pass
+
+    def escape_quotes(self, line):
+        """
+
+        """
+        pass
