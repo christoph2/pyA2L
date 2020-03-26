@@ -41,7 +41,7 @@ Rs = [2.0, 2.0, 3.9000000000000004, 4.9, 4.9]
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 @pytest.mark.parametrize("x, expected", zip(Xins, Rs))
 def test_interpolate1D_saturate(x, expected):
-    interp = functions.Interpolate1D(xs = Xs, ys = Ys, saturate = True)
+    interp = functions.Interpolate1D(pairs = zip(Xs, Ys), saturate = True)
     assert interp(x) == expected
 
 
@@ -51,7 +51,7 @@ expected = [None, None]
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 @pytest.mark.parametrize("x, expected", zip(XsOutOfBounds, expected))
 def test_interpolate1D_out_of_bounds(x, expected):
-    interp = functions.Interpolate1D(xs = Xs, ys = Ys, saturate = False)
+    interp = functions.Interpolate1D(pairs = zip(Xs, Ys), saturate = False)
     with pytest.raises(ValueError):
         interp(x) == expected
 

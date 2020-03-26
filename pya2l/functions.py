@@ -50,18 +50,24 @@ class Interpolate1D:
 
     Parameters
     ----------
-    xs: iterable of floats
-        X values
-    ys: iterable of floats
-        Y values -- must be of equal length than xs.
+
+    pairs: iterable of 2-tuples (x,y)
+        x: float
+            X values
+        y: float
+            Y values -- must be of equal length than xs.
     saturate: bool
         - ``True``
             - if X value is less then or equal to min(xs), the result is set to the Y value
               corresponding to the lowest X value
             - if X value is greater than or equal to the highest X value, the result is set to the Y value
               corresponding to the highest X value.
+    default: float or None
+        returned if x is out of boundaries.
     """
-    def __init__(self, xs, ys, saturate = True):
+    def __init__(self, pairs, saturate = True, default = None):
+        xs, ys = zip(*pairs)
+
         if any(x1 -x0 <= 0 for x0, x1 in zip(xs, xs[1 : ])):
             raise ValueError("'xs' must be in strictly increasing order.")
         self.min_x = min(xs)
@@ -170,8 +176,8 @@ class NormalizationAxes:
         self.xn = np.array(x_norm)
         self.yn = np.array(y_norm)
         self.zm = np.array(z_map)
-        self.ip_x = Interpolate1D(xs = self.xn[:, 0], ys = self.xn[:, 1])
-        self.ip_y = Interpolate1D(xs = self.yn[:, 0], ys = self.yn[:, 1])
+        self.ip_x = Interpolate1D(pairs = zip(self.xn[:, 0], self.xn[:, 1]))
+        self.ip_y = Interpolate1D(pairs = zip(self.yn[:, 0], self.yn[:, 1]))
         x_size, y_size = self.zm.shape
         self.ip_m = RegularGridInterpolator((np.arange(x_size), np.arange(y_size)), self.zm, method = "linear")
 
@@ -434,6 +440,7 @@ class CompuMethod:
                 raise exceptions.StructuralError("Cannot use both DEFAULT_VALUE and DEFAULT_VALUE_NUMERIC.")
             default = default_numeric if not default_numeric is None else default
             self.evaluator = LookupTable(pairs, default)
+
         elif conversionType == "TAB_VERB":
             table_name = compu_method.compu_tab_ref.conversionTable
             table = session.query(model.CompuVtab).filter(model.CompuVtab.name == table_name).first()
