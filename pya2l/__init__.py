@@ -44,7 +44,7 @@ class DB(object):
 
     logger = Logger(__name__)
 
-    def import_a2l(self, file_name, debug = False, remove_existing = False):
+    def import_a2l(self, file_name, debug = False, in_memory = False, remove_existing = False):
         """Import `.a2l` file to `.a2ldb` database.
 
 
@@ -55,6 +55,9 @@ class DB(object):
 
         debug: bool
             Additional debugging output.
+
+        in_memory: bool
+            Create non-persistent in-memory database.
 
         remove_existing: bool
             ** DANGER ZONE **: Remove existing database.
@@ -75,15 +78,18 @@ class DB(object):
         from os import unlink
         from pya2l.a2l_listener import ParserWrapper, A2LListener, cut_a2ml
 
+        self.in_memory = in_memory
+
         parser = ParserWrapper('a2l', 'a2lFile', A2LListener, debug = debug)
         self._set_path_components(file_name)
-        if remove_existing:
-            try:
-                unlink(self._dbfn)
-            except Exception:
-                pass
-        elif path.exists(self._dbfn):
-            raise OSError("file '{}' already exists.".format(self._dbfn))
+        if not in_memory:
+            if remove_existing:
+                try:
+                    unlink(self._dbfn)
+                except Exception:
+                    pass
+            elif path.exists(self._dbfn):
+                raise OSError("file '{}' already exists.".format(self._dbfn))
         data = open(self._a2lfn).read()
         data, a2ml = cut_a2ml(data)
         self.session = parser.parseFromString(data, dbname = self._dbfn)
@@ -130,7 +136,10 @@ class DB(object):
         """
         self._pth, self._base = path.split(file_name)
         fbase, ext = path.splitext(self._base)
-        self._dbfn = path.join(self._pth, "{}.a2ldb".format(fbase))
+        if self.in_memory:
+            self._dbfn = ":memory:"
+        else:
+            self._dbfn = path.join(self._pth, "{}.a2ldb".format(fbase))
         if not ext or ext.lower() == ".a2l" or ext.lower() == ".a2ldb":
             self._a2lfn = "{}.a2l".format(fbase)
         else:
