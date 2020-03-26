@@ -92,8 +92,11 @@ class ParserWrapper:
             return self.db.session
 
     def parseFromFile(self, filename, encoding = 'latin-1', trace = False):
-        pth, fname = os.path.split(filename)
-        self.fnbase = os.path.splitext(fname)[0]
+        if filename == ":memory:":
+            self.fnbase = ":memory:"
+        else:
+            pth, fname = os.path.split(filename)
+            self.fnbase = os.path.splitext(fname)[0]
         return self.parse(ParserWrapper.stringStream(filename, encoding), trace)
 
     def parseFromString(self, buf, encoding = 'latin-1', trace = False, dbname = ":memory:"):
