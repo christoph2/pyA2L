@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2019 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2020 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -35,6 +35,8 @@ from pprint import pprint
 import re
 
 import antlr4
+
+from pya2l.parserlib import ParserWrapper
 
 
 class AMLDict(dict):
@@ -140,7 +142,7 @@ def createTypeDefinition(typename):
     return res
 
 
-class Listener(antlr4.ParseTreeListener):
+class AMLListener(antlr4.ParseTreeListener):
 
     level = 0
 
@@ -155,9 +157,7 @@ class Listener(antlr4.ParseTreeListener):
             tp = ctx.tu.value
         elif ctx.en:
             tp = ctx.en.value
-            #print("TAG",tp.tag)
         else:
-            #print()
             pass
         try:
             name = tp.name
