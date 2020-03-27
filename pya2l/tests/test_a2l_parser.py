@@ -2059,6 +2059,17 @@ def test_loc_measurement():
     lm = session.query(model.LocMeasurement).first()
     assert lm.identifier == ['LOOP_COUNTER', 'TEMPORARY_1']
 
+def test_map_list():
+    parser = ParserWrapper('a2l', 'mapList', A2LListener, debug = False)
+    DATA = """
+    /begin MAP_LIST MAP_1
+        MAP_2 MAP_3
+    /end MAP_LIST
+    """
+    session = parser.parseFromString(DATA)
+    lm = session.query(model.MapList).first()
+    assert lm.name == ['MAP_1', 'MAP_2', 'MAP_3']
+
 def test_matrix_dim():
     parser = ParserWrapper('a2l', 'matrixDim', A2LListener, debug = False)
     DATA = """
@@ -3308,6 +3319,17 @@ def test_rip_addr_y():
     """
     session = parser.parseFromString(DATA)
     ra = session.query(model.RipAddrY).first()
+    assert ra.position == 19
+    assert ra.datatype == 'UWORD'
+
+def test_rip_addr_z():
+    parser = ParserWrapper('a2l', 'ripAddrZ', A2LListener, debug = False)
+    DATA = """
+    RIP_ADDR_Z 19
+        UWORD
+    """
+    session = parser.parseFromString(DATA)
+    ra = session.query(model.RipAddrZ).first()
     assert ra.position == 19
     assert ra.datatype == 'UWORD'
 
