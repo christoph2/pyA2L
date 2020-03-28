@@ -65,7 +65,7 @@ class Interpolate1D:
     default: float or None
         returned if x is out of boundaries.
     """
-    def __init__(self, pairs, saturate = True, default = None):
+    def __init__(self, pairs, saturate = True):
         xs, ys = zip(*pairs)
 
         if any(x1 -x0 <= 0 for x0, x1 in zip(xs, xs[1 : ])):
@@ -89,7 +89,7 @@ class Interpolate1D:
         ----------
         x: float
         """
-        return float(self.interp(x))
+        return self.interp(x)
 
 
 '''
@@ -334,6 +334,28 @@ class LookupTable:
         return self.mapping_inv.get(y)
 
 
+class InterpolatedTable:
+    """Table with linear interpolation.
+    """
+
+    def __init__(self, pairs, default = None):
+        self.interp = Interpolate1D(pairs, saturate = False)
+        self.default = default
+
+    def __call__(self, x):
+        """
+        """
+        try:
+            return self.interp(x)
+        except ValueError:
+            return self.default
+
+    def inv(self, y):
+        """
+        """
+        raise NotImplementedError()
+
+
 class LookupTableWithRanges:
     """Lookup table where keys define numerical ranges.
 
@@ -427,7 +449,17 @@ class CompuMethod:
                 raise exceptions.StructuralError("'RAT_FUNC' requires coefficients (COEFFS).")
             self.evaluator = RatFunc(coeffs)
         elif conversionType == "TAB_INTP":
-            pass
+            table_name = compu_method.compu_tab_ref.conversionTable
+            table = session.query(model.CompuTab).filter(model.CompuTab.name == table_name).first()
+            if table is None:
+                raise exceptions.StructuralError("'TAB_NOINTP' requires a conversation table.")
+            pairs = [(p.inVal, p.outVal) for p in table.pairs]
+            default_numeric = table.default_value_numeric.display_value if table.default_value_numeric else None
+            default = table.default_value.display_string if table.default_value else None
+            if default_numeric and default:
+                raise exceptions.StructuralError("Cannot use both DEFAULT_VALUE and DEFAULT_VALUE_NUMERIC.")
+            default = default_numeric if not default_numeric is None else default
+            self.evaluator = InterpolatedTable(pairs, default)
         elif conversionType == "TAB_NOINTP":
             table_name = compu_method.compu_tab_ref.conversionTable
             table = session.query(model.CompuTab).filter(model.CompuTab.name == table_name).first()
