@@ -30,6 +30,8 @@ __version__ = '0.1.0'
 
 import codecs
 import importlib
+import os
+import sys
 
 import antlr4
 from antlr4.BufferedTokenStream import BufferedTokenStream
@@ -124,7 +126,7 @@ class LexerWrapper(object):
         self.lexerModule, self.lexerClass = self._load('Lexer')
 
     def _load(self, name):
-        className = '{0}'.format(self.grammarName, name)
+        className = '{0}{1}'.format(self.grammarName, name)
         moduleName = 'pya2l.{0}'.format(className)
         module = importlib.import_module(moduleName)
         klass = getattr(module, className)
@@ -144,8 +146,3 @@ class LexerWrapper(object):
     @staticmethod
     def stringStream(fname, encoding = "utf-8"):
         return antlr4.InputStream(codecs.open(fname, encoding = encoding).read())
-
-    def _getNumberOfSyntaxErrors(self):
-        return self._syntaxErrors
-
-    numberOfSyntaxErrors = property(_getNumberOfSyntaxErrors)
