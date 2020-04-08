@@ -4,6 +4,8 @@
 """These test-cases are based on the examples from ASAM MCD-2MC Version 1.6 specification.
 """
 
+import math
+
 import pytest
 
 from pya2l import functions
@@ -332,6 +334,71 @@ def test_tab_verb_ranges_with_default_negative():
     assert tvr(1) == "out of range value"
     assert tvr(-106) == "out of range value"
     assert tvr(-10) == "out of range value"
+
+def test_formula_with_no_parameters_raises():
+    form = functions.Formula("sin(X1)")
+    with pytest.raises(ValueError):
+        form()
+
+def test_formula_for_required_operations():
+    form = functions.Formula("X1 + X2")
+    assert form(23.0, 42.0) == 65.0
+    form = functions.Formula("X1 - X2")
+    assert form(65.0, 42.0) == 23.0
+    form = functions.Formula("X1 * X2")
+    assert form(16.0, 16.0) == 256.0
+    form = functions.Formula("X1 / X2")
+    assert form(256.0, 16.0) == 16.0
+    form = functions.Formula("X1 & X2")
+    assert form(255, 32) == 32
+    form = functions.Formula("X1 | X2")
+    assert form(256, 32) == 0x120
+    form = functions.Formula("X1 >> X2")
+    assert form(64, 4) == 4
+    form = functions.Formula("X1 << X2")
+    assert form(64, 4) == 1024
+    #form = functions.Formula("~X1")
+    #assert form(0x55) == 0xaa
+    form = functions.Formula("X1 ^ X2")
+    assert form(0x55aa, 0x2222) == 0x7788
+    form = functions.Formula("X1 && X2")
+    assert form(1, 0) == 0
+    form = functions.Formula("X1 || X2")
+    assert form(1, 0) == 1
+    form = functions.Formula("!(X1 || X2)")
+    assert form(1, 0) == 0
+
+def test_formula_for_required_functions():
+    form = functions.Formula("sin(X1)")
+    assert form(.5) == 0.479425538604203
+    form = functions.Formula("asin(X1)")
+    assert form(0.479425538604203) == .5
+    form = functions.Formula("cos(X1)")
+    assert form(.5) == 0.8775825618903728
+    form = functions.Formula("acos(X1)")
+    assert form(0.8775825618903728) == 0.4999999999999999
+    form = functions.Formula("tan(X1)")
+    assert form(.5) == 0.5463024898437905
+    form = functions.Formula("atan(X1)")
+    assert form(0.5463024898437905) == .5
+    form = functions.Formula("cosh(X1)")
+    assert form(math.log(2)) == 1.25
+    form = functions.Formula("sinh(X1)")
+    assert form(math.log(2)) == .75
+    form = functions.Formula("tanh(X1)")
+    assert form(math.log(2)) == 0.6
+    form = functions.Formula("exp(X1)")
+    assert form(math.log(10)) == 10.000000000000002
+    form = functions.Formula("log(X1)")
+    assert form(math.exp(10)) == 10.0
+    form = functions.Formula("abs(X1)")
+    assert form(-23.0) == 23.0
+    form = functions.Formula("sqrt(X1)")
+    assert form(225.0) == 15.0
+    form = functions.Formula("pow(X1, X2)")
+    assert form(2.0, 16.0) == 65536.0
+
+
 
 ##
 ## Basic Integration Tests.
@@ -844,3 +911,47 @@ def test_compu_method_linear_no_coeffs():
     module = session.query(model.Module).first()
     with pytest.raises(exceptions.StructuralError):
         compu = functions.CompuMethod(session, module.compu_method[0])
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_compu_method_formula_with_inv():
+    parser = ParserWrapper('a2l', 'module', A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.FORM.X_PLUS_4
+          ""
+          FORM
+          "%6.1"
+          "rpm"
+          /begin FORMULA
+            "X1+4"
+            FORMULA_INV "X1-4"
+          /end FORMULA
+        /end COMPU_METHOD
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    module = session.query(model.Module).first()
+    compu = functions.CompuMethod(session, module.compu_method[0])
+    assert compu(6) == 10
+    assert compu.inv(4) == 0
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_compu_method_formula_without_inv():
+    parser = ParserWrapper('a2l', 'module', A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.FORM.X_PLUS_4
+          ""
+          FORM
+          "%6.1"
+          "rpm"
+          /begin FORMULA
+            "X1+4"
+          /end FORMULA
+        /end COMPU_METHOD
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    module = session.query(model.Module).first()
+    compu = functions.CompuMethod(session, module.compu_method[0])
+    assert compu(6) == 10

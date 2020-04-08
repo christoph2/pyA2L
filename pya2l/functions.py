@@ -28,6 +28,7 @@ __copyright__="""
 
 import bisect
 from collections import OrderedDict
+import math
 from operator import itemgetter
 
 try:
@@ -411,6 +412,57 @@ class LookupTableWithRanges:
         return self.dict_inv.get(y, None)
 
 
+class Formula:
+    """Crude ASAP2 formula interpreter.
+    """
+
+    def __init__(self, formula, inverse_formula = None, system_constants = None):
+        if not formula:
+            raise ValueError("Formula cannot be None or empty.")
+        self.formula = self._replace_special_symbols(formula)
+        self.inverse_formula = self._replace_special_symbols(inverse_formula) if inverse_formula else None
+        self.math_funcs = {
+            'abs'  : math.fabs,
+            'acos' : math.acos,
+            'asin' : math.asin,
+            'atan' : math.atan,
+            'cos'  : math.cos,
+            'cosh' : math.cosh,
+            'exp'  : math.exp,
+            'log'  : math.log,
+            'log10': math.log10,
+            'pow'  : math.pow,
+            'sin'  : math.sin,
+            'sinh' : math.sinh,
+            'sqrt' : math.sqrt,
+            'tan'  : math.tan,
+            'tanh' : math.tanh,
+            }
+
+    def _replace_special_symbols(self, text):
+        return text.replace("&&", " and ").replace("||", " or ").replace("!", "not ")
+
+    def _build_namespace(self, *args):
+        if len(args) == 0:
+            raise ValueError("Formula called with no paramters.")
+        xs = {"X{}".format(i): v for i, v in enumerate(args, 1)}
+        if len(args) == 1:          # In this case...
+            xs["X"] = xs.get("X1")  # ... create an alias.
+        namespace = self.math_funcs
+        namespace.update(xs)
+        return namespace
+
+    def __call__(self, *args):
+        """
+        """
+        return eval(self.formula, dict(), self._build_namespace(*args))
+
+    def inv(self, *args):
+        """
+        """
+        return eval(self.inverse_formula, dict(), self._build_namespace(*args))
+
+
 class CompuMethod:
     """
     Parameters
@@ -422,22 +474,14 @@ class CompuMethod:
     compu_method: CompuMethod
     """
 
-    EVALUATORS = {
-        'IDENTICAL' : Identical,
-        'FORM'      : None,
-        'LINEAR'    : Linear,
-        'RAT_FUNC'  : RatFunc,
-        'TAB_INTP'  : None,
-        'TAB_NOINTP': None,
-        'TAB_VERB'  : LookupTable,
-    }
-
     def __init__(self, session, compu_method: model.CompuMethod):
         conversionType = compu_method.conversionType
         if conversionType == "IDENTICAL":
             self.evaluator = Identical()
         elif conversionType == "FORM":
-            pass
+            formula = compu_method.formula.f_x
+            formula_inv = compu_method.formula.formula_inv.g_x if compu_method.formula.formula_inv else None
+            self.evaluator = Formula(formula, formula_inv)
         elif conversionType == "LINEAR":
             coeffs = compu_method.coeffs_linear
             if coeffs is None:
@@ -472,7 +516,6 @@ class CompuMethod:
                 raise exceptions.StructuralError("Cannot use both DEFAULT_VALUE and DEFAULT_VALUE_NUMERIC.")
             default = default_numeric if not default_numeric is None else default
             self.evaluator = LookupTable(pairs, default)
-
         elif conversionType == "TAB_VERB":
             table_name = compu_method.compu_tab_ref.conversionTable
             table = session.query(model.CompuVtab).filter(model.CompuVtab.name == table_name).first()
