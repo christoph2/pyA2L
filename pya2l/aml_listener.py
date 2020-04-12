@@ -28,6 +28,7 @@ __author__  = 'Christoph Schueler'
 __version__ = '0.1.0'
 
 
+from collections import OrderedDict, namedtuple
 from decimal import Decimal as D
 import enum
 import json
@@ -45,20 +46,26 @@ class AMLDict(dict):
         return self[attr]
 
 
+Enumerator = namedtuple("Enumerator", "tag constant")
+
 def createDict(classname):
     return AMLDict(classname = classname)
 
 def createEnumeration(name, enumerators):
-    res = createDict('Enumeration')
-    res['name'] = name
-    res['enumerators'] = enumerators
+    class Enumeration:
+
+        def __init__(self, name, enumerators):
+            self.name = name
+            self.enumerators = enumerators
+
+        def __repr__(self):
+            return "Enumeration(name = {}, enumerators = {})".format(self.name, self.enumerators)
+
+    res = Enumeration(name, enumerators)
     return res
 
 def createEnumerator(tag, constant):
-    res = createDict('Enumerator')
-    res['tag'] = tag
-    res['constant'] = constant
-    return res
+    return Enumerator(tag, constant)
 
 def createTaggedUnion(name, members):
     res = createDict('TaggedUnion')
@@ -145,6 +152,10 @@ def createTypeDefinition(typename):
 class AMLListener(antlr4.ParseTreeListener):
 
     level = 0
+
+    def __init__(self):
+        super().__init__()
+        self.enum_types = []
 
     def exitType_name(self, ctx):
         if ctx.pr:
@@ -241,6 +252,7 @@ class AMLListener(antlr4.ParseTreeListener):
         else:
             name = None
         ctx.value = createEnumeration(name, elements)
+        self.enum_types.append(ctx.value)
 
     def exitType_definition(self, ctx):
         ctx.value = createTypeDefinition(ctx.type_name().value)
@@ -304,7 +316,7 @@ class AMLListener(antlr4.ParseTreeListener):
     def exitIdentifierValue(self, ctx):
         ctx.value = ctx.i.text if ctx.i else None
 
-    def exitConstant(self, ctx):
+    def exitNumericValue(self, ctx):
         if ctx.i:
             value = int(ctx.i.text)
         elif ctx.h:
