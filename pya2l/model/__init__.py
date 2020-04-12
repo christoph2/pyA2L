@@ -874,7 +874,7 @@ class HasDiscretes(object):
     @declared_attr
     def discrete(cls):
         return Column(types.Boolean, default = False)
-        
+
 
 class DisplayIdentifier(Base):
     """
@@ -1005,7 +1005,7 @@ class HasGuardRails(object):
     @declared_attr
     def guard_rails(cls):
         return Column(types.Boolean, default = False)
-        
+
 
 class IfDataAssociation(Base):
 
@@ -1170,7 +1170,7 @@ class HasReadOnlys(object):
     @declared_attr
     def read_only(cls):
         return Column(types.Boolean, default = False)
-        
+
 
 class RefCharacteristic(Base):
     """
@@ -4587,6 +4587,19 @@ class A2LDatabase(object):
         self.session.add(meta)
         self.session.flush()
         self.session.commit()
+        self._closed = False
+
+    def __del__(self):
+        if not self._closed:
+            self.close()
+
+    def close(self):
+        """
+
+        """
+        self.session.close()
+        self.engine.dispose()
+        self._closed = True
 
     @property
     def engine(self):
