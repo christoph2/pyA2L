@@ -88,10 +88,12 @@ class ParserWrapper:
                 self.listener.db = self.db
             listener = self.listener()
             walker = antlr4.ParseTreeWalker()
-            walker.walk(listener, tree)
+            result = walker.walk(listener, tree)
         if self.useDatabase:
             self.db.session.commit()
             return self.db.session
+        else:
+            return listener
 
     def parseFromFile(self, filename, encoding = 'latin-1', trace = False):
         if filename == ":memory:":
@@ -120,7 +122,7 @@ class LexerWrapper(object):
 
     """
 
-    def __init__(self, grammarName, startSymbol):
+    def __init__(self, grammarName, startSymbol, listener = None, debug = False):
         self.grammarName = grammarName
         self.startSymbol = startSymbol
         self.lexerModule, self.lexerClass = self._load('Lexer')
@@ -138,7 +140,7 @@ class LexerWrapper(object):
         return tokenStream
 
     def lexFromFile(self, fileName, encoding = "utf8", trace = False):
-        return self.lex(ParserWrapper.stringStream(fileName, encoding), trace)
+        return self.lex(LexerWrapper.stringStream(fileName, encoding), trace)
 
     def lexFromString(self, buffer, trace = False):
         return self.lex(antlr4.InputStream(buffer), trace)
