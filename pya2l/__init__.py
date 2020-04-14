@@ -95,9 +95,10 @@ class DB(object):
         self.session = parser.parseFromString(data, dbname = self._dbfn)
         return self.session
 
-    def export_a2l(self, file_name):
+    def export_a2l(self, file_name, in_memory):
         """
         """
+        self.in_memory = in_memory
         self._set_path_components(file_name)
         raise NotImplementedError("Export functionality not implemented yet.")
 
@@ -119,6 +120,7 @@ class DB(object):
         OSError
             If database already exists.
         """
+        self.in_memory = False
         self._set_path_components(file_name)
         if not path.exists(self._dbfn):
             raise OSError("file '{}' does not exists.".format(self._dbfn))
