@@ -4590,8 +4590,9 @@ class A2LDatabase(object):
         self._closed = False
 
     def __del__(self):
-        if not self._closed:
-            self.close()
+        pass
+        #if not self._closed:
+        #    self.close()
 
     def close(self):
         """
