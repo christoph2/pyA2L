@@ -26,14 +26,6 @@
 
 lexer grammar a2llg;
 
-BEGIN:
-    '/begin'    -> pushMode(BLOCK_MODE)
-    ;
-
-END:
-    '/end'
-    ;
-
 IDENT: [a-zA-Z_][a-zA-Z_0-9.]*;
 
 fragment
@@ -97,31 +89,11 @@ OCTAL_ESC:
     |   '\\' ('0'..'7')
     ;
 
-mode BLOCK_MODE;
 
-A2ML:
-    'A2ML'   -> pushMode(A2ML_MODE)
+BEGIN:
+    '/begin'
     ;
 
-S_IDENT: [a-zA-Z_][a-zA-Z_0-9.]*;
-
-S_WS  :   (' ' | '\t' | '\r' | '\n') -> channel(HIDDEN)
-    ;
-
-//ANY:
-//    ANY_CHAR     -> popMode
-//    ;
-
-//.   -> popMode;
-
-mode A2ML_MODE;
-
-I_IDENT: [a-zA-Z_][a-zA-Z_0-9.]*;
-
-
-I_WS  :   (' ' | '\t' | '\r' | '\n') -> channel(HIDDEN)
-    ;
-
-ENDE:
-    '/end' -> popMode //'A2ML'
+END:
+    '/end'
     ;
