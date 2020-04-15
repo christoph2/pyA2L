@@ -115,36 +115,3 @@ class ParserWrapper:
         return self._syntaxErrors
 
     numberOfSyntaxErrors = property(_getNumberOfSyntaxErrors)
-
-
-class LexerWrapper(object):
-    """
-
-    """
-
-    def __init__(self, grammarName, startSymbol, listener = None, debug = False):
-        self.grammarName = grammarName
-        self.startSymbol = startSymbol
-        self.lexerModule, self.lexerClass = self._load('Lexer')
-
-    def _load(self, name):
-        className = '{0}{1}'.format(self.grammarName, name)
-        moduleName = 'pya2l.{0}'.format(className)
-        module = importlib.import_module(moduleName)
-        klass = getattr(module, className)
-        return (module, klass, )
-
-    def lex(self, input, trace = False):
-        lexer = self.lexerClass(input)
-        tokenStream = antlr4.CommonTokenStream(lexer)
-        return tokenStream
-
-    def lexFromFile(self, fileName, encoding = "utf8", trace = False):
-        return self.lex(LexerWrapper.stringStream(fileName, encoding), trace)
-
-    def lexFromString(self, buffer, trace = False):
-        return self.lex(antlr4.InputStream(buffer), trace)
-
-    @staticmethod
-    def stringStream(fname, encoding = "utf-8"):
-        return antlr4.InputStream(codecs.open(fname, encoding = encoding).read())
