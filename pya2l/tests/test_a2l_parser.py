@@ -3963,3 +3963,20 @@ def test_meta_data():
     meta = session.query(model.MetaData).first()
     assert meta.schema_version == CURRENT_SCHEMA_VERSION
 
+def test_multi_dimensional_array():
+    parser = ParserWrapper('a2l', 'characteristic', A2LListener, debug = False)
+    DATA = '''/begin CHARACTERISTIC TEST[0][0].TEST
+        "TEST[FL,0].TEST"
+        VALUE
+        0x0003237C
+        _HELLO
+        30
+        _TEST
+        -18
+        12
+        DISPLAY_IDENTIFIER TEST[FL_0].TEST
+        FORMAT "%3.1"
+    /end CHARACTERISTIC
+    '''
+    session = parser.parseFromString(DATA)
+    chx = session.query(model.Characteristic).first()

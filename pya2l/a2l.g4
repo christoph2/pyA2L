@@ -1656,7 +1656,7 @@ identifierValue:
     ;
 
 partialIdentifier:
-    i = IDENT (a = arraySpecifier)?
+    i = IDENT (a = arraySpecifier)*
     ;
 
 arraySpecifier:
