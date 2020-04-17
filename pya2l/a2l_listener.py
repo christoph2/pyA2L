@@ -127,12 +127,11 @@ class BaseListener(antlr4.ParseTreeListener):
         ctx.value = text
 
     def exitPartialIdentifier(self, ctx):
-        text = ctx.i.text if ctx.i else None
-        arr = ctx.a.value if ctx.a else None
-        if arr is not None:
-            ctx.value = "{}[{}]".format(text, arr)
-        else:
-            ctx.value = text
+        text = ctx.i.text if ctx.i else ""
+        result = ""
+        for element in ctx.a:
+            result += "[{}]".format(element.value)
+        ctx.value = text + result
 
     def exitArraySpecifier(self, ctx):
         if ctx.i is not None:
