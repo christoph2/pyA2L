@@ -120,11 +120,18 @@ def createTaggedUnion(name, members):
     res = TaggedUnion(name, members)
     return res
 
-def createTaggedUnionMember(tag, member, blockDefinition):
-    res = createDict('TaggedUnionMember')
-    res['tag'] = tag
-    res['member'] = member
-    res['blockDefinition'] = blockDefinition
+def createTaggedUnionMember(tag, member, block_definition):
+    class TaggedUnionMember:
+
+        def __init__(self, tag, member, block_definition):
+            self.tag = tag
+            self.member = member
+            self.block_definition = block_definition
+
+        def __repr__(self):
+            return "TaggedUnionMember(tag = {}, member = {}, block_definition = {})".format(self.tag, self.member, self.block_definition)
+
+    res = TaggedUnionMember(tag, member, block_definition)
     return res
 
 def createMember(type_name, array_specifier):
@@ -284,6 +291,8 @@ class AMLListener(antlr4.ParseTreeListener):
         self.enum_types = []
         self.struct_types = []
         self.tagged_struct_types = []
+        self.tagged_union_types = []
+        self.block_definitions = []
 
     def exitType_name(self, ctx):
         if ctx.pr:
@@ -407,6 +416,7 @@ class AMLListener(antlr4.ParseTreeListener):
             name = None
         members = [l.value for l in ctx.l]
         ctx.value = createTaggedUnion(name, members)
+        self.tagged_union_types.append(ctx.value)
 
     def enterBlock_definition(self, ctx):
         self.level += 1
@@ -417,6 +427,7 @@ class AMLListener(antlr4.ParseTreeListener):
         typename = ctx.tn.value if ctx.tn else None
         member = ctx.mem.value if ctx.mem else None
         ctx.value = createBlockDefinition(tag, typename, member)
+        self.block_definitions.append(ctx.value)
 
     def exitDeclaration(self, ctx):
         blockDefinition = ctx.b.value if ctx.b else None
