@@ -575,7 +575,7 @@ def test_bitmask():
     assert len(res) == 1
     assert res[0].mask == 0x40
 
-def test_bit_operation():
+def test_bit_operation_right_shift():
     parser = ParserWrapper('a2l', 'bitOperation', A2LListener, debug = False)
     DATA = """
     /begin BIT_OPERATION
@@ -587,6 +587,20 @@ def test_bit_operation():
     res = session.query(model.BitOperation).all()
     assert len(res) == 1
     assert res[0].right_shift.bitcount == 4
+    assert res[0].sign_extend is not None
+
+def test_bit_operation_left_shift():
+    parser = ParserWrapper('a2l', 'bitOperation', A2LListener, debug = False)
+    DATA = """
+    /begin BIT_OPERATION
+        LEFT_SHIFT 4 /*4 positions*/
+        SIGN_EXTEND
+    /end BIT_OPERATION
+    """
+    session = parser.parseFromString(DATA)
+    res = session.query(model.BitOperation).all()
+    assert len(res) == 1
+    assert res[0].left_shift.bitcount == 4
     assert res[0].sign_extend is not None
 
 def test_calibration_access():
@@ -3980,3 +3994,33 @@ def test_multi_dimensional_array():
     '''
     session = parser.parseFromString(DATA)
     chx = session.query(model.Characteristic).first()
+
+def test_asap2_version():
+    parser = ParserWrapper('a2l', 'asap2Version', A2LListener, debug = False)
+    DATA = """
+    ASAP2_VERSION 1 60
+    """
+    session = parser.parseFromString(DATA)
+    vers = session.query(model.Asap2Version).first()
+    assert vers.versionNo == 1
+    assert vers.upgradeNo == 60
+
+def test_asap2_version_out_of_range():
+    parser = ParserWrapper('a2l', 'asap2Version', A2LListener, debug = False)
+    DATA = """
+    ASAP2_VERSION 1 30
+    """
+    session = parser.parseFromString(DATA)
+    vers = session.query(model.Asap2Version).first()
+    assert vers.versionNo == 1
+    assert vers.upgradeNo == 30
+
+def test_a2ml_version():
+    parser = ParserWrapper('a2l', 'a2mlVersion', A2LListener, debug = False)
+    DATA = """
+    A2ML_VERSION 1 2
+    """
+    session = parser.parseFromString(DATA)
+    vers = session.query(model.A2mlVersion).first()
+    assert vers.versionNo == 1
+    assert vers.upgradeNo == 2
