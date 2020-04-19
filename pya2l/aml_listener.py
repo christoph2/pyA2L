@@ -293,6 +293,8 @@ class AMLListener(antlr4.ParseTreeListener):
         self.tagged_struct_types = []
         self.tagged_union_types = []
         self.block_definitions = []
+        self.declarations = []
+        self.type_definitions = []
 
     def exitType_name(self, ctx):
         if ctx.pr:
@@ -318,16 +320,19 @@ class AMLListener(antlr4.ParseTreeListener):
         ctx.value =  createPredefinedType(ctx.name.text)
 
     def exitStruct_type_name(self, ctx):
+        is_referrer = False
         if ctx.t0:
             name = ctx.t0.value
         elif ctx.t1:
+            is_referrer = True
             name = ctx.t1.value
         else:
             name = None
         members = [l.value for l in ctx.l]
         value = createStructType(name, members)
         ctx.value = value
-        self.struct_types.append(ctx.value)
+        if not is_referrer:
+            self.struct_types.append(ctx.value)
 
     def exitStruct_member(self, ctx):
         if ctx.m:
@@ -339,15 +344,18 @@ class AMLListener(antlr4.ParseTreeListener):
         ctx.value = createStructMember(value, multiple)
 
     def exitTaggedstruct_type_name(self, ctx):
+        is_referrer = False
         if ctx.t0:
             name = ctx.t0.value
         elif ctx.t1:
+            is_referrer = True
             name = ctx.t1.value
         else:
             name = None
         members = [l.value for l in ctx.l]
         ctx.value = createTaggedStructType(name, members)
-        self.tagged_struct_types.append(ctx.value)
+        if not is_referrer:
+            self.tagged_struct_types.append(ctx.value)
 
     def exitTaggedstruct_member(self, ctx):
         if ctx.ts0:
@@ -395,6 +403,7 @@ class AMLListener(antlr4.ParseTreeListener):
 
     def exitType_definition(self, ctx):
         ctx.value = createTypeDefinition(ctx.type_name().value)
+        self.type_definitions.append(ctx.value)
 
     def exitMember(self, ctx):
         typename = ctx.t.value
@@ -408,15 +417,18 @@ class AMLListener(antlr4.ParseTreeListener):
         ctx.value = createTaggedUnionMember(tag, member, blockDefinition)
 
     def exitTaggedunion_type_name(self, ctx):
+        is_referrer = False
         if ctx.t0:
             name = ctx.t0.value
         elif ctx.t1:
             name = ctx.t1.value
+            is_referrer = True
         else:
             name = None
         members = [l.value for l in ctx.l]
         ctx.value = createTaggedUnion(name, members)
-        self.tagged_union_types.append(ctx.value)
+        if not is_referrer:
+            self.tagged_union_types.append(ctx.value)
 
     def enterBlock_definition(self, ctx):
         self.level += 1
@@ -433,6 +445,7 @@ class AMLListener(antlr4.ParseTreeListener):
         blockDefinition = ctx.b.value if ctx.b else None
         typeDefinition = ctx.t.value if ctx.t else None
         ctx.value = createDeclaration(blockDefinition, typeDefinition)
+        self.declarations.append(ctx.value)
 
     def exitAmlFile(self, ctx):
         declarations = [d.value for d in ctx.d]
