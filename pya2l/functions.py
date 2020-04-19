@@ -414,6 +414,15 @@ class LookupTableWithRanges:
 
 class Formula:
     """Crude ASAP2 formula interpreter.
+
+    Parameters
+    ----------
+
+    formula: str
+
+    inverse_formula: str
+
+    system_constants: list of 2-tuples (name, value)
     """
 
     def __init__(self, formula, inverse_formula = None, system_constants = None):
@@ -438,6 +447,13 @@ class Formula:
             'tan'  : math.tan,
             'tanh' : math.tanh,
             }
+        if system_constants:
+            self.system_constants = dict(system_constants)
+        else:
+            self.system_constants = {}
+
+    def sysc(self, key):
+        return self.system_constants[key]
 
     def _replace_special_symbols(self, text):
         return text.replace("&&", " and ").replace("||", " or ").replace("!", "not ")
@@ -450,6 +466,9 @@ class Formula:
             xs["X"] = xs.get("X1")  # ... create an alias.
         namespace = self.math_funcs
         namespace.update(xs)
+        for key in self.system_constants.keys():
+            namespace[key] = key
+        namespace["sysc"] = self.sysc
         return namespace
 
     def __call__(self, *args):
@@ -481,7 +500,17 @@ class CompuMethod:
         elif conversionType == "FORM":
             formula = compu_method.formula.f_x
             formula_inv = compu_method.formula.formula_inv.g_x if compu_method.formula.formula_inv else None
-            self.evaluator = Formula(formula, formula_inv)
+            system_constants = []
+            constants_text = session.query(model.SystemConstant).all()
+            for cons in constants_text:
+                name = cons.name
+                text = cons.value
+                try:
+                    value = float(text)
+                except ValueError:
+                    value = text
+                system_constants.append((name, value, ))
+            self.evaluator = Formula(formula, formula_inv, system_constants)
         elif conversionType == "LINEAR":
             coeffs = compu_method.coeffs_linear
             if coeffs is None:

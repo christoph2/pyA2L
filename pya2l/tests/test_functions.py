@@ -955,3 +955,29 @@ def test_compu_method_formula_without_inv():
     module = session.query(model.Module).first()
     compu = functions.CompuMethod(session, module.compu_method[0])
     assert compu(6) == 10
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_compu_method_formula_with_sysc():
+    parser = ParserWrapper('a2l', 'module', A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin MOD_PAR ""
+             SYSTEM_CONSTANT "System_Constant_1" "42"
+             SYSTEM_CONSTANT "System_Constant_2" "Textual constant"
+        /end MOD_PAR
+
+        /begin COMPU_METHOD CM.FORM.X_PLUS_SYSC
+          ""
+          FORM
+          "%6.1"
+          "rpm"
+          /begin FORMULA
+            "X1 + sysc(System_Constant_1)"
+          /end FORMULA
+        /end COMPU_METHOD
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    module = session.query(model.Module).first()
+    compu = functions.CompuMethod(session, module.compu_method[0])
+    assert compu(23) == 65
