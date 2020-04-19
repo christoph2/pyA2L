@@ -492,30 +492,19 @@ class CompuMethod:
             if coeffs is None:
                 raise exceptions.StructuralError("'RAT_FUNC' requires coefficients (COEFFS).")
             self.evaluator = RatFunc(coeffs)
-        elif conversionType == "TAB_INTP":
+        elif conversionType in ("TAB_INTP", "TAB_NOINTP"):
+            klass = InterpolatedTable if conversionType == "TAB_INTP" else LookupTable
             table_name = compu_method.compu_tab_ref.conversionTable
             table = session.query(model.CompuTab).filter(model.CompuTab.name == table_name).first()
             if table is None:
-                raise exceptions.StructuralError("'TAB_NOINTP' requires a conversation table.")
+                raise exceptions.StructuralError("'TAB_INTP' and 'TAB_NOINTP requires a conversation table.")
             pairs = [(p.inVal, p.outVal) for p in table.pairs]
             default_numeric = table.default_value_numeric.display_value if table.default_value_numeric else None
             default = table.default_value.display_string if table.default_value else None
             if default_numeric and default:
                 raise exceptions.StructuralError("Cannot use both DEFAULT_VALUE and DEFAULT_VALUE_NUMERIC.")
             default = default_numeric if not default_numeric is None else default
-            self.evaluator = InterpolatedTable(pairs, default)
-        elif conversionType == "TAB_NOINTP":
-            table_name = compu_method.compu_tab_ref.conversionTable
-            table = session.query(model.CompuTab).filter(model.CompuTab.name == table_name).first()
-            if table is None:
-                raise exceptions.StructuralError("'TAB_NOINTP' requires a conversation table.")
-            pairs = [(p.inVal, p.outVal) for p in table.pairs]
-            default_numeric = table.default_value_numeric.display_value if table.default_value_numeric else None
-            default = table.default_value.display_string if table.default_value else None
-            if default_numeric and default:
-                raise exceptions.StructuralError("Cannot use both DEFAULT_VALUE and DEFAULT_VALUE_NUMERIC.")
-            default = default_numeric if not default_numeric is None else default
-            self.evaluator = LookupTable(pairs, default)
+            self.evaluator = klass(pairs, default)
         elif conversionType == "TAB_VERB":
             table_name = compu_method.compu_tab_ref.conversionTable
             table = session.query(model.CompuVtab).filter(model.CompuVtab.name == table_name).first()
