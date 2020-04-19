@@ -8,6 +8,9 @@ omit =
     pya2l/amlParser.py
     pya2l/a2lParser.py
     pya2l/a2lLexer.py
+    pya2l/a2llg.py
+    pya2l/version.py
+    pya2l/logger.py
 
 [report]
 exclude_lines =
