@@ -100,8 +100,8 @@ array_specifier:
    ;
 
 taggedstruct_type_name:
-     'taggedstruct' t0 = identifierValue? ('{' (l += taggedstruct_member)* '}' | (l += taggedstruct_member)*)
-   | 'taggedstruct' t1 = identifierValue
+    'taggedstruct' t1 = identifierValue
+   | 'taggedstruct' t0 = identifierValue? ('{' (l += taggedstruct_member)* '}' | (l += taggedstruct_member)*)
    ;
 
 taggedstruct_member:
