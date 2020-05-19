@@ -332,7 +332,8 @@ def test_axis_pts():
     assert ap.longIdentifier == 'axis points distribution speed'
     assert ap.address == 0x9876
     assert ap.inputQuantity == 'N'
-    assert ap.deposit == "0" # TODO: FIXME!
+    assert ap.depositAttr == "DAMOS_SST"
+    assert ap.deposit is None
     assert ap.maxDiff == 100.0
     assert ap.conversion == 'R_SPEED'
     assert ap.maxAxisPoints == 21

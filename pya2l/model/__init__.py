@@ -1490,7 +1490,7 @@ class AxisPts(Base, HasAnnotations, HasByteOrders, HasCalibrationAccess, HasDepo
 
     inputQuantity = StdIdent()
 
-    deposit = StdIdent()
+    depositAttr = StdIdent()
 
     maxDiff = StdFloat()
 
@@ -1507,7 +1507,7 @@ class AxisPts(Base, HasAnnotations, HasByteOrders, HasCalibrationAccess, HasDepo
         Parameter("longIdentifier", String, False),
         Parameter("address", Ulong, False),
         Parameter("inputQuantity", Ident, False),
-        Parameter("deposit", Ident, False),
+        Parameter("depositAttr", Ident, False),
         Parameter("maxDiff", Float, False),
         Parameter("conversion", Ident, False),
         Parameter("maxAxisPoints", Uint, False),

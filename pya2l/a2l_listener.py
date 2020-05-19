@@ -421,7 +421,7 @@ class A2LListener(BaseListener):
         longIdentifier = ctx.longIdentifier.value
         address = ctx.address.value
         inputQuantity = ctx.inputQuantity.value
-        deposit_ = ctx.deposit_.value
+        depositAttr = ctx.depositAttr.value
         maxDiff = ctx.maxDiff.value
         conversion = ctx.conversion.value
         maxAxisPoints = ctx.maxAxisPoints.value
@@ -449,7 +449,7 @@ class A2LListener(BaseListener):
         ctx.value = model.AxisPts(name = name, longIdentifier = longIdentifier, address = address, inputQuantity = inputQuantity,
             maxDiff = maxDiff, conversion = conversion, maxAxisPoints = maxAxisPoints,
             lowerLimit = lowerLimit, upperLimit = upperLimit, annotation = v_annotation, byte_order = v_byteOrder,
-            calibration_access = v_calibrationAccess, # TODO: v_deposit
+            calibration_access = v_calibrationAccess, deposit = v_deposit, depositAttr = depositAttr,
             display_identifier = v_displayIdentifier, ecu_address_extension = v_ecuAddressExtension,
             extended_limits = v_extendedLimits, format = v_format_, function_list = v_functionList, guard_rails = v_guardRails,
             if_data = v_ifData, monotony = v_monotony, phys_unit = v_physUnit, read_only = v_readOnly,

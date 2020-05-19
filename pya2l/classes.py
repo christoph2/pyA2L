@@ -4,7 +4,7 @@
 __copyright__="""
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2019 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2020 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -296,7 +296,7 @@ class AXIS_PTS(Keyword):
         (String, "LongIdentifier"),
         (Ulong, "Address"),
         (Ident, "InputQuantity"),
-        (Ident, "Deposit"),
+        (Ident, "DepositAttr"),
         (Float, "MaxDiff"),
         (Ident, "Conversion"),
         (Uint, "MaxAxisPoints"),
