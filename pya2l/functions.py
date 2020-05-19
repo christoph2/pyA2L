@@ -298,7 +298,7 @@ class Linear:
     def inv(self, y):
         """
         """
-        if isinstance(y, np.ndarray):
+        if hasattr(y, "__iter__"):
             return [self._eval_inv(i) for i in y]
         else:
             return self._eval_inv(y)
@@ -327,12 +327,19 @@ class LookupTable:
     def __call__(self, x):
         """
         """
-        return self.mapping.get(x, self.default)
+        if hasattr(x, "__iter__"):
+            return [self.mapping.get(r, self.default) for r in x]
+        else:
+            return self.mapping.get(x, self.default)
 
     def inv(self, y):
         """
         """
-        return self.mapping_inv.get(y)
+
+        if hasattr(y, "__iter__") and not isinstance(y, str):
+            return [self.mapping_inv.get(r) for r in y]
+        else:
+            return self.mapping_inv.get(y)
 
 
 class InterpolatedTable:
@@ -392,7 +399,7 @@ class LookupTableWithRanges:
         else:
             self.in_range = lambda x, l, r: l <= x < r
 
-    def __call__(self, x):
+    def _lookup(self, x):
         """
         """
         if not (self.minimum <= x <= self.maximum):
@@ -406,10 +413,21 @@ class LookupTableWithRanges:
         else:
             return self.default
 
+    def __call__(self, x):
+        """
+        """
+        if hasattr(x, "__iter__"):
+            return [self._lookup(r) for r in x]
+        else:
+            return self._lookup(x)
+
     def inv(self, y):
         """
         """
-        return self.dict_inv.get(y, None)
+        if hasattr(y, "__iter__") and not isinstance(y, str):
+            return [self.dict_inv.get(r, None) for r in y]
+        else:
+            return self.dict_inv.get(y, None)
 
 
 class Formula:

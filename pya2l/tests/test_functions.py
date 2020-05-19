@@ -152,6 +152,20 @@ def test_ratfunc_linear():
     assert np.array_equal(rf(xs), ys)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_ratfunc_linear_scalar():
+    x = -10
+    y = -6.4
+    coeffs = Value()
+    coeffs.a = 0
+    coeffs.b = 4
+    coeffs.c = 8
+    coeffs.d = 0
+    coeffs.e = 0
+    coeffs.f = 5
+    rf = functions.RatFunc(coeffs)
+    assert rf(x) == y
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_linear_inv():
     xs = np.arange(-10, 11)
     ys = np.array(
@@ -166,8 +180,21 @@ def test_ratfunc_linear_inv():
     coeffs.e = 0
     coeffs.f = 5
     rf = functions.RatFunc(coeffs)
-    rf = functions.RatFunc(coeffs)
     assert np.array_equal(rf.inv(ys), xs)
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_ratfunc_linear_inv_scalar():
+    x = -10
+    y = -6.4
+    coeffs = Value()
+    coeffs.a = 0
+    coeffs.b = 4
+    coeffs.c = 8
+    coeffs.d = 0
+    coeffs.e = 0
+    coeffs.f = 5
+    rf = functions.RatFunc(coeffs)
+    assert rf.inv(y) == x
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_constant():
@@ -184,6 +211,20 @@ def test_ratfunc_constant():
     assert np.array_equal(rf(xs), ys)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_ratfunc_constant_scalar():
+    x = -10
+    y = 10.0
+    coeffs = Value()
+    coeffs.a = 0
+    coeffs.b = 0
+    coeffs.c = 20
+    coeffs.d = 0
+    coeffs.e = 0
+    coeffs.f = 2
+    rf = functions.RatFunc(coeffs)
+    assert rf(x) ==  y
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_constant_inv():
     xs = np.arange(-10, 11)
     ys = np.full((21,), 10.0)
@@ -197,6 +238,21 @@ def test_ratfunc_constant_inv():
     rf = functions.RatFunc(coeffs)
     with pytest.raises(exceptions.MathError):
         rf.inv(ys)
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_ratfunc_constant_inv_scalar():
+    x = -10
+    y = 10.0
+    coeffs = Value()
+    coeffs.a = 0
+    coeffs.b = 0
+    coeffs.c = 20
+    coeffs.d = 0
+    coeffs.e = 0
+    coeffs.f = 20
+    rf = functions.RatFunc(coeffs)
+    with pytest.raises(exceptions.MathError):
+        rf.inv(y)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_quadratic():
@@ -217,6 +273,20 @@ def test_ratfunc_quadratic():
     assert np.array_equal(rf(xs), ys)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_ratfunc_quadratic_scalar():
+    x = -10
+    y = 1.231638418079096
+    coeffs = Value()
+    coeffs.a = 5
+    coeffs.b = 7
+    coeffs.c = 6
+    coeffs.d = 3
+    coeffs.e = -5
+    coeffs.f = 4
+    rf = functions.RatFunc(coeffs)
+    assert rf(x) == y
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_quadratic_inv():
     xs = np.arange(-10, 11)
     coeffs = Value()
@@ -230,16 +300,39 @@ def test_ratfunc_quadratic_inv():
     with pytest.raises(NotImplementedError):
         rf.inv(xs)
 
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_ratfunc_quadratic_inv_scalar():
+    x = -10
+    coeffs = Value()
+    coeffs.a = 5
+    coeffs.b = 7
+    coeffs.c = 6
+    coeffs.d = 3
+    coeffs.e = -5
+    coeffs.f = 4
+    rf = functions.RatFunc(coeffs)
+    with pytest.raises(NotImplementedError):
+        rf.inv(x)
+
 def test_identical():
     xs = np.arange(-10, 11)
     rf = functions.Identical()
     assert np.array_equal(rf(xs), xs)
 
+def test_identical_scalar():
+    x = -10
+    rf = functions.Identical()
+    assert rf(x) == x
+
 def test_identical_inv():
     xs = np.arange(-10, 11)
-    ys = np.full((21,), 10.0)
     rf = functions.Identical()
     assert np.array_equal(rf.inv(xs), xs)
+
+def test_identical_inv_scalar():
+    x = -10
+    rf = functions.Identical()
+    assert rf.inv(x) == x
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_linear():
@@ -253,6 +346,16 @@ def test_linear():
     assert np.array_equal(rf(xs), ys)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_linear_scalar():
+    x = -10
+    y = -43
+    coeffs = Value()
+    coeffs.a = 4
+    coeffs.b = -3
+    rf = functions.Linear(coeffs)
+    assert rf(x) == y
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_linear_inv():
     xs = np.arange(-10, 11)
     ys = np.array([-43, -39, -35, -31, -27, -23, -19, -15, -11, -7, -3, 1, 5, 9, 13, 17, 21, 25, 29, 33, 37
@@ -262,6 +365,16 @@ def test_linear_inv():
     coeffs.b = -3
     rf = functions.Linear(coeffs)
     assert np.array_equal(rf.inv(ys), xs)
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_linear_inv_scalar():
+    x = -10
+    y = -43
+    coeffs = Value()
+    coeffs.a = 4
+    coeffs.b = -3
+    rf = functions.Linear(coeffs)
+    assert rf.inv(y) == x
 
 def test_tab_verb_with_default():
     mapping = [
@@ -274,6 +387,18 @@ def test_tab_verb_with_default():
     assert tv(2) == "Square"
     assert tv(5) == default
 
+def test_tab_verb_with_default_vectorized():
+    mapping = [
+        (1, "SawTooth"),
+        (2, "Square"),
+        (3, "Sinus"),
+    ]
+    default = "unknown signal type"
+    xs = [1, 2, 3, 5]
+    ys = ["SawTooth", "Square", "Sinus", default]
+    tv = functions.LookupTable(mapping, default = default)
+    assert np.array_equal(tv(xs), ys)
+
 def test_tab_verb_with_default_inv():
     mapping = [
         (1, "SawTooth"),
@@ -284,6 +409,18 @@ def test_tab_verb_with_default_inv():
     tv = functions.LookupTable(mapping, default = default)
     assert tv.inv("Square") == 2
     assert tv.inv(default) is None
+
+def test_tab_verb_with_default_inv_vectorized():
+    mapping = [
+        (1, "SawTooth"),
+        (2, "Square"),
+        (3, "Sinus"),
+    ]
+    default = "unknown signal type"
+    xs = [1, 2, 3]
+    ys = ["SawTooth", "Square", "Sinus"]
+    tv = functions.LookupTable(mapping, default = default)
+    assert np.array_equal(tv.inv(ys), xs)
 
 def test_tab_verb_ranges_with_default():
     mapping = [
@@ -310,6 +447,69 @@ def test_tab_verb_ranges_with_default():
     assert tvr(106) == "out of range value"
     assert tvr(10) == "out of range value"
 
+def test_tab_verb_ranges_with_default_vectorized():
+    mapping = [
+       (0, 1, "Zero_to_one"),
+       (2, 3, "two_to_three"),
+       (4, 7, "four_to_seven"),
+       (14, 17, "fourteen_to_seventeen"),
+       (18, 99, "eigteen_to_ninetynine"),
+       (100, 100, "hundred"),
+       (101, 101, "hundredone"),
+       (102, 102, "hundredtwo"),
+       (103, 103, "hundredthree"),
+       (104, 104, "hundredfour"),
+       (105, 105, "hundredfive")
+    ]
+    default = "out of range value"
+    xs = [0, 6, 45, 100, 105, -1, 106, 10]
+    ys = ["Zero_to_one", "four_to_seven", "eigteen_to_ninetynine", "hundred", "hundredfive",
+          "out of range value", "out of range value", "out of range value"]
+    tvr = functions.LookupTableWithRanges(mapping, default = default, dtype = int)
+    assert np.array_equal(tvr(xs), ys)
+
+def test_tab_verb_ranges_inverse():
+    mapping = [
+       (0, 1, "Zero_to_one"),
+       (2, 3, "two_to_three"),
+       (4, 7, "four_to_seven"),
+       (14, 17, "fourteen_to_seventeen"),
+       (18, 99, "eigteen_to_ninetynine"),
+       (100, 100, "hundred"),
+       (101, 101, "hundredone"),
+       (102, 102, "hundredtwo"),
+       (103, 103, "hundredthree"),
+       (104, 104, "hundredfour"),
+       (105, 105, "hundredfive")
+    ]
+    default = "out of range value"
+    tvr = functions.LookupTableWithRanges(mapping, default = default, dtype = int)
+    assert tvr.inv("Zero_to_one") == 0
+    assert tvr.inv("four_to_seven") == 4
+    assert tvr.inv("eigteen_to_ninetynine") == 18
+    assert tvr.inv("hundred") == 100
+    assert tvr.inv("hundredfive") == 105
+
+def test_tab_verb_ranges_inverse_vectorized():
+    mapping = [
+       (0, 1, "Zero_to_one"),
+       (2, 3, "two_to_three"),
+       (4, 7, "four_to_seven"),
+       (14, 17, "fourteen_to_seventeen"),
+       (18, 99, "eigteen_to_ninetynine"),
+       (100, 100, "hundred"),
+       (101, 101, "hundredone"),
+       (102, 102, "hundredtwo"),
+       (103, 103, "hundredthree"),
+       (104, 104, "hundredfour"),
+       (105, 105, "hundredfive")
+    ]
+    default = "out of range value"
+    tvr = functions.LookupTableWithRanges(mapping, default = default, dtype = int)
+    xs = ["Zero_to_one", "four_to_seven", "eigteen_to_ninetynine", "hundred", "hundredfive"]
+    ys = [0, 4, 18, 100, 105]
+    assert np.array_equal(tvr.inv(xs), ys)
+
 def test_tab_verb_ranges_with_default_negative():
     mapping = [
        (-1, 0, "minus_one_to_zero"),
@@ -334,6 +534,27 @@ def test_tab_verb_ranges_with_default_negative():
     assert tvr(1) == "out of range value"
     assert tvr(-106) == "out of range value"
     assert tvr(-10) == "out of range value"
+
+def test_tab_verb_ranges_with_default_negative_vectorized():
+    mapping = [
+       (-1, 0, "minus_one_to_zero"),
+       (-3, -2, "minus_three_minus_two"),
+       (-7, -4, "minus_seven_to_minus_four"),
+       (-17, -14, "minus_seventeen_minus_fourteen"),
+       (-99, -18, "minus_ninetynine_minus_eigteen"),
+       (-100, -100, "minus_hundred"),
+       (-101, -101, "minus_hundredone"),
+       (-102, -102, "minus_hundredtwo"),
+       (-103, -103, "minus_hundredthree"),
+       (-104, -104, "minus_hundredfour"),
+       (-105, -105, "minus_hundredfive")
+    ]
+    default = "out of range value"
+    tvr = functions.LookupTableWithRanges(mapping, default = default, dtype = int)
+    xs = [0, -6, -45, -100, -105, 1, -106, -10]
+    ys = ["minus_one_to_zero", "minus_seven_to_minus_four", "minus_ninetynine_minus_eigteen", "minus_hundred", "minus_hundredfive",
+    "out of range value", "out of range value", "out of range value"]
+    assert np.array_equal(tvr(xs), ys)
 
 def test_formula_with_no_parameters_raises():
     form = functions.Formula("sin(X1)")
