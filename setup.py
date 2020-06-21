@@ -117,7 +117,7 @@ with open("README.md", "r") as fh:
     LONG_DESCRIPTION = fh.read()
 
 setup(
-    name="pya2l",
+    name="pya2ldb",
     version=version,
     description="A2L for Python",
     long_description=LONG_DESCRIPTION,
