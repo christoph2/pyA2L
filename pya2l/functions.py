@@ -30,6 +30,7 @@ import bisect
 from collections import OrderedDict
 import math
 from operator import itemgetter
+import re
 
 try:
     import numpy as np
@@ -42,9 +43,19 @@ try:
 except ImportError:
     pass
 
+try:
+    import numexpr
+except ImportError:
+    has_numexpr = False
+else:
+    has_numexpr = True
+
 from pya2l import exceptions
 from pya2l import model
 
+
+POW = re.compile(r"pow\s*\((?P<params>.*?)\s*\)")
+SYSC = re.compile(r"sysc\s*\((?P<param>.*?)\s*\)")
 
 class Interpolate1D:
     """1-D linear interpolation.
@@ -430,8 +441,8 @@ class LookupTableWithRanges:
             return self.dict_inv.get(y, None)
 
 
-class Formula:
-    """Crude ASAP2 formula interpreter.
+class FormulaBase:
+    """Base class for formula interpreters.
 
     Parameters
     ----------
@@ -446,9 +457,105 @@ class Formula:
     def __init__(self, formula, inverse_formula = None, system_constants = None):
         if not formula:
             raise ValueError("Formula cannot be None or empty.")
+        if system_constants:
+            self.system_constants = dict(system_constants)
+        else:
+            self.system_constants = {}
         self.formula = self._replace_special_symbols(formula)
         self.inverse_formula = self._replace_special_symbols(inverse_formula) if inverse_formula else None
-        self.math_funcs = {
+
+    def sysc(self, key):
+        return self.system_constants[key]
+
+    def _build_namespace(self, *args):
+        if len(args) == 0:
+            raise ValueError("Formula called with no paramters.")
+        xs = {"X{}".format(i): v for i, v in enumerate(args, 1)}
+        if len(args) == 1:          # In this case...
+            xs["X"] = xs.get("X1")  # ... create an alias.
+        namespace = self.MATH_FUNCS
+        namespace.update(xs)
+        for key in self.system_constants.keys():
+            namespace[key] = key
+        namespace["sysc"] = self.sysc
+        return namespace
+
+if has_numexpr:
+
+    class Formula(FormulaBase):
+        """ASAP2 formula interpreter based on *numexpr*.
+
+        Parameters
+        ----------
+
+        formula: str
+
+        inverse_formula: str
+
+        system_constants: list of 2-tuples (name, value)
+        """
+
+        MATH_FUNCS = {
+        }
+
+        #def __init__(self, formula, inverse_formula = None, system_constants = None):
+        #    super().__init__(formula, inverse_formula = None, system_constants = None)
+
+        def _replace_special_symbols(self, text):
+            result = text.replace("&&", " and ").replace("||", " or ").replace("!", "not ").\
+                replace("acos", "arccos").replace("asin", "arcsin").replace("atan", "arctan")
+            while True:
+                # replace 'pow(a, b)' with '(a ** b)'
+                match = POW.search(result)
+                if match:
+                    params = [p.strip() for p in match.group('params').split(',')]
+                    assert len(params) == 2
+                    pow_expr = "({0} ** {1})".format(*params)
+                    head = result[: match.start()]
+                    tail = result[match.end() :]
+                    result = "{}{}{}".format(head, tail, pow_expr)
+                else:
+                    break
+            while True:
+                # replace 'sysc(a)' with value of 'a'
+                match = SYSC.search(result)
+                if match:
+                    param = match.group('param').strip()
+                    value = self.sysc(param)
+                    head = result[: match.start()]
+                    tail = result[match.end() :]
+                    result = "{}{}{}".format(head, tail, value)
+                else:
+                    break
+
+            return result
+
+        def __call__(self, *args):
+            """
+            """
+            return numexpr.evaluate(self.formula, local_dict = self._build_namespace(*args))
+
+        def inv(self, *args):
+            """
+            """
+            return numexpr.evaluate(self.inverse_formula, local_dict = self._build_namespace(*args))
+
+else:
+
+    class Formula(FormulaBase):
+        """Crude ASAP2 formula interpreter using python `eval()`.
+
+        Parameters
+        ----------
+
+        formula: str
+
+        inverse_formula: str
+
+        system_constants: list of 2-tuples (name, value)
+        """
+
+        MATH_FUNCS = {
             'abs'  : math.fabs,
             'acos' : math.acos,
             'asin' : math.asin,
@@ -464,40 +571,20 @@ class Formula:
             'sqrt' : math.sqrt,
             'tan'  : math.tan,
             'tanh' : math.tanh,
-            }
-        if system_constants:
-            self.system_constants = dict(system_constants)
-        else:
-            self.system_constants = {}
+        }
 
-    def sysc(self, key):
-        return self.system_constants[key]
+        def _replace_special_symbols(self, text):
+            return text.replace("&&", " and ").replace("||", " or ").replace("!", "not ")
 
-    def _replace_special_symbols(self, text):
-        return text.replace("&&", " and ").replace("||", " or ").replace("!", "not ")
+        def __call__(self, *args):
+            """
+            """
+            return eval(self.formula, dict(), self._build_namespace(*args))
 
-    def _build_namespace(self, *args):
-        if len(args) == 0:
-            raise ValueError("Formula called with no paramters.")
-        xs = {"X{}".format(i): v for i, v in enumerate(args, 1)}
-        if len(args) == 1:          # In this case...
-            xs["X"] = xs.get("X1")  # ... create an alias.
-        namespace = self.math_funcs
-        namespace.update(xs)
-        for key in self.system_constants.keys():
-            namespace[key] = key
-        namespace["sysc"] = self.sysc
-        return namespace
-
-    def __call__(self, *args):
-        """
-        """
-        return eval(self.formula, dict(), self._build_namespace(*args))
-
-    def inv(self, *args):
-        """
-        """
-        return eval(self.inverse_formula, dict(), self._build_namespace(*args))
+        def inv(self, *args):
+            """
+            """
+            return eval(self.inverse_formula, dict(), self._build_namespace(*args))
 
 
 class CompuMethod:
