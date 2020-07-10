@@ -4,7 +4,7 @@
 __copyright__="""
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2019 by Christoph Schueler <github.com/Christoph2,
+   (C) 2009-2020 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -32,12 +32,8 @@ from pya2l.logger import Logger
 from sqlalchemy import (event, func)
 from sqlalchemy import sql
 
-##MaxGrad= max(abs((W i,k -W i-1,k )/(X i -X i-1 )))
-
-
-
 class MixInBase:
-    
+
     logger = Logger(__name__)
 
 class AxisDescrMixIn(MixInBase):
@@ -48,10 +44,25 @@ class AxisDescrMixIn(MixInBase):
             if self.conversion != "NO_COMPU_METHOD":
                 self.logger.error("CURVE_AXIS have no input conversion, use 'NO_COMPU_METHOD' for argument 'conversion'.")
                 return False
-#            meas = 
+#            meas =
         return True
-    
+
+
+class CompareByPositionMixIn(MixInBase):
+    """
+    Enable sortability in user code.
+
+    Implements basic comparison.
+    """
+
+    def __eq__(self, other):
+        return self.position == other.position
+
+    def __lt__(self, other):
+        return self.position < other.position
+
 
 MIXIN_MAP = {
     "AXIS_DESCR": "AxisDescrMixIn",
 }
+

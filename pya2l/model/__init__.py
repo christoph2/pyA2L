@@ -4,7 +4,7 @@
 __copyright__="""
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2019 by Christoph Schueler <github.com/Christoph2,
+   (C) 2009-2020 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -43,7 +43,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.sql import exists
 
 from pya2l.utils import SingletonBase
-from pya2l.model import mixins
+from pya2l.model.mixins import CompareByPositionMixIn, AxisDescrMixIn
 
 DB_EXTENSION    = "a2ldb"
 
@@ -209,7 +209,7 @@ def StdIdent(default = 0, primary_key = False, unique = False):
     )
 
 
-class DefCharacteristicIdentifiers(Base):
+class DefCharacteristicIdentifiers(Base, CompareByPositionMixIn):
 
     __tablename__ = "def_characteristic_identifiers"
 
@@ -220,7 +220,7 @@ class DefCharacteristicIdentifiers(Base):
     def __init__(self, identifier):
         self.identifier = identifier
 
-class OutMeasurementIdentifiers(Base):
+class OutMeasurementIdentifiers(Base, CompareByPositionMixIn):
 
     __tablename__ = "out_measurement_identifiers"
 
@@ -231,7 +231,7 @@ class OutMeasurementIdentifiers(Base):
     def __init__(self, identifier):
         self.identifier = identifier
 
-class InMeasurementIdentifiers(Base):
+class InMeasurementIdentifiers(Base, CompareByPositionMixIn):
 
     __tablename__ = "in_measurement_identifiers"
 
@@ -242,7 +242,7 @@ class InMeasurementIdentifiers(Base):
     def __init__(self, identifier):
         self.identifier = identifier
 
-class LocMeasurementIdentifiers(Base):
+class LocMeasurementIdentifiers(Base, CompareByPositionMixIn):
 
     __tablename__ = "loc_measurement_identifiers"
 
@@ -253,7 +253,7 @@ class LocMeasurementIdentifiers(Base):
     def __init__(self, identifier):
         self.identifier = identifier
 
-class RefMeasurementIdentifiers(Base):
+class RefMeasurementIdentifiers(Base, CompareByPositionMixIn):
 
     __tablename__ = "ref_measurement_identifiers"
 
@@ -264,7 +264,7 @@ class RefMeasurementIdentifiers(Base):
     def __init__(self, identifier):
         self.identifier = identifier
 
-class FrameMeasurementIdentifiers(Base):
+class FrameMeasurementIdentifiers(Base, CompareByPositionMixIn):
 
     __tablename__ = "frame_measurement_identifiers"
 
@@ -275,7 +275,7 @@ class FrameMeasurementIdentifiers(Base):
     def __init__(self, identifier):
         self.identifier = identifier
 
-class SubGroupIdentifiers(Base):
+class SubGroupIdentifiers(Base, CompareByPositionMixIn):
 
     __tablename__ = "sub_group_identifiers"
 
@@ -286,7 +286,7 @@ class SubGroupIdentifiers(Base):
     def __init__(self, identifier):
         self.identifier = identifier
 
-class SubFunctionIdentifiers(Base):
+class SubFunctionIdentifiers(Base, CompareByPositionMixIn):
 
     __tablename__ = "sub_function_identifiers"
 
@@ -297,7 +297,7 @@ class SubFunctionIdentifiers(Base):
     def __init__(self, identifier):
         self.identifier = identifier
 
-class RefGroupIdentifiers(Base):
+class RefGroupIdentifiers(Base, CompareByPositionMixIn):
 
     __tablename__ = "ref_group_identifiers"
 
@@ -308,7 +308,7 @@ class RefGroupIdentifiers(Base):
     def __init__(self, identifier):
         self.identifier = identifier
 
-class MapListIdentifiers(Base):
+class MapListIdentifiers(Base, CompareByPositionMixIn):
 
     __tablename__ = "map_list_identifiers"
 
@@ -319,7 +319,7 @@ class MapListIdentifiers(Base):
     def __init__(self, name):
         self.name = name
 
-class VarCharacteristicIdentifiers(Base):
+class VarCharacteristicIdentifiers(Base, CompareByPositionMixIn):
 
     __tablename__ = "var_characteristic_identifiers"
 
@@ -330,7 +330,7 @@ class VarCharacteristicIdentifiers(Base):
     def __init__(self, criterionName):
         self.criterionName = criterionName
 
-class VarCriterionIdentifiers(Base):
+class VarCriterionIdentifiers(Base, CompareByPositionMixIn):
 
     __tablename__ = "var_criterion_identifiers"
 
@@ -341,7 +341,7 @@ class VarCriterionIdentifiers(Base):
     def __init__(self, value):
         self.value = value
 
-class FunctionListIdentifiers(Base):
+class FunctionListIdentifiers(Base, CompareByPositionMixIn):
 
     __tablename__ = "function_list_identifiers"
 
@@ -352,7 +352,7 @@ class FunctionListIdentifiers(Base):
     def __init__(self, name):
         self.name = name
 
-class RefCharacteristicIdentifiers(Base):
+class RefCharacteristicIdentifiers(Base, CompareByPositionMixIn):
 
     __tablename__ = "ref_characteristic_identifiers"
 
@@ -363,7 +363,7 @@ class RefCharacteristicIdentifiers(Base):
     def __init__(self, identifier):
         self.identifier = identifier
 
-class DependentCharacteristicIdentifiers(Base):
+class DependentCharacteristicIdentifiers(Base, CompareByPositionMixIn):
 
     __tablename__ = "dependent_characteristic_identifiers"
 
@@ -374,7 +374,7 @@ class DependentCharacteristicIdentifiers(Base):
     def __init__(self, characteristic):
         self.characteristic = characteristic
 
-class VirtualCharacteristicIdentifiers(Base):
+class VirtualCharacteristicIdentifiers(Base, CompareByPositionMixIn):
 
     __tablename__ = "virtual_characteristic_identifiers"
 
@@ -386,7 +386,7 @@ class VirtualCharacteristicIdentifiers(Base):
         self.characteristic = characteristic
 
 
-class CompuTabPair(Base):
+class CompuTabPair(Base, CompareByPositionMixIn):
 
     __tablename__ = "compu_tab_pair"
 
@@ -396,7 +396,7 @@ class CompuTabPair(Base):
     inVal = StdFloat()
     outVal = StdFloat()
 
-class CompuVtabPair(Base):
+class CompuVtabPair(Base, CompareByPositionMixIn):
 
     __tablename__ = "compu_vtab_pair"
 
@@ -406,7 +406,7 @@ class CompuVtabPair(Base):
     inVal = StdFloat()
     outVal = StdString()
 
-class CompuVtabRangeTriple(Base):
+class CompuVtabRangeTriple(Base, CompareByPositionMixIn):
 
     __tablename__ = "compu_vtab_range_triple"
 
@@ -417,7 +417,7 @@ class CompuVtabRangeTriple(Base):
     inValMax = StdFloat()
     outVal   = StdString()
 
-class CalHandles(Base):
+class CalHandles(Base, CompareByPositionMixIn):
 
     __tablename__ = "calhandles"
 
@@ -428,7 +428,7 @@ class CalHandles(Base):
     def __init__(self, handle):
         self.handle = handle
 
-class VirtualMeasuringChannels(Base):
+class VirtualMeasuringChannels(Base, CompareByPositionMixIn):
 
     __tablename__ = "virtual_measuring_channel"
 
@@ -439,7 +439,7 @@ class VirtualMeasuringChannels(Base):
     def __init__(self, measuringChannel):
         self.measuringChannel = measuringChannel
 
-class FixAxisParListValues(Base):
+class FixAxisParListValues(Base, CompareByPositionMixIn):
 
     __tablename__ = "fix_axis_par_list_value"
 
@@ -451,7 +451,7 @@ class FixAxisParListValues(Base):
         self.axisPts_Value = axisPts_Value
 
 
-class VarAddressValues(Base):
+class VarAddressValues(Base, CompareByPositionMixIn):
 
     __tablename__ = "var_address_values"
 
@@ -462,7 +462,7 @@ class VarAddressValues(Base):
     def __init__(self, address):
         self.address = address
 
-class AnnotationTextValues(Base):
+class AnnotationTextValues(Base, CompareByPositionMixIn):
 
     __tablename__ = "annotation_text_values"
 
@@ -473,7 +473,7 @@ class AnnotationTextValues(Base):
     def __init__(self, text):
         self.text = text
 
-class FunctionListValues(Base):
+class FunctionListValues(Base, CompareByPositionMixIn):
 
     __tablename__ = "function_list_values"
 
@@ -485,7 +485,7 @@ class FunctionListValues(Base):
         self.name = name
 
 
-class VarForbiddedCombPair(Base):
+class VarForbiddedCombPair(Base, CompareByPositionMixIn):
 
     __tablename__ = "var_forbidden_comb_pair"
 
@@ -1610,7 +1610,7 @@ class Characteristic(Base, HasAnnotations, HasBitMasks, HasByteOrders, HasCalibr
     module = relationship("Module", back_populates = "characteristic", uselist = True)
 
 
-class AxisDescr(Base, mixins.AxisDescrMixIn, HasAnnotations, HasByteOrders, HasDeposits, HasExtendedLimits, HasFormats, HasMonotonys, HasPhysUnits, HasReadOnlys, HasStepSizes):
+class AxisDescr(Base, AxisDescrMixIn, HasAnnotations, HasByteOrders, HasDeposits, HasExtendedLimits, HasFormats, HasMonotonys, HasPhysUnits, HasReadOnlys, HasStepSizes):
     """
     """
     __tablename__ = "axis_descr"
