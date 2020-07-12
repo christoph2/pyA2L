@@ -149,6 +149,14 @@ pya2l.version module
     :undoc-members:
     :show-inheritance:
 
+pya2l.api.inspect module
+------------------------
+
+.. automodule:: pya2l.api.inspect
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
