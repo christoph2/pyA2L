@@ -35,7 +35,7 @@ def test_measurement_basic():
     assert meas.annotations == []
     assert meas.arraySize is None
     assert meas.bitMask is None
-    assert meas.bitOperation == {}
+    assert meas.bitOperation == None
     assert meas.byteOrder is None
     assert meas.discrete == False
     assert meas.displayIdentifier is None
@@ -45,12 +45,12 @@ def test_measurement_basic():
     assert meas.format is None
     assert meas.functionList == []
     assert meas.layout is None
-    assert meas.matrixDim == {}
-    assert meas.maxRefresh == {}
+    assert meas.matrixDim == None
+    assert meas.maxRefresh == None
     assert meas.physUnit is None
     assert meas.readWrite == False
     assert meas.refMemorySegment is None
-    assert meas.symbolLink == {}
+    assert meas.symbolLink == None
     assert meas.virtual == []
     assert meas.compuMethod == {'type': 'NO_COMPU_METHOD'}
 
@@ -133,7 +133,7 @@ def test_measurement_full_featured():
             'origin': 'Python Universe',
             'text': ['Test the A2L annotation', 'Another line']
         }]
-    assert meas.bitOperation == {'left_shift': 0, 'right_shift': 4, 'sign_extend': True}
+    assert meas.bitOperation == {'amount': 4, 'direction': 'R', 'sign_extend': True}
     assert meas.byteOrder == "MSB_FIRST"
     assert meas.discrete == True
     assert meas.displayIdentifier == 'load_engine'

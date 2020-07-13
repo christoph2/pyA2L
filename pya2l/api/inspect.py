@@ -104,20 +104,21 @@ class Measurement:
     annotations: list
         s. :func:`_annotations`
 
-    arraySize: int
+    arraySize: int or None
         If not `None`, Measurement is an one dimensional array; higher order objects are using :attr:`matrixDim`.
 
-    bitMask: int
+    bitMask: int or None
         Mask out bits.
 
-    bitOperation: dict
-        - left_shift: int
-        - right_shift: int
+    bitOperation: dict or None
+        - amount: int
+            Number of shift positions
+        - direction: ['L' | 'R']
         - sign_extend: bool
 
         perform `<<` and `>>` operations.
 
-    byteOrder: ["LITTLE_ENDIAN" | "BIG_ENDIAN" | "MSB_LAST" | "MSB_FIRST"]
+    byteOrder: ["LITTLE_ENDIAN" | "BIG_ENDIAN" | "MSB_LAST" | "MSB_FIRST"] or None
 
     discrete: bool
         If True, value should not be interpolated.
@@ -125,48 +126,48 @@ class Measurement:
     displayIdentifier: str
         Can be used as a display name (alternative to the `name` attribute).
 
-    ecuAddress: int
+    ecuAddress: int or None
         Address of the measurement in the memory of the CU.
 
-    ecuAddressExtension: int
+    ecuAddressExtension: int or None
         Additional address information, e.g. paging.
 
-    errorMask: int
+    errorMask: int or None
         Mask out bits  which indicate that the value is in error.
 
-    format: str
+    format: str or None
         C printf like format string.
 
     functionList: list of strings.
         Used to specify a list of 'functions' to which this measurement object has been allocated.
 
-    layout: ["ROW_DIR" | "COLUMN_DIR"]
+    layout: ["ROW_DIR" | "COLUMN_DIR"] or None
         Describes the layout of a multi-dimensional measurement array.
 
-    matrixDim: dict
+    matrixDim: dict or None
         - x: int
         - y: int
         - z: int
 
         Shows the size and dimension of a multidimensional measurement.
 
-    maxRefresh: dict
+    maxRefresh: dict or None
         - scalingUnit: int
             basic scaling unit (s. `Table Codes for scaling (CSE)`)
 
         - rate: int
             the maximum refresh rate of the concerning measurement object in the control unit.
 
-    physUnit: str
+    physUnit: str or None
         Physical unit for Measurement.
 
     readWrite: bool
         if True, mark this measurement object as writeable.
 
-    refMemorySegment: str
+    refMemorySegment: str or None
         Reference to the memory segment which is needed if the address is not unique.
 
-    symbolLink: dict
+    symbolLink: dict or None
         - symbolName: str
             Name of the symbol within the corresponding linker map file.
 
@@ -336,42 +337,48 @@ Measurement {{
 
     @staticmethod
     def _dissect_bit_operation(bit_op):
-        result = {}
         if bit_op is not None:
-            if bit_op.left_shift is None:
-                result['left_shift'] = 0
-            else:
-                result['left_shift'] = bit_op.left_shift.bitcount
-            if bit_op.right_shift is None:
-                result['right_shift'] = 0
-            else:
-                result['right_shift'] = bit_op.right_shift.bitcount
+            result = {}
+            if bit_op.left_shift is not None:
+                result['direction'] = "L"
+                result['amount'] = bit_op.left_shift.bitcount
+            elif bit_op.right_shift is not None:
+                result['direction'] = "R"
+                result['amount'] = bit_op.right_shift.bitcount
             result['sign_extend'] = False if bit_op.sign_extend is None else True
+        else:
+            result = None
         return result
 
     @staticmethod
     def _dissect_matrix_dim(matrix_dim):
-        result = {}
         if matrix_dim is not None:
+            result = {}
             result["x"] = matrix_dim.xDim
             result["y"] = matrix_dim.yDim
             result["z"] = matrix_dim.zDim
+        else:
+            result = None
         return result
 
     @staticmethod
     def _dissect_max_refresh(max_ref):
-        result = {}
         if max_ref is not None:
+            result = {}
             result["scalingUnit"] = max_ref.scalingUnit
             result["rate"] = max_ref.rate
+        else:
+            result = None
         return result
 
     @staticmethod
     def _dissect_symbol_link(sym_link):
-        result = {}
         if sym_link is not None:
+            result = {}
             result["symbolName"] = sym_link.symbolName
             result["offset"] = sym_link.offset
+        else:
+            result = None
         return result
 
 
