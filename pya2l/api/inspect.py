@@ -226,6 +226,7 @@ class Measurement:
                 - num_values: int
                 - in_values: list of integers
                 - out_values: list of integers
+                - default_value: int
 
                 table with interpolation.
 
@@ -233,15 +234,21 @@ class Measurement:
                 - num_values: int
                 - in_values: list of integers
                 - out_values: list of integers
+                - default_value: int
 
                 table without interpolation.
 
             - TAB_VERB:
-
                 - num_values: int
-                - lower_values: list of integers
-                - upper_values: list of integers
-                - text_values: list of strings
+                - default_value: str
+                - ranges: bool
+                    - True
+                        - lower_values: list of integers
+                        - upper_values: list of integers
+                        - text_values: list of strings
+                    - False
+                        - in_values: list of integers
+                        - text_values: list of strings
 
                 verbal conversion table.
     """
@@ -405,15 +412,17 @@ def _dissect_conversion(session, conversion):
         elif cm_type == "TAB_VERB":
             cvt = session.query(model.CompuVtab).filter(model.CompuVtab.name == cm.compu_tab_ref.conversionTable).first()
             if cvt:
+                result["ranges"] = False
                 pairs = cvt.pairs
                 result["num_values"] = len(pairs)
                 result["in_values"] = [x.inVal for x in pairs]
-                result["out_values"] = [x.outVal for x in pairs]
+                result["text_values"] = [x.outVal for x in pairs]
                 result["default_value"] = cvt.default_value.display_string if cvt.default_value else None
             else:
                 cvt = session.query(model.CompuVtabRange).filter(model.CompuVtabRange.name == \
                         cm.compu_tab_ref.conversionTable).first()
                 if cvt:
+                    result["ranges"] = True
                     triples = cvt.triples
                     result["num_values"] = len(triples)
                     result["lower_values"] = [x.inValMin for x in triples]

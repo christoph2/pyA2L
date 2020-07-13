@@ -377,9 +377,9 @@ def test_measurement_compu_method_tab_verb():
     meas = Measurement(session, "N")
     assert meas.compuMethod == {
         'format': '%12.0', 'type': 'TAB_VERB', 'unit': '', 'default_value': "unknown signal type",
-        'num_values': 6,
+        'num_values': 6, 'ranges': False,
         'in_values': [2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
-        'out_values': ['red', 'orange', 'yellow', 'green', 'blue', 'violet'],
+        'text_values': ['red', 'orange', 'yellow', 'green', 'blue', 'violet'],
         'longIdentifier': 'Verbal conversion with default value'
         }
 
@@ -427,7 +427,7 @@ def test_measurement_compu_method_tab_verb_range():
     meas = Measurement(session, "N")
     assert meas.compuMethod == {
         'format': '%4.2', 'type': 'TAB_VERB', 'unit': '', 'default_value': "out of range value",
-        'num_values': 11,
+        'num_values': 11, 'ranges': True,
         'lower_values': [0.0, 2.0, 4.0, 14.0, 18.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0],
         'text_values': ['Zero_to_one', 'two_to_three', 'four_to_seven', 'fourteen_to_seventeen',
             'eigteen_to_ninetynine', 'hundred', 'hundredone', 'hundredtwo', 'hundredthree',
