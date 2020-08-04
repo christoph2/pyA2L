@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# -*- coding: latin-1 -*-
 
 """These test-cases are based on the examples from ASAM MCD-2MC Version 1.6 specification.
 """
