@@ -5,7 +5,7 @@ import pytest
 
 import pya2l.model as model
 from pya2l.a2l_listener import ParserWrapper, A2LListener
-from pya2l.api.inspect import Measurement
+from pya2l.api.inspect import Measurement, ModCommon, ModPar
 
 
 
@@ -203,7 +203,6 @@ def test_measurement_compu_method_identical():
         'longIdentifier': 'conversion that delivers always phys = int'
         }
 
-
 def test_measurement_compu_method_form():
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
     DATA = """
@@ -232,7 +231,6 @@ def test_measurement_compu_method_form():
     assert meas.compuMethod == {
         'format': '%6.1', 'type': 'FORM', 'unit': 'rpm', 'formula': 'X1+4', 'formula_inv': 'X1-4', 'longIdentifier': ''
         }
-
 
 def test_measurement_compu_method_linear():
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
@@ -340,7 +338,6 @@ def test_measurement_compu_method_tab_intp():
         'longIdentifier': ''
         }
 
-
 def test_measurement_compu_method_tab_verb():
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
     DATA = """
@@ -382,7 +379,6 @@ def test_measurement_compu_method_tab_verb():
         'text_values': ['red', 'orange', 'yellow', 'green', 'blue', 'violet'],
         'longIdentifier': 'Verbal conversion with default value'
         }
-
 
 def test_measurement_compu_method_tab_verb_range():
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
@@ -435,4 +431,167 @@ def test_measurement_compu_method_tab_verb_range():
         'upper_values': [1.0, 3.0, 7.0, 17.0, 99.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0],
         'longIdentifier': 'verbal range with default value'
         }
+
+def test_mod_par_full_featured():
+    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin MOD_PAR "Note: Provisional release for test purposes only!"
+            VERSION "Test version of 01.02.1994"
+            ADDR_EPK 0x45678
+            EPK     "EPROM identifier test"
+            SUPPLIER "M&K GmbH Chemnitz"
+            CUSTOMER "LANZ-Landmaschinen"
+            CUSTOMER_NO "0123456789"
+            USER "A.N.Wender"
+            PHONE_NO "09951 56456"
+            ECU "Engine control"
+            CPU_TYPE "Motorola 0815"
+            NO_OF_INTERFACES 2
+            /begin MEMORY_SEGMENT ext_Ram
+                "external RAM"
+                DATA
+                RAM
+                EXTERN
+                0x30000
+                0x1000
+                -1 -1 -1 -1 -1
+            /end MEMORY_SEGMENT
+            /begin MEMORY_LAYOUT PRG_RESERVED
+                0x0000
+                0x0400
+                -1 -1 -1 -1 -1
+            /end MEMORY_LAYOUT
+            /begin MEMORY_LAYOUT PRG_CODE
+                0x0400
+                0x3C00
+                -1 -1 -1 -1 -1
+            /end MEMORY_LAYOUT
+            /begin MEMORY_LAYOUT PRG_DATA
+                0x4000
+                0x5800
+                -1 -1 -1 -1 -1
+            /end MEMORY_LAYOUT
+            SYSTEM_CONSTANT "CONTROLLERx constant1" "0.33"
+            SYSTEM_CONSTANT "CONTROLLERx constant2" "2.79"
+        /end MOD_PAR
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    mp = ModPar(session, "testModule")
+    assert mp.comment == 'Note: Provisional release for test purposes only!'
+
+    assert mp.version == 'Test version of 01.02.1994'
+    assert mp.addrEpk[0] == 284280
+    assert mp.epk == 'EPROM identifier test'
+    assert mp.supplier == 'M&K GmbH Chemnitz'
+    assert mp.customer == 'LANZ-Landmaschinen'
+    assert mp.customerNo == '0123456789'
+    assert mp.user == 'A.N.Wender'
+    assert mp.phoneNo == '09951 56456'
+    assert mp.ecu == 'Engine control'
+    assert mp.cpu == 'Motorola 0815'
+    assert mp.noOfInterfaces == 2
+    ms = mp.memorySegments[0]
+    assert ms == {
+        'address': 196608,
+        'attribute': 'EXTERN',
+        'longIdentifier': 'external RAM',
+        'memoryType': 'RAM',
+        'name': 'ext_Ram',
+        'offset_0': -1,
+        'offset_1': -1,
+        'offset_2': -1,
+        'offset_3': -1,
+        'offset_4': -1,
+        'prgType': 'DATA',
+        'size': 4096
+    }
+    m0, m1, m2 = mp.memoryLayouts
+    assert m0 == {
+        'address': 0,
+        'offset_0': -1,
+        'offset_1': -1,
+        'offset_2': -1,
+        'offset_3': -1,
+        'offset_4': -1,
+        'prgType': 'PRG_RESERVED',
+        'size': 1024
+    }
+    assert m1 == {
+        'address': 1024,
+        'offset_0': -1,
+        'offset_1': -1,
+        'offset_2': -1,
+        'offset_3': -1,
+        'offset_4': -1,
+        'prgType': 'PRG_CODE',
+        'size': 15360
+    }
+    assert m2 == {'address': 16384,
+        'offset_0': -1,
+        'offset_1': -1,
+        'offset_2': -1,
+        'offset_3': -1,
+        'offset_4': -1,
+        'prgType': 'PRG_DATA',
+        'size': 22528
+    }
+    sc = mp.systemConstants
+    assert sc == {'CONTROLLERx constant1': 0.33, 'CONTROLLERx constant2': 2.79}
+
+def test_mod_par_basic():
+    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin MOD_PAR "Note: Provisional release for test purposes only!"
+        /end MOD_PAR
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    mp = ModPar(session, "testModule")
+    assert mp.comment == 'Note: Provisional release for test purposes only!'
+    assert mp.version is None
+    assert mp.addrEpk == []
+    assert mp.epk is None
+    assert mp.supplier is None
+    assert mp.customer is None
+    assert mp.customerNo is None
+    assert mp.user is None
+    assert mp.phoneNo is None
+    assert mp.ecu is None
+    assert mp.cpu is None
+    assert mp.noOfInterfaces is None
+    assert mp.memorySegments == []
+    assert mp.memoryLayouts == []
+    assert mp.systemConstants == {}
+
+def test_mod_common_f7ull_featured():
+    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin MOD_COMMON "Characteristic maps always deposited in same mode"
+            S_REC_LAYOUT S_ABL
+            DEPOSIT ABSOLUTE
+            BYTE_ORDER MSB_LAST
+            DATA_SIZE 16
+            ALIGNMENT_BYTE  1
+            ALIGNMENT_WORD          2
+            ALIGNMENT_LONG          4
+            ALIGNMENT_INT64         8
+            ALIGNMENT_FLOAT32_IEEE  4
+            ALIGNMENT_FLOAT64_IEEE  8
+
+        /end MOD_COMMON
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    mc = ModCommon(session, "testModule")
+    assert mc.comment == 'Characteristic maps always deposited in same mode'
+    #assert mc.sRecLayout.name == "S_ABL"
+    assert mc.sRecLayout == "S_ABL"
+    assert mc.deposit == 'ABSOLUTE'
+    assert mc.byteOrder == 'MSB_LAST'
+    assert mc.dataSize == 16
+    assert mc.alignment == {'FLOAT64': 8, 'DWORD': 4, 'BYTE': 1, 'WORD': 2, 'QWORD': 8, 'FLOAT32': 4}
 

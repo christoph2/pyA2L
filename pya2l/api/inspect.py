@@ -30,6 +30,16 @@ from pya2l import DB
 import pya2l.model as model
 
 
+def get_module(session, module_name: str = None):
+    """
+
+    """
+    query = session.query(model.Module)
+    if module_name:
+        query = query.filter(model.Module.name == module_name)
+    return query.first()
+
+
 def _annotations(session, refs):
     """
     Parameters
@@ -64,6 +74,295 @@ def _annotations(session, refs):
     return items
 
 
+class ModPar:
+    """
+
+    Parameters
+    ----------
+    session: Sqlite3 session object
+
+    Attributes
+    ----------
+    modpar:
+        Raw Sqlite3 database object.
+
+    comment: str
+        comment, description.
+
+    addrEpk: int
+        Address of EPROM identifier.
+
+    cpu: str
+        CPU identifier.
+
+    customer: str
+        Customer name.
+
+    customerNo: str
+        Customer number.
+
+    ecu: str
+        Control unit.
+
+    ecuCalibrationOffset: int
+        Offset that has to be added to each address of a characteristic.
+
+    epk: str
+        EPROM identifier.
+
+    memoryLayouts: list of dicts
+        Layout of memory segments (deprecated, `memorySegments` should be used instead.
+
+        - address: int
+            Initial address of the program segment to be described.
+
+        - offset_0': int
+
+        - offset_1': int
+
+        - offset_2': int
+
+        - offset_3': int
+
+        - offset_4': int
+            Offsets for mirrored segments 0..4
+
+        - prgType': ['PRG_CODE' | 'PRG_DATA' | 'PRG_RESERVED']
+
+        - size': int
+            Length of the program segment to be described.
+
+    memorySegments: list of dicts
+        Layout of memory segments
+
+        - address: int
+
+        - attribute: ['INTERN' | 'EXTERN']
+
+        - longIdentifier: 'external RAM',
+            comment, description
+
+        - memoryType: ['EEPROM' | 'EPROM' | 'FLASH' | 'RAM' | 'ROM' | 'REGISTER']
+
+        - name: str
+            Identifier, reference to IF_DATA Blob is based on this 'name'.
+
+        - offset_0: int
+
+        - offset_1: int
+
+        - offset_2: int
+
+        - offset_3: int
+
+        - offset_4: int
+            Offsets for mirrored segments 0..4
+
+        - prgType: ['CALIBRATION_VARIABLES' | 'CODE' | 'DATA' | 'EXCLUDE_FROM_FLASH' | 'OFFLINE_DATA' |
+                    'RESERVED' | 'SERAM' | 'VARIABLES']
+        - size: int
+            Length of the segment.
+
+    noOfInterfaces: int
+        Number of interfaces.
+
+    phoneNo: str
+        Phone number of the calibration engineer responsible.
+
+    supplier: str
+        Manufacturer or supplier.
+
+    systemConstants: list of dicts
+        - key: str
+            Name of constant.
+
+        - value: int, float or str
+
+    user: str
+        User.
+
+    version: str
+        Version identifier.
+    """
+
+    __slots__ = ("modpar", "comment", "addrEpk", "cpu", "customer", "customerNo", "ecu", "ecuCalibrationOffset",
+        "epk", "memoryLayouts", "memorySegments", "noOfInterfaces", "phoneNo", "supplier", "systemConstants",
+        "user", "version",
+    )
+
+    def __init__(self, session, module_name: str = None):
+        module = get_module(session, module_name)
+        self.modpar = module.mod_par
+        self.comment = self.modpar.comment
+        self.addrEpk = [a.address for a in self.modpar.addr_epk]
+        self.cpu = self.modpar.cpu_type.cPU if self.modpar.cpu_type else None
+        self.customer = self.modpar.customer.customer if self.modpar.customer else None
+        self.customerNo = self.modpar.customer_no.number if self.modpar.customer_no else None
+        self.ecu = self.modpar.ecu.controlUnit if self.modpar.ecu else None
+        self.ecuCalibrationOffset = self.modpar.ecu_calibration_offset.offset if self.modpar.ecu_calibration_offset else None
+        self.epk =  self.modpar.epk.identifier if self.modpar.epk else None
+        self.memoryLayouts = self._dissect_memory_layouts(self.modpar.memory_layout)
+        self.memorySegments = self._dissect_memory_segments(self.modpar.memory_segment)
+        self.noOfInterfaces = self.modpar.no_of_interfaces.num if self.modpar.no_of_interfaces else None
+        self.phoneNo = self.modpar.phone_no.telnum if self.modpar.phone_no else None
+        self.supplier = self.modpar.supplier.manufacturer if self.modpar.supplier else None
+        self.systemConstants = self._dissect_sysc(self.modpar.system_constant)
+        self.user = self.modpar.user.userName if self.modpar.user else None
+        self.version = self.modpar.version.versionIdentifier if self.modpar.version else None
+
+    @staticmethod
+    def _dissect_sysc(constants):
+        if constants is not None:
+            result = {}
+            for const in constants:
+                try:
+                    value = int(const.value)
+                except ValueError:
+                    try:
+                        value = float(const.value)
+                    except ValueError:
+                        value = const.value
+                result[const.name] = value
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_memory_layouts(layouts):
+        if layouts is not None:
+            result = []
+            for layout in layouts:
+                entry = {}
+                entry["prgType"] = layout.prgType
+                entry["address"] = layout.address
+                entry["size"] = layout.size
+                entry["offset_0"] = layout.offset_0
+                entry["offset_1"] = layout.offset_1
+                entry["offset_2"] = layout.offset_2
+                entry["offset_3"] = layout.offset_3
+                entry["offset_4"] = layout.offset_4
+                result.append(entry)
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_memory_segments(segments):
+        if segments is not None:
+            result = []
+            for segment in segments:
+                entry = {}
+                entry["name"] = segment.name
+                entry["longIdentifier"] = segment.longIdentifier
+                entry["prgType"] = segment.prgType
+                entry["memoryType"] = segment.memoryType
+                entry["attribute"] = segment.attribute
+                entry["address"] = segment.address
+                entry["size"] = segment.size
+                entry["offset_0"] = segment.offset_0
+                entry["offset_1"] = segment.offset_1
+                entry["offset_2"] = segment.offset_2
+                entry["offset_3"] = segment.offset_3
+                entry["offset_4"] = segment.offset_4
+                result.append(entry)
+        else:
+            result = None
+        return result
+
+    def __str__(self):
+        names = (self.comment, self.addrEpk, self.cpu or "", self.customer or "", self.customerNo or "", self.ecu or "",
+            self.ecuCalibrationOffset or 0, self.epk or "", self.memoryLayouts, self.memorySegments,
+            self.noOfInterfaces or 0, self.phoneNo or "", self.supplier or "", self.systemConstants,
+            self.user or "", self.version or ""
+        )
+        return """
+ModPar {{
+    comment                 = "{}";
+    adrEpk                  = {};
+    cpu                     = "{}":
+    customer                = "{}";
+    customerNo              = "{}";
+    ecu                     = "{}";
+    ecuCalibrationOffset    = {};
+    epk                     = {};
+    memoryLayouts           = {};
+    memorySegments          = {};
+    noOfInterfaces          = {};
+    phoneNo                 = "{}";
+    supplier                = "{}";
+    systemConstants         = {};
+    user                    = "{}";
+    version                 = "{}";
+}}""".format(*names)
+
+
+class ModCommon:
+    """
+
+    Parameters
+    ----------
+    session: Sqlite3 session object
+
+    Attributes
+    ----------
+    modcommon:
+        Raw Sqlite3 database object.
+
+    comment: str
+        comment, description.
+
+    alignment: dict
+        keys:  ("BYTE", "WORD", "DWORD", "QWORD", "FLOAT32", "FLOAT64")
+        values: int or None
+
+    byteOrder: ["LITTLE_ENDIAN" | "BIG_ENDIAN" | "MSB_LAST" | "MSB_FIRST"] or None
+
+    dataSize: int
+        a.k.a word-size of the MCU.
+
+    deposit: ["ASBOLUTE" | "DIFFERENCE"]
+
+
+    sRecLayout: str
+        Standard record layout.
+
+    """
+
+    __slots__ = ("modcommon", "comment", "alignment", "byteOrder", "dataSize", "deposit", "sRecLayout")
+
+    def __init__(self, session, module_name: str = None):
+        module = get_module(session, module_name)
+        self.modcommon = module.mod_common
+        #self.modcommon = session.query(model.ModCommon).first()
+        self.comment = self.modcommon.comment
+        self.alignment = {
+            "BYTE": self.modcommon.alignment_byte.alignmentBorder if self.modcommon.alignment_byte else None,
+            "WORD": self.modcommon.alignment_word.alignmentBorder if self.modcommon.alignment_word else None,
+            "DWORD": self.modcommon.alignment_long.alignmentBorder if self.modcommon.alignment_long else None,
+            "QWORD": self.modcommon.alignment_int64.alignmentBorder if self.modcommon.alignment_int64 else None,
+            "FLOAT32": self.modcommon.alignment_float32_ieee.alignmentBorder if self.modcommon.alignment_float32_ieee else None,
+            "FLOAT64": self.modcommon.alignment_float64_ieee.alignmentBorder if self.modcommon.alignment_float64_ieee else None,
+        }
+        self.byteOrder = self.modcommon.byte_order.byteOrder if self.modcommon.byte_order else None
+        self.dataSize = self.modcommon.data_size.size if self.modcommon.data_size else None
+        self.deposit = self.modcommon.deposit.mode if self.modcommon.deposit else None
+        self.sRecLayout = self.modcommon.s_rec_layout.name if self.modcommon.s_rec_layout else None
+
+    def __str__(self):
+        names = (
+            self.comment, self.alignment, self.byteOrder, self.dataSize or "", self.deposit or "", self.sRecLayout or ""
+        )
+        return """
+ModCommon {{
+    comment     = "{}";
+    alignment   = {};
+    byteOrder   = {};
+    dataSize    = "{}";
+    deposit     = "{}";
+    sRecLayout  = "{}";
+}}""".format(*names)
+
+
 class Measurement:
     """Convenient access (read-only) to MEASUREMENT objects.
 
@@ -76,7 +375,7 @@ class Measurement:
 
     Attributes
     ----------
-    measurement
+    measurement:
         Raw Sqlite3 database object.
 
     name: str
@@ -261,7 +560,7 @@ class Measurement:
         "readWrite", "refMemorySegment", "symbolLink", "virtual", "compuMethod"
         )
 
-    def __init__(self, session, name: str):
+    def __init__(self, session, name: str, module_name: str = None):
         self.measurement = session.query(model.Measurement).filter(model.Measurement.name == name).first()
         self.name = name
         self.longIdentifier = self.measurement.longIdentifier
@@ -332,7 +631,6 @@ Measurement {{
     refMemorySegment = {};
     symbolLink = {};
     virtual = {};
-
 }}""".format(*names)
 
     @staticmethod
