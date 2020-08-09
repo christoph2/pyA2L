@@ -295,6 +295,8 @@ ModPar {{
     version                 = "{}";
 }}""".format(*names)
 
+    __repr__ = __str__
+
 
 class ModCommon:
     """
@@ -361,6 +363,372 @@ ModCommon {{
     deposit     = "{}";
     sRecLayout  = "{}";
 }}""".format(*names)
+
+    __repr__ = __str__
+
+
+class AxisDescr:
+    """
+    """
+
+    __slots__ = ("attribute", "inputQuantity", "_conversionRef", "compuMethod", "maxAxisPoints", "lowerLimit",
+        "upperLimit", "byteOrder", "annotations", "axisPtsRef", "curveAxisRef", "deposit",
+        "extendedLimits", "fixAxisPar", "fixAxisParDist", "fixAxisParList", "format", "maxGrad",
+        "monotony", "physUnit", "readOnly", "stepSize"
+    )
+
+    def __init__(self, session, axis):
+        self.attribute = axis.attribute
+        self.inputQuantity = axis.inputQuantity
+        self._conversionRef = axis.conversion
+        self.compuMethod = _dissect_conversion(session, self._conversionRef)
+        self.maxAxisPoints = axis.maxAxisPoints
+        self.lowerLimit = axis.lowerLimit
+        self.upperLimit = axis.upperLimit
+        self.annotations = _annotations(session, axis.annotation)
+        self.axisPtsRef  = AxisPts(session, axis.axis_pts_ref.axisPoints) if axis.axis_pts_ref else None
+        self.byteOrder = axis.byte_order.byteOrder if axis.byte_order else None
+        self.curveAxisRef  = axis.curve_axis_ref.curveAxis if axis.curve_axis_ref else None  # REF: AxisPts
+        self.deposit = axis.deposit.mode if axis.deposit else None
+        self.extendedLimits = self._dissect_extended_limits(axis.extended_limits)
+        self.fixAxisPar = self._dissect_fix_axis_par(axis.fix_axis_par)
+        self.fixAxisParDist = self._dissect_fix_axis_par_dist(axis.fix_axis_par_dist)
+        self.fixAxisParList = axis.fix_axis_par_list.axisPts_Value if axis.fix_axis_par_list else []
+        self.format = axis.format.formatString if axis.format else None
+        self.maxGrad = axis.max_grad.maxGradient if axis.max_grad else None
+        self.monotony = axis.monotony.monotony if axis.monotony else None
+        self.physUnit = axis.phys_unit.unit if axis.phys_unit else None
+        self.readOnly = axis.read_only
+        self.stepSize = axis.step_size.stepSize if axis.step_size else None
+
+    @staticmethod
+    def _dissect_extended_limits(limits):
+        if limits is not None:
+            result = {}
+            result["lowerLimit"] = limits.lowerLimit
+            result["upperLimit"] = limits.upperLimit
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_fix_axis_par(axis):
+        if axis is not None:
+            result = {}
+            result["offset"] = axis.offset
+            result["shift"] = axis.shift
+            result["numberapo"] = axis.numberapo
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_fix_axis_par_dist(axis):
+        if axis is not None:
+            result = {}
+            result["offset"] = axis.offset
+            result["distance"] = axis.distance
+            result["numberapo"] = axis.numberapo
+        else:
+            result = None
+        return result
+
+    def __str__(self):
+        names = (self.attribute, self.inputQuantity, self.compuMethod, self.maxAxisPoints, self.lowerLimit,
+            self.upperLimit, self.annotations, self.byteOrder, self.axisPtsRef, self.curveAxisRef, self.deposit,
+            self.extendedLimits, self.fixAxisPar, self.fixAxisParDist, self.fixAxisParList, self.format,
+            self.maxGrad, self.monotony or "", self.physUnit or "", self.readOnly, self.stepSize
+        )
+        return """
+AxisDescr {{
+    attribute       = "{}";
+    inputQuantity   = "{}";
+    compuMethod     = {};
+    maxAxisPoints   = {};
+    lowerLimit      = {};
+    upperLimit      = {};
+    annotations     = {};
+    byteOrder       = {};
+    axisPtsRef      = {};
+    curveAxisRef    = {};
+    deposit         = "{}";
+    extendedLimits  = {};
+    fixAxisPar      = {};
+    fixAxisParDist  = {};
+    fixAxisParList  = {};
+    format          = "{}";
+    maxGrad         = {};
+    monotony        = "{}";
+    physUnit        = "{}";
+    readOnly        = {};
+    stepSize        = {};
+
+}}""".format(*names)
+
+    __repr__ = __str__
+
+class Characteristic:
+    """Convenient access (read-only) to CHARACTERISTIC objects.
+
+    Parameters
+    ----------
+    session: Sqlite3 session object
+
+    name: str
+        name of one existing CHARACTERISTIC object.
+
+    Attributes
+    ----------
+    characteristic:
+        Raw Sqlite3 database object.
+
+    name: str
+        name of the Characteristic (s. Parameters...)
+
+    longIdentifier: str
+        comment, description.
+
+    """
+
+    __slots__ = ("characteristic", "name", "longIdentifier", "type", "address", "deposit", "maxDiff",
+        "_conversionRef", "lowerLimit", "upperLimit", "annotations", "axisDescriptions",
+        "bitMask", "byteOrder", "compuMethod", "calibrationAccess", "comparisonQuantity", "dependentCharacteristic",
+        "discrete", "displayIdentifier", "ecuAddressExtension", "extendedLimits", "format", "functionList",
+        "guardRails", "mapList", "matrixDim", "maxRefresh", "number", "physUnit", "readOnly", "refMemorySegment",
+        "stepSize", "symbolLink", "virtualCharacteristic"
+    )
+
+    def __init__(self, session, name: str, module_name: str = None):
+        self.characteristic = session.query(model.Characteristic).filter(model.Characteristic.name == name).first()
+        self.name = name
+        self.longIdentifier = self.characteristic.longIdentifier
+        self.type = self.characteristic.type
+        self.address = self.characteristic.address
+        self.deposit = RecordLayout(session, self.characteristic.deposit, module_name)
+        self.maxDiff = self.characteristic.maxDiff
+        self._conversionRef = self.characteristic.conversion
+        self.compuMethod = _dissect_conversion(session, self._conversionRef)
+        self.lowerLimit = self.characteristic.lowerLimit
+        self.upperLimit = self.characteristic.upperLimit
+        self.annotations = _annotations(session, self.characteristic.annotation)
+        self.bitMask = self.characteristic.bit_mask.mask if self.characteristic.bit_mask else None
+        self.byteOrder = self.characteristic.byte_order.byteOrder if self.characteristic.byte_order else None
+        self.axisDescriptions = [AxisDescr(session, a) for a in self.characteristic.axis_descr]
+        self.calibrationAccess = self.characteristic.calibration_access
+        self.comparisonQuantity = self.characteristic.comparison_quantity
+        self.dependentCharacteristic = self.characteristic.dependent_characteristic.formula \
+            if self.characteristic.dependent_characteristic else None
+        self.discrete = self.characteristic.discrete
+        self.displayIdentifier = self.characteristic.display_identifier.display_name \
+            if self.characteristic.display_identifier else None
+        self.ecuAddressExtension = self.characteristic.ecu_address_extension.extension \
+            if self.characteristic.ecu_address_extension else None
+        self.extendedLimits = self._dissect_extended_limits(self.characteristic.extended_limits)
+        self.format = self.characteristic.format.formatString if self.characteristic.format else None
+        self.functionList = [f.name for f in self.characteristic.function_list] if self.characteristic.function_list else []
+        self.guardRails =self.characteristic.guard_rails
+        self.mapList = [f.name for f in self.characteristic.map_list] if self.characteristic.map_list else []
+        self.matrixDim = self._dissect_maxtrix_dim(self.characteristic.matrix_dim)
+        self.maxRefresh = self._dissect_max_refresh(self.characteristic.max_refresh)
+        self.number = self.characteristic.number
+
+        self.physUnit = self.characteristic.phys_unit
+        self.readOnly = self.characteristic.read_only
+        self.refMemorySegment = self.characteristic.ref_memory_segment
+        self.stepSize = self.characteristic.step_size
+        self.symbolLink = self._dissect_symbol_link(self.characteristic.symbol_link)
+        self.virtualCharacteristic = self.characteristic.virtual_characteristic
+
+    @staticmethod
+    def _dissect_extended_limits(limits):
+        if limits is not None:
+            result = {}
+            result["lowerLimit"] = limits.lowerLimit
+            result["upperLimit"] = limits.upperLimit
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_maxtrix_dim(matrix):
+        if matrix is not None:
+            result = {}
+            result["x"] = matrix.xDim
+            result["y"] = matrix.yDim
+            result["z"] = matrix.zDim
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_max_refresh(max_ref):
+        if max_ref is not None:
+            result = {}
+            result["scalingUnit"] = max_ref.scalingUnit
+            result["rate"] = max_ref.rate
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_symbol_link(sym_link):
+        if sym_link is not None:
+            result = {}
+            result["symbolName"] = sym_link.symbolName
+            result["offset"] = sym_link.offset
+        else:
+            result = None
+        return result
+
+    def __str__(self):
+        names = (
+            self.name, self.longIdentifier, self.type, self.address, self.deposit,
+            self.maxDiff, self.compuMethod, self.lowerLimit, self.upperLimit, self.annotations, self.axisDescriptions,
+            self.bitMask, self.byteOrder, self.calibrationAccess, self.comparisonQuantity, self.dependentCharacteristic,
+            self.discrete, self.displayIdentifier, self.ecuAddressExtension, self.extendedLimits, self.format,
+            self.functionList, self.guardRails, self.mapList, self.matrixDim, self.maxRefresh, self.number,
+            self.physUnit, self.readOnly, self.refMemorySegment, self.stepSize, self.symbolLink, self.virtualCharacteristic
+        )
+        return """
+Characteristic {{
+    name                    = "{}";
+    longIdentifier          = "{}";
+    type                    = "{}";
+    address                 = 0x{:08x};
+    deposit                 = {};
+    maxDiff                 = {};
+    compuMethod             = "{}";
+    lowerLimit              = {};
+    upperLimit              = {};
+    annotations             = {};
+    axisDescriptions        = {};
+    bitMask                 = {};
+    byteOrder               = "{}";
+    calibrationAccess       = {};
+    comparisonQuantity      = {};
+    dependentCharacteristic = {};
+    discrete                = {};
+    displayIdentifier       = {};
+    ecuAddressExtension     = {};
+    extendedLimits          = {};
+    format                  = {};
+    functionList            = {};
+    guardRails              = {};
+    mapList                 = {};
+    matrixDim               = {};
+    maxRefresh              = {};
+    number                  = {};
+    physUnit                = {};
+    readOnly                = {};
+    refMemorySegment        = {};
+    stepSize                = {};
+    symbolLink              = {};
+    virtualCharacteristic   = {};
+}}""".format(*names)
+
+    __repr__ = __str__
+
+
+class AxisPts:
+    """
+    """
+
+    __slots__ = ("axis", "name", "longIdentifier", "address", "inputQuantity", "deposit", "maxDiff",
+        "_conversionRef", "compuMethod", "maxAxisPoints", "lowerLimit", "upperLimit",
+        "annotations", "byteOrder", "calibrationAccess", "deposit", "displayIdentifier", "ecuAddressExtension",
+        "extendedLimits", "format", "functionList", "guardRails", "monotony", "physUnit", "readOnly",
+        "refMemorySegment", "stepSize", "symbolLink"
+    )
+
+    def __init__(self, session, name: str, module_name: str = None):
+        self.axis = session.query(model.AxisPts).filter(model.AxisPts.name == name).first()
+        self.name = name
+        self.longIdentifier = self.axis.longIdentifier
+        self.address = self.axis.address
+        self.inputQuantity = self.axis.inputQuantity    # REF: Measurement
+        self.deposit = self.axis.deposit.mode if self.axis.deposit else None    # REF:RecordLayout
+        self.maxDiff = self.axis.maxDiff
+        self._conversionRef = self.axis.conversion
+        self.compuMethod = _dissect_conversion(session, self._conversionRef)
+        self.maxAxisPoints = self.axis.maxAxisPoints
+        self.lowerLimit = self.axis.lowerLimit
+        self.upperLimit = self.axis.upperLimit
+        self.annotations = _annotations(session, self.axis.annotation)
+        self.byteOrder = self.axis.byte_order.byteOrder if self.axis.byte_order else None
+        self.calibrationAccess = self.axis.calibration_access
+        self.deposit = self.axis.deposit.mode if self.axis.deposit else None
+        self.displayIdentifier = self.axis.display_identifier
+        self.ecuAddressExtension = self.axis.ecu_address_extension.extension if self.axis.ecu_address_extension else None
+        self.extendedLimits = self._dissect_extended_limits(self.axis.extended_limits)
+        self.format = self.axis.format.formatString if self.axis.format else None
+        self.functionList = [f.name for f in self.axis.function_list] if self.axis.function_list else []
+        self.guardRails =self.axis.guard_rails
+        self.monotony = self.axis.monotony
+        self.physUnit = self.axis.phys_unit
+        self.readOnly = self.axis.read_only
+        self.refMemorySegment = self.axis.ref_memory_segment
+        self.stepSize = self.axis.step_size
+        self.symbolLink = self._dissect_symbol_link(self.axis.symbol_link)
+
+    @staticmethod
+    def _dissect_extended_limits(limits):
+        if limits is not None:
+            result = {}
+            result["lowerLimit"] = limits.lowerLimit
+            result["upperLimit"] = limits.upperLimit
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_symbol_link(sym_link):
+        if sym_link is not None:
+            result = {}
+            result["symbolName"] = sym_link.symbolName
+            result["offset"] = sym_link.offset
+        else:
+            result = None
+        return result
+
+    def __str__(self):
+        names = (
+            self.name, self.longIdentifier, self.address, self.inputQuantity, self.deposit, self.maxDiff, self.compuMethod,
+            self.maxAxisPoints, self.lowerLimit, self.upperLimit, self.annotations, self.byteOrder, self.calibrationAccess,
+            self.deposit, self.inputQuantity, self.ecuAddressExtension, self.extendedLimits, self.format,
+            self.functionList, self.guardRails, self.monotony, self.physUnit, self.readOnly, self.refMemorySegment,
+            self.stepSize, self.symbolLink
+        )
+        return """
+AxisPts {{
+    name                = "{}";
+    longIdentifier      = "{}";
+    address             = {};
+    inputQuantity       = {};
+    deposit             = {};
+    maxDiff             = {};
+    compuMethod         = {};
+    maxAxisPoints       = {};
+    lowerLimit          = {};
+    upperLimit          = {};
+    annotations         = {};
+    byteOrder           = {};
+    calibrationAccess   = {};
+    deposit             = "{}";
+    displayIdentifier   = "{}";
+    ecuAddressExtension = {};
+    extendedLimits      = {};
+    format              = "{}";
+    functionList        = {};
+    guardRails          = {};
+    monotony            = {};
+    physUnit            = {};
+    readOnly            = {};
+    refMemorySegment    = {};
+    stepSize            = {};
+    symbolLink          = {};
+}}""".format(*names)
+
+    __repr__ = __str__
 
 
 class Measurement:
@@ -633,6 +1001,8 @@ Measurement {{
     virtual = {};
 }}""".format(*names)
 
+    __repr__ = __str__
+
     @staticmethod
     def _dissect_bit_operation(bit_op):
         if bit_op is not None:
@@ -678,6 +1048,269 @@ Measurement {{
         else:
             result = None
         return result
+
+
+class RecordLayout:
+    """
+    """
+
+    __slots__ = ("layout", "name", "alignment", "axisPts", "axisRescale", "distOp", "fixNoAxisPts",
+        "fncValues", "identification", "noAxisPts", "noRescale", "offset", "reserved", "ripAddr",
+        "srcAddr", "shiftOp", "staticRecordLayout"
+    )
+
+    def __init__(self, session, name: str, module_name: str = None):
+        self.layout = session.query(model.RecordLayout).filter(model.RecordLayout.name == name).first()
+        self.name = name
+
+        self.alignment = {
+            "BYTE": self.layout.alignment_byte.alignmentBorder if self.layout.alignment_byte else None,
+            "WORD": self.layout.alignment_word.alignmentBorder if self.layout.alignment_word else None,
+            "DWORD": self.layout.alignment_long.alignmentBorder if self.layout.alignment_long else None,
+            "QWORD": self.layout.alignment_int64.alignmentBorder if self.layout.alignment_int64 else None,
+            "FLOAT32": self.layout.alignment_float32_ieee.alignmentBorder if self.layout.alignment_float32_ieee else None,
+            "FLOAT64": self.layout.alignment_float64_ieee.alignmentBorder if self.layout.alignment_float64_ieee else None,
+        }
+        self.axisPts = {
+            "X": self._dissect_axis_pts(self.layout.axis_pts_z),
+            "Y": self._dissect_axis_pts(self.layout.axis_pts_y),
+            "Z": self._dissect_axis_pts(self.layout.axis_pts_z),
+            "4": self._dissect_axis_pts(self.layout.axis_pts_4),
+            "5": self._dissect_axis_pts(self.layout.axis_pts_5),
+        }
+        self.axisRescale = {
+            "X": self._dissect_axis_rescale(self.layout.axis_rescale_z),
+            "Y": self._dissect_axis_rescale(self.layout.axis_rescale_y),
+            "Z": self._dissect_axis_rescale(self.layout.axis_rescale_z),
+            "4": self._dissect_axis_rescale(self.layout.axis_rescale_4),
+            "5": self._dissect_axis_rescale(self.layout.axis_rescale_5),
+        }
+        self.distOp = {
+            "X": self._dissect_dist_op(self.layout.dist_op_z),
+            "Y": self._dissect_dist_op(self.layout.dist_op_y),
+            "Z": self._dissect_dist_op(self.layout.dist_op_z),
+            "4": self._dissect_dist_op(self.layout.dist_op_4),
+            "5": self._dissect_dist_op(self.layout.dist_op_5),
+        }
+        self.fixNoAxisPts = {
+            "X": self._dissect_fix_no_axis_pts(self.layout.fix_no_axis_pts_z),
+            "Y": self._dissect_fix_no_axis_pts(self.layout.fix_no_axis_pts_y),
+            "Z": self._dissect_fix_no_axis_pts(self.layout.fix_no_axis_pts_z),
+            "4": self._dissect_fix_no_axis_pts(self.layout.fix_no_axis_pts_4),
+            "5": self._dissect_fix_no_axis_pts(self.layout.fix_no_axis_pts_5),
+        }
+        self.fncValues = self._dissect_fnc_values(self.layout.fnc_values)
+        self.identification = self._dissect_identification(self.layout.identification)
+        self.noAxisPts = {
+            "X": self._dissect_no_axis_pts(self.layout.no_axis_pts_z),
+            "Y": self._dissect_no_axis_pts(self.layout.no_axis_pts_y),
+            "Z": self._dissect_no_axis_pts(self.layout.no_axis_pts_z),
+            "4": self._dissect_no_axis_pts(self.layout.no_axis_pts_4),
+            "5": self._dissect_no_axis_pts(self.layout.no_axis_pts_5),
+        }
+        self.noRescale = {
+            "X": self._dissect_no_rescale(self.layout.no_rescale_z),
+            "Y": self._dissect_no_rescale(self.layout.no_rescale_y),
+            "Z": self._dissect_no_rescale(self.layout.no_rescale_z),
+            "4": self._dissect_no_rescale(self.layout.no_rescale_4),
+            "5": self._dissect_no_rescale(self.layout.no_rescale_5),
+        }
+        self.offset = {
+            "X": self._dissect_offset(self.layout.offset_z),
+            "Y": self._dissect_offset(self.layout.offset_y),
+            "Z": self._dissect_offset(self.layout.offset_z),
+            "4": self._dissect_offset(self.layout.offset_4),
+            "5": self._dissect_offset(self.layout.offset_5),
+        }
+        self.reserved = [self._dissect_reserved(r) for r in self.layout.reserved]
+        self.ripAddr = {
+            "W": self._dissect_rip_addr(self.layout.rip_addr_w),
+            "X": self._dissect_rip_addr(self.layout.rip_addr_z),
+            "Y": self._dissect_rip_addr(self.layout.rip_addr_y),
+            "Z": self._dissect_rip_addr(self.layout.rip_addr_z),
+            "4": self._dissect_rip_addr(self.layout.rip_addr_4),
+            "5": self._dissect_rip_addr(self.layout.rip_addr_5),
+        }
+        self.srcAddr = {
+            "X": self._dissect_src_addr(self.layout.src_addr_z),
+            "Y": self._dissect_src_addr(self.layout.src_addr_y),
+            "Z": self._dissect_src_addr(self.layout.src_addr_z),
+            "4": self._dissect_src_addr(self.layout.src_addr_4),
+            "5": self._dissect_src_addr(self.layout.src_addr_5),
+        }
+        self.shiftOp = {
+            "X": self._dissect_shift_op(self.layout.shift_op_z),
+            "Y": self._dissect_shift_op(self.layout.shift_op_y),
+            "Z": self._dissect_shift_op(self.layout.shift_op_z),
+            "4": self._dissect_shift_op(self.layout.shift_op_4),
+            "5": self._dissect_shift_op(self.layout.shift_op_5),
+        }
+        self.staticRecordLayout = False if self.layout.static_record_layout is None else True
+
+    @staticmethod
+    def _dissect_axis_pts(axis):
+        if axis is not None:
+            result = {}
+            result["position"] = axis.position
+            result["datatype"] = axis.datatype
+            result["indexIncr"] = axis.indexIncr
+            result["addressing"] = axis.addressing
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_axis_rescale(axis):
+        if axis is not None:
+            result = {}
+            result["position"] = axis.position
+            result["datatype"] = axis.datatype
+            result["maxNumberOfRescalePairs"] = axis.maxNumberOfRescalePairs
+            result["indexIncr"] = axis.indexIncr
+            result["addressing"] = axis.addressing
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_dist_op(axis):
+        if axis is not None:
+            result = {}
+            result["position"] = axis.position
+            result["datatype"] = axis.datatype
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_fix_no_axis_pts(axis):
+        if axis is not None:
+            result = {}
+            result["numberOfAxisPoints"] = axis.numberOfAxisPoints
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_fnc_values(fnc):
+        if fnc is not None:
+            result = {}
+            result["position"] = fnc.position
+            result["datatype"] = fnc.datatype
+            result["indexMode"] = fnc.indexMode
+            result["addresstype"] = fnc.addresstype
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_identification(ident):
+        if ident is not None:
+            result = {}
+            result["position"] = ident.position
+            result["datatype"] = ident.datatype
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_no_axis_pts(axis):
+        if axis is not None:
+            result = {}
+            result["position"] = axis.position
+            result["datatype"] = axis.datatype
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_no_rescale(axis):
+        if axis is not None:
+            result = {}
+            result["position"] = axis.position
+            result["datatype"] = axis.datatype
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_offset(offset):
+        if offset is not None:
+            result = {}
+            result["position"] = offset.position
+            result["datatype"] = offset.datatype
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_reserved(reserved):
+        if reserved is not None:
+            result = {}
+            result["position"] = reserved.position
+            result["dataSize"] = reserved.dataSize
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_rip_addr(addr):
+        if addr is not None:
+            result = {}
+            result["position"] = addr.position
+            result["datatype"] = addr.datatype
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_src_addr(addr):
+        if addr is not None:
+            result = {}
+            result["position"] = addr.position
+            result["datatype"] = addr.datatype
+        else:
+            result = None
+        return result
+
+    @staticmethod
+    def _dissect_shift_op(op):
+        if op is not None:
+            result = {}
+            result["position"] = op.position
+            result["datatype"] = op.datatype
+        else:
+            result = None
+        return result
+
+    def __str__(self):
+        names = (
+            self.name, self.alignment, self.axisPts, self.axisRescale, self.distOp, self.fixNoAxisPts,
+            self.fncValues, self.identification, self.noAxisPts, self.noRescale, self.offset, self.reserved,
+            self.ripAddr, self.srcAddr, self.shiftOp, self.staticRecordLayout
+        )
+        return """
+RecordLayout {{
+    name               = "{}";
+    alignment          = {};
+    axisPts            = {};
+    axisRescale        = {};
+    distOp             = {};
+    fixNoAxisPts       = {};
+    fncValues          = {};
+    identification     = {};
+    noAxisPts          = {};
+    noRescale          = {};
+    offset             = {};
+    reserved           = {};
+    ripAddr            = {};
+    srcAddr            = {};
+    shiftOp            = {};
+    staticRecordLayout = {};
+}}""".format(*names)
+
+    __repr__ = __str__
+
 
 
 def _dissect_conversion(session, conversion):

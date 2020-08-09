@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2019 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2020 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -78,6 +78,23 @@ class SingletonBase(object):
             finally:
                 cls._lock.release()
         return cls._instance
+
+
+class NotAvailable(SingletonBase):
+    """Pseudo numeric, needed for sorting stuff (`None` is unordered).
+    """
+
+    def __lt__(self, other):
+        return True
+
+    def __gt__(self, other):
+        return False
+
+    def __str__(self):
+        return "n/a"
+
+    __repr__ = __str__
+
 
 import ctypes
 
