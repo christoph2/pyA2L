@@ -219,8 +219,14 @@ class RatFunc:
         a, b, c, d, e, f - coefficients for the specified formula:
         f(x) = (axx + bx + c) / (dxx + ex + f)
 
-        When using :method:`inv`: Restrictions have to be defined
+        INT = f(PHYS)
+
+        When using :method:`int_to_physical`: Restrictions have to be defined
         because this general equation cannot always be inverted.
+
+    Note
+    ----
+        `Linear` is PHYS = f(INT)!!!
     """
 
     def __init__(self, coeffs):
@@ -232,33 +238,32 @@ class RatFunc:
         else:
             self.p_inv = None
 
-    def __call__(self, x):
-        """Evaluate function.
+    def physical_to_int(self, p):
+        """Evaluate function PHYS ==> INT
 
         Parameters
         ----------
-        x: int or float, scalar or numpy.ndarray
+        p: int or float, scalar or numpy.ndarray
         """
-        return self.p(x) / self.q(x)
+        return self.p(p) / self.q(p)
 
-    def inv(self, y):
-        """Calculate inverse of function
-        i.e. inv(y = f(x)) ==> x = f_inv(y)
+    def int_to_physical(self, i):
+        """Evaluate function INT ==> PHYS
 
         Parameters
         ----------
-        y: int or float, scalar or numpy.ndarray
+        i: int or float, scalar or numpy.ndarray
 
         Note
         ----
         Currently inversion of quadratic functions isn't supported, only linear ones.
         """
         if self.p.order == 1 and self.q.order == 0:
-            return self.p_inv(y)
+            return self.p_inv(i)
         elif self.p.order == 0 and self.q.order == 0:
             raise exceptions.MathError("Cannot invert constant function.")
         else:
-            raise NotImplementedError("Inversion of this kind of polynoms isn't supported yet.")
+            raise NotImplementedError("Cannot invert quadratic function.")
 
 
 class Identical:
@@ -268,19 +273,11 @@ class Identical:
     def __init__(self):
         pass
 
-    def __call__(self, x):
-        """Evaluate function.
+    def int_to_physical(self, i):
+        return i
 
-        Parameters
-        ----------
-        y: int or float
-        """
-        return x
-
-    def inv(self, y):
-        """
-        """
-        return y
+    def physical_to_int(self, p):
+        return p
 
 
 class Linear:
@@ -292,27 +289,33 @@ class Linear:
         a, b - coefficients for the specified formula:
         coefficients for the specified formula:
         f(x) = ax + b
+
+        PHYS = f(INT)
+
+    Note
+    ----
+        `RatFunc` is INT = f(PHYS)!!!
     """
 
     def __init__(self, coeffs):
         a, b = coeffs.a, coeffs.b
         self.p = np.poly1d([a, b])
 
-    def __call__(self, x):
+    def int_to_physical(self, i):
         """
         """
-        return self.p(x)
+        return self.p(i)
 
-    def _eval_inv(self, y):
-        return (self.p - y).roots[0]
+    def _eval_pti(self, p):
+        return (self.p - p).roots[0]
 
-    def inv(self, y):
+    def physical_to_int(self, p):
         """
         """
-        if hasattr(y, "__iter__"):
-            return [self._eval_inv(i) for i in y]
+        if hasattr(p, "__iter__"):
+            return [self._eval_pti(i) for i in p]
         else:
-            return self._eval_inv(y)
+            return self._eval_pti(p)
 
 
 class LookupTable:
@@ -335,22 +338,22 @@ class LookupTable:
         self.mapping_inv = {v: k for k, v in self.mapping.items()}
         self.default = default
 
-    def __call__(self, x):
+    def int_to_physical(self, i):
         """
         """
-        if hasattr(x, "__iter__"):
-            return [self.mapping.get(r, self.default) for r in x]
+        if hasattr(i, "__iter__"):
+            return [self.mapping.get(r, self.default) for r in i]
         else:
-            return self.mapping.get(x, self.default)
+            return self.mapping.get(i, self.default)
 
-    def inv(self, y):
+    def physical_to_int(self, p):
         """
         """
 
-        if hasattr(y, "__iter__") and not isinstance(y, str):
-            return [self.mapping_inv.get(r) for r in y]
+        if hasattr(p, "__iter__") and not isinstance(p, str):
+            return [self.mapping_inv.get(r) for r in p]
         else:
-            return self.mapping_inv.get(y)
+            return self.mapping_inv.get(p)
 
 
 class InterpolatedTable:
@@ -361,15 +364,15 @@ class InterpolatedTable:
         self.interp = Interpolate1D(pairs, saturate = False)
         self.default = default
 
-    def __call__(self, x):
+    def int_to_physical(self, i):
         """
         """
         try:
-            return self.interp(x)
+            return self.interp(i)
         except ValueError:
             return self.default
 
-    def inv(self, y):
+    def physical_to_int(self, p):
         """
         """
         raise NotImplementedError()
@@ -424,21 +427,21 @@ class LookupTableWithRanges:
         else:
             return self.default
 
-    def __call__(self, x):
+    def int_to_physical(self, i):
         """
         """
-        if hasattr(x, "__iter__"):
-            return [self._lookup(r) for r in x]
+        if hasattr(i, "__iter__"):
+            return [self._lookup(r) for r in i]
         else:
-            return self._lookup(x)
+            return self._lookup(i)
 
-    def inv(self, y):
+    def physical_to_int(self, p):
         """
         """
-        if hasattr(y, "__iter__") and not isinstance(y, str):
-            return [self.dict_inv.get(r, None) for r in y]
+        if hasattr(p, "__iter__") and not isinstance(p, str):
+            return [self.dict_inv.get(r, None) for r in p]
         else:
-            return self.dict_inv.get(y, None)
+            return self.dict_inv.get(p, None)
 
 
 class FormulaBase:
@@ -448,8 +451,10 @@ class FormulaBase:
     ----------
 
     formula: str
+        function to calculate the physical value from the control unit internal value.
 
     inverse_formula: str
+        function for calculation of the control unit internal value from the physical value.
 
     system_constants: list of 2-tuples (name, value)
     """
@@ -489,17 +494,16 @@ if has_numexpr:
         ----------
 
         formula: str
+            function to calculate the physical value from the control unit internal value.
 
         inverse_formula: str
+            function for calculation of the control unit internal value from the physical value.
 
         system_constants: list of 2-tuples (name, value)
         """
 
         MATH_FUNCS = {
         }
-
-        #def __init__(self, formula, inverse_formula = None, system_constants = None):
-        #    super().__init__(formula, inverse_formula = None, system_constants = None)
 
         def _replace_special_symbols(self, text):
             result = text.replace("&&", " and ").replace("||", " or ").replace("!", "not ").\
@@ -517,8 +521,7 @@ if has_numexpr:
                 else:
                     break
             while True:
-                # replace 'sysc(a)' with value of 'a'
-                match = SYSC.search(result)
+                match = SYSC.search(result) # replace 'sysc(a)' with value of 'a'
                 if match:
                     param = match.group('param').strip()
                     value = self.sysc(param)
@@ -527,17 +530,18 @@ if has_numexpr:
                     result = "{}{}{}".format(head, tail, value)
                 else:
                     break
-
             return result
 
-        def __call__(self, *args):
+        def int_to_physical(self, *args):
             """
             """
             return numexpr.evaluate(self.formula, local_dict = self._build_namespace(*args))
 
-        def inv(self, *args):
+        def physical_to_int(self, *args):
             """
             """
+            if self.inverse_formula is None:
+                raise NotImplementedError("Formula: physical_to_int() requires inverse_formula.")
             return numexpr.evaluate(self.inverse_formula, local_dict = self._build_namespace(*args))
 
 else:
@@ -549,8 +553,10 @@ else:
         ----------
 
         formula: str
+            function to calculate the physical value from the control unit internal value.
 
         inverse_formula: str
+            function for calculation of the control unit internal value from the physical value.
 
         system_constants: list of 2-tuples (name, value)
         """
@@ -576,16 +582,17 @@ else:
         def _replace_special_symbols(self, text):
             return text.replace("&&", " and ").replace("||", " or ").replace("!", "not ")
 
-        def __call__(self, *args):
+        def int_to_physical(self, *args):
             """
             """
             return eval(self.formula, dict(), self._build_namespace(*args))
 
-        def inv(self, *args):
+        def physical_to_int(self, *args):
             """
             """
+            if self.inverse_formula is None:
+                raise NotImplementedError("Formula: physical_to_int() requires inverse_formula.")
             return eval(self.inverse_formula, dict(), self._build_namespace(*args))
-
 
 class CompuMethod:
     """
@@ -657,20 +664,20 @@ class CompuMethod:
         else:
             raise ValueError("Unknown conversation type '{}'.".format(conversionType))
 
-    def __call__(self, x):
-        """Evaluate computation method.
+    def int_to_physical(self, i):
+        """Evaluate computation method INT ==> PHYS
 
         Parameters
         ----------
             x: int or float, scalar or array
         """
-        return self.evaluator(x)
+        return self.evaluator.int_to_physical(i)
 
-    def inv(self, y):
-        """Inverse computation method.
+    def physical_to_int(self, p):
+        """Evaluate computation method PHYS ==> INT
 
         Parameters
         ----------
-            y: int or float, scalar or array
+            p: int or float, scalar or array
         """
-        return self.evaluator.inv(y)
+        return self.evaluator.physical_to_int(p)

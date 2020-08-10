@@ -132,7 +132,8 @@ def test_ratfunc_identity():
     coeffs.e = 0
     coeffs.f = 1
     rf = functions.RatFunc(coeffs)
-    assert rf(21845) == 21845
+    assert rf.int_to_physical(21845) == 21845
+    assert rf.physical_to_int(21845) == 21845
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_linear():
@@ -149,7 +150,7 @@ def test_ratfunc_linear():
     coeffs.e = 0
     coeffs.f = 5
     rf = functions.RatFunc(coeffs)
-    assert np.array_equal(rf(xs), ys)
+    assert np.array_equal(rf.physical_to_int(xs), ys)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_linear_scalar():
@@ -163,7 +164,7 @@ def test_ratfunc_linear_scalar():
     coeffs.e = 0
     coeffs.f = 5
     rf = functions.RatFunc(coeffs)
-    assert rf(x) == y
+    assert rf.physical_to_int(x) == y
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_linear_inv():
@@ -180,7 +181,7 @@ def test_ratfunc_linear_inv():
     coeffs.e = 0
     coeffs.f = 5
     rf = functions.RatFunc(coeffs)
-    assert np.array_equal(rf.inv(ys), xs)
+    assert np.array_equal(rf.int_to_physical(ys), xs)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_linear_inv_scalar():
@@ -194,7 +195,7 @@ def test_ratfunc_linear_inv_scalar():
     coeffs.e = 0
     coeffs.f = 5
     rf = functions.RatFunc(coeffs)
-    assert rf.inv(y) == x
+    assert rf.int_to_physical(y) == x
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_constant():
@@ -208,7 +209,7 @@ def test_ratfunc_constant():
     coeffs.e = 0
     coeffs.f = 2
     rf = functions.RatFunc(coeffs)
-    assert np.array_equal(rf(xs), ys)
+    assert np.array_equal(rf.physical_to_int(xs), ys)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_constant_scalar():
@@ -222,7 +223,7 @@ def test_ratfunc_constant_scalar():
     coeffs.e = 0
     coeffs.f = 2
     rf = functions.RatFunc(coeffs)
-    assert rf(x) ==  y
+    assert rf.physical_to_int(x) ==  y
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_constant_inv():
@@ -237,7 +238,7 @@ def test_ratfunc_constant_inv():
     coeffs.f = 20
     rf = functions.RatFunc(coeffs)
     with pytest.raises(exceptions.MathError):
-        rf.inv(ys)
+        rf.int_to_physical(ys)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_constant_inv_scalar():
@@ -252,7 +253,7 @@ def test_ratfunc_constant_inv_scalar():
     coeffs.f = 20
     rf = functions.RatFunc(coeffs)
     with pytest.raises(exceptions.MathError):
-        rf.inv(y)
+        rf.int_to_physical(y)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_quadratic():
@@ -270,7 +271,7 @@ def test_ratfunc_quadratic():
     coeffs.e = -5
     coeffs.f = 4
     rf = functions.RatFunc(coeffs)
-    assert np.array_equal(rf(xs), ys)
+    assert np.array_equal(rf.physical_to_int(xs), ys)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_quadratic_scalar():
@@ -284,7 +285,7 @@ def test_ratfunc_quadratic_scalar():
     coeffs.e = -5
     coeffs.f = 4
     rf = functions.RatFunc(coeffs)
-    assert rf(x) == y
+    assert rf.physical_to_int(x) == y
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_quadratic_inv():
@@ -298,7 +299,7 @@ def test_ratfunc_quadratic_inv():
     coeffs.f = 4
     rf = functions.RatFunc(coeffs)
     with pytest.raises(NotImplementedError):
-        rf.inv(xs)
+        rf.int_to_physical(xs)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_quadratic_inv_scalar():
@@ -312,27 +313,29 @@ def test_ratfunc_quadratic_inv_scalar():
     coeffs.f = 4
     rf = functions.RatFunc(coeffs)
     with pytest.raises(NotImplementedError):
-        rf.inv(x)
+        rf.int_to_physical(x)
 
 def test_identical():
     xs = np.arange(-10, 11)
     rf = functions.Identical()
-    assert np.array_equal(rf(xs), xs)
+    assert np.array_equal(rf.int_to_physical(xs), xs)
+    assert np.array_equal(rf.physical_to_int(xs), xs)
 
 def test_identical_scalar():
     x = -10
     rf = functions.Identical()
-    assert rf(x) == x
+    assert rf.int_to_physical(x) == x
+    assert rf.physical_to_int(x) == x
 
 def test_identical_inv():
     xs = np.arange(-10, 11)
     rf = functions.Identical()
-    assert np.array_equal(rf.inv(xs), xs)
+    assert np.array_equal(rf.physical_to_int(xs), xs)
 
 def test_identical_inv_scalar():
     x = -10
     rf = functions.Identical()
-    assert rf.inv(x) == x
+    assert rf.physical_to_int(x) == x
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_linear():
@@ -343,7 +346,7 @@ def test_linear():
     coeffs.a = 4
     coeffs.b = -3
     rf = functions.Linear(coeffs)
-    assert np.array_equal(rf(xs), ys)
+    assert np.array_equal(rf.int_to_physical(xs), ys)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_linear_scalar():
@@ -353,7 +356,7 @@ def test_linear_scalar():
     coeffs.a = 4
     coeffs.b = -3
     rf = functions.Linear(coeffs)
-    assert rf(x) == y
+    assert rf.int_to_physical(x) == y
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_linear_inv():
@@ -364,7 +367,7 @@ def test_linear_inv():
     coeffs.a = 4
     coeffs.b = -3
     rf = functions.Linear(coeffs)
-    assert np.array_equal(rf.inv(ys), xs)
+    assert np.array_equal(rf.physical_to_int(ys), xs)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_linear_inv_scalar():
@@ -374,7 +377,7 @@ def test_linear_inv_scalar():
     coeffs.a = 4
     coeffs.b = -3
     rf = functions.Linear(coeffs)
-    assert rf.inv(y) == x
+    assert rf.physical_to_int(y) == x
 
 def test_tab_verb_with_default():
     mapping = [
@@ -384,8 +387,8 @@ def test_tab_verb_with_default():
     ]
     default = "unknown signal type"
     tv = functions.LookupTable(mapping, default = default)
-    assert tv(2) == "Square"
-    assert tv(5) == default
+    assert tv.int_to_physical(2) == "Square"
+    assert tv.int_to_physical(5) == default
 
 def test_tab_verb_with_default_vectorized():
     mapping = [
@@ -397,7 +400,7 @@ def test_tab_verb_with_default_vectorized():
     xs = [1, 2, 3, 5]
     ys = ["SawTooth", "Square", "Sinus", default]
     tv = functions.LookupTable(mapping, default = default)
-    assert np.array_equal(tv(xs), ys)
+    assert np.array_equal(tv.int_to_physical(xs), ys)
 
 def test_tab_verb_with_default_inv():
     mapping = [
@@ -407,8 +410,8 @@ def test_tab_verb_with_default_inv():
     ]
     default = "unknown signal type"
     tv = functions.LookupTable(mapping, default = default)
-    assert tv.inv("Square") == 2
-    assert tv.inv(default) is None
+    assert tv.physical_to_int("Square") == 2
+    assert tv.physical_to_int(default) is None
 
 def test_tab_verb_with_default_inv_vectorized():
     mapping = [
@@ -420,7 +423,7 @@ def test_tab_verb_with_default_inv_vectorized():
     xs = [1, 2, 3]
     ys = ["SawTooth", "Square", "Sinus"]
     tv = functions.LookupTable(mapping, default = default)
-    assert np.array_equal(tv.inv(ys), xs)
+    assert np.array_equal(tv.physical_to_int(ys), xs)
 
 def test_tab_verb_ranges_with_default():
     mapping = [
@@ -438,14 +441,14 @@ def test_tab_verb_ranges_with_default():
     ]
     default = "out of range value"
     tvr = functions.LookupTableWithRanges(mapping, default = default, dtype = int)
-    assert tvr(0) == "Zero_to_one"
-    assert tvr(6) == "four_to_seven"
-    assert tvr(45) == "eigteen_to_ninetynine"
-    assert tvr(100) == "hundred"
-    assert tvr(105) == "hundredfive"
-    assert tvr(-1) == "out of range value"
-    assert tvr(106) == "out of range value"
-    assert tvr(10) == "out of range value"
+    assert tvr.int_to_physical(0) == "Zero_to_one"
+    assert tvr.int_to_physical(6) == "four_to_seven"
+    assert tvr.int_to_physical(45) == "eigteen_to_ninetynine"
+    assert tvr.int_to_physical(100) == "hundred"
+    assert tvr.int_to_physical(105) == "hundredfive"
+    assert tvr.int_to_physical(-1) == "out of range value"
+    assert tvr.int_to_physical(106) == "out of range value"
+    assert tvr.int_to_physical(10) == "out of range value"
 
 def test_tab_verb_ranges_with_default_vectorized():
     mapping = [
@@ -466,7 +469,7 @@ def test_tab_verb_ranges_with_default_vectorized():
     ys = ["Zero_to_one", "four_to_seven", "eigteen_to_ninetynine", "hundred", "hundredfive",
           "out of range value", "out of range value", "out of range value"]
     tvr = functions.LookupTableWithRanges(mapping, default = default, dtype = int)
-    assert np.array_equal(tvr(xs), ys)
+    assert np.array_equal(tvr.int_to_physical(xs), ys)
 
 def test_tab_verb_ranges_inverse():
     mapping = [
@@ -484,11 +487,11 @@ def test_tab_verb_ranges_inverse():
     ]
     default = "out of range value"
     tvr = functions.LookupTableWithRanges(mapping, default = default, dtype = int)
-    assert tvr.inv("Zero_to_one") == 0
-    assert tvr.inv("four_to_seven") == 4
-    assert tvr.inv("eigteen_to_ninetynine") == 18
-    assert tvr.inv("hundred") == 100
-    assert tvr.inv("hundredfive") == 105
+    assert tvr.physical_to_int("Zero_to_one") == 0
+    assert tvr.physical_to_int("four_to_seven") == 4
+    assert tvr.physical_to_int("eigteen_to_ninetynine") == 18
+    assert tvr.physical_to_int("hundred") == 100
+    assert tvr.physical_to_int("hundredfive") == 105
 
 def test_tab_verb_ranges_inverse_vectorized():
     mapping = [
@@ -508,7 +511,7 @@ def test_tab_verb_ranges_inverse_vectorized():
     tvr = functions.LookupTableWithRanges(mapping, default = default, dtype = int)
     xs = ["Zero_to_one", "four_to_seven", "eigteen_to_ninetynine", "hundred", "hundredfive"]
     ys = [0, 4, 18, 100, 105]
-    assert np.array_equal(tvr.inv(xs), ys)
+    assert np.array_equal(tvr.physical_to_int(xs), ys)
 
 def test_tab_verb_ranges_with_default_negative():
     mapping = [
@@ -526,14 +529,14 @@ def test_tab_verb_ranges_with_default_negative():
     ]
     default = "out of range value"
     tvr = functions.LookupTableWithRanges(mapping, default = default, dtype = int)
-    assert tvr(0) == "minus_one_to_zero"
-    assert tvr(-6) == "minus_seven_to_minus_four"
-    assert tvr(-45) == "minus_ninetynine_minus_eigteen"
-    assert tvr(-100) == "minus_hundred"
-    assert tvr(-105) == "minus_hundredfive"
-    assert tvr(1) == "out of range value"
-    assert tvr(-106) == "out of range value"
-    assert tvr(-10) == "out of range value"
+    assert tvr.int_to_physical(0) == "minus_one_to_zero"
+    assert tvr.int_to_physical(-6) == "minus_seven_to_minus_four"
+    assert tvr.int_to_physical(-45) == "minus_ninetynine_minus_eigteen"
+    assert tvr.int_to_physical(-100) == "minus_hundred"
+    assert tvr.int_to_physical(-105) == "minus_hundredfive"
+    assert tvr.int_to_physical(1) == "out of range value"
+    assert tvr.int_to_physical(-106) == "out of range value"
+    assert tvr.int_to_physical(-10) == "out of range value"
 
 def test_tab_verb_ranges_with_default_negative_vectorized():
     mapping = [
@@ -554,30 +557,30 @@ def test_tab_verb_ranges_with_default_negative_vectorized():
     xs = [0, -6, -45, -100, -105, 1, -106, -10]
     ys = ["minus_one_to_zero", "minus_seven_to_minus_four", "minus_ninetynine_minus_eigteen", "minus_hundred", "minus_hundredfive",
     "out of range value", "out of range value", "out of range value"]
-    assert np.array_equal(tvr(xs), ys)
+    assert np.array_equal(tvr.int_to_physical(xs), ys)
 
 def test_formula_with_no_parameters_raises():
     form = functions.Formula("sin(X1)")
     with pytest.raises(ValueError):
-        form()
+        form.int_to_physical()
 
 def test_formula_for_required_operations():
     form = functions.Formula("X1 + X2")
-    assert form(23.0, 42.0) == 65.0
+    assert form.int_to_physical(23.0, 42.0) == 65.0
     form = functions.Formula("X1 - X2")
-    assert form(65.0, 42.0) == 23.0
+    assert form.int_to_physical(65.0, 42.0) == 23.0
     form = functions.Formula("X1 * X2")
-    assert form(16.0, 16.0) == 256.0
+    assert form.int_to_physical(16.0, 16.0) == 256.0
     form = functions.Formula("X1 / X2")
-    assert form(256.0, 16.0) == 16.0
+    assert form.int_to_physical(256.0, 16.0) == 16.0
 #    form = functions.Formula("X1 & X2")
 #    assert form(255, 32) == 32
 #    form = functions.Formula("X1 | X2")
 #    assert form(256, 32) == 0x120
     form = functions.Formula("X1 >> X2")
-    assert form(64, 4) == 4
+    assert form.int_to_physical(64, 4) == 4
     form = functions.Formula("X1 << X2")
-    assert form(64, 4) == 1024
+    assert form.int_to_physical(64, 4) == 1024
     #form = functions.Formula("~X1")
     #assert form(0x55) == 0xaa
 
@@ -592,33 +595,33 @@ def test_formula_for_required_operations():
 
 def test_formula_for_required_functions():
     form = functions.Formula("sin(X1)")
-    assert form(.5) == 0.479425538604203
+    assert form.int_to_physical(.5) == 0.479425538604203
     form = functions.Formula("asin(X1)")
-    assert form(0.479425538604203) == .5
+    assert form.int_to_physical(0.479425538604203) == .5
     form = functions.Formula("cos(X1)")
-    assert form(.5) == 0.8775825618903728
+    assert form.int_to_physical(.5) == 0.8775825618903728
     form = functions.Formula("acos(X1)")
-    assert form(0.8775825618903728) == 0.4999999999999999
+    assert form.int_to_physical(0.8775825618903728) == 0.4999999999999999
     form = functions.Formula("tan(X1)")
-    assert form(.5) == 0.5463024898437905
+    assert form.int_to_physical(.5) == 0.5463024898437905
     form = functions.Formula("atan(X1)")
-    assert form(0.5463024898437905) == .5
+    assert form.int_to_physical(0.5463024898437905) == .5
     form = functions.Formula("cosh(X1)")
-    assert form(math.log(2)) == 1.25
+    assert form.int_to_physical(math.log(2)) == 1.25
     form = functions.Formula("sinh(X1)")
-    assert form(math.log(2)) == .75
+    assert form.int_to_physical(math.log(2)) == .75
     form = functions.Formula("tanh(X1)")
-    assert form(math.log(2)) == 0.6
+    assert form.int_to_physical(math.log(2)) == 0.6
     form = functions.Formula("exp(X1)")
-    assert form(math.log(10)) == 10.000000000000002
+    assert form.int_to_physical(math.log(10)) == 10.000000000000002
     form = functions.Formula("log(X1)")
-    assert form(math.exp(10)) == 10.0
+    assert form.int_to_physical(math.exp(10)) == 10.0
     form = functions.Formula("abs(X1)")
-    assert form(-23.0) == 23.0
+    assert form.int_to_physical(-23.0) == 23.0
     form = functions.Formula("sqrt(X1)")
-    assert form(225.0) == 15.0
+    assert form.int_to_physical(225.0) == 15.0
     form = functions.Formula("pow(X1, X2)")
-    assert form(2.0, 16.0) == 65536.0
+    assert form.int_to_physical(2.0, 16.0) == 65536.0
 
 
 
@@ -662,9 +665,9 @@ def test_compu_method_tab_verb():
     session = parser.parseFromString(DATA)
     module = session.query(model.Module).first()
     compu = functions.CompuMethod(session, module.compu_method[0])
-    assert compu(1) == "SawTooth"
-    assert compu.inv("Sinus") == 3
-    assert compu(10) == "unknown signal type"
+    assert compu.int_to_physical(1) == "SawTooth"
+    assert compu.physical_to_int("Sinus") == 3
+    assert compu.int_to_physical(10) == "unknown signal type"
 
 def test_compu_method_tab_verb_no_default_value():
     parser = ParserWrapper('a2l', 'module', A2LListener)
@@ -687,9 +690,9 @@ def test_compu_method_tab_verb_no_default_value():
     session = parser.parseFromString(DATA)
     module = session.query(model.Module).first()
     compu = functions.CompuMethod(session, module.compu_method[0])
-    assert compu(1) == "SawTooth"
-    assert compu.inv("Sinus") == 3
-    assert compu(10) is None
+    assert compu.int_to_physical(1) == "SawTooth"
+    assert compu.physical_to_int("Sinus") == 3
+    assert compu.int_to_physical(10) is None
 
 def test_compu_method_tab_verb_no_vtab():
     parser = ParserWrapper('a2l', 'module', A2LListener)
@@ -740,10 +743,10 @@ def test_compu_method_tab_nointerp_default():
     session = parser.parseFromString(DATA)
     module = session.query(model.Module).first()
     compu = functions.CompuMethod(session, module.compu_method[0])
-    assert compu(-3) == 98
-    assert compu(8) == 108
-    assert compu.inv(108) == 8
-    assert compu(1) == 300.56
+    assert compu.int_to_physical(-3) == 98
+    assert compu.int_to_physical(8) == 108
+    assert compu.physical_to_int(108) == 8
+    assert compu.int_to_physical(1) == 300.56
 
 def test_compu_method_tab_interp_default():
     parser = ParserWrapper('a2l', 'module', A2LListener)
@@ -782,11 +785,11 @@ def test_compu_method_tab_interp_default():
         [98., 98.5, 99., 100., 101., 102., 103., 104., 105., 106.,
          107., 108., 109., 110., 110.33333333333333, 110.66666666666667, 111.]
     )
-    assert np.array_equal(compu(xs), ys)
-    assert compu(-3) == 98
-    assert compu(8) == 108
-    assert compu(14) == 300.56
-    assert compu(-4) == 300.56
+    assert np.array_equal(compu.int_to_physical(xs), ys)
+    assert compu.int_to_physical(-3) == 98
+    assert compu.int_to_physical(8) == 108
+    assert compu.int_to_physical(14) == 300.56
+    assert compu.int_to_physical(-4) == 300.56
 
 
 def test_compu_method_tab_interp_no_default():
@@ -825,11 +828,11 @@ def test_compu_method_tab_interp_no_default():
         [98., 98.5, 99., 100., 101., 102., 103., 104., 105., 106.,
          107., 108., 109., 110., 110.33333333333333, 110.66666666666667, 111.]
     )
-    assert np.array_equal(compu(xs), ys)
-    assert compu(-3) == 98
-    assert compu(8) == 108
-    assert compu(14) is None
-    assert compu(-4) is None
+    assert np.array_equal(compu.int_to_physical(xs), ys)
+    assert compu.int_to_physical(-3) == 98
+    assert compu.int_to_physical(8) == 108
+    assert compu.int_to_physical(14) is None
+    assert compu.int_to_physical(-4) is None
 
 def test_compu_method_tab_nointerp_no_default():
     parser = ParserWrapper('a2l', 'module', A2LListener)
@@ -862,10 +865,10 @@ def test_compu_method_tab_nointerp_no_default():
     session = parser.parseFromString(DATA)
     module = session.query(model.Module).first()
     compu = functions.CompuMethod(session, module.compu_method[0])
-    assert compu(-3) == 98
-    assert compu(8) == 108
-    assert compu.inv(108) == 8
-    assert compu(1) is None
+    assert compu.int_to_physical(-3) == 98
+    assert compu.int_to_physical(8) == 108
+    assert compu.physical_to_int(108) == 8
+    assert compu.int_to_physical(1) is None
 
 def test_compu_method_tab_nointerp_both_defaults():
     parser = ParserWrapper('a2l', 'module', A2LListener)
@@ -934,14 +937,14 @@ def test_compu_method_tab_verb_ranges():
     session = parser.parseFromString(DATA)
     module = session.query(model.Module).first()
     compu = functions.CompuMethod(session, module.compu_method[0])
-    assert compu(0) == "Zero_to_one"
-    assert compu(6) == "four_to_seven"
-    assert compu(45) == "eigteen_to_ninetynine"
-    assert compu(100) == "hundred"
-    assert compu(105) == "hundredfive"
-    assert compu(-1) == "out of range value"
-    assert compu(106) == "out of range value"
-    assert compu(10) == "out of range value"
+    assert compu.int_to_physical(0) == "Zero_to_one"
+    assert compu.int_to_physical(6) == "four_to_seven"
+    assert compu.int_to_physical(45) == "eigteen_to_ninetynine"
+    assert compu.int_to_physical(100) == "hundred"
+    assert compu.int_to_physical(105) == "hundredfive"
+    assert compu.int_to_physical(-1) == "out of range value"
+    assert compu.int_to_physical(106) == "out of range value"
+    assert compu.int_to_physical(10) == "out of range value"
 
 def test_compu_method_tab_verb_ranges_no_default():
     parser = ParserWrapper('a2l', 'module', A2LListener)
@@ -974,14 +977,14 @@ def test_compu_method_tab_verb_ranges_no_default():
     session = parser.parseFromString(DATA)
     module = session.query(model.Module).first()
     compu = functions.CompuMethod(session, module.compu_method[0])
-    assert compu(0) == "Zero_to_one"
-    assert compu(6) == "four_to_seven"
-    assert compu(45) == "eigteen_to_ninetynine"
-    assert compu(100) == "hundred"
-    assert compu(105) == "hundredfive"
-    assert compu(-1) is None
-    assert compu(106) is None
-    assert compu(10) is None
+    assert compu.int_to_physical(0) == "Zero_to_one"
+    assert compu.int_to_physical(6) == "four_to_seven"
+    assert compu.int_to_physical(45) == "eigteen_to_ninetynine"
+    assert compu.int_to_physical(100) == "hundred"
+    assert compu.int_to_physical(105) == "hundredfive"
+    assert compu.int_to_physical(-1) is None
+    assert compu.int_to_physical(106) is None
+    assert compu.int_to_physical(10) is None
 
 def test_compu_method_tab_verb_ranges_inv():
     parser = ParserWrapper('a2l', 'module', A2LListener)
@@ -1015,12 +1018,12 @@ def test_compu_method_tab_verb_ranges_inv():
     session = parser.parseFromString(DATA)
     module = session.query(model.Module).first()
     compu = functions.CompuMethod(session, module.compu_method[0])
-    assert compu.inv("Zero_to_one") == 0
-    assert compu.inv("four_to_seven") == 4
-    assert compu.inv("eigteen_to_ninetynine") == 18
-    assert compu.inv("hundred") == 100
-    assert compu.inv("hundredfive") == 105
-    assert compu.inv("out of range value") is None
+    assert compu.physical_to_int("Zero_to_one") == 0
+    assert compu.physical_to_int("four_to_seven") == 4
+    assert compu.physical_to_int("eigteen_to_ninetynine") == 18
+    assert compu.physical_to_int("hundred") == 100
+    assert compu.physical_to_int("hundredfive") == 105
+    assert compu.physical_to_int("out of range value") is None
 
 def test_compu_method_identical():
     parser = ParserWrapper('a2l', 'module', A2LListener)
@@ -1036,8 +1039,8 @@ def test_compu_method_identical():
     module = session.query(model.Module).first()
     compu = functions.CompuMethod(session, module.compu_method[0])
     xs = np.arange(-10, 11)
-    assert np.array_equal(compu(xs), xs)
-    assert np.array_equal(compu.inv(xs), xs)
+    assert np.array_equal(compu.int_to_physical(xs), xs)
+    assert np.array_equal(compu.physical_to_int(xs), xs)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_compu_method_rat_func_identical():
@@ -1055,8 +1058,8 @@ def test_compu_method_rat_func_identical():
     module = session.query(model.Module).first()
     compu = functions.CompuMethod(session, module.compu_method[0])
     xs = np.arange(-10, 11)
-    assert np.array_equal(compu(xs), xs)
-    assert np.array_equal(compu.inv(xs), xs)
+    assert np.array_equal(compu.int_to_physical(xs), xs)
+    assert np.array_equal(compu.physical_to_int(xs), xs)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_compu_method_rat_func_linear():
@@ -1078,8 +1081,8 @@ def test_compu_method_rat_func_linear():
         -245.7525, -163.835, -81.9175, 0., 81.9175, 163.835, 245.7525, 327.67, 409.58750000000003,
         491.505, 573.4225, 655.34, 737.2575, 819.1750000000001
     ])
-    assert np.array_equal(compu(xs), ys)
-    assert np.array_equal(compu.inv(ys), xs)
+    assert np.array_equal(compu.int_to_physical(ys), xs)
+    assert np.array_equal(compu.physical_to_int(xs), ys)
 
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
@@ -1115,8 +1118,8 @@ def test_compu_method_linear():
     module = session.query(model.Module).first()
     compu = functions.CompuMethod(session, module.compu_method[0])
     xs = np.arange(-10, 11)
-    assert np.array_equal(compu(xs), xs * 2.0)
-    assert np.array_equal(compu.inv(xs * 2.0), xs)
+    assert np.array_equal(compu.int_to_physical(xs), xs * 2.0)
+    assert np.array_equal(compu.physical_to_int(xs * 2.0), xs)
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_compu_method_linear_no_coeffs():
@@ -1154,8 +1157,8 @@ def test_compu_method_formula_with_inv():
     session = parser.parseFromString(DATA)
     module = session.query(model.Module).first()
     compu = functions.CompuMethod(session, module.compu_method[0])
-    assert compu(6) == 10
-    assert compu.inv(4) == 0
+    assert compu.int_to_physical(6) == 10
+    assert compu.physical_to_int(4) == 0
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_compu_method_formula_without_inv():
@@ -1176,7 +1179,7 @@ def test_compu_method_formula_without_inv():
     session = parser.parseFromString(DATA)
     module = session.query(model.Module).first()
     compu = functions.CompuMethod(session, module.compu_method[0])
-    assert compu(6) == 10
+    assert compu.int_to_physical(6) == 10
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_compu_method_formula_with_sysc():
@@ -1202,4 +1205,4 @@ def test_compu_method_formula_with_sysc():
     session = parser.parseFromString(DATA)
     module = session.query(model.Module).first()
     compu = functions.CompuMethod(session, module.compu_method[0])
-    assert compu(23) == 65
+    assert compu.int_to_physical(23) == 65
