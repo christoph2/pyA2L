@@ -26,8 +26,23 @@ __copyright__="""
 """Classes for easy, convenient, read-only access to A2L databases.
 """
 
+
 from pya2l import DB
 import pya2l.model as model
+
+
+ASAM_TO_NUMPY_TYPES = {
+    "UBYTE":           "uint8",
+    "SBYTE":           "int8",
+    "UWORD":           "uint16",
+    "SWORD":           "int16",
+    "ULONG":           "uint32",
+    "SLONG":           "int32",
+    "A_UINT64":        "uint64",
+    "A_INT64":         "int64",
+    "FLOAT32_IEEE":    "float32",
+    "FLOAT64_IEEE":    "float64",
+}
 
 
 def get_module(session, module_name: str = None):
@@ -72,6 +87,26 @@ def _annotations(session, refs):
         entry["text"] = lines
         items.append(entry)
     return items
+
+
+def np_shape(matrixDim):
+    """Convert `matrixDim` dict to tuple suitable as Numpy array `shape` argument.
+    """
+    if matrixDim is None:
+        return None
+    result=[]
+    for dim in ("x", "y", "z"):
+        d = matrixDim[dim]
+        if d is None or d <= 1:
+            break
+        else:
+            result.append(d)
+    return tuple(result) or None
+
+
+def np_order(order):
+    """
+    """
 
 
 class ModPar:
@@ -388,7 +423,7 @@ class AxisDescr:
         self.annotations = _annotations(session, axis.annotation)
         self.axisPtsRef  = AxisPts(session, axis.axis_pts_ref.axisPoints) if axis.axis_pts_ref else None
         self.byteOrder = axis.byte_order.byteOrder if axis.byte_order else None
-        self.curveAxisRef  = axis.curve_axis_ref.curveAxis if axis.curve_axis_ref else None  # REF: AxisPts
+        self.curveAxisRef  = Characteristic(session, axis.curve_axis_ref.curveAxis) if axis.curve_axis_ref else None
         self.deposit = axis.deposit.mode if axis.deposit else None
         self.extendedLimits = self._dissect_extended_limits(axis.extended_limits)
         self.fixAxisPar = self._dissect_fix_axis_par(axis.fix_axis_par)
@@ -495,7 +530,7 @@ class Characteristic:
         "bitMask", "byteOrder", "compuMethod", "calibrationAccess", "comparisonQuantity", "dependentCharacteristic",
         "discrete", "displayIdentifier", "ecuAddressExtension", "extendedLimits", "format", "functionList",
         "guardRails", "mapList", "matrixDim", "maxRefresh", "number", "physUnit", "readOnly", "refMemorySegment",
-        "stepSize", "symbolLink", "virtualCharacteristic"
+        "stepSize", "symbolLink", "virtualCharacteristic", "np_shape"
     )
 
     def __init__(self, session, name: str, module_name: str = None):
@@ -531,13 +566,28 @@ class Characteristic:
         self.matrixDim = self._dissect_maxtrix_dim(self.characteristic.matrix_dim)
         self.maxRefresh = self._dissect_max_refresh(self.characteristic.max_refresh)
         self.number = self.characteristic.number
-
         self.physUnit = self.characteristic.phys_unit
         self.readOnly = self.characteristic.read_only
         self.refMemorySegment = self.characteristic.ref_memory_segment
         self.stepSize = self.characteristic.step_size
         self.symbolLink = self._dissect_symbol_link(self.characteristic.symbol_link)
         self.virtualCharacteristic = self.characteristic.virtual_characteristic
+
+        self.np_shape = np_shape(self.matrixDim) or (None if self.number is None else (self.number, ))
+
+    @property
+    def np_dtype(self):
+        if self.deposit is None:
+            return None
+        else:
+            return self.deposit.np_dtype
+
+    @property
+    def np_order(self):
+        if self.deposit is None:
+            return None
+        else:
+            return self.deposit.np_order
 
     @staticmethod
     def _dissect_extended_limits(limits):
@@ -587,7 +637,8 @@ class Characteristic:
             self.bitMask, self.byteOrder, self.calibrationAccess, self.comparisonQuantity, self.dependentCharacteristic,
             self.discrete, self.displayIdentifier, self.ecuAddressExtension, self.extendedLimits, self.format,
             self.functionList, self.guardRails, self.mapList, self.matrixDim, self.maxRefresh, self.number,
-            self.physUnit, self.readOnly, self.refMemorySegment, self.stepSize, self.symbolLink, self.virtualCharacteristic
+            self.physUnit, self.readOnly, self.refMemorySegment, self.stepSize, self.symbolLink, self.virtualCharacteristic,
+            self.np_shape
         )
         return """
 Characteristic {{
@@ -637,7 +688,7 @@ class AxisPts:
         "_conversionRef", "compuMethod", "maxAxisPoints", "lowerLimit", "upperLimit",
         "annotations", "byteOrder", "calibrationAccess", "deposit", "displayIdentifier", "ecuAddressExtension",
         "extendedLimits", "format", "functionList", "guardRails", "monotony", "physUnit", "readOnly",
-        "refMemorySegment", "stepSize", "symbolLink"
+        "refMemorySegment", "stepSize", "symbolLink", "depositAttr"
     )
 
     def __init__(self, session, name: str, module_name: str = None):
@@ -646,7 +697,8 @@ class AxisPts:
         self.longIdentifier = self.axis.longIdentifier
         self.address = self.axis.address
         self.inputQuantity = self.axis.inputQuantity    # REF: Measurement
-        self.deposit = self.axis.deposit.mode if self.axis.deposit else None    # REF:RecordLayout
+        self.depositAttr = RecordLayout(session, self.axis.depositAttr)
+        self.deposit = self.axis.deposit.mode if self.axis.deposit else None
         self.maxDiff = self.axis.maxDiff
         self._conversionRef = self.axis.conversion
         self.compuMethod = _dissect_conversion(session, self._conversionRef)
@@ -692,11 +744,11 @@ class AxisPts:
 
     def __str__(self):
         names = (
-            self.name, self.longIdentifier, self.address, self.inputQuantity, self.deposit, self.maxDiff, self.compuMethod,
+            self.name, self.longIdentifier, self.address, self.inputQuantity, self.maxDiff, self.compuMethod,
             self.maxAxisPoints, self.lowerLimit, self.upperLimit, self.annotations, self.byteOrder, self.calibrationAccess,
-            self.deposit, self.inputQuantity, self.ecuAddressExtension, self.extendedLimits, self.format,
+            self.deposit, self.depositAttr, self.ecuAddressExtension, self.extendedLimits, self.format,
             self.functionList, self.guardRails, self.monotony, self.physUnit, self.readOnly, self.refMemorySegment,
-            self.stepSize, self.symbolLink
+            self.stepSize, self.symbolLink, self.displayIdentifier
         )
         return """
 AxisPts {{
@@ -704,7 +756,6 @@ AxisPts {{
     longIdentifier      = "{}";
     address             = {};
     inputQuantity       = {};
-    deposit             = {};
     maxDiff             = {};
     compuMethod         = {};
     maxAxisPoints       = {};
@@ -714,7 +765,7 @@ AxisPts {{
     byteOrder           = {};
     calibrationAccess   = {};
     deposit             = "{}";
-    displayIdentifier   = "{}";
+    depositAttr         = {};
     ecuAddressExtension = {};
     extendedLimits      = {};
     format              = "{}";
@@ -726,6 +777,7 @@ AxisPts {{
     refMemorySegment    = {};
     stepSize            = {};
     symbolLink          = {};
+    displayIdentifier   = "{}";
 }}""".format(*names)
 
     __repr__ = __str__
@@ -925,7 +977,7 @@ class Measurement:
         "accuracy", "lowerLimit", "upperLimit", "annotations", "arraySize", "bitMask", "bitOperation",
         "byteOrder", "discrete", "displayIdentifier", "ecuAddress", "ecuAddressExtension",
         "errorMask", "format", "functionList", "layout", "matrixDim", "maxRefresh", "physUnit",
-        "readWrite", "refMemorySegment", "symbolLink", "virtual", "compuMethod"
+        "readWrite", "refMemorySegment", "symbolLink", "virtual", "compuMethod", "np_shape"
         )
 
     def __init__(self, session, name: str, module_name: str = None):
@@ -961,6 +1013,8 @@ class Measurement:
         self.symbolLink = self._dissect_symbol_link(self.measurement.symbol_link)
         self.virtual = self.measurement.virtual.measuringChannel if self.measurement.virtual else []
         self.compuMethod = _dissect_conversion(session, self._conversionRef)
+
+        self.np_shape = np_shape(self.matrixDim)
 
     def __str__(self):
         names = (
@@ -1062,7 +1116,7 @@ class RecordLayout:
     def __init__(self, session, name: str, module_name: str = None):
         self.layout = session.query(model.RecordLayout).filter(model.RecordLayout.name == name).first()
         self.name = name
-
+        #print("*AXE:", dir(self.layout))
         self.alignment = {
             "BYTE": self.layout.alignment_byte.alignmentBorder if self.layout.alignment_byte else None,
             "WORD": self.layout.alignment_word.alignmentBorder if self.layout.alignment_word else None,
@@ -1072,28 +1126,28 @@ class RecordLayout:
             "FLOAT64": self.layout.alignment_float64_ieee.alignmentBorder if self.layout.alignment_float64_ieee else None,
         }
         self.axisPts = {
-            "X": self._dissect_axis_pts(self.layout.axis_pts_z),
+            "X": self._dissect_axis_pts(self.layout.axis_pts_x),
             "Y": self._dissect_axis_pts(self.layout.axis_pts_y),
             "Z": self._dissect_axis_pts(self.layout.axis_pts_z),
             "4": self._dissect_axis_pts(self.layout.axis_pts_4),
             "5": self._dissect_axis_pts(self.layout.axis_pts_5),
         }
         self.axisRescale = {
-            "X": self._dissect_axis_rescale(self.layout.axis_rescale_z),
+            "X": self._dissect_axis_rescale(self.layout.axis_rescale_x),
             "Y": self._dissect_axis_rescale(self.layout.axis_rescale_y),
             "Z": self._dissect_axis_rescale(self.layout.axis_rescale_z),
             "4": self._dissect_axis_rescale(self.layout.axis_rescale_4),
             "5": self._dissect_axis_rescale(self.layout.axis_rescale_5),
         }
         self.distOp = {
-            "X": self._dissect_dist_op(self.layout.dist_op_z),
+            "X": self._dissect_dist_op(self.layout.dist_op_x),
             "Y": self._dissect_dist_op(self.layout.dist_op_y),
             "Z": self._dissect_dist_op(self.layout.dist_op_z),
             "4": self._dissect_dist_op(self.layout.dist_op_4),
             "5": self._dissect_dist_op(self.layout.dist_op_5),
         }
         self.fixNoAxisPts = {
-            "X": self._dissect_fix_no_axis_pts(self.layout.fix_no_axis_pts_z),
+            "X": self._dissect_fix_no_axis_pts(self.layout.fix_no_axis_pts_x),
             "Y": self._dissect_fix_no_axis_pts(self.layout.fix_no_axis_pts_y),
             "Z": self._dissect_fix_no_axis_pts(self.layout.fix_no_axis_pts_z),
             "4": self._dissect_fix_no_axis_pts(self.layout.fix_no_axis_pts_4),
@@ -1102,44 +1156,44 @@ class RecordLayout:
         self.fncValues = self._dissect_fnc_values(self.layout.fnc_values)
         self.identification = self._dissect_identification(self.layout.identification)
         self.noAxisPts = {
-            "X": self._dissect_no_axis_pts(self.layout.no_axis_pts_z),
+            "X": self._dissect_no_axis_pts(self.layout.no_axis_pts_x),
             "Y": self._dissect_no_axis_pts(self.layout.no_axis_pts_y),
             "Z": self._dissect_no_axis_pts(self.layout.no_axis_pts_z),
             "4": self._dissect_no_axis_pts(self.layout.no_axis_pts_4),
             "5": self._dissect_no_axis_pts(self.layout.no_axis_pts_5),
         }
         self.noRescale = {
-            "X": self._dissect_no_rescale(self.layout.no_rescale_z),
+            "X": self._dissect_no_rescale(self.layout.no_rescale_x),
             "Y": self._dissect_no_rescale(self.layout.no_rescale_y),
             "Z": self._dissect_no_rescale(self.layout.no_rescale_z),
             "4": self._dissect_no_rescale(self.layout.no_rescale_4),
             "5": self._dissect_no_rescale(self.layout.no_rescale_5),
         }
         self.offset = {
-            "X": self._dissect_offset(self.layout.offset_z),
+            "X": self._dissect_offset(self.layout.offset_x),
             "Y": self._dissect_offset(self.layout.offset_y),
             "Z": self._dissect_offset(self.layout.offset_z),
             "4": self._dissect_offset(self.layout.offset_4),
             "5": self._dissect_offset(self.layout.offset_5),
         }
-        self.reserved = [self._dissect_reserved(r) for r in self.layout.reserved]
+        self.reserved = self._dissect_reserved(self.layout.reserved[0]) if self.layout.reserved else {}
         self.ripAddr = {
             "W": self._dissect_rip_addr(self.layout.rip_addr_w),
-            "X": self._dissect_rip_addr(self.layout.rip_addr_z),
+            "X": self._dissect_rip_addr(self.layout.rip_addr_x),
             "Y": self._dissect_rip_addr(self.layout.rip_addr_y),
             "Z": self._dissect_rip_addr(self.layout.rip_addr_z),
             "4": self._dissect_rip_addr(self.layout.rip_addr_4),
             "5": self._dissect_rip_addr(self.layout.rip_addr_5),
         }
         self.srcAddr = {
-            "X": self._dissect_src_addr(self.layout.src_addr_z),
+            "X": self._dissect_src_addr(self.layout.src_addr_x),
             "Y": self._dissect_src_addr(self.layout.src_addr_y),
             "Z": self._dissect_src_addr(self.layout.src_addr_z),
             "4": self._dissect_src_addr(self.layout.src_addr_4),
             "5": self._dissect_src_addr(self.layout.src_addr_5),
         }
         self.shiftOp = {
-            "X": self._dissect_shift_op(self.layout.shift_op_z),
+            "X": self._dissect_shift_op(self.layout.shift_op_x),
             "Y": self._dissect_shift_op(self.layout.shift_op_y),
             "Z": self._dissect_shift_op(self.layout.shift_op_z),
             "4": self._dissect_shift_op(self.layout.shift_op_4),
@@ -1210,7 +1264,7 @@ class RecordLayout:
             result["position"] = ident.position
             result["datatype"] = ident.datatype
         else:
-            result = None
+            result = {}
         return result
 
     @staticmethod
@@ -1250,7 +1304,7 @@ class RecordLayout:
             result["position"] = reserved.position
             result["dataSize"] = reserved.dataSize
         else:
-            result = None
+            result = {}
         return result
 
     @staticmethod
@@ -1281,6 +1335,49 @@ class RecordLayout:
             result["datatype"] = op.datatype
         else:
             result = None
+        return result
+
+    @property
+    def np_dtype(self):
+        """Return `str` (e.g. `int32`) suitable for Numpy.
+        """
+        if self.fncValues is None:
+            return None
+        asam_dtype = self.fncValues.get('datatype')
+        if asam_dtype is None:
+            return None
+        np_dtype = ASAM_TO_NUMPY_TYPES.get(asam_dtype)
+        return np_dtype
+
+    @property
+    def np_order(self):
+        """Return `str` suitable for Numpy.
+            - "C": C order ==> row-major.
+            - "F": Fortran order ==> column-major.
+        """
+        if self.fncValues is None:
+            return None
+        indexMode = self.fncValues.get('indexMode')
+        if indexMode is None:
+            return None
+        if indexMode == "COLUMN_DIR":
+            return "F"
+        elif indexMode == "ROW_DIR":
+            return "C"
+        else:
+            return None
+
+    @property
+    def components(self):
+        ITEMS = ("axisPts", "axisRescale", "distOp", "fncValues", "identification", "noAxisPts", "noRescale",
+        "offset", "reserved", "ripAddr", "srcAddr", "shiftOp")
+        result = []
+        for item_name in ITEMS:
+            item = getattr(self, item_name)
+            stuff = {k: v for k, v in item.items() if v is not None}
+            if stuff:
+                stuff['type'] = item_name
+                result.append(stuff)
         return result
 
     def __str__(self):
