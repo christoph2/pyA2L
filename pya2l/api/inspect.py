@@ -26,6 +26,7 @@ __copyright__="""
 """Classes for easy, convenient, read-only access to A2L databases.
 """
 
+from operator import attrgetter
 
 from pya2l import DB
 import pya2l.model as model
@@ -42,6 +43,19 @@ ASAM_TO_NUMPY_TYPES = {
     "A_INT64":         "int64",
     "FLOAT32_IEEE":    "float32",
     "FLOAT64_IEEE":    "float64",
+}
+
+ASAM_TYPE_SIZES = {
+    "UBYTE":           1,
+    "SBYTE":           1,
+    "UWORD":           2,
+    "SWORD":           2,
+    "ULONG":           4,
+    "SLONG":           4,
+    "A_UINT64":        8,
+    "A_INT64":         8,
+    "FLOAT32_IEEE":    4,
+    "FLOAT64_IEEE":    8,
 }
 
 
@@ -1022,7 +1036,7 @@ class Measurement:
             self.upperLimit, self.annotations, self.arraySize, self.bitMask, self.bitOperation, self.byteOrder,
             self.discrete, self.displayIdentifier, self.ecuAddress, self.ecuAddressExtension, self.errorMask,
             self.format, self.functionList, self.layout, self.matrixDim, self.maxRefresh, self.physUnit,
-            self.refMemorySegment, self.readWrite, self.symbolLink, self.virtual,
+            self.refMemorySegment, self.readWrite, self.symbolLink, self.virtual, self.compuMethod
         )
         return """
 Measurement {{
@@ -1053,6 +1067,7 @@ Measurement {{
     refMemorySegment = {};
     symbolLink = {};
     virtual = {};
+    compuMethod = {};
 }}""".format(*names)
 
     __repr__ = __str__
@@ -1210,7 +1225,7 @@ class RecordLayout:
             result["indexIncr"] = axis.indexIncr
             result["addressing"] = axis.addressing
         else:
-            result = None
+            result = {}
         return result
 
     @staticmethod
@@ -1223,7 +1238,7 @@ class RecordLayout:
             result["indexIncr"] = axis.indexIncr
             result["addressing"] = axis.addressing
         else:
-            result = None
+            result = {}
         return result
 
     @staticmethod
@@ -1233,7 +1248,7 @@ class RecordLayout:
             result["position"] = axis.position
             result["datatype"] = axis.datatype
         else:
-            result = None
+            result = {}
         return result
 
     @staticmethod
@@ -1242,7 +1257,7 @@ class RecordLayout:
             result = {}
             result["numberOfAxisPoints"] = axis.numberOfAxisPoints
         else:
-            result = None
+            result = {}
         return result
 
     @staticmethod
@@ -1254,7 +1269,7 @@ class RecordLayout:
             result["indexMode"] = fnc.indexMode
             result["addresstype"] = fnc.addresstype
         else:
-            result = None
+            result = {}
         return result
 
     @staticmethod
@@ -1274,7 +1289,7 @@ class RecordLayout:
             result["position"] = axis.position
             result["datatype"] = axis.datatype
         else:
-            result = None
+            result = {}
         return result
 
     @staticmethod
@@ -1284,7 +1299,7 @@ class RecordLayout:
             result["position"] = axis.position
             result["datatype"] = axis.datatype
         else:
-            result = None
+            result = {}
         return result
 
     @staticmethod
@@ -1294,7 +1309,7 @@ class RecordLayout:
             result["position"] = offset.position
             result["datatype"] = offset.datatype
         else:
-            result = None
+            result = {}
         return result
 
     @staticmethod
@@ -1314,7 +1329,7 @@ class RecordLayout:
             result["position"] = addr.position
             result["datatype"] = addr.datatype
         else:
-            result = None
+            result = {}
         return result
 
     @staticmethod
@@ -1324,7 +1339,7 @@ class RecordLayout:
             result["position"] = addr.position
             result["datatype"] = addr.datatype
         else:
-            result = None
+            result = {}
         return result
 
     @staticmethod
@@ -1334,7 +1349,7 @@ class RecordLayout:
             result["position"] = op.position
             result["datatype"] = op.datatype
         else:
-            result = None
+            result = {}
         return result
 
     @property
@@ -1371,14 +1386,10 @@ class RecordLayout:
     def components(self):
         ITEMS = ("axisPts", "axisRescale", "distOp", "fncValues", "identification", "noAxisPts", "noRescale",
         "offset", "reserved", "ripAddr", "srcAddr", "shiftOp")
-        result = []
-        for item_name in ITEMS:
-            item = getattr(self, item_name)
-            stuff = {k: v for k, v in item.items() if v is not None}
-            if stuff:
-                stuff['type'] = item_name
-                result.append(stuff)
-        return result
+
+        items = {name: getattr(self, name) for name in ITEMS}
+        rlc = RecordLayoutComponents(items)
+        return rlc
 
     def __str__(self):
         names = (
@@ -1410,6 +1421,94 @@ RecordLayout {{
 
 
 
+
+class RecordLayoutComponents:
+    """
+    """
+
+    def __init__(self, items: dict):
+        result = []
+        positions = {}
+        sizeof = 0
+        self._axes = set()
+        for item_name, item in items.items():
+            entry = {}
+            for k, v in item.items():
+                if v is not None:
+                    entry[k] = v
+            if entry:
+                if item_name in ("axisPts", "axisRescale", "distOp", "noAxisPts", "noRescale", "offset", "reserved",
+                    "srcAddr", "shiftOp"):
+                    s, p = self._get_details(entry, item_name, ("X", "Y", "Z", "4", "5"))
+                    sizeof += s
+                    positions.update(p)
+                elif item_name == "ripAddr":
+                    s, p = self._get_details(entry, item_name, ("W", "X", "Y", "Z", "4", "5"))
+                    sizeof += s
+                    positions.update(p)
+                elif item_name in ("fncValues", "identification"):
+                    entry = {"values": entry}
+                    pos = entry["values"]["position"]
+                    positions[pos] = entry
+                    entry['type'] = item_name
+                    if item_name == "identification":
+                        sizeof += ASAM_TYPE_SIZES[entry["values"]["datatype"]]
+                result.append(entry)
+        self._positions = sorted(positions.items(), key = lambda k: k[0])
+        self._sizeof = sizeof
+
+    def _get_details(self, entry, name, keys):
+        positions = {}
+        sizeof = 0
+        for key in keys:
+            dim_entry = entry.get(key)
+            if dim_entry:
+                self._axes.add(key)
+                pos = dim_entry["position"]
+                sizeof += ASAM_TYPE_SIZES[dim_entry["datatype"]]
+                dim_entry['type'] = (name, key)
+                positions[pos] = dim_entry
+        return sizeof, positions
+
+    @property
+    def sizeof(self):
+        """Size of record layout **WITHOUT** actual data (axis points and function values).
+        """
+        return self._sizeof
+
+    @property
+    def axes(self):
+        """
+
+        Returns
+        -------
+        `frozenset`
+        """
+        return frozenset(self._axes)
+
+    def __len__(self):
+        return len(self._positions)
+
+    def __getitem__(self, index):
+        return self._positions[index]
+
+    def __iter__(self):
+        return iter(self._positions)
+
+    def next(self):
+        for item in self._positions:
+            yield item
+
+    def __str__(self):
+        result = ["{}(".format(self.__class__.__name__)]
+        for key, value in self:
+            result.append("    {} ==> {}".format(key, value))
+        result.append(")")
+        return "\n".join(result)
+
+    __repr__ = __str__
+
+
 def _dissect_conversion(session, conversion):
     result = {}
     if conversion == "NO_COMPU_METHOD":
@@ -1417,6 +1516,7 @@ def _dissect_conversion(session, conversion):
     else:
         cm = session.query(model.CompuMethod).filter(model.CompuMethod.name ==  conversion).first()
         cm_type = cm.conversionType
+        result['name'] = cm.name
         result["type"] = cm_type
         result["unit"] = cm.unit
         result["format"] = cm.format
