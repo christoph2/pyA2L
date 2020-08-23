@@ -154,6 +154,15 @@ class Tristate(object):
     def __repr__(self):
         return "Tristate(%s)" % self.value
 
+
+class Bunch(dict):
+    """
+    """
+    def __init__(self, *args, **kwds):
+        super(Bunch, self).__init__(*args, **kwds)
+        self.__dict__ = self
+
+
 import subprocess
 
 class CommandError(Exception):
