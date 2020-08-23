@@ -63,9 +63,18 @@ def test_axis_rescale_ok():
     EXPECTED = [
         0, 16.666666666666668, 33.333333333333336, 50.0, 66.66666666666667, 83.33333333333333, 100.0, 158.9206349206349, 216
     ]
-    assert functions.axis_rescale(no_rescale_x = 3, no_axis_pts = 9,
+    assert np.array_equal(functions.axis_rescale(no_rescale_x = 3, no_axis_pts = 9,
         axis = (0x00, 0x64, 0xD8), virtual = (0x00, 0xC0, 0xFF)
-        ) == EXPECTED
+        ), EXPECTED)
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_fix_axis_par_ok():
+    assert np.array_equal(functions.fix_axis_par(10, 3, 10), np.array([10, 18, 26, 34, 42, 50, 58, 66, 74, 82]))
+
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_fix_axis_par_dist_ok():
+    assert np.array_equal(functions.fix_axis_par_dist(7, 4, 10), np.array([7, 11, 15, 19, 23, 27, 31, 35, 39, 43]))
 
 X_NORM = (
     (0.0,       2.0),

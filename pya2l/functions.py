@@ -57,6 +57,18 @@ from pya2l import model
 POW = re.compile(r"pow\s*\((?P<params>.*?)\s*\)")
 SYSC = re.compile(r"sysc\s*\((?P<param>.*?)\s*\)")
 
+
+def fix_axis_par(offset: int, shift: int, num_apo: int) -> list:
+    """
+    """
+    return np.array([offset + (i * (2 ** shift)) for i in range(num_apo)])
+
+def fix_axis_par_dist(offset: int, distance: int, num_apo: int) -> list:
+    """
+    """
+    return np.array([offset + (i * distance) for i in range(num_apo)])
+
+
 class Interpolate1D:
     """1-D linear interpolation.
 
@@ -154,7 +166,7 @@ def axis_rescale(no_rescale_x : int, no_axis_pts : int, axis, virtual):
 
     Returns
     -------
-    list
+    `numpy.array`
     """
     k = 1
     d = (virtual[-1] - virtual[0] + 1) // (no_axis_pts - 1)
@@ -168,7 +180,7 @@ def axis_rescale(no_rescale_x : int, no_axis_pts : int, axis, virtual):
             x = axis[idx] + (((k - 1) * d) - virtual[idx]) * (axis[idx + 1] - axis[idx]) / (virtual[idx + 1] - virtual[idx])
             xs.append(x)
     xs.append(axis[no_rescale_x - 1])
-    return xs
+    return np.array(xs)
 
 
 class NormalizationAxes:
