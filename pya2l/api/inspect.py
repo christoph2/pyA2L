@@ -579,15 +579,23 @@ class Characteristic:
         self.mapList = [f.name for f in self.characteristic.map_list] if self.characteristic.map_list else []
         self.matrixDim = self._dissect_maxtrix_dim(self.characteristic.matrix_dim)
         self.maxRefresh = self._dissect_max_refresh(self.characteristic.max_refresh)
-        self.number = self.characteristic.number
+        self.number = self.characteristic.number.number if self.characteristic.number else None
         self.physUnit = self.characteristic.phys_unit
         self.readOnly = self.characteristic.read_only
         self.refMemorySegment = self.characteristic.ref_memory_segment
         self.stepSize = self.characteristic.step_size
         self.symbolLink = self._dissect_symbol_link(self.characteristic.symbol_link)
-        self.virtualCharacteristic = self.characteristic.virtual_characteristic
+        self.virtualCharacteristic = self.characteristic.virtual_characteristic.formula \
+            if self.characteristic.virtual_characteristic else None
 
         self.np_shape = np_shape(self.matrixDim) or (None if self.number is None else (self.number, ))
+
+    @property
+    def asam_dtype(self):
+        if self.deposit is None:
+            return None
+        else:
+            return self.deposit.asam_dtype
 
     @property
     def np_dtype(self):
@@ -723,7 +731,7 @@ class AxisPts:
         self.byteOrder = self.axis.byte_order.byteOrder if self.axis.byte_order else None
         self.calibrationAccess = self.axis.calibration_access
         self.deposit = self.axis.deposit.mode if self.axis.deposit else None
-        self.displayIdentifier = self.axis.display_identifier
+        self.displayIdentifier = self.axis.display_identifier.display_name if self.axis.display_identifier else None
         self.ecuAddressExtension = self.axis.ecu_address_extension.extension if self.axis.ecu_address_extension else None
         self.extendedLimits = self._dissect_extended_limits(self.axis.extended_limits)
         self.format = self.axis.format.formatString if self.axis.format else None
@@ -1351,6 +1359,15 @@ class RecordLayout:
         else:
             result = {}
         return result
+
+    @property
+    def asam_dtype(self):
+        """Return `str` (e.g. `SLONG`).
+        """
+        if self.fncValues is None:
+            return None
+        asam_dtype = self.fncValues.get('datatype')
+        return None if asam_dtype is None else asam_dtype
 
     @property
     def np_dtype(self):
