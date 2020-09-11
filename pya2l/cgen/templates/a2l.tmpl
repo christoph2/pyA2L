@@ -1,0 +1,1606 @@
+
+<%
+asap2_version = session.query(model.Asap2Version).first()
+a2ml_version = session.query(model.A2mlVersion).first()
+project = session.query(model.Project).first()
+%>
+
+  %if asap2_version:
+  ASAP2_VERSION
+      ${asap2_version.versionNo}  /* versionNo */
+      ${asap2_version.upgradeNo}  /* upgradeNo */
+  %endif
+  %if a2ml_version:
+  A2ML_VERSION
+      ${a2ml_version.versionNo}  /* versionNo */
+      ${a2ml_version.upgradeNo}  /* upgradeNo */
+  %endif
+  %if project:
+  /begin PROJECT
+      ${project.name}  /* name */
+      "${project.longIdentifier}"  /* longIdentifier */
+  <% header = project.header %>
+      %if header:
+      /begin HEADER
+          "${header.comment}"  /* comment */
+      <% project_no = header.project_no %>
+            %if project_no:
+            PROJECT_NO
+                ${project_no.projectNumber}  /* projectNumber */
+            %endif
+      <% version = header.version %>
+            %if version:
+            VERSION
+                "${version.versionIdentifier}"  /* versionIdentifier */
+            %endif
+      /end HEADER
+      %endif
+  <% module = project.module %>
+      %if module:
+      %for entry2 in module:
+          /begin MODULE
+              ${entry2.name}  /* name */
+              "${entry2.longIdentifier}"  /* longIdentifier */
+              <% a2ml = entry2.a2ml %>
+                    %if a2ml:
+            /begin A2ML
+            /end A2ML
+            %endif
+              <% axis_pts = entry2.axis_pts %>
+                    %if axis_pts:
+            %for entry3 in axis_pts:
+                /begin AXIS_PTS
+                    ${entry3.name}  /* name */
+                    "${entry3.longIdentifier}"  /* longIdentifier */
+                    ${entry3.address}  /* address */
+                    ${entry3.inputQuantity}  /* inputQuantity */
+                    ${entry3.depositAttr}  /* depositAttr */
+                    ${entry3.maxDiff}  /* maxDiff */
+                    ${entry3.conversion}  /* conversion */
+                    ${entry3.maxAxisPoints}  /* maxAxisPoints */
+                    ${entry3.lowerLimit}  /* lowerLimit */
+                    ${entry3.upperLimit}  /* upperLimit */
+                    <% annotation = entry3.annotation %>
+                            %if annotation:
+                    %for entry4 in annotation:
+                        /begin ANNOTATION
+                            <% annotation_label = entry4.annotation_label %>
+                                      %if annotation_label:
+                              ANNOTATION_LABEL
+                                  "${annotation_label.label}"  /* label */
+                              %endif
+                            <% annotation_origin = entry4.annotation_origin %>
+                                      %if annotation_origin:
+                              ANNOTATION_ORIGIN
+                                  "${annotation_origin.origin}"  /* origin */
+                              %endif
+                            <% annotation_text = entry4.annotation_text %>
+                                      %if annotation_text:
+                              /begin ANNOTATION_TEXT
+                                  ${" ".join(["{1:}{0:}{1:}".format(str(x),  '"' ) for x in annotation_text.text ])}
+                              /end ANNOTATION_TEXT
+                              %endif
+                        /end ANNOTATION
+                    %endfor
+                    %endif
+                    <% byte_order = entry3.byte_order %>
+                            %if byte_order:
+                    BYTE_ORDER
+                        ${byte_order.byteOrder}  /* byteOrder */
+                    %endif
+                    <% calibration_access = entry3.calibration_access %>
+                            %if calibration_access:
+                    CALIBRATION_ACCESS
+                        ${calibration_access.type}  /* type */
+                    %endif
+                    <% deposit = entry3.deposit %>
+                            %if deposit:
+                    DEPOSIT
+                        ${deposit.mode}  /* mode */
+                    %endif
+                    <% display_identifier = entry3.display_identifier %>
+                            %if display_identifier:
+                    DISPLAY_IDENTIFIER
+                        ${display_identifier.display_name}  /* display_name */
+                    %endif
+                    <% ecu_address_extension = entry3.ecu_address_extension %>
+                            %if ecu_address_extension:
+                    ECU_ADDRESS_EXTENSION
+                        ${ecu_address_extension.extension}  /* extension */
+                    %endif
+                    <% extended_limits = entry3.extended_limits %>
+                            %if extended_limits:
+                    EXTENDED_LIMITS
+                        ${extended_limits.lowerLimit}  /* lowerLimit */
+                        ${extended_limits.upperLimit}  /* upperLimit */
+                    %endif
+                    <% format = entry3.format %>
+                            %if format:
+                    FORMAT
+                        "${format.formatString}"  /* formatString */
+                    %endif
+                    <% function_list = entry3.function_list %>
+                            %if function_list:
+                    /begin FUNCTION_LIST
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in function_list.name ])}
+                    /end FUNCTION_LIST
+                    %endif
+                    <% guard_rails = entry3.guard_rails %>
+                            %if guard_rails:
+                    GUARD_RAILS
+                    %endif
+                    <% if_data = entry3.if_data %>
+                            %if if_data:
+                    %for entry4 in if_data:
+                        /begin IF_DATA
+                            ${entry4.name}  /* name */
+                        /end IF_DATA
+                    %endfor
+                    %endif
+                    <% monotony = entry3.monotony %>
+                            %if monotony:
+                    MONOTONY
+                        ${monotony.monotony}  /* monotony */
+                    %endif
+                    <% phys_unit = entry3.phys_unit %>
+                            %if phys_unit:
+                    PHYS_UNIT
+                        "${phys_unit.unit}"  /* unit */
+                    %endif
+                    <% read_only = entry3.read_only %>
+                            %if read_only:
+                    READ_ONLY
+                    %endif
+                    <% ref_memory_segment = entry3.ref_memory_segment %>
+                            %if ref_memory_segment:
+                    REF_MEMORY_SEGMENT
+                        ${ref_memory_segment.name}  /* name */
+                    %endif
+                    <% step_size = entry3.step_size %>
+                            %if step_size:
+                    STEP_SIZE
+                        ${step_size.stepSize}  /* stepSize */
+                    %endif
+                    <% symbol_link = entry3.symbol_link %>
+                            %if symbol_link:
+                    SYMBOL_LINK
+                        "${symbol_link.symbolName}"  /* symbolName */
+                        ${symbol_link.offset}  /* offset */
+                    %endif
+                /end AXIS_PTS
+            %endfor
+            %endif
+              <% characteristic = entry2.characteristic %>
+                    %if characteristic:
+            %for entry3 in characteristic:
+                /begin CHARACTERISTIC
+                    ${entry3.name}  /* name */
+                    "${entry3.longIdentifier}"  /* longIdentifier */
+                    ${entry3.type}  /* type */
+                    ${entry3.address}  /* address */
+                    ${entry3.deposit}  /* deposit */
+                    ${entry3.maxDiff}  /* maxDiff */
+                    ${entry3.conversion}  /* conversion */
+                    ${entry3.lowerLimit}  /* lowerLimit */
+                    ${entry3.upperLimit}  /* upperLimit */
+                    <% annotation = entry3.annotation %>
+                            %if annotation:
+                    %for entry4 in annotation:
+                        /begin ANNOTATION
+                            <% annotation_label = entry4.annotation_label %>
+                                      %if annotation_label:
+                              ANNOTATION_LABEL
+                                  "${annotation_label.label}"  /* label */
+                              %endif
+                            <% annotation_origin = entry4.annotation_origin %>
+                                      %if annotation_origin:
+                              ANNOTATION_ORIGIN
+                                  "${annotation_origin.origin}"  /* origin */
+                              %endif
+                            <% annotation_text = entry4.annotation_text %>
+                                      %if annotation_text:
+                              /begin ANNOTATION_TEXT
+                                  ${" ".join(["{1:}{0:}{1:}".format(str(x),  '"' ) for x in annotation_text.text ])}
+                              /end ANNOTATION_TEXT
+                              %endif
+                        /end ANNOTATION
+                    %endfor
+                    %endif
+                    <% axis_descr = entry3.axis_descr %>
+                            %if axis_descr:
+                    %for entry4 in axis_descr:
+                        /begin AXIS_DESCR
+                            ${entry4.attribute}  /* attribute */
+                            ${entry4.inputQuantity}  /* inputQuantity */
+                            ${entry4.conversion}  /* conversion */
+                            ${entry4.maxAxisPoints}  /* maxAxisPoints */
+                            ${entry4.lowerLimit}  /* lowerLimit */
+                            ${entry4.upperLimit}  /* upperLimit */
+                            <% annotation = entry4.annotation %>
+                                      %if annotation:
+                              %for entry5 in annotation:
+                                  /begin ANNOTATION
+                                      <% annotation_label = entry5.annotation_label %>
+                                                  %if annotation_label:
+                                          ANNOTATION_LABEL
+                                              "${annotation_label.label}"  /* label */
+                                          %endif
+                                      <% annotation_origin = entry5.annotation_origin %>
+                                                  %if annotation_origin:
+                                          ANNOTATION_ORIGIN
+                                              "${annotation_origin.origin}"  /* origin */
+                                          %endif
+                                      <% annotation_text = entry5.annotation_text %>
+                                                  %if annotation_text:
+                                          /begin ANNOTATION_TEXT
+                                              ${" ".join(["{1:}{0:}{1:}".format(str(x),  '"' ) for x in annotation_text.text ])}
+                                          /end ANNOTATION_TEXT
+                                          %endif
+                                  /end ANNOTATION
+                              %endfor
+                              %endif
+                            <% axis_pts_ref = entry4.axis_pts_ref %>
+                                      %if axis_pts_ref:
+                              AXIS_PTS_REF
+                                  ${axis_pts_ref.axisPoints}  /* axisPoints */
+                              %endif
+                            <% byte_order = entry4.byte_order %>
+                                      %if byte_order:
+                              BYTE_ORDER
+                                  ${byte_order.byteOrder}  /* byteOrder */
+                              %endif
+                            <% curve_axis_ref = entry4.curve_axis_ref %>
+                                      %if curve_axis_ref:
+                              CURVE_AXIS_REF
+                                  ${curve_axis_ref.curveAxis}  /* curveAxis */
+                              %endif
+                            <% deposit = entry4.deposit %>
+                                      %if deposit:
+                              DEPOSIT
+                                  ${deposit.mode}  /* mode */
+                              %endif
+                            <% extended_limits = entry4.extended_limits %>
+                                      %if extended_limits:
+                              EXTENDED_LIMITS
+                                  ${extended_limits.lowerLimit}  /* lowerLimit */
+                                  ${extended_limits.upperLimit}  /* upperLimit */
+                              %endif
+                            <% fix_axis_par = entry4.fix_axis_par %>
+                                      %if fix_axis_par:
+                              FIX_AXIS_PAR
+                                  ${fix_axis_par.offset}  /* offset */
+                                  ${fix_axis_par.shift}  /* shift */
+                                  ${fix_axis_par.numberapo}  /* numberapo */
+                              %endif
+                            <% fix_axis_par_dist = entry4.fix_axis_par_dist %>
+                                      %if fix_axis_par_dist:
+                              FIX_AXIS_PAR_DIST
+                                  ${fix_axis_par_dist.offset}  /* offset */
+                                  ${fix_axis_par_dist.distance}  /* distance */
+                                  ${fix_axis_par_dist.numberapo}  /* numberapo */
+                              %endif
+                            <% fix_axis_par_list = entry4.fix_axis_par_list %>
+                                      %if fix_axis_par_list:
+                              /begin FIX_AXIS_PAR_LIST
+                                  ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in fix_axis_par_list.axisPts_Value ])}
+                              /end FIX_AXIS_PAR_LIST
+                              %endif
+                            <% format = entry4.format %>
+                                      %if format:
+                              FORMAT
+                                  "${format.formatString}"  /* formatString */
+                              %endif
+                            <% max_grad = entry4.max_grad %>
+                                      %if max_grad:
+                              MAX_GRAD
+                                  ${max_grad.maxGradient}  /* maxGradient */
+                              %endif
+                            <% monotony = entry4.monotony %>
+                                      %if monotony:
+                              MONOTONY
+                                  ${monotony.monotony}  /* monotony */
+                              %endif
+                            <% phys_unit = entry4.phys_unit %>
+                                      %if phys_unit:
+                              PHYS_UNIT
+                                  "${phys_unit.unit}"  /* unit */
+                              %endif
+                            <% read_only = entry4.read_only %>
+                                      %if read_only:
+                              READ_ONLY
+                              %endif
+                            <% step_size = entry4.step_size %>
+                                      %if step_size:
+                              STEP_SIZE
+                                  ${step_size.stepSize}  /* stepSize */
+                              %endif
+                        /end AXIS_DESCR
+                    %endfor
+                    %endif
+                    <% bit_mask = entry3.bit_mask %>
+                            %if bit_mask:
+                    BIT_MASK
+                        ${bit_mask.mask}  /* mask */
+                    %endif
+                    <% byte_order = entry3.byte_order %>
+                            %if byte_order:
+                    BYTE_ORDER
+                        ${byte_order.byteOrder}  /* byteOrder */
+                    %endif
+                    <% calibration_access = entry3.calibration_access %>
+                            %if calibration_access:
+                    CALIBRATION_ACCESS
+                        ${calibration_access.type}  /* type */
+                    %endif
+                    <% comparison_quantity = entry3.comparison_quantity %>
+                            %if comparison_quantity:
+                    COMPARISON_QUANTITY
+                        ${comparison_quantity.name}  /* name */
+                    %endif
+                    <% dependent_characteristic = entry3.dependent_characteristic %>
+                            %if dependent_characteristic:
+                    /begin DEPENDENT_CHARACTERISTIC
+                        "${dependent_characteristic.formula}"  /* formula */
+                        ${" ".join([str(x) for x in dependent_characteristic.characteristic.name ])}
+                    /end DEPENDENT_CHARACTERISTIC
+                    %endif
+                    <% discrete = entry3.discrete %>
+                            %if discrete:
+                    DISCRETE
+                    %endif
+                    <% display_identifier = entry3.display_identifier %>
+                            %if display_identifier:
+                    DISPLAY_IDENTIFIER
+                        ${display_identifier.display_name}  /* display_name */
+                    %endif
+                    <% ecu_address_extension = entry3.ecu_address_extension %>
+                            %if ecu_address_extension:
+                    ECU_ADDRESS_EXTENSION
+                        ${ecu_address_extension.extension}  /* extension */
+                    %endif
+                    <% extended_limits = entry3.extended_limits %>
+                            %if extended_limits:
+                    EXTENDED_LIMITS
+                        ${extended_limits.lowerLimit}  /* lowerLimit */
+                        ${extended_limits.upperLimit}  /* upperLimit */
+                    %endif
+                    <% format = entry3.format %>
+                            %if format:
+                    FORMAT
+                        "${format.formatString}"  /* formatString */
+                    %endif
+                    <% function_list = entry3.function_list %>
+                            %if function_list:
+                    /begin FUNCTION_LIST
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in function_list.name ])}
+                    /end FUNCTION_LIST
+                    %endif
+                    <% guard_rails = entry3.guard_rails %>
+                            %if guard_rails:
+                    GUARD_RAILS
+                    %endif
+                    <% if_data = entry3.if_data %>
+                            %if if_data:
+                    %for entry4 in if_data:
+                        /begin IF_DATA
+                            ${entry4.name}  /* name */
+                        /end IF_DATA
+                    %endfor
+                    %endif
+                    <% map_list = entry3.map_list %>
+                            %if map_list:
+                    /begin MAP_LIST
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in map_list.name ])}
+                    /end MAP_LIST
+                    %endif
+                    <% matrix_dim = entry3.matrix_dim %>
+                            %if matrix_dim:
+                    MATRIX_DIM
+                        ${matrix_dim.xDim}  /* xDim */
+                        ${matrix_dim.yDim}  /* yDim */
+                        ${matrix_dim.zDim}  /* zDim */
+                    %endif
+                    <% max_refresh = entry3.max_refresh %>
+                            %if max_refresh:
+                    MAX_REFRESH
+                        ${max_refresh.scalingUnit}  /* scalingUnit */
+                        ${max_refresh.rate}  /* rate */
+                    %endif
+                    <% number = entry3.number %>
+                            %if number:
+                    NUMBER
+                        ${number.number}  /* number */
+                    %endif
+                    <% phys_unit = entry3.phys_unit %>
+                            %if phys_unit:
+                    PHYS_UNIT
+                        "${phys_unit.unit}"  /* unit */
+                    %endif
+                    <% read_only = entry3.read_only %>
+                            %if read_only:
+                    READ_ONLY
+                    %endif
+                    <% ref_memory_segment = entry3.ref_memory_segment %>
+                            %if ref_memory_segment:
+                    REF_MEMORY_SEGMENT
+                        ${ref_memory_segment.name}  /* name */
+                    %endif
+                    <% step_size = entry3.step_size %>
+                            %if step_size:
+                    STEP_SIZE
+                        ${step_size.stepSize}  /* stepSize */
+                    %endif
+                    <% symbol_link = entry3.symbol_link %>
+                            %if symbol_link:
+                    SYMBOL_LINK
+                        "${symbol_link.symbolName}"  /* symbolName */
+                        ${symbol_link.offset}  /* offset */
+                    %endif
+                    <% virtual_characteristic = entry3.virtual_characteristic %>
+                            %if virtual_characteristic:
+                    /begin VIRTUAL_CHARACTERISTIC
+                        "${virtual_characteristic.formula}"  /* formula */
+                        ${" ".join([str(x) for x in virtual_characteristic.characteristic.name ])}
+                    /end VIRTUAL_CHARACTERISTIC
+                    %endif
+                /end CHARACTERISTIC
+            %endfor
+            %endif
+              <% compu_method = entry2.compu_method %>
+                    %if compu_method:
+            %for entry3 in compu_method:
+                /begin COMPU_METHOD
+                    ${entry3.name}  /* name */
+                    "${entry3.longIdentifier}"  /* longIdentifier */
+                    ${entry3.conversionType}  /* conversionType */
+                    "${entry3.format}"  /* format */
+                    "${entry3.unit}"  /* unit */
+                    <% coeffs = entry3.coeffs %>
+                            %if coeffs:
+                    COEFFS
+                        ${coeffs.a}  /* a */
+                        ${coeffs.b}  /* b */
+                        ${coeffs.c}  /* c */
+                        ${coeffs.d}  /* d */
+                        ${coeffs.e}  /* e */
+                        ${coeffs.f}  /* f */
+                    %endif
+                    <% coeffs_linear = entry3.coeffs_linear %>
+                            %if coeffs_linear:
+                    COEFFS_LINEAR
+                        ${coeffs_linear.a}  /* a */
+                        ${coeffs_linear.b}  /* b */
+                    %endif
+                    <% compu_tab_ref = entry3.compu_tab_ref %>
+                            %if compu_tab_ref:
+                    COMPU_TAB_REF
+                        ${compu_tab_ref.conversionTable}  /* conversionTable */
+                    %endif
+                    <% formula = entry3.formula %>
+                            %if formula:
+                    /begin FORMULA
+                        "${formula.f_x}"  /* f_x */
+                    <% formula_inv = formula.formula_inv %>
+                              %if formula_inv:
+                              FORMULA_INV
+                                  "${formula_inv.g_x}"  /* g_x */
+                              %endif
+                    /end FORMULA
+                    %endif
+                    <% ref_unit = entry3.ref_unit %>
+                            %if ref_unit:
+                    REF_UNIT
+                        ${ref_unit.unit}  /* unit */
+                    %endif
+                    <% status_string_ref = entry3.status_string_ref %>
+                            %if status_string_ref:
+                    STATUS_STRING_REF
+                        ${status_string_ref.conversionTable}  /* conversionTable */
+                    %endif
+                /end COMPU_METHOD
+            %endfor
+            %endif
+              <% compu_tab = entry2.compu_tab %>
+                    %if compu_tab:
+            %for entry3 in compu_tab:
+                /begin COMPU_TAB
+                    ${entry3.name}  /* name */
+                    "${entry3.longIdentifier}"  /* longIdentifier */
+                    ${entry3.conversionType}  /* conversionType */
+                    ${entry3.numberValuePairs}  /* numberValuePairs */
+                    <% default_value = entry3.default_value %>
+                            %if default_value:
+                    DEFAULT_VALUE
+                        "${default_value.display_string}"  /* display_string */
+                    %endif
+                    <% default_value_numeric = entry3.default_value_numeric %>
+                            %if default_value_numeric:
+                    DEFAULT_VALUE_NUMERIC
+                        ${default_value_numeric.display_value}  /* display_value */
+                    %endif
+                /end COMPU_TAB
+            %endfor
+            %endif
+              <% compu_vtab = entry2.compu_vtab %>
+                    %if compu_vtab:
+            %for entry3 in compu_vtab:
+                /begin COMPU_VTAB
+                    ${entry3.name}  /* name */
+                    "${entry3.longIdentifier}"  /* longIdentifier */
+                    ${entry3.conversionType}  /* conversionType */
+                    ${entry3.numberValuePairs}  /* numberValuePairs */
+                    <% default_value = entry3.default_value %>
+                            %if default_value:
+                    DEFAULT_VALUE
+                        "${default_value.display_string}"  /* display_string */
+                    %endif
+                /end COMPU_VTAB
+            %endfor
+            %endif
+              <% compu_vtab_range = entry2.compu_vtab_range %>
+                    %if compu_vtab_range:
+            %for entry3 in compu_vtab_range:
+                /begin COMPU_VTAB_RANGE
+                    ${entry3.name}  /* name */
+                    "${entry3.longIdentifier}"  /* longIdentifier */
+                    ${entry3.numberValueTriples}  /* numberValueTriples */
+                    <% default_value = entry3.default_value %>
+                            %if default_value:
+                    DEFAULT_VALUE
+                        "${default_value.display_string}"  /* display_string */
+                    %endif
+                /end COMPU_VTAB_RANGE
+            %endfor
+            %endif
+              <% frame = entry2.frame %>
+                    %if frame:
+            /begin FRAME
+                ${frame.name}  /* name */
+                "${frame.longIdentifier}"  /* longIdentifier */
+                ${frame.scalingUnit}  /* scalingUnit */
+                ${frame.rate}  /* rate */
+            <% frame_measurement = frame.frame_measurement %>
+                    %if frame_measurement:
+                    FRAME_MEASUREMENT
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in frame_measurement.identifier ])}
+                    %endif
+            <% if_data = frame.if_data %>
+                    %if if_data:
+                    %for entry4 in if_data:
+                        /begin IF_DATA
+                            ${entry4.name}  /* name */
+                        /end IF_DATA
+                    %endfor
+                    %endif
+            /end FRAME
+            %endif
+              <% function = entry2.function %>
+                    %if function:
+            %for entry3 in function:
+                /begin FUNCTION
+                    ${entry3.name}  /* name */
+                    "${entry3.longIdentifier}"  /* longIdentifier */
+                    <% annotation = entry3.annotation %>
+                            %if annotation:
+                    %for entry4 in annotation:
+                        /begin ANNOTATION
+                            <% annotation_label = entry4.annotation_label %>
+                                      %if annotation_label:
+                              ANNOTATION_LABEL
+                                  "${annotation_label.label}"  /* label */
+                              %endif
+                            <% annotation_origin = entry4.annotation_origin %>
+                                      %if annotation_origin:
+                              ANNOTATION_ORIGIN
+                                  "${annotation_origin.origin}"  /* origin */
+                              %endif
+                            <% annotation_text = entry4.annotation_text %>
+                                      %if annotation_text:
+                              /begin ANNOTATION_TEXT
+                                  ${" ".join(["{1:}{0:}{1:}".format(str(x),  '"' ) for x in annotation_text.text ])}
+                              /end ANNOTATION_TEXT
+                              %endif
+                        /end ANNOTATION
+                    %endfor
+                    %endif
+                    <% def_characteristic = entry3.def_characteristic %>
+                            %if def_characteristic:
+                    /begin DEF_CHARACTERISTIC
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in def_characteristic.identifier ])}
+                    /end DEF_CHARACTERISTIC
+                    %endif
+                    <% function_version = entry3.function_version %>
+                            %if function_version:
+                    FUNCTION_VERSION
+                        "${function_version.versionIdentifier}"  /* versionIdentifier */
+                    %endif
+                    <% if_data = entry3.if_data %>
+                            %if if_data:
+                    %for entry4 in if_data:
+                        /begin IF_DATA
+                            ${entry4.name}  /* name */
+                        /end IF_DATA
+                    %endfor
+                    %endif
+                    <% in_measurement = entry3.in_measurement %>
+                            %if in_measurement:
+                    /begin IN_MEASUREMENT
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in in_measurement.identifier ])}
+                    /end IN_MEASUREMENT
+                    %endif
+                    <% loc_measurement = entry3.loc_measurement %>
+                            %if loc_measurement:
+                    /begin LOC_MEASUREMENT
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in loc_measurement.identifier ])}
+                    /end LOC_MEASUREMENT
+                    %endif
+                    <% out_measurement = entry3.out_measurement %>
+                            %if out_measurement:
+                    /begin OUT_MEASUREMENT
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in out_measurement.identifier ])}
+                    /end OUT_MEASUREMENT
+                    %endif
+                    <% ref_characteristic = entry3.ref_characteristic %>
+                            %if ref_characteristic:
+                    /begin REF_CHARACTERISTIC
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in ref_characteristic.identifier ])}
+                    /end REF_CHARACTERISTIC
+                    %endif
+                    <% sub_function = entry3.sub_function %>
+                            %if sub_function:
+                    /begin SUB_FUNCTION
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in sub_function.identifier ])}
+                    /end SUB_FUNCTION
+                    %endif
+                /end FUNCTION
+            %endfor
+            %endif
+              <% group = entry2.group %>
+                    %if group:
+            %for entry3 in group:
+                /begin GROUP
+                    ${entry3.groupName}  /* groupName */
+                    "${entry3.groupLongIdentifier}"  /* groupLongIdentifier */
+                    <% annotation = entry3.annotation %>
+                            %if annotation:
+                    %for entry4 in annotation:
+                        /begin ANNOTATION
+                            <% annotation_label = entry4.annotation_label %>
+                                      %if annotation_label:
+                              ANNOTATION_LABEL
+                                  "${annotation_label.label}"  /* label */
+                              %endif
+                            <% annotation_origin = entry4.annotation_origin %>
+                                      %if annotation_origin:
+                              ANNOTATION_ORIGIN
+                                  "${annotation_origin.origin}"  /* origin */
+                              %endif
+                            <% annotation_text = entry4.annotation_text %>
+                                      %if annotation_text:
+                              /begin ANNOTATION_TEXT
+                                  ${" ".join(["{1:}{0:}{1:}".format(str(x),  '"' ) for x in annotation_text.text ])}
+                              /end ANNOTATION_TEXT
+                              %endif
+                        /end ANNOTATION
+                    %endfor
+                    %endif
+                    <% function_list = entry3.function_list %>
+                            %if function_list:
+                    /begin FUNCTION_LIST
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in function_list.name ])}
+                    /end FUNCTION_LIST
+                    %endif
+                    <% if_data = entry3.if_data %>
+                            %if if_data:
+                    %for entry4 in if_data:
+                        /begin IF_DATA
+                            ${entry4.name}  /* name */
+                        /end IF_DATA
+                    %endfor
+                    %endif
+                    <% ref_characteristic = entry3.ref_characteristic %>
+                            %if ref_characteristic:
+                    /begin REF_CHARACTERISTIC
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in ref_characteristic.identifier ])}
+                    /end REF_CHARACTERISTIC
+                    %endif
+                    <% ref_measurement = entry3.ref_measurement %>
+                            %if ref_measurement:
+                    /begin REF_MEASUREMENT
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in ref_measurement.identifier ])}
+                    /end REF_MEASUREMENT
+                    %endif
+                    <% root = entry3.root %>
+                            %if root:
+                    ROOT
+                    %endif
+                    <% sub_group = entry3.sub_group %>
+                            %if sub_group:
+                    /begin SUB_GROUP
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in sub_group.identifier ])}
+                    /end SUB_GROUP
+                    %endif
+                /end GROUP
+            %endfor
+            %endif
+              <% if_data = entry2.if_data %>
+                    %if if_data:
+            %for entry3 in if_data:
+                /begin IF_DATA
+                    ${entry3.name}  /* name */
+                /end IF_DATA
+            %endfor
+            %endif
+              <% measurement = entry2.measurement %>
+                    %if measurement:
+            %for entry3 in measurement:
+                /begin MEASUREMENT
+                    ${entry3.name}  /* name */
+                    "${entry3.longIdentifier}"  /* longIdentifier */
+                    ${entry3.datatype}  /* datatype */
+                    ${entry3.conversion}  /* conversion */
+                    ${entry3.resolution}  /* resolution */
+                    ${entry3.accuracy}  /* accuracy */
+                    ${entry3.lowerLimit}  /* lowerLimit */
+                    ${entry3.upperLimit}  /* upperLimit */
+                    <% annotation = entry3.annotation %>
+                            %if annotation:
+                    %for entry4 in annotation:
+                        /begin ANNOTATION
+                            <% annotation_label = entry4.annotation_label %>
+                                      %if annotation_label:
+                              ANNOTATION_LABEL
+                                  "${annotation_label.label}"  /* label */
+                              %endif
+                            <% annotation_origin = entry4.annotation_origin %>
+                                      %if annotation_origin:
+                              ANNOTATION_ORIGIN
+                                  "${annotation_origin.origin}"  /* origin */
+                              %endif
+                            <% annotation_text = entry4.annotation_text %>
+                                      %if annotation_text:
+                              /begin ANNOTATION_TEXT
+                                  ${" ".join(["{1:}{0:}{1:}".format(str(x),  '"' ) for x in annotation_text.text ])}
+                              /end ANNOTATION_TEXT
+                              %endif
+                        /end ANNOTATION
+                    %endfor
+                    %endif
+                    <% array_size = entry3.array_size %>
+                            %if array_size:
+                    ARRAY_SIZE
+                        ${array_size.number}  /* number */
+                    %endif
+                    <% bit_mask = entry3.bit_mask %>
+                            %if bit_mask:
+                    BIT_MASK
+                        ${bit_mask.mask}  /* mask */
+                    %endif
+                    <% bit_operation = entry3.bit_operation %>
+                            %if bit_operation:
+                    /begin BIT_OPERATION
+                    <% left_shift = bit_operation.left_shift %>
+                              %if left_shift:
+                              LEFT_SHIFT
+                                  ${left_shift.bitcount}  /* bitcount */
+                              %endif
+                    <% right_shift = bit_operation.right_shift %>
+                              %if right_shift:
+                              RIGHT_SHIFT
+                                  ${right_shift.bitcount}  /* bitcount */
+                              %endif
+                    <% sign_extend = bit_operation.sign_extend %>
+                              %if sign_extend:
+                              SIGN_EXTEND
+                              %endif
+                    /end BIT_OPERATION
+                    %endif
+                    <% byte_order = entry3.byte_order %>
+                            %if byte_order:
+                    BYTE_ORDER
+                        ${byte_order.byteOrder}  /* byteOrder */
+                    %endif
+                    <% discrete = entry3.discrete %>
+                            %if discrete:
+                    DISCRETE
+                    %endif
+                    <% display_identifier = entry3.display_identifier %>
+                            %if display_identifier:
+                    DISPLAY_IDENTIFIER
+                        ${display_identifier.display_name}  /* display_name */
+                    %endif
+                    <% ecu_address = entry3.ecu_address %>
+                            %if ecu_address:
+                    ECU_ADDRESS
+                        ${ecu_address.address}  /* address */
+                    %endif
+                    <% ecu_address_extension = entry3.ecu_address_extension %>
+                            %if ecu_address_extension:
+                    ECU_ADDRESS_EXTENSION
+                        ${ecu_address_extension.extension}  /* extension */
+                    %endif
+                    <% error_mask = entry3.error_mask %>
+                            %if error_mask:
+                    ERROR_MASK
+                        ${error_mask.mask}  /* mask */
+                    %endif
+                    <% format = entry3.format %>
+                            %if format:
+                    FORMAT
+                        "${format.formatString}"  /* formatString */
+                    %endif
+                    <% function_list = entry3.function_list %>
+                            %if function_list:
+                    /begin FUNCTION_LIST
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in function_list.name ])}
+                    /end FUNCTION_LIST
+                    %endif
+                    <% if_data = entry3.if_data %>
+                            %if if_data:
+                    %for entry4 in if_data:
+                        /begin IF_DATA
+                            ${entry4.name}  /* name */
+                        /end IF_DATA
+                    %endfor
+                    %endif
+                    <% layout = entry3.layout %>
+                            %if layout:
+                    LAYOUT
+                        ${layout.indexMode}  /* indexMode */
+                    %endif
+                    <% matrix_dim = entry3.matrix_dim %>
+                            %if matrix_dim:
+                    MATRIX_DIM
+                        ${matrix_dim.xDim}  /* xDim */
+                        ${matrix_dim.yDim}  /* yDim */
+                        ${matrix_dim.zDim}  /* zDim */
+                    %endif
+                    <% max_refresh = entry3.max_refresh %>
+                            %if max_refresh:
+                    MAX_REFRESH
+                        ${max_refresh.scalingUnit}  /* scalingUnit */
+                        ${max_refresh.rate}  /* rate */
+                    %endif
+                    <% phys_unit = entry3.phys_unit %>
+                            %if phys_unit:
+                    PHYS_UNIT
+                        "${phys_unit.unit}"  /* unit */
+                    %endif
+                    <% read_write = entry3.read_write %>
+                            %if read_write:
+                    READ_WRITE
+                    %endif
+                    <% ref_memory_segment = entry3.ref_memory_segment %>
+                            %if ref_memory_segment:
+                    REF_MEMORY_SEGMENT
+                        ${ref_memory_segment.name}  /* name */
+                    %endif
+                    <% symbol_link = entry3.symbol_link %>
+                            %if symbol_link:
+                    SYMBOL_LINK
+                        "${symbol_link.symbolName}"  /* symbolName */
+                        ${symbol_link.offset}  /* offset */
+                    %endif
+                    <% virtual = entry3.virtual %>
+                            %if virtual:
+                    /begin VIRTUAL
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in virtual.measuringChannel ])}
+                    /end VIRTUAL
+                    %endif
+                /end MEASUREMENT
+            %endfor
+            %endif
+              <% mod_common = entry2.mod_common %>
+                    %if mod_common:
+            /begin MOD_COMMON
+                "${mod_common.comment}"  /* comment */
+            <% alignment_byte = mod_common.alignment_byte %>
+                    %if alignment_byte:
+                    ALIGNMENT_BYTE
+                        ${alignment_byte.alignmentBorder}  /* alignmentBorder */
+                    %endif
+            <% alignment_float32_ieee = mod_common.alignment_float32_ieee %>
+                    %if alignment_float32_ieee:
+                    ALIGNMENT_FLOAT32_IEEE
+                        ${alignment_float32_ieee.alignmentBorder}  /* alignmentBorder */
+                    %endif
+            <% alignment_float64_ieee = mod_common.alignment_float64_ieee %>
+                    %if alignment_float64_ieee:
+                    ALIGNMENT_FLOAT64_IEEE
+                        ${alignment_float64_ieee.alignmentBorder}  /* alignmentBorder */
+                    %endif
+            <% alignment_int64 = mod_common.alignment_int64 %>
+                    %if alignment_int64:
+                    ALIGNMENT_INT64
+                        ${alignment_int64.alignmentBorder}  /* alignmentBorder */
+                    %endif
+            <% alignment_long = mod_common.alignment_long %>
+                    %if alignment_long:
+                    ALIGNMENT_LONG
+                        ${alignment_long.alignmentBorder}  /* alignmentBorder */
+                    %endif
+            <% alignment_word = mod_common.alignment_word %>
+                    %if alignment_word:
+                    ALIGNMENT_WORD
+                        ${alignment_word.alignmentBorder}  /* alignmentBorder */
+                    %endif
+            <% byte_order = mod_common.byte_order %>
+                    %if byte_order:
+                    BYTE_ORDER
+                        ${byte_order.byteOrder}  /* byteOrder */
+                    %endif
+            <% data_size = mod_common.data_size %>
+                    %if data_size:
+                    DATA_SIZE
+                        ${data_size.size}  /* size */
+                    %endif
+            <% deposit = mod_common.deposit %>
+                    %if deposit:
+                    DEPOSIT
+                        ${deposit.mode}  /* mode */
+                    %endif
+            <% s_rec_layout = mod_common.s_rec_layout %>
+                    %if s_rec_layout:
+                    S_REC_LAYOUT
+                        ${s_rec_layout.name}  /* name */
+                    %endif
+            /end MOD_COMMON
+            %endif
+              <% mod_par = entry2.mod_par %>
+                    %if mod_par:
+            /begin MOD_PAR
+                "${mod_par.comment}"  /* comment */
+            <% addr_epk = mod_par.addr_epk %>
+                    %if addr_epk:
+                    %for entry4 in addr_epk:
+                        ADDR_EPK
+                            ${entry4.address}  /* address */
+                    %endfor
+                    %endif
+            <% calibration_method = mod_par.calibration_method %>
+                    %if calibration_method:
+                    %for entry4 in calibration_method:
+                        /begin CALIBRATION_METHOD
+                            "${entry4.method}"  /* method */
+                            ${entry4.version}  /* version */
+                            <% calibration_handle = entry4.calibration_handle %>
+                                      %if calibration_handle:
+                              %for entry5 in calibration_handle:
+                                  /begin CALIBRATION_HANDLE
+                              MULTIPLE
+                                      ${entry5.handle}  /* handle */
+                                      <% calibration_handle_text = entry5.calibration_handle_text %>
+                                                  %if calibration_handle_text:
+                                          CALIBRATION_HANDLE_TEXT
+                                              "${calibration_handle_text.text}"  /* text */
+                                          %endif
+                                  /end CALIBRATION_HANDLE
+                              %endfor
+                              %endif
+                        /end CALIBRATION_METHOD
+                    %endfor
+                    %endif
+            <% cpu_type = mod_par.cpu_type %>
+                    %if cpu_type:
+                    CPU_TYPE
+                        "${cpu_type.cPU}"  /* cPU */
+                    %endif
+            <% customer = mod_par.customer %>
+                    %if customer:
+                    CUSTOMER
+                        "${customer.customer}"  /* customer */
+                    %endif
+            <% customer_no = mod_par.customer_no %>
+                    %if customer_no:
+                    CUSTOMER_NO
+                        "${customer_no.number}"  /* number */
+                    %endif
+            <% ecu = mod_par.ecu %>
+                    %if ecu:
+                    ECU
+                        "${ecu.controlUnit}"  /* controlUnit */
+                    %endif
+            <% ecu_calibration_offset = mod_par.ecu_calibration_offset %>
+                    %if ecu_calibration_offset:
+                    ECU_CALIBRATION_OFFSET
+                        ${ecu_calibration_offset.offset}  /* offset */
+                    %endif
+            <% epk = mod_par.epk %>
+                    %if epk:
+                    EPK
+                        "${epk.identifier}"  /* identifier */
+                    %endif
+            <% memory_layout = mod_par.memory_layout %>
+                    %if memory_layout:
+                    %for entry4 in memory_layout:
+                        /begin MEMORY_LAYOUT
+                            ${entry4.prgType}  /* prgType */
+                            ${entry4.address}  /* address */
+                            ${entry4.size}  /* size */
+                            ${entry4.offset_0}  /* offset_0 */
+                            ${entry4.offset_1}  /* offset_1 */
+                            ${entry4.offset_2}  /* offset_2 */
+                            ${entry4.offset_3}  /* offset_3 */
+                            ${entry4.offset_4}  /* offset_4 */
+                            <% if_data = entry4.if_data %>
+                                      %if if_data:
+                              %for entry5 in if_data:
+                                  /begin IF_DATA
+                                      ${entry5.name}  /* name */
+                                  /end IF_DATA
+                              %endfor
+                              %endif
+                        /end MEMORY_LAYOUT
+                    %endfor
+                    %endif
+            <% memory_segment = mod_par.memory_segment %>
+                    %if memory_segment:
+                    %for entry4 in memory_segment:
+                        /begin MEMORY_SEGMENT
+                            ${entry4.name}  /* name */
+                            "${entry4.longIdentifier}"  /* longIdentifier */
+                            ${entry4.prgType}  /* prgType */
+                            ${entry4.memoryType}  /* memoryType */
+                            ${entry4.attribute}  /* attribute */
+                            ${entry4.address}  /* address */
+                            ${entry4.size}  /* size */
+                            ${entry4.offset_0}  /* offset_0 */
+                            ${entry4.offset_1}  /* offset_1 */
+                            ${entry4.offset_2}  /* offset_2 */
+                            ${entry4.offset_3}  /* offset_3 */
+                            ${entry4.offset_4}  /* offset_4 */
+                            <% if_data = entry4.if_data %>
+                                      %if if_data:
+                              %for entry5 in if_data:
+                                  /begin IF_DATA
+                                      ${entry5.name}  /* name */
+                                  /end IF_DATA
+                              %endfor
+                              %endif
+                        /end MEMORY_SEGMENT
+                    %endfor
+                    %endif
+            <% no_of_interfaces = mod_par.no_of_interfaces %>
+                    %if no_of_interfaces:
+                    NO_OF_INTERFACES
+                        ${no_of_interfaces.num}  /* num */
+                    %endif
+            <% phone_no = mod_par.phone_no %>
+                    %if phone_no:
+                    PHONE_NO
+                        "${phone_no.telnum}"  /* telnum */
+                    %endif
+            <% supplier = mod_par.supplier %>
+                    %if supplier:
+                    SUPPLIER
+                        "${supplier.manufacturer}"  /* manufacturer */
+                    %endif
+            <% system_constant = mod_par.system_constant %>
+                    %if system_constant:
+                    %for entry4 in system_constant:
+                        SYSTEM_CONSTANT
+                            "${entry4.name}"  /* name */
+                            "${entry4.value}"  /* value */
+                    %endfor
+                    %endif
+            <% user = mod_par.user %>
+                    %if user:
+                    USER
+                        "${user.userName}"  /* userName */
+                    %endif
+            <% version = mod_par.version %>
+                    %if version:
+                    VERSION
+                        "${version.versionIdentifier}"  /* versionIdentifier */
+                    %endif
+            /end MOD_PAR
+            %endif
+              <% record_layout = entry2.record_layout %>
+                    %if record_layout:
+            %for entry3 in record_layout:
+                /begin RECORD_LAYOUT
+                    ${entry3.name}  /* name */
+                    <% alignment_byte = entry3.alignment_byte %>
+                            %if alignment_byte:
+                    ALIGNMENT_BYTE
+                        ${alignment_byte.alignmentBorder}  /* alignmentBorder */
+                    %endif
+                    <% alignment_float32_ieee = entry3.alignment_float32_ieee %>
+                            %if alignment_float32_ieee:
+                    ALIGNMENT_FLOAT32_IEEE
+                        ${alignment_float32_ieee.alignmentBorder}  /* alignmentBorder */
+                    %endif
+                    <% alignment_float64_ieee = entry3.alignment_float64_ieee %>
+                            %if alignment_float64_ieee:
+                    ALIGNMENT_FLOAT64_IEEE
+                        ${alignment_float64_ieee.alignmentBorder}  /* alignmentBorder */
+                    %endif
+                    <% alignment_int64 = entry3.alignment_int64 %>
+                            %if alignment_int64:
+                    ALIGNMENT_INT64
+                        ${alignment_int64.alignmentBorder}  /* alignmentBorder */
+                    %endif
+                    <% alignment_long = entry3.alignment_long %>
+                            %if alignment_long:
+                    ALIGNMENT_LONG
+                        ${alignment_long.alignmentBorder}  /* alignmentBorder */
+                    %endif
+                    <% alignment_word = entry3.alignment_word %>
+                            %if alignment_word:
+                    ALIGNMENT_WORD
+                        ${alignment_word.alignmentBorder}  /* alignmentBorder */
+                    %endif
+                    <% axis_pts_x = entry3.axis_pts_x %>
+                            %if axis_pts_x:
+                    AXIS_PTS_X
+                        ${axis_pts_x.position}  /* position */
+                        ${axis_pts_x.datatype}  /* datatype */
+                        ${axis_pts_x.indexIncr}  /* indexIncr */
+                        ${axis_pts_x.addressing}  /* addressing */
+                    %endif
+                    <% axis_pts_y = entry3.axis_pts_y %>
+                            %if axis_pts_y:
+                    AXIS_PTS_Y
+                        ${axis_pts_y.position}  /* position */
+                        ${axis_pts_y.datatype}  /* datatype */
+                        ${axis_pts_y.indexIncr}  /* indexIncr */
+                        ${axis_pts_y.addressing}  /* addressing */
+                    %endif
+                    <% axis_pts_z = entry3.axis_pts_z %>
+                            %if axis_pts_z:
+                    AXIS_PTS_Z
+                        ${axis_pts_z.position}  /* position */
+                        ${axis_pts_z.datatype}  /* datatype */
+                        ${axis_pts_z.indexIncr}  /* indexIncr */
+                        ${axis_pts_z.addressing}  /* addressing */
+                    %endif
+                    <% axis_pts_4 = entry3.axis_pts_4 %>
+                            %if axis_pts_4:
+                    AXIS_PTS_4
+                        ${axis_pts_4.position}  /* position */
+                        ${axis_pts_4.datatype}  /* datatype */
+                        ${axis_pts_4.indexIncr}  /* indexIncr */
+                        ${axis_pts_4.addressing}  /* addressing */
+                    %endif
+                    <% axis_pts_5 = entry3.axis_pts_5 %>
+                            %if axis_pts_5:
+                    AXIS_PTS_5
+                        ${axis_pts_5.position}  /* position */
+                        ${axis_pts_5.datatype}  /* datatype */
+                        ${axis_pts_5.indexIncr}  /* indexIncr */
+                        ${axis_pts_5.addressing}  /* addressing */
+                    %endif
+                    <% axis_rescale_x = entry3.axis_rescale_x %>
+                            %if axis_rescale_x:
+                    AXIS_RESCALE_X
+                        ${axis_rescale_x.position}  /* position */
+                        ${axis_rescale_x.datatype}  /* datatype */
+                        ${axis_rescale_x.maxNumberOfRescalePairs}  /* maxNumberOfRescalePairs */
+                        ${axis_rescale_x.indexIncr}  /* indexIncr */
+                        ${axis_rescale_x.addressing}  /* addressing */
+                    %endif
+                    <% axis_rescale_y = entry3.axis_rescale_y %>
+                            %if axis_rescale_y:
+                    AXIS_RESCALE_Y
+                        ${axis_rescale_y.position}  /* position */
+                        ${axis_rescale_y.datatype}  /* datatype */
+                        ${axis_rescale_y.maxNumberOfRescalePairs}  /* maxNumberOfRescalePairs */
+                        ${axis_rescale_y.indexIncr}  /* indexIncr */
+                        ${axis_rescale_y.addressing}  /* addressing */
+                    %endif
+                    <% axis_rescale_z = entry3.axis_rescale_z %>
+                            %if axis_rescale_z:
+                    AXIS_RESCALE_Z
+                        ${axis_rescale_z.position}  /* position */
+                        ${axis_rescale_z.datatype}  /* datatype */
+                        ${axis_rescale_z.maxNumberOfRescalePairs}  /* maxNumberOfRescalePairs */
+                        ${axis_rescale_z.indexIncr}  /* indexIncr */
+                        ${axis_rescale_z.addressing}  /* addressing */
+                    %endif
+                    <% axis_rescale_4 = entry3.axis_rescale_4 %>
+                            %if axis_rescale_4:
+                    AXIS_RESCALE_4
+                        ${axis_rescale_4.position}  /* position */
+                        ${axis_rescale_4.datatype}  /* datatype */
+                        ${axis_rescale_4.maxNumberOfRescalePairs}  /* maxNumberOfRescalePairs */
+                        ${axis_rescale_4.indexIncr}  /* indexIncr */
+                        ${axis_rescale_4.addressing}  /* addressing */
+                    %endif
+                    <% axis_rescale_5 = entry3.axis_rescale_5 %>
+                            %if axis_rescale_5:
+                    AXIS_RESCALE_5
+                        ${axis_rescale_5.position}  /* position */
+                        ${axis_rescale_5.datatype}  /* datatype */
+                        ${axis_rescale_5.maxNumberOfRescalePairs}  /* maxNumberOfRescalePairs */
+                        ${axis_rescale_5.indexIncr}  /* indexIncr */
+                        ${axis_rescale_5.addressing}  /* addressing */
+                    %endif
+                    <% dist_op_x = entry3.dist_op_x %>
+                            %if dist_op_x:
+                    DIST_OP_X
+                        ${dist_op_x.position}  /* position */
+                        ${dist_op_x.datatype}  /* datatype */
+                    %endif
+                    <% dist_op_y = entry3.dist_op_y %>
+                            %if dist_op_y:
+                    DIST_OP_Y
+                        ${dist_op_y.position}  /* position */
+                        ${dist_op_y.datatype}  /* datatype */
+                    %endif
+                    <% dist_op_z = entry3.dist_op_z %>
+                            %if dist_op_z:
+                    DIST_OP_Z
+                        ${dist_op_z.position}  /* position */
+                        ${dist_op_z.datatype}  /* datatype */
+                    %endif
+                    <% dist_op_4 = entry3.dist_op_4 %>
+                            %if dist_op_4:
+                    DIST_OP_4
+                        ${dist_op_4.position}  /* position */
+                        ${dist_op_4.datatype}  /* datatype */
+                    %endif
+                    <% dist_op_5 = entry3.dist_op_5 %>
+                            %if dist_op_5:
+                    DIST_OP_5
+                        ${dist_op_5.position}  /* position */
+                        ${dist_op_5.datatype}  /* datatype */
+                    %endif
+                    <% fix_no_axis_pts_x = entry3.fix_no_axis_pts_x %>
+                            %if fix_no_axis_pts_x:
+                    FIX_NO_AXIS_PTS_X
+                        ${fix_no_axis_pts_x.numberOfAxisPoints}  /* numberOfAxisPoints */
+                    %endif
+                    <% fix_no_axis_pts_y = entry3.fix_no_axis_pts_y %>
+                            %if fix_no_axis_pts_y:
+                    FIX_NO_AXIS_PTS_Y
+                        ${fix_no_axis_pts_y.numberOfAxisPoints}  /* numberOfAxisPoints */
+                    %endif
+                    <% fix_no_axis_pts_z = entry3.fix_no_axis_pts_z %>
+                            %if fix_no_axis_pts_z:
+                    FIX_NO_AXIS_PTS_Z
+                        ${fix_no_axis_pts_z.numberOfAxisPoints}  /* numberOfAxisPoints */
+                    %endif
+                    <% fix_no_axis_pts_4 = entry3.fix_no_axis_pts_4 %>
+                            %if fix_no_axis_pts_4:
+                    FIX_NO_AXIS_PTS_4
+                        ${fix_no_axis_pts_4.numberOfAxisPoints}  /* numberOfAxisPoints */
+                    %endif
+                    <% fix_no_axis_pts_5 = entry3.fix_no_axis_pts_5 %>
+                            %if fix_no_axis_pts_5:
+                    FIX_NO_AXIS_PTS_5
+                        ${fix_no_axis_pts_5.numberOfAxisPoints}  /* numberOfAxisPoints */
+                    %endif
+                    <% fnc_values = entry3.fnc_values %>
+                            %if fnc_values:
+                    FNC_VALUES
+                        ${fnc_values.position}  /* position */
+                        ${fnc_values.datatype}  /* datatype */
+                        ${fnc_values.indexMode}  /* indexMode */
+                        ${fnc_values.addresstype}  /* addresstype */
+                    %endif
+                    <% identification = entry3.identification %>
+                            %if identification:
+                    IDENTIFICATION
+                        ${identification.position}  /* position */
+                        ${identification.datatype}  /* datatype */
+                    %endif
+                    <% no_axis_pts_x = entry3.no_axis_pts_x %>
+                            %if no_axis_pts_x:
+                    NO_AXIS_PTS_X
+                        ${no_axis_pts_x.position}  /* position */
+                        ${no_axis_pts_x.datatype}  /* datatype */
+                    %endif
+                    <% no_axis_pts_y = entry3.no_axis_pts_y %>
+                            %if no_axis_pts_y:
+                    NO_AXIS_PTS_Y
+                        ${no_axis_pts_y.position}  /* position */
+                        ${no_axis_pts_y.datatype}  /* datatype */
+                    %endif
+                    <% no_axis_pts_z = entry3.no_axis_pts_z %>
+                            %if no_axis_pts_z:
+                    NO_AXIS_PTS_Z
+                        ${no_axis_pts_z.position}  /* position */
+                        ${no_axis_pts_z.datatype}  /* datatype */
+                    %endif
+                    <% no_axis_pts_4 = entry3.no_axis_pts_4 %>
+                            %if no_axis_pts_4:
+                    NO_AXIS_PTS_4
+                        ${no_axis_pts_4.position}  /* position */
+                        ${no_axis_pts_4.datatype}  /* datatype */
+                    %endif
+                    <% no_axis_pts_5 = entry3.no_axis_pts_5 %>
+                            %if no_axis_pts_5:
+                    NO_AXIS_PTS_5
+                        ${no_axis_pts_5.position}  /* position */
+                        ${no_axis_pts_5.datatype}  /* datatype */
+                    %endif
+                    <% static_record_layout = entry3.static_record_layout %>
+                            %if static_record_layout:
+                    STATIC_RECORD_LAYOUT
+                    %endif
+                    <% no_rescale_x = entry3.no_rescale_x %>
+                            %if no_rescale_x:
+                    NO_RESCALE_X
+                        ${no_rescale_x.position}  /* position */
+                        ${no_rescale_x.datatype}  /* datatype */
+                    %endif
+                    <% no_rescale_y = entry3.no_rescale_y %>
+                            %if no_rescale_y:
+                    NO_RESCALE_Y
+                        ${no_rescale_y.position}  /* position */
+                        ${no_rescale_y.datatype}  /* datatype */
+                    %endif
+                    <% no_rescale_z = entry3.no_rescale_z %>
+                            %if no_rescale_z:
+                    NO_RESCALE_Z
+                        ${no_rescale_z.position}  /* position */
+                        ${no_rescale_z.datatype}  /* datatype */
+                    %endif
+                    <% no_rescale_4 = entry3.no_rescale_4 %>
+                            %if no_rescale_4:
+                    NO_RESCALE_4
+                        ${no_rescale_4.position}  /* position */
+                        ${no_rescale_4.datatype}  /* datatype */
+                    %endif
+                    <% no_rescale_5 = entry3.no_rescale_5 %>
+                            %if no_rescale_5:
+                    NO_RESCALE_5
+                        ${no_rescale_5.position}  /* position */
+                        ${no_rescale_5.datatype}  /* datatype */
+                    %endif
+                    <% offset_x = entry3.offset_x %>
+                            %if offset_x:
+                    OFFSET_X
+                        ${offset_x.position}  /* position */
+                        ${offset_x.datatype}  /* datatype */
+                    %endif
+                    <% offset_y = entry3.offset_y %>
+                            %if offset_y:
+                    OFFSET_Y
+                        ${offset_y.position}  /* position */
+                        ${offset_y.datatype}  /* datatype */
+                    %endif
+                    <% offset_z = entry3.offset_z %>
+                            %if offset_z:
+                    OFFSET_Z
+                        ${offset_z.position}  /* position */
+                        ${offset_z.datatype}  /* datatype */
+                    %endif
+                    <% offset_4 = entry3.offset_4 %>
+                            %if offset_4:
+                    OFFSET_4
+                        ${offset_4.position}  /* position */
+                        ${offset_4.datatype}  /* datatype */
+                    %endif
+                    <% offset_5 = entry3.offset_5 %>
+                            %if offset_5:
+                    OFFSET_5
+                        ${offset_5.position}  /* position */
+                        ${offset_5.datatype}  /* datatype */
+                    %endif
+                    <% reserved = entry3.reserved %>
+                            %if reserved:
+                    %for entry4 in reserved:
+                        RESERVED
+                            ${entry4.position}  /* position */
+                            ${entry4.dataSize}  /* dataSize */
+                    %endfor
+                    %endif
+                    <% rip_addr_w = entry3.rip_addr_w %>
+                            %if rip_addr_w:
+                    RIP_ADDR_W
+                        ${rip_addr_w.position}  /* position */
+                        ${rip_addr_w.datatype}  /* datatype */
+                    %endif
+                    <% rip_addr_x = entry3.rip_addr_x %>
+                            %if rip_addr_x:
+                    RIP_ADDR_X
+                        ${rip_addr_x.position}  /* position */
+                        ${rip_addr_x.datatype}  /* datatype */
+                    %endif
+                    <% rip_addr_y = entry3.rip_addr_y %>
+                            %if rip_addr_y:
+                    RIP_ADDR_Y
+                        ${rip_addr_y.position}  /* position */
+                        ${rip_addr_y.datatype}  /* datatype */
+                    %endif
+                    <% rip_addr_z = entry3.rip_addr_z %>
+                            %if rip_addr_z:
+                    RIP_ADDR_Z
+                        ${rip_addr_z.position}  /* position */
+                        ${rip_addr_z.datatype}  /* datatype */
+                    %endif
+                    <% rip_addr_4 = entry3.rip_addr_4 %>
+                            %if rip_addr_4:
+                    RIP_ADDR_4
+                        ${rip_addr_4.position}  /* position */
+                        ${rip_addr_4.datatype}  /* datatype */
+                    %endif
+                    <% rip_addr_5 = entry3.rip_addr_5 %>
+                            %if rip_addr_5:
+                    RIP_ADDR_5
+                        ${rip_addr_5.position}  /* position */
+                        ${rip_addr_5.datatype}  /* datatype */
+                    %endif
+                    <% shift_op_x = entry3.shift_op_x %>
+                            %if shift_op_x:
+                    SHIFT_OP_X
+                        ${shift_op_x.position}  /* position */
+                        ${shift_op_x.datatype}  /* datatype */
+                    %endif
+                    <% shift_op_y = entry3.shift_op_y %>
+                            %if shift_op_y:
+                    SHIFT_OP_Y
+                        ${shift_op_y.position}  /* position */
+                        ${shift_op_y.datatype}  /* datatype */
+                    %endif
+                    <% shift_op_z = entry3.shift_op_z %>
+                            %if shift_op_z:
+                    SHIFT_OP_Z
+                        ${shift_op_z.position}  /* position */
+                        ${shift_op_z.datatype}  /* datatype */
+                    %endif
+                    <% shift_op_4 = entry3.shift_op_4 %>
+                            %if shift_op_4:
+                    SHIFT_OP_4
+                        ${shift_op_4.position}  /* position */
+                        ${shift_op_4.datatype}  /* datatype */
+                    %endif
+                    <% shift_op_5 = entry3.shift_op_5 %>
+                            %if shift_op_5:
+                    SHIFT_OP_5
+                        ${shift_op_5.position}  /* position */
+                        ${shift_op_5.datatype}  /* datatype */
+                    %endif
+                    <% src_addr_x = entry3.src_addr_x %>
+                            %if src_addr_x:
+                    SRC_ADDR_X
+                        ${src_addr_x.position}  /* position */
+                        ${src_addr_x.datatype}  /* datatype */
+                    %endif
+                    <% src_addr_y = entry3.src_addr_y %>
+                            %if src_addr_y:
+                    SRC_ADDR_Y
+                        ${src_addr_y.position}  /* position */
+                        ${src_addr_y.datatype}  /* datatype */
+                    %endif
+                    <% src_addr_z = entry3.src_addr_z %>
+                            %if src_addr_z:
+                    SRC_ADDR_Z
+                        ${src_addr_z.position}  /* position */
+                        ${src_addr_z.datatype}  /* datatype */
+                    %endif
+                    <% src_addr_4 = entry3.src_addr_4 %>
+                            %if src_addr_4:
+                    SRC_ADDR_4
+                        ${src_addr_4.position}  /* position */
+                        ${src_addr_4.datatype}  /* datatype */
+                    %endif
+                    <% src_addr_5 = entry3.src_addr_5 %>
+                            %if src_addr_5:
+                    SRC_ADDR_5
+                        ${src_addr_5.position}  /* position */
+                        ${src_addr_5.datatype}  /* datatype */
+                    %endif
+                /end RECORD_LAYOUT
+            %endfor
+            %endif
+              <% unit = entry2.unit %>
+                    %if unit:
+            %for entry3 in unit:
+                /begin UNIT
+                    ${entry3.name}  /* name */
+                    "${entry3.longIdentifier}"  /* longIdentifier */
+                    "${entry3.display}"  /* display */
+                    ${entry3.type}  /* type */
+                    <% si_exponents = entry3.si_exponents %>
+                            %if si_exponents:
+                    SI_EXPONENTS
+                        ${si_exponents.length}  /* length */
+                        ${si_exponents.mass}  /* mass */
+                        ${si_exponents.time}  /* time */
+                        ${si_exponents.electricCurrent}  /* electricCurrent */
+                        ${si_exponents.temperature}  /* temperature */
+                        ${si_exponents.amountOfSubstance}  /* amountOfSubstance */
+                        ${si_exponents.luminousIntensity}  /* luminousIntensity */
+                    %endif
+                    <% ref_unit = entry3.ref_unit %>
+                            %if ref_unit:
+                    REF_UNIT
+                        ${ref_unit.unit}  /* unit */
+                    %endif
+                    <% unit_conversion = entry3.unit_conversion %>
+                            %if unit_conversion:
+                    UNIT_CONVERSION
+                        ${unit_conversion.gradient}  /* gradient */
+                        ${unit_conversion.offset}  /* offset */
+                    %endif
+                /end UNIT
+            %endfor
+            %endif
+              <% user_rights = entry2.user_rights %>
+                    %if user_rights:
+            %for entry3 in user_rights:
+                /begin USER_RIGHTS
+                    ${entry3.userLevelId}  /* userLevelId */
+                    <% read_only = entry3.read_only %>
+                            %if read_only:
+                    READ_ONLY
+                    %endif
+                    <% ref_group = entry3.ref_group %>
+                            %if ref_group:
+                    %for entry4 in ref_group:
+                        /begin REF_GROUP
+                    MULTIPLE
+                            ${entry4.identifier}  /* identifier */
+                        /end REF_GROUP
+                    %endfor
+                    %endif
+                /end USER_RIGHTS
+            %endfor
+            %endif
+              <% variant_coding = entry2.variant_coding %>
+                    %if variant_coding:
+            /begin VARIANT_CODING
+            <% var_characteristic = variant_coding.var_characteristic %>
+                    %if var_characteristic:
+                    %for entry4 in var_characteristic:
+                        /begin VAR_CHARACTERISTIC
+                            ${entry4.name}  /* name */
+                    MULTIPLE
+                            ${entry4.criterionName}  /* criterionName */
+                            <% var_address = entry4.var_address %>
+                                      %if var_address:
+                              /begin VAR_ADDRESS
+                                  ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in var_address.address ])}
+                              /end VAR_ADDRESS
+                              %endif
+                        /end VAR_CHARACTERISTIC
+                    %endfor
+                    %endif
+            <% var_criterion = variant_coding.var_criterion %>
+                    %if var_criterion:
+                    %for entry4 in var_criterion:
+                        /begin VAR_CRITERION
+                            ${entry4.name}  /* name */
+                            "${entry4.longIdentifier}"  /* longIdentifier */
+                    MULTIPLE
+                            ${entry4.value}  /* value */
+                            <% var_measurement = entry4.var_measurement %>
+                                      %if var_measurement:
+                              VAR_MEASUREMENT
+                                  ${var_measurement.name}  /* name */
+                              %endif
+                            <% var_selection_characteristic = entry4.var_selection_characteristic %>
+                                      %if var_selection_characteristic:
+                              VAR_SELECTION_CHARACTERISTIC
+                                  ${var_selection_characteristic.name}  /* name */
+                              %endif
+                        /end VAR_CRITERION
+                    %endfor
+                    %endif
+            <% var_forbidden_comb = variant_coding.var_forbidden_comb %>
+                    %if var_forbidden_comb:
+                    %for entry4 in var_forbidden_comb:
+                        /begin VAR_FORBIDDEN_COMB
+                        /end VAR_FORBIDDEN_COMB
+                    %endfor
+                    %endif
+            <% var_naming = variant_coding.var_naming %>
+                    %if var_naming:
+                    VAR_NAMING
+                        ${var_naming.tag}  /* tag */
+                    %endif
+            <% var_separator = variant_coding.var_separator %>
+                    %if var_separator:
+                    VAR_SEPARATOR
+                        "${var_separator.separator}"  /* separator */
+                    %endif
+            /end VARIANT_CODING
+            %endif
+          /end MODULE
+      %endfor
+      %endif
+  /end PROJECT
+  %endif
+

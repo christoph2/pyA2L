@@ -133,6 +133,9 @@ setup(
     packages=find_packages(),
     install_requires=INSTALL_REQS,
     tests_require=["pytest", "pytest-runner"],
+    package_data = {
+        "templates": glob('cgen/templates/*.tmpl'),
+    },
     test_suite="pya2l.tests",
     license="GPLv2",
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
