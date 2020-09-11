@@ -28,9 +28,15 @@ __author__  = 'Christoph Schueler'
 __version__ = "0.10.2"
 
 
+import io
 from os import path
+import pkgutil
+import sys
+
 from pya2l.logger import Logger
 import pya2l.model as model
+from pya2l.templates import doTemplateFromText
+
 
 
 class InvalidA2LDatabase(Exception):
@@ -41,6 +47,8 @@ class InvalidA2LDatabase(Exception):
 class DB(object):
     """
     """
+
+    A2L_TEMPLATE = pkgutil.get_data("pya2l", "cgen/templates/a2l.tmpl")
 
     logger = Logger(__name__)
 
@@ -95,12 +103,33 @@ class DB(object):
         self.session = parser.parseFromString(data, dbname = self._dbfn)
         return self.session
 
-    def export_a2l(self, file_name, in_memory):
+    def export_a2l(self, file_name = sys.stdout, encoding = "ascii"):
         """
         """
-        self.in_memory = in_memory
+        namespace = dict(session = self.db.session, model = model)
+        data = doTemplateFromText(self.A2L_TEMPLATE, namespace, formatExceptions = False, encoding = encoding)
+        result = []
+        for line in data.splitlines():
+            line = line.rstrip()
+            if not line:
+                continue
+            else:
+                result.append(line)
+        result = '\n'.join(result)
+        print(result)
+        #with io.open("{}.render".format(file_name), "w", encoding = encoding, newline = "\r\n") as outf:
+        #    outf.write(res)
+
+    def open_create(self, file_name):
+        """Open or create an A2LDB.
+        """
+        self.in_memory = False
         self._set_path_components(file_name)
-        raise NotImplementedError("Export functionality not implemented yet.")
+        if not path.exists(self._dbfn):
+            self.import_a2l(file_name)
+        else:
+            self.open_existing(file_name)
+
 
     def open_existing(self, file_name):
         """Open an existing `.a2ldb` database.
