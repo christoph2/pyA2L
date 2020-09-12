@@ -126,9 +126,9 @@ class DB(object):
         self.in_memory = False
         self._set_path_components(file_name)
         if not path.exists(self._dbfn):
-            self.import_a2l(self._a2lfn)
+            return self.import_a2l(self._a2lfn)
         else:
-            self.open_existing(self._dbfn)
+            return self.open_existing(self._dbfn)
 
 
     def open_existing(self, file_name):
