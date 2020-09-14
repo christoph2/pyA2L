@@ -52,7 +52,7 @@ class DB(object):
 
     logger = Logger(__name__)
 
-    def import_a2l(self, file_name, debug = False, in_memory = False, remove_existing = False):
+    def import_a2l(self, file_name, debug = False, in_memory = False, remove_existing = False, encoding = "latin-1"):
         """Import `.a2l` file to `.a2ldb` database.
 
 
@@ -98,7 +98,7 @@ class DB(object):
                     pass
             elif path.exists(self._dbfn):
                 raise OSError("file '{}' already exists.".format(self._dbfn))
-        data = open(self._a2lfn).read()
+        data = open(self._a2lfn, encoding = encoding).read()
         data, a2ml = cut_a2ml(data)
         self.session = parser.parseFromString(data, dbname = self._dbfn)
         return self.session
