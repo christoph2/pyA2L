@@ -184,3 +184,34 @@ def nfc_equal(str1, str2):
 def fold_equal(str1, str2):
     return (normalize('NFC', str1).casefold() == normalize('NFC', str2).casefold())
 
+def align_as(offset: int, boundary: int):
+    """Align `offset` to `boundary` bytes.
+
+    Parameters
+    ----------
+    offset: int
+
+    boundary: int
+
+    Returns
+    -------
+    int
+        Aligned offset.
+    """
+    return (offset + (boundary - 1)) & -boundary
+
+def padding(offset: int, boundary: int):
+    """Calculate number of padding bytes for a given `offset` and `boundary`
+
+    Parameters
+    ----------
+    offset: int
+
+    boundary: int
+
+    Returns
+    -------
+    int
+        Number of padding bytes.
+    """
+    return (-offset & (boundary - 1))
