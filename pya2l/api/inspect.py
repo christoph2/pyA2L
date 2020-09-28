@@ -26,13 +26,17 @@ __copyright__="""
 """Classes for easy, convenient, read-only access to A2L databases.
 """
 
+import collections
 from functools import partial
 from operator import attrgetter
+import weakref
 
 from pya2l import DB
 import pya2l.model as model
 from pya2l.utils import align_as
 
+
+DB_CACHE_SIZE = 4096    # Completly arbitrary, could be configurable.
 
 ASAM_TO_NUMPY_TYPES = {
     "UBYTE":           "uint8",
@@ -172,7 +176,34 @@ def fnc_np_order(order):
     """
 
 
-class ModPar:
+class CachedBase:
+    """Base class for all user classes in this module, implementing a cache manager.
+
+    Note
+    ----
+    To take advantage of caching, always use `get` method.
+
+    Example
+    -------
+    meas = Measurement.get(session, "someMeasurement")  # This is the right way.
+
+    meas = Measurement(session, "someMeasurement")      # Constructor directly called, no caching.
+    """
+
+    _cache = weakref.WeakValueDictionary()
+    _strong_ref = collections.deque(maxlen = DB_CACHE_SIZE)
+
+    @classmethod
+    def get(cls, session, name: str = None, module_name: str = None):
+     entry = (cls.__name__, name)
+     if not entry in cls._cache:
+         inst = cls(session, name, module_name)
+         cls._cache[entry] = inst
+         cls._strong_ref.append(inst)
+     return cls._cache[entry]
+
+
+class ModPar(CachedBase):
     """
 
     Parameters
@@ -288,7 +319,7 @@ class ModPar:
         "user", "version",
     )
 
-    def __init__(self, session, module_name: str = None):
+    def __init__(self, session, name = None, module_name: str = None):
         module = get_module(session, module_name)
         self.modpar = module.mod_par
         self.comment = self.modpar.comment
@@ -396,7 +427,7 @@ ModPar {{
     __repr__ = __str__
 
 
-class ModCommon:
+class ModCommon(CachedBase):
     """
 
     Parameters
@@ -430,7 +461,7 @@ class ModCommon:
 
     __slots__ = ("modcommon", "comment", "alignment", "byteOrder", "dataSize", "deposit", "sRecLayout")
 
-    def __init__(self, session, module_name: str = None):
+    def __init__(self, session, name = None, module_name: str = None):
         module = get_module(session, module_name)
         self.modcommon = module.mod_common
         self.comment = self.modcommon.comment
@@ -470,7 +501,7 @@ ModCommon {{
     __repr__ = __str__
 
 
-class AxisDescr:
+class AxisDescr(CachedBase):
     """
     """
 
@@ -480,9 +511,9 @@ class AxisDescr:
         "monotony", "physUnit", "readOnly", "stepSize"
     )
 
-    def __init__(self, session, axis):
+    def __init__(self, session, axis, module_name = None):
         self.attribute = axis.attribute
-        self.axisPtsRef  = AxisPts(session, axis.axis_pts_ref.axisPoints) if axis.axis_pts_ref else None
+        self.axisPtsRef  = AxisPts.get(session, axis.axis_pts_ref.axisPoints) if axis.axis_pts_ref else None
         if self.attribute in ("COM_AXIS", "RES_AXIS", "CURVE_AXIS"):
             pass
         else:
@@ -497,7 +528,7 @@ class AxisDescr:
 
         self.annotations = _annotations(session, axis.annotation)
         self.byteOrder = axis.byte_order.byteOrder if axis.byte_order else None
-        self.curveAxisRef  = Characteristic(session, axis.curve_axis_ref.curveAxis) if axis.curve_axis_ref else None
+        self.curveAxisRef  = Characteristic.get(session, axis.curve_axis_ref.curveAxis) if axis.curve_axis_ref else None
         self.deposit = axis.deposit.mode if axis.deposit else None
         self.extendedLimits = self._dissect_extended_limits(axis.extended_limits)
         self.fixAxisPar = self._dissect_fix_axis_par(axis.fix_axis_par)
@@ -576,7 +607,8 @@ AxisDescr {{
 
     __repr__ = __str__
 
-class Characteristic:
+
+class Characteristic(CachedBase):
     """Convenient access (read-only) to CHARACTERISTIC objects.
 
     Parameters
@@ -613,7 +645,7 @@ class Characteristic:
         self.longIdentifier = self.characteristic.longIdentifier
         self.type = self.characteristic.type
         self.address = self.characteristic.address
-        self.deposit = RecordLayout(session, self.characteristic.deposit, module_name)
+        self.deposit = RecordLayout.get(session, self.characteristic.deposit, module_name)
         self.maxDiff = self.characteristic.maxDiff
         self._conversionRef = self.characteristic.conversion
         self.compuMethod = _dissect_conversion(session, self._conversionRef)
@@ -622,7 +654,7 @@ class Characteristic:
         self.annotations = _annotations(session, self.characteristic.annotation)
         self.bitMask = self.characteristic.bit_mask.mask if self.characteristic.bit_mask else None
         self.byteOrder = self.characteristic.byte_order.byteOrder if self.characteristic.byte_order else None
-        self.axisDescriptions = [AxisDescr(session, a) for a in self.characteristic.axis_descr]
+        self.axisDescriptions = [AxisDescr.get(session, a) for a in self.characteristic.axis_descr]
         self.calibrationAccess = self.characteristic.calibration_access
         self.comparisonQuantity = self.characteristic.comparison_quantity
         self.dependentCharacteristic = self.characteristic.dependent_characteristic.formula \
@@ -887,7 +919,7 @@ Characteristic {{
     __repr__ = __str__
 
 
-class AxisPts:
+class AxisPts(CachedBase):
     """
     """
 
@@ -904,7 +936,7 @@ class AxisPts:
         self.longIdentifier = self.axis.longIdentifier
         self.address = self.axis.address
         self.inputQuantity = self.axis.inputQuantity    # REF: Measurement
-        self.depositAttr = RecordLayout(session, self.axis.depositAttr)
+        self.depositAttr = RecordLayout.get(session, self.axis.depositAttr)
         self.deposit = self.axis.deposit.mode if self.axis.deposit else None
         self.maxDiff = self.axis.maxDiff
         self._conversionRef = self.axis.conversion
@@ -1017,7 +1049,7 @@ AxisPts {{
     __repr__ = __str__
 
 
-class Measurement:
+class Measurement(CachedBase):
     """Convenient access (read-only) to MEASUREMENT objects.
 
     Parameters
@@ -1339,7 +1371,7 @@ Measurement {{
         return result
 
 
-class RecordLayout:
+class RecordLayout(CachedBase):
     """
     """
 
@@ -1350,7 +1382,7 @@ class RecordLayout:
 
     def __init__(self, session, name: str, module_name: str = None):
         self.layout = session.query(model.RecordLayout).filter(model.RecordLayout.name == name).first()
-        self._mod_common = ModCommon(session)
+        self._mod_common = ModCommon.get(session)
         self.name = name
         self.alignment = {
             "BYTE": self.layout.alignment_byte.alignmentBorder if self.layout.alignment_byte \
