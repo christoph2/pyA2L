@@ -26,10 +26,12 @@ __copyright__="""
 """Classes for easy, convenient, read-only access to A2L databases.
 """
 
+from functools import partial
 from operator import attrgetter
 
 from pya2l import DB
 import pya2l.model as model
+from pya2l.utils import align_as
 
 
 ASAM_TO_NUMPY_TYPES = {
@@ -64,11 +66,40 @@ ASAM_TYPE_SIZES = {
     "FLOAT64_IEEE":    8,
 }
 
+NATURAL_ALIGNMENTS = {
+    "BYTE":     1,
+    "WORD":     2,
+    "DWORD":    4,
+    "QWORD":    8,
+    "FLOAT32":  4,
+    "FLOAT64":  8,
+}
+
+ASAM_ALIGNMENT_TYPES = {
+    "BYTE":            "BYTE",
+    "UBYTE":           "BYTE",
+    "SBYTE":           "BYTE",
+    "WORD":            "WORD",
+    "UWORD":           "WORD",
+    "SWORD":           "WORD",
+    "LONG":            "DWORD",
+    "ULONG":           "DWORD",
+    "SLONG":           "DWORD",
+    "A_UINT64":        "QWORD",
+    "A_INT64":         "QWORD",
+    "FLOAT32_IEEE":    "FLOAT32",
+    "FLOAT64_IEEE":    "FLOAT64",
+}
+
 
 def asam_type_size(datatype: str):
     """
     """
     return ASAM_TYPE_SIZES[datatype]
+
+
+def asam_align_as(alignment: dict, datatype: str, offset: int):
+    return align_as(offset, alignment[ASAM_ALIGNMENT_TYPES[datatype]])
 
 
 def all_axes_names():
@@ -404,12 +435,18 @@ class ModCommon:
         self.modcommon = module.mod_common
         self.comment = self.modcommon.comment
         self.alignment = {
-            "BYTE": self.modcommon.alignment_byte.alignmentBorder if self.modcommon.alignment_byte else None,
-            "WORD": self.modcommon.alignment_word.alignmentBorder if self.modcommon.alignment_word else None,
-            "DWORD": self.modcommon.alignment_long.alignmentBorder if self.modcommon.alignment_long else None,
-            "QWORD": self.modcommon.alignment_int64.alignmentBorder if self.modcommon.alignment_int64 else None,
-            "FLOAT32": self.modcommon.alignment_float32_ieee.alignmentBorder if self.modcommon.alignment_float32_ieee else None,
-            "FLOAT64": self.modcommon.alignment_float64_ieee.alignmentBorder if self.modcommon.alignment_float64_ieee else None,
+            "BYTE": self.modcommon.alignment_byte.alignmentBorder if self.modcommon.alignment_byte \
+                else NATURAL_ALIGNMENTS["BYTE"],
+            "WORD": self.modcommon.alignment_word.alignmentBorder if self.modcommon.alignment_word \
+                else NATURAL_ALIGNMENTS["WORD"],
+            "DWORD": self.modcommon.alignment_long.alignmentBorder if self.modcommon.alignment_long \
+                else NATURAL_ALIGNMENTS["DWORD"],
+            "QWORD": self.modcommon.alignment_int64.alignmentBorder if self.modcommon.alignment_int64 \
+                else NATURAL_ALIGNMENTS["QWORD"],
+            "FLOAT32": self.modcommon.alignment_float32_ieee.alignmentBorder if self.modcommon.alignment_float32_ieee \
+                else NATURAL_ALIGNMENTS["FLOAT32"],
+            "FLOAT64": self.modcommon.alignment_float64_ieee.alignmentBorder if self.modcommon.alignment_float64_ieee \
+                else NATURAL_ALIGNMENTS["FLOAT64"],
         }
         self.byteOrder = self.modcommon.byte_order.byteOrder if self.modcommon.byte_order else None
         self.dataSize = self.modcommon.data_size.size if self.modcommon.data_size else None
@@ -615,10 +652,11 @@ class Characteristic:
 
     def _set_components(self):
         ITEMS = ("axisPts", "axisRescale", "distOp", "fncValues", "identification", "noAxisPts", "noRescale",
-        "offset", "reserved", "ripAddr", "srcAddr", "shiftOp")
+        "offset", "reserved", "ripAddr", "srcAddr", "shiftOp", "reserved")
 
         items = {name: getattr(self.deposit, name) for name in ITEMS}
-        self._record_layout_components = RecordLayoutComponents(self, items)
+        self._record_layout_components = RecordLayoutComponents(self, items, self.deposit.alignment)
+        self._record_layout_components.calculate_offsets_and_sizes(self.fnc_allocated_memory)
 
     def axisDescription(self, axis):
         MAP = {
@@ -722,8 +760,7 @@ class Characteristic:
     def total_allocated_memory(self):
         """Total amount of statically allocated memory by Characteristic.
         """
-        return self.record_layout_components.sizeof + self.fnc_allocated_memory + self.axes_allocated_memory
-
+        return self.record_layout_components.sizeof
 
     @property
     def dim(self):
@@ -895,10 +932,11 @@ class AxisPts:
 
     def _set_components(self):
         ITEMS = ("axisPts", "axisRescale", "distOp", "fncValues", "identification", "noAxisPts", "noRescale",
-        "offset", "reserved", "ripAddr", "srcAddr", "shiftOp")
+        "offset", "reserved", "ripAddr", "srcAddr", "shiftOp", "reserved")
 
         items = {name: getattr(self.depositAttr, name) for name in ITEMS}
-        self._record_layout_components = RecordLayoutComponents(self, items)
+        self._record_layout_components = RecordLayoutComponents(self, items, self.depositAttr.alignment)
+        self._record_layout_components.calculate_offsets_and_sizes(None)
 
     @property
     def record_layout_components(self):
@@ -909,14 +947,14 @@ class AxisPts:
     def axis_allocated_memory(self):
         """Statically allocated memory by axis.
         """
-        axis = self.record_layout_components._axel["x"]
+        axis = self.record_layout_components.axes("x")
         return axis["memSize"]
 
     @property
     def total_allocated_memory(self):
-        """Total amount of statically allocated memory by Characteristic.
+        """Total amount of statically allocated memory by AxisPts.
         """
-        return self.record_layout_components.sizeof + self.axis_allocated_memory
+        return self.record_layout_components.sizeof
 
     @staticmethod
     def _dissect_extended_limits(limits):
@@ -1307,19 +1345,26 @@ class RecordLayout:
 
     __slots__ = ("layout", "name", "alignment", "axisPts", "axisRescale", "distOp", "fixNoAxisPts",
         "fncValues", "identification", "noAxisPts", "noRescale", "offset", "reserved", "ripAddr",
-        "srcAddr", "shiftOp", "staticRecordLayout"
+        "srcAddr", "shiftOp", "staticRecordLayout", "_mod_common"
     )
 
     def __init__(self, session, name: str, module_name: str = None):
         self.layout = session.query(model.RecordLayout).filter(model.RecordLayout.name == name).first()
+        self._mod_common = ModCommon(session)
         self.name = name
         self.alignment = {
-            "BYTE": self.layout.alignment_byte.alignmentBorder if self.layout.alignment_byte else None,
-            "WORD": self.layout.alignment_word.alignmentBorder if self.layout.alignment_word else None,
-            "DWORD": self.layout.alignment_long.alignmentBorder if self.layout.alignment_long else None,
-            "QWORD": self.layout.alignment_int64.alignmentBorder if self.layout.alignment_int64 else None,
-            "FLOAT32": self.layout.alignment_float32_ieee.alignmentBorder if self.layout.alignment_float32_ieee else None,
-            "FLOAT64": self.layout.alignment_float64_ieee.alignmentBorder if self.layout.alignment_float64_ieee else None,
+            "BYTE": self.layout.alignment_byte.alignmentBorder if self.layout.alignment_byte \
+                else self._mod_common.alignment["BYTE"],
+            "WORD": self.layout.alignment_word.alignmentBorder if self.layout.alignment_word \
+                else self._mod_common.alignment["WORD"],
+            "DWORD": self.layout.alignment_long.alignmentBorder if self.layout.alignment_long \
+                else self._mod_common.alignment["DWORD"],
+            "QWORD": self.layout.alignment_int64.alignmentBorder if self.layout.alignment_int64 \
+                else self._mod_common.alignment["QWORD"],
+            "FLOAT32": self.layout.alignment_float32_ieee.alignmentBorder if self.layout.alignment_float32_ieee \
+                else self._mod_common.alignment["FLOAT32"],
+            "FLOAT64": self.layout.alignment_float64_ieee.alignmentBorder if self.layout.alignment_float64_ieee \
+                else self._mod_common.alignment["FLOAT64"],
         }
         self.axisPts = {
             "x": self._dissect_axis_pts(self.layout.axis_pts_x),
@@ -1498,7 +1543,7 @@ class RecordLayout:
         if reserved is not None:
             result = {}
             result["position"] = reserved.position
-            result["dataSize"] = reserved.dataSize
+            result["datatype"] = reserved.dataSize
         else:
             result = {}
         return result
@@ -1614,50 +1659,47 @@ class RecordLayoutComponents:
     """
     """
 
-    def __init__(self, parent, items: dict):
+    def __init__(self, parent, items: dict, alignment: dict):
         self.parent = parent
+        self.alignment = alignment
         result = []
         positions = {}
         sizeof = 0
-        self._axes = dict()
         self._axes_names = set()
         self._fncValues = {}
         self._identification = {}
-        self._axel = {k: {} for k in all_axes_names()}
+        self._axes = {k: {} for k in all_axes_names()}
+        self._sizeof = 0
         for item_name, item in items.items():
             entry = {}
             for k, v in item.items():
-                if v is not None:
+                if v:
                     entry[k] = v
             if entry:
                 if item_name in ("axisPts", "axisRescale", "distOp", "noAxisPts", "noRescale", "offset",
                     "srcAddr", "shiftOp"):
-                    if item_name == "reserved":
-                        pass
                     s, p = self._get_details(entry, item_name, all_axes_names())
                     if not item_name in ("axisPts", "axisRescale"):
                         sizeof += s
                     positions.update(p)
                 elif item_name == "ripAddr":
-                    s, p = self._get_details(entry, item_name, all_axes_names() +["w"])
+                    s, p = self._get_details(entry, item_name, all_axes_names() + ["w"])
                     sizeof += s
                     positions.update(p)
                 elif item_name in ("fncValues", "identification", "reserved"):
                     # These components are not related to any axis.
-                    entry = {"values": entry}
-                    pos = entry["values"]["position"]
+                    pos = entry["position"]
                     positions[pos] = entry
                     entry['type'] = item_name
                     if item_name == "fncValues":
                         self._fncValues = entry
                     elif item_name == "identification":
                         self._identification = entry
-                        sizeof += asam_type_size(entry["values"]["datatype"])
+                        sizeof += asam_type_size(entry["datatype"])
                     elif item_name == "reserved":
-                        sizeof += asam_type_size(entry["values"]["dataSize"])
+                        sizeof += asam_type_size(entry["datatype"])
                 result.append(entry)
-        self._positions = sorted(positions.items(), key = lambda k: k[0])
-        self._sizeof = sizeof
+        self._components_by_pos = sorted(positions.items(), key = lambda k: k[0])
         if isinstance(parent, Characteristic):
             self._calculate_sizes_characteristic()
         elif isinstance(parent, AxisPts):
@@ -1668,32 +1710,34 @@ class RecordLayoutComponents:
         """
         total_mem_size = 0
         total_length = 0
+        func_value_length = 1
         for axis in self.axes_names:
             axis_descr = self.parent.axisDescription(axis)
             maxAxisPoints = axis_descr.maxAxisPoints
+            func_value_length *= maxAxisPoints
             total_length += maxAxisPoints
-            axis_pts = self._axel[axis].get("axisPts")
+            axis_pts = self.axes(axis).get("axisPts")
             if axis_pts:
                 mem_size = maxAxisPoints * asam_type_size(axis_pts["datatype"])
             else:
                 if axis_descr.attribute == "FIX_AXIS":
-                    #print("FIX_AXIS_PTS", maxAxisPoints)
                     mem_size = 0    # No memory occupied in case of fix axis.
                 else:
                     # Should never be reached.
                     raise TypeError("No axis_pts {}".format(axis_descr.attribute))
-            self._axel[axis]['maxAxisPoints'] = maxAxisPoints
-            self._axel[axis]['memSize'] = mem_size
+            self.axes(axis)['maxAxisPoints'] = maxAxisPoints
+            self.axes(axis)['memSize'] = mem_size
+            if axis_pts:
+                axis_pts['maxAxisPoints'] = maxAxisPoints
+                axis_pts['memSize'] = mem_size
             total_mem_size += mem_size
-            for pos in self._positions:
-                pass
 
     def _calculate_sizes_axis_pts(self):
-        """#
+        """
         """
         total_mem_size = 0
         total_length = 0
-        x_axis = self._axel["x"]
+        x_axis = self.axes("x")
         maxAxisPoints = self.parent.maxAxisPoints
         axis_pts = x_axis.get("axisPts")    # Exactly one axis per AXIS_PTS.
         if not axis_pts:
@@ -1704,22 +1748,59 @@ class RecordLayoutComponents:
             element_size = asam_type_size(axis_res.get("datatype")) * 2    # In this case elements are pairs.
         else:
             element_size = asam_type_size(axis_pts.get("datatype"))
+        mem_size = maxAxisPoints * element_size
         x_axis['maxAxisPoints'] = maxAxisPoints
-        x_axis['memSize'] = maxAxisPoints * element_size
+        x_axis['memSize'] = mem_size
+        if axis_pts:
+            axis_pts['maxAxisPoints'] = maxAxisPoints
+            axis_pts['memSize'] = mem_size
+
+    def calculate_offsets_and_sizes(self, fnc_allocated_memory: int):
+        """
+        """
+        offset = 0
+        axis_pts = {n: self.axis_pts(n) for n in self.axes_names}
+        for idx, (_, pos) in enumerate(self._components_by_pos):
+            tp = pos["type"]
+            if len(tp) == 2:
+                tp, axis = tp
+            else:
+                axis = None
+            datatype = pos["datatype"]
+            if tp == "fncValues":
+                size = fnc_allocated_memory
+            elif tp in ("axisPts", "axisRescale"):
+                size = self.axes(axis).get("memSize")
+            else:
+                size = asam_type_size(datatype)
+            pos['offset'] = offset
+            alignment = asam_align_as(self.alignment, datatype, offset)
+            offset = alignment + size
+        self._sizeof = offset
 
     def _get_details(self, entry, name, keys):
         positions = {}
-        sizeof = 0
+        sizeof = 0  # TODO: sizeof obsolete now.
         for key in keys:
             dim_entry = entry.get(key)
             if dim_entry:
-                self._axel[key][name] = dim_entry
+                self._axes[key][name] = dim_entry
                 self._axes_names.add(key)
                 pos = dim_entry["position"]
                 sizeof += asam_type_size(dim_entry["datatype"])
                 dim_entry['type'] = (name, key)
                 positions[pos] = dim_entry
         return sizeof, positions
+
+    def axes(self, axis = None):
+        if axis is None:
+            result = self._axes.items()
+        else:
+            result = self._axes[axis]
+        return result
+
+    def axis_pts(self, axis):
+        return self._axes[axis].get("axisPts")
 
     @property
     def fncValues(self):
@@ -1731,7 +1812,7 @@ class RecordLayoutComponents:
 
     @property
     def sizeof(self):
-        """Size of record layout **WITHOUT** actual data (axis points and function values).
+        """Size of record layout, respecting alignment.
         """
         return self._sizeof
 
@@ -1745,30 +1826,23 @@ class RecordLayoutComponents:
         """
         return frozenset(self._axes_names)
 
-
     @property
     def axes_count(self):
         """
         """
         return len(self._axes_names)
 
-    @property
-    def axes(self):
-        """
-        """
-        return frozenset(self._axes)
-
     def __len__(self):
-        return len(self._positions)
+        return len(self._components_by_pos)
 
     def __getitem__(self, index):
-        return self._positions[index]
+        return self._components_by_pos[index]
 
     def __iter__(self):
-        return iter(self._positions)
+        return iter(self._components_by_pos)
 
     def __next__(self):
-        for item in self._positions:
+        for item in self._components_by_pos:
             yield item
 
     def __str__(self):
@@ -1779,18 +1853,6 @@ class RecordLayoutComponents:
         return "\n".join(result)
 
     __repr__ = __str__
-
-
-class Axis:
-    """
-    """
-
-    def __init__(self, name):
-        self._name = name
-
-    @property
-    def name(self):
-        return self._name
 
 
 def _dissect_conversion(session, conversion):
