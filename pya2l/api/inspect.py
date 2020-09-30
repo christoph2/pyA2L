@@ -524,8 +524,8 @@ class AxisDescr(CachedBase):
         self.lowerLimit = axis.lowerLimit
         self.upperLimit = axis.upperLimit
 
-        self.compuMethod = _dissect_conversion(session, self._conversionRef)
-
+        self.compuMethod = CompuMethod.get(session, self._conversionRef) \
+            if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
         self.annotations = _annotations(session, axis.annotation)
         self.byteOrder = axis.byte_order.byteOrder if axis.byte_order else None
         self.curveAxisRef  = Characteristic.get(session, axis.curve_axis_ref.curveAxis) if axis.curve_axis_ref else None
@@ -648,7 +648,8 @@ class Characteristic(CachedBase):
         self.deposit = RecordLayout.get(session, self.characteristic.deposit, module_name)
         self.maxDiff = self.characteristic.maxDiff
         self._conversionRef = self.characteristic.conversion
-        self.compuMethod = _dissect_conversion(session, self._conversionRef)
+        self.compuMethod = CompuMethod.get(session, self._conversionRef)\
+            if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
         self.lowerLimit = self.characteristic.lowerLimit
         self.upperLimit = self.characteristic.upperLimit
         self.annotations = _annotations(session, self.characteristic.annotation)
@@ -940,7 +941,8 @@ class AxisPts(CachedBase):
         self.deposit = self.axis.deposit.mode if self.axis.deposit else None
         self.maxDiff = self.axis.maxDiff
         self._conversionRef = self.axis.conversion
-        self.compuMethod = _dissect_conversion(session, self._conversionRef)
+        self.compuMethod = CompuMethod.get(session, self._conversionRef) \
+            if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
         self.maxAxisPoints = self.axis.maxAxisPoints
         self.lowerLimit = self.axis.lowerLimit
         self.upperLimit = self.axis.upperLimit
@@ -1278,7 +1280,8 @@ class Measurement(CachedBase):
         self.refMemorySegment = self.measurement.ref_memory_segment.name if self.measurement.ref_memory_segment else None
         self.symbolLink = self._dissect_symbol_link(self.measurement.symbol_link)
         self.virtual = self.measurement.virtual.measuringChannel if self.measurement.virtual else []
-        self.compuMethod = _dissect_conversion(session, self._conversionRef)
+        self.compuMethod = CompuMethod.get(session, self._conversionRef) \
+            if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
 
         self.fnc_np_shape = fnc_np_shape(self.matrixDim)
 
@@ -1286,7 +1289,7 @@ class Measurement(CachedBase):
         names = (
             self.name, self.longIdentifier, self.datatype, self.resolution, self.accuracy, self.lowerLimit,
             self.upperLimit, self.annotations, self.arraySize, self.bitMask, self.bitOperation, self.byteOrder,
-            self.discrete, self.displayIdentifier, self.ecuAddress, self.ecuAddressExtension, self.errorMask,
+            self.discrete, self.displayIdentifier, self.ecuAddress or 0, self.ecuAddressExtension, self.errorMask,
             self.format, self.functionList, self.layout, self.matrixDim, self.maxRefresh, self.physUnit,
             self.refMemorySegment, self.readWrite, self.symbolLink, self.virtual, self.compuMethod
         )
@@ -1685,8 +1688,6 @@ RecordLayout {{
     __repr__ = __str__
 
 
-
-
 class RecordLayoutComponents:
     """
     """
@@ -1887,59 +1888,78 @@ class RecordLayoutComponents:
     __repr__ = __str__
 
 
-def _dissect_conversion(session, conversion):
-    result = {}
-    if conversion == "NO_COMPU_METHOD":
-        result["type"] = "NO_COMPU_METHOD"
-    else:
-        cm = session.query(model.CompuMethod).filter(model.CompuMethod.name ==  conversion).first()
-        cm_type = cm.conversionType
-        result['name'] = cm.name
-        result["type"] = cm_type
-        result["unit"] = cm.unit
-        result["format"] = cm.format
-        result["longIdentifier"] = cm.longIdentifier
+
+class CompuMethod(CachedBase):
+    """
+    """
+
+    __slots__ = ("compu_method", "name", "longIdentifier", "conversionType", "format", "unit",
+        "coeffs", "coeffs_linear", "formula", "tab", "tab_verb", "statusStringRef"
+    )
+
+    def __init__(self, session, name: str, module_name: str = None):
+        self.compu_method = session.query(model.CompuMethod).filter(model.CompuMethod.name == name).first()
+        self.name = name
+        self.longIdentifier = self.compu_method.longIdentifier
+        self.conversionType = self.compu_method.conversionType
+        self.format = self.compu_method.format
+        self.unit = self.compu_method.unit
+
+        self.coeffs = {}
+        self.coeffs_linear = {}
+        self.formula = {}
+        self.tab = {}
+        self.tab_verb = {}
+        self.statusStringRef = self.compu_method.status_string_ref.conversionTable \
+            if self.compu_method.status_string_ref else None
+
+        """
+        [-> REF_UNIT]
+        """
+        cm_type = self.conversionType
         if cm_type == "IDENTICAL":
             pass
         elif cm_type == "FORM":
-            result["formula_inv"] = cm.formula.formula_inv.g_x if cm.formula.formula_inv else None
-            result["formula"] = cm.formula.f_x
+            self.formula["formula_inv"] = self.compu_method.formula.formula_inv.g_x \
+                if self.compu_method.formula.formula_inv else None
+            self.formula["formula"] = self.compu_method.formula.f_x
         elif cm_type == "LINEAR":
-            result["a"] = cm.coeffs_linear.a
-            result["b"] = cm.coeffs_linear.b
+            self.coeffs_linear["a"] = self.compu_method.coeffs_linear.a
+            self.coeffs_linear["b"] = self.compu_method.coeffs_linear.b
         elif cm_type == "RAT_FUNC":
-            result["a"] = cm.coeffs.a
-            result["b"] = cm.coeffs.b
-            result["c"] = cm.coeffs.c
-            result["d"] = cm.coeffs.d
-            result["e"] = cm.coeffs.e
-            result["f"] = cm.coeffs.f
+            self.coeffs["a"] = self.compu_method.coeffs.a
+            self.coeffs["b"] = self.compu_method.coeffs.b
+            self.coeffs["c"] = self.compu_method.coeffs.c
+            self.coeffs["d"] = self.compu_method.coeffs.d
+            self.coeffs["e"] = self.compu_method.coeffs.e
+            self.coeffs["f"] = self.compu_method.coeffs.f
         elif cm_type in ("TAB_INTP", "TAB_NOINTP"):
-            cvt = session.query(model.CompuTab).filter(model.CompuTab.name == cm.compu_tab_ref.conversionTable).first()
+            cvt = session.query(model.CompuTab).filter(model.CompuTab.name == \
+                self.compu_method.compu_tab_ref.conversionTable).first()
             pairs = cvt.pairs
-            result["num_values"] = len(pairs)
-            result["interpolation"] = True if cm_type == "TAB_INTP" else False
-            result["default_value"] = cvt.default_value_numeric.display_value if cvt.default_value_numeric else None
-            result["in_values"] = [x.inVal for x in pairs]
-            result["out_values"] = [x.outVal for x in pairs]
+            self.tab["num_values"] = len(pairs)
+            self.tab["interpolation"] = True if cm_type == "TAB_INTP" else False
+            self.tab["default_value"] = cvt.default_value_numeric.display_value if cvt.default_value_numeric else None
+            self.tab["in_values"] = [x.inVal for x in pairs]
+            self.tab["out_values"] = [x.outVal for x in pairs]
         elif cm_type == "TAB_VERB":
-            cvt = session.query(model.CompuVtab).filter(model.CompuVtab.name == cm.compu_tab_ref.conversionTable).first()
+            cvt = session.query(model.CompuVtab).filter(model.CompuVtab.name == \
+                self.compu_method.compu_tab_ref.conversionTable).first()
             if cvt:
-                result["ranges"] = False
+                self.tab_verb["ranges"] = False
                 pairs = cvt.pairs
-                result["num_values"] = len(pairs)
-                result["in_values"] = [x.inVal for x in pairs]
-                result["text_values"] = [x.outVal for x in pairs]
-                result["default_value"] = cvt.default_value.display_string if cvt.default_value else None
+                self.tab_verb["num_values"] = len(pairs)
+                self.tab_verb["in_values"] = [x.inVal for x in pairs]
+                self.tab_verb["text_values"] = [x.outVal for x in pairs]
+                self.tab_verb["default_value"] = cvt.default_value.display_string if cvt.default_value else None
             else:
                 cvt = session.query(model.CompuVtabRange).filter(model.CompuVtabRange.name == \
-                        cm.compu_tab_ref.conversionTable).first()
+                        self.compu_method.compu_tab_ref.conversionTable).first()
                 if cvt:
-                    result["ranges"] = True
+                    self.tab_verb["ranges"] = True
                     triples = cvt.triples
-                    result["num_values"] = len(triples)
-                    result["lower_values"] = [x.inValMin for x in triples]
-                    result["upper_values"] = [x.inValMax for x in triples]
-                    result["text_values"] = [x.outVal for x in triples]
-                    result["default_value"] = cvt.default_value.display_string if cvt.default_value else None
-    return result
+                    self.tab_verb["num_values"] = len(triples)
+                    self.tab_verb["lower_values"] = [x.inValMin for x in triples]
+                    self.tab_verb["upper_values"] = [x.inValMax for x in triples]
+                    self.tab_verb["text_values"] = [x.outVal for x in triples]
+                    self.tab_verb["default_value"] = cvt.default_value.display_string if cvt.default_value else None
