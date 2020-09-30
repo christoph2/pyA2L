@@ -52,7 +52,7 @@ def test_measurement_basic():
     assert meas.refMemorySegment is None
     assert meas.symbolLink == None
     assert meas.virtual == []
-    assert meas.compuMethod == {'type': 'NO_COMPU_METHOD'}
+    assert meas.compuMethod == 'NO_COMPU_METHOD'
 
 def test_measurement_full_featured():
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
@@ -150,11 +150,16 @@ def test_measurement_full_featured():
     assert meas.refMemorySegment == "Data2"
     assert meas.symbolLink == {'offset': 4711, 'symbolName': 'VehicleSpeed'}
     assert meas.virtual == ['PHI_BASIS', 'PHI_CORR']
-    assert meas.compuMethod == {
-        'type': 'RAT_FUNC', 'unit': 'km/h', 'format': '%6.2',
-        'a': 0.0, 'b': 100.0, 'c': 0.0, 'd': 0.0, 'e': 0.0, 'f': 1.0,
-        'longIdentifier': 'conversion method for velocity'
-    }
+    assert meas.compuMethod.conversionType == "RAT_FUNC"
+    assert meas.compuMethod.unit == "km/h"
+    assert meas.compuMethod.format == "%6.2"
+    assert meas.compuMethod.longIdentifier == "conversion method for velocity"
+    assert meas.compuMethod.coeffs["a"] == 0.0
+    assert meas.compuMethod.coeffs["b"] == 100.0
+    assert meas.compuMethod.coeffs["c"] == 0.0
+    assert meas.compuMethod.coeffs["d"] == 0.0
+    assert meas.compuMethod.coeffs["e"] == 0.0
+    assert meas.compuMethod.coeffs["f"] == 1.0
 
 def test_measurement_no_compu_method():
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
@@ -174,7 +179,7 @@ def test_measurement_no_compu_method():
     """
     session = parser.parseFromString(DATA)
     meas = Measurement(session, "N")
-    assert meas.compuMethod == {'type': 'NO_COMPU_METHOD'}
+    assert meas.compuMethod == 'NO_COMPU_METHOD'
 
 def test_measurement_compu_method_identical():
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
@@ -198,10 +203,10 @@ def test_measurement_compu_method_identical():
     """
     session = parser.parseFromString(DATA)
     meas = Measurement(session, "N")
-    assert meas.compuMethod == {
-        'format': '%3.0', 'type': 'IDENTICAL', 'unit': 'hours',
-        'longIdentifier': 'conversion that delivers always phys = int'
-        }
+    assert meas.compuMethod.format == '%3.0'
+    assert meas.compuMethod.conversionType == 'IDENTICAL'
+    assert meas.compuMethod.unit == "hours"
+    assert meas.compuMethod.longIdentifier == 'conversion that delivers always phys = int'
 
 def test_measurement_compu_method_form():
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
@@ -228,9 +233,12 @@ def test_measurement_compu_method_form():
     """
     session = parser.parseFromString(DATA)
     meas = Measurement(session, "N")
-    assert meas.compuMethod == {
-        'format': '%6.1', 'type': 'FORM', 'unit': 'rpm', 'formula': 'X1+4', 'formula_inv': 'X1-4', 'longIdentifier': ''
-        }
+    assert meas.compuMethod.format == '%6.1'
+    assert meas.compuMethod.conversionType == "FORM"
+    assert meas.compuMethod.unit == "rpm"
+    assert meas.compuMethod.longIdentifier == ""
+    assert meas.compuMethod.formula["formula"] == "X1+4"
+    assert meas.compuMethod.formula["formula_inv"] == "X1-4"
 
 def test_measurement_compu_method_linear():
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
@@ -255,10 +263,13 @@ def test_measurement_compu_method_linear():
     """
     session = parser.parseFromString(DATA)
     meas = Measurement(session, "N")
-    assert meas.compuMethod == {
-        'format': '%3.1', 'type': 'LINEAR', 'unit': 'm/s', 'a': 2.0, 'b': 0.0,
-        'longIdentifier': 'Linear function with parameter set for phys = f(int) = 2*int + 0'
-        }
+
+    assert meas.compuMethod.format == '%3.1'
+    assert meas.compuMethod.conversionType == "LINEAR"
+    assert meas.compuMethod.unit == "m/s"
+    assert meas.compuMethod.longIdentifier == 'Linear function with parameter set for phys = f(int) = 2*int + 0'
+    assert meas.compuMethod.coeffs_linear["a"] == 2.0
+    assert meas.compuMethod.coeffs_linear["b"] == 0.0
 
 def test_measurement_compu_method_rat_func():
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
@@ -283,11 +294,17 @@ def test_measurement_compu_method_rat_func():
     """
     session = parser.parseFromString(DATA)
     meas = Measurement(session, "N")
-    assert meas.compuMethod == {
-        'format': '%8.4', 'type': 'RAT_FUNC', 'unit': 'grad C', 'a': 0.0, 'b': 81.9175,
-        'c': 0.0, 'd': 0.0, 'e': 0.0, 'f': 1.0,
-        'longIdentifier': 'rational function with parameter set for impl = f(phys) = phys * 81.9175'
-        }
+
+    assert meas.compuMethod.format == '%8.4'
+    assert meas.compuMethod.conversionType == 'RAT_FUNC'
+    assert meas.compuMethod.unit == 'grad C'
+    assert meas.compuMethod.longIdentifier == 'rational function with parameter set for impl = f(phys) = phys * 81.9175'
+    assert meas.compuMethod.coeffs["a"] == 0.0
+    assert meas.compuMethod.coeffs["b"] == 81.9175
+    assert meas.compuMethod.coeffs["c"] == 0.0
+    assert meas.compuMethod.coeffs["d"] == 0.0
+    assert meas.compuMethod.coeffs["e"] == 0.0
+    assert meas.compuMethod.coeffs["f"] == 1.0
 
 def test_measurement_compu_method_tab_intp():
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
@@ -330,13 +347,15 @@ def test_measurement_compu_method_tab_intp():
     """
     session = parser.parseFromString(DATA)
     meas = Measurement(session, "N")
-    assert meas.compuMethod == {
-        'format': '%8.4', 'type': 'TAB_INTP', 'unit': 'U/min', 'default_value': 300.56, 'interpolation': True,
-        'num_values': 12,
-        'in_values': [-3.0, -1.0, 0.0, 2.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 13.0],
-        'out_values': [98.0, 99.0, 100.0, 102.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0],
-        'longIdentifier': ''
-        }
+    assert meas.compuMethod.format == '%8.4'
+    assert meas.compuMethod.conversionType == 'TAB_INTP'
+    assert meas.compuMethod.unit == 'U/min'
+    assert meas.compuMethod.longIdentifier == ''
+    assert meas.compuMethod.tab['default_value'] == 300.56
+    assert meas.compuMethod.tab['interpolation'] ==  True
+    assert meas.compuMethod.tab['num_values'] == 12
+    assert meas.compuMethod.tab['in_values'] ==  [-3.0, -1.0, 0.0, 2.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 13.0]
+    assert meas.compuMethod.tab['out_values'] == [98.0, 99.0, 100.0, 102.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0]
 
 def test_measurement_compu_method_tab_verb():
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
@@ -372,13 +391,15 @@ def test_measurement_compu_method_tab_verb():
     """
     session = parser.parseFromString(DATA)
     meas = Measurement(session, "N")
-    assert meas.compuMethod == {
-        'format': '%12.0', 'type': 'TAB_VERB', 'unit': '', 'default_value': "unknown signal type",
-        'num_values': 6, 'ranges': False,
-        'in_values': [2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
-        'text_values': ['red', 'orange', 'yellow', 'green', 'blue', 'violet'],
-        'longIdentifier': 'Verbal conversion with default value'
-        }
+    assert meas.compuMethod.format == '%12.0'
+    assert meas.compuMethod.conversionType == 'TAB_VERB'
+    assert meas.compuMethod.unit == ""
+    assert meas.compuMethod.longIdentifier == 'Verbal conversion with default value'
+    assert meas.compuMethod.tab_verb['default_value'] == "unknown signal type"
+    assert meas.compuMethod.tab_verb['num_values'] == 6
+    assert meas.compuMethod.tab_verb['ranges'] == False
+    assert meas.compuMethod.tab_verb['in_values'] == [2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
+    assert meas.compuMethod.tab_verb['text_values'] == ['red', 'orange', 'yellow', 'green', 'blue', 'violet']
 
 def test_measurement_compu_method_tab_verb_range():
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
@@ -420,17 +441,20 @@ def test_measurement_compu_method_tab_verb_range():
     /end MODULE
     """
     session = parser.parseFromString(DATA)
-    meas = Measurement(session, "N")
-    assert meas.compuMethod == {
-        'format': '%4.2', 'type': 'TAB_VERB', 'unit': '', 'default_value': "out of range value",
-        'num_values': 11, 'ranges': True,
-        'lower_values': [0.0, 2.0, 4.0, 14.0, 18.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0],
-        'text_values': ['Zero_to_one', 'two_to_three', 'four_to_seven', 'fourteen_to_seventeen',
-            'eigteen_to_ninetynine', 'hundred', 'hundredone', 'hundredtwo', 'hundredthree',
-            'hundredfour', 'hundredfive'],
-        'upper_values': [1.0, 3.0, 7.0, 17.0, 99.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0],
-        'longIdentifier': 'verbal range with default value'
-        }
+    meas = Measurement.get(session, "N")
+    assert meas.compuMethod.format == '%4.2'
+    assert meas.compuMethod.conversionType == 'TAB_VERB'
+    assert meas.compuMethod.unit == ''
+    assert meas.compuMethod.longIdentifier == 'verbal range with default value'
+    assert meas.compuMethod.name == "CM.VTAB_RANGE.DEFAULT_VALUE"
+    assert meas.compuMethod.statusStringRef == None
+    assert meas.compuMethod.tab_verb["default_value"] == "out of range value"
+    assert meas.compuMethod.tab_verb["num_values"] == 11
+    assert meas.compuMethod.tab_verb["ranges"] == True
+    assert meas.compuMethod.tab_verb['lower_values'] == [0.0, 2.0, 4.0, 14.0, 18.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0]
+    assert meas.compuMethod.tab_verb['text_values'] == ['Zero_to_one', 'two_to_three', 'four_to_seven', 'fourteen_to_seventeen',
+            'eigteen_to_ninetynine', 'hundred', 'hundredone', 'hundredtwo', 'hundredthree', 'hundredfour', 'hundredfive']
+    assert meas.compuMethod.tab_verb['upper_values'] == [1.0, 3.0, 7.0, 17.0, 99.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0]
 
 def test_mod_par_full_featured():
     parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
