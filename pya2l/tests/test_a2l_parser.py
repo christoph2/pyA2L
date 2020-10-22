@@ -9,7 +9,8 @@ import pytest
 from setuptools import sandbox
 
 import pya2l.model as model
-from pya2l.a2l_listener import A2LListener, ParserWrapper, delist
+from pya2l.a2l_listener import A2LListener, delist
+from pya2l.parserlib import ParserWrapper
 
 # pylint: disable=C0111
 # pylint: disable=C0103
