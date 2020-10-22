@@ -6,12 +6,8 @@
 
 import pytest
 
-from pya2l.aml_listener import (
-    AMLListener,
-    AMLPredefinedTypes,
-    ParserWrapper,
-    map_predefined_type,
-)
+from pya2l.aml_listener import AMLListener, AMLPredefinedTypes, map_predefined_type
+from pya2l.parserlib import ParserWrapper
 
 
 def test_type_mapping():

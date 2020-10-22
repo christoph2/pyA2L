@@ -9,7 +9,8 @@ import math
 import pytest
 
 from pya2l import exceptions, functions, model
-from pya2l.a2l_listener import A2LListener, ParserWrapper
+from pya2l.a2l_listener import A2LListener
+from pya2l.parserlib import ParserWrapper
 
 try:
     import numpy as np

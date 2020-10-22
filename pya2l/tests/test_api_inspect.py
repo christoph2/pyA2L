@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 
-from pya2l.a2l_listener import A2LListener, ParserWrapper
+from pya2l.a2l_listener import A2LListener
 from pya2l.api.inspect import Measurement, ModCommon, ModPar
+from pya2l.parserlib import ParserWrapper
 
 
 def test_measurement_basic():
