@@ -29,14 +29,9 @@ __version__ = "0.1.0"
 
 
 import enum
-import json
-import re
-from collections import OrderedDict, namedtuple
 from decimal import Decimal as D
 
 import antlr4
-
-from pya2l.parserlib import ParserWrapper
 
 
 class AMLPredefinedTypes(enum.IntEnum):

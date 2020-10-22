@@ -32,7 +32,7 @@ def findAntlr():
 
                 break
 
-    if not ANTLR_VERSION in antlrJar:
+    if ANTLR_VERSION not in antlrJar:
         raise ValueError(
             "pyA2L requires Antlr {0} -- found '{1}'".format(ANTLR_VERSION, antlrJar)
         )

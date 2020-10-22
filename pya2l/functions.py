@@ -29,8 +29,9 @@ __copyright__ = """
 import bisect
 import math
 import re
-from collections import OrderedDict
 from operator import itemgetter
+
+from pya2l import exceptions, model
 
 try:
     import numpy as np
@@ -50,7 +51,6 @@ except ImportError:
 else:
     has_numexpr = True
 
-from pya2l import exceptions, model
 
 POW = re.compile(r"pow\s*\((?P<params>.*?)\s*\)")
 SYSC = re.compile(r"sysc\s*\((?P<param>.*?)\s*\)")
@@ -694,7 +694,7 @@ class CompuMethod:
                 raise exceptions.StructuralError(
                     "Cannot use both DEFAULT_VALUE and DEFAULT_VALUE_NUMERIC."
                 )
-            default = default_numeric if not default_numeric is None else default
+            default = default_numeric if default_numeric is not None else default
             self.evaluator = klass(pairs, default)
         elif conversionType == "TAB_VERB":
             table_name = compu_method.compu_tab_ref.conversionTable

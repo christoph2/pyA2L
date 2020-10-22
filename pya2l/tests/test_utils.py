@@ -1,5 +1,3 @@
-import pytest
-
 from pya2l.utils import align_as, padding
 
 

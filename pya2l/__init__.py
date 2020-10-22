@@ -28,7 +28,6 @@ __author__ = "Christoph Schueler"
 __version__ = "0.10.2"
 
 
-import io
 import pkgutil
 import sys
 from os import path

@@ -28,11 +28,8 @@ __copyright__ = """
 
 import collections
 import weakref
-from functools import partial
-from operator import attrgetter
 
 import pya2l.model as model
-from pya2l import DB
 from pya2l.utils import align_as
 
 DB_CACHE_SIZE = 4096  # Completly arbitrary, could be configurable.
@@ -189,7 +186,7 @@ class CachedBase:
     @classmethod
     def get(cls, session, name: str = None, module_name: str = None):
         entry = (cls.__name__, name)
-        if not entry in cls._cache:
+        if entry not in cls._cache:
             inst = cls(session, name, module_name)
             cls._cache[entry] = inst
             cls._strong_ref.append(inst)
@@ -912,7 +909,7 @@ class Characteristic(CachedBase):
         if isinstance(axis, int):
             index = axis
         elif isinstance(axis, str):
-            if not axis in MAP:
+            if axis not in MAP:
                 raise ValueError("'{}' is an invalid axis name.".format(axis))
             index = MAP.get(axis)
         if index > len(descriptions) - 1:
@@ -2174,7 +2171,7 @@ class RecordLayoutComponents:
                     "shiftOp",
                 ):
                     s, p = self._get_details(entry, item_name, all_axes_names())
-                    if not item_name in ("axisPts", "axisRescale"):
+                    if item_name not in ("axisPts", "axisRescale"):
                         sizeof += s
                     positions.update(p)
                 elif item_name == "ripAddr":
@@ -2228,8 +2225,8 @@ class RecordLayoutComponents:
 
     def _calculate_sizes_axis_pts(self):
         """"""
-        total_mem_size = 0
-        total_length = 0
+        # total_mem_size = 0
+        # total_length = 0
         x_axis = self.axes("x")
         maxAxisPoints = self.parent.maxAxisPoints
         axis_pts = x_axis.get("axisPts")  # Exactly one axis per AXIS_PTS.
@@ -2241,7 +2238,7 @@ class RecordLayoutComponents:
                         self.parent.name
                     )
                 )
-            noRescale = x_axis.get("noRescale")
+            # noRescale = x_axis.get("noRescale")
             element_size = (
                 asam_type_size(axis_res.get("datatype")) * 2
             )  # In this case elements are pairs.
@@ -2257,7 +2254,7 @@ class RecordLayoutComponents:
     def calculate_offsets_and_sizes(self, fnc_allocated_memory: int):
         """"""
         offset = 0
-        axis_pts = {n: self.axis_pts(n) for n in self.axes_names}
+        # axis_pts = {n: self.axis_pts(n) for n in self.axes_names}
         for idx, (_, pos) in enumerate(self._components_by_pos):
             tp = pos["type"]
             if len(tp) == 2:

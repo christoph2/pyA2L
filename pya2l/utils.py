@@ -27,9 +27,11 @@ __copyright__ = """
 __author__ = "Christoph Schueler"
 __version__ = "0.1.0"
 
-import itertools
-import os
+import ctypes
+import subprocess
+import sys
 import threading
+from unicodedata import normalize
 
 
 def slicer(iterable, sliceLength, converter=None):
@@ -41,8 +43,6 @@ def slicer(iterable, sliceLength, converter=None):
         for item in range(0, length, sliceLength)
     ]
 
-
-import sys
 
 if sys.version_info.major == 3:
     from io import BytesIO as StringIO
@@ -98,9 +98,6 @@ class NotAvailable(SingletonBase):
         return "n/a"
 
     __repr__ = __str__
-
-
-import ctypes
 
 
 class StructureWithEnums(ctypes.Structure):
@@ -172,9 +169,6 @@ class Bunch(dict):
         self.__dict__ = self
 
 
-import subprocess
-
-
 class CommandError(Exception):
     pass
 
@@ -188,9 +182,6 @@ def runCommand(cmd):
     if proc.returncode:
         raise CommandError("{0}".format(result[1]))
     return result[0]
-
-
-from unicodedata import normalize
 
 
 def nfc_equal(str1, str2):

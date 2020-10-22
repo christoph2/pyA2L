@@ -9,7 +9,7 @@ import pytest
 from setuptools import sandbox
 
 import pya2l.model as model
-from pya2l.a2l_listener import A2LListener, ParserWrapper, cut_a2ml, delist
+from pya2l.a2l_listener import A2LListener, ParserWrapper, delist
 
 # pylint: disable=C0111
 # pylint: disable=C0103
@@ -31,7 +31,7 @@ def test_delist_empty():
 
 def test_delist_empty_scalar():
     DATA = []
-    assert delist(DATA, True) == None
+    assert delist(DATA, True) is None
 
 
 def test_delist_single():
@@ -129,18 +129,18 @@ def test_annotation():
         0.0               /* lower limit    */
         255.0             /* upper limit    */
         /begin ANNOTATION
-            ANNOTATION_LABEL "Luftsprungabhängigkeit"
+            ANNOTATION_LABEL "Luftsprungabhï¿½ngigkeit"
             ANNOTATION_ORIGIN "Graf Zeppelin"
             /begin ANNOTATION_TEXT
-                "Die luftklasseabhängigen Zeitkonstanten t_hinz\r\n"
-                "& t_kunz können mit Hilfe von Luftsprüngen ermittelt werden.\r\n"
-                "Die Taupunktendezeiten in großen Flughöhen sind stark schwankend"
+                "Die luftklasseabhï¿½ngigen Zeitkonstanten t_hinz\r\n"
+                "& t_kunz kï¿½nnen mit Hilfe von Luftsprï¿½ngen ermittelt werden.\r\n"
+                "Die Taupunktendezeiten in groï¿½en Flughï¿½hen sind stark schwankend"
             /end ANNOTATION_TEXT
         /end ANNOTATION
         /begin ANNOTATION
             ANNOTATION_LABEL "Taupunktendezeiten"
             /begin ANNOTATION_TEXT
-                "Flughöhe Taupunktendezeit\r\n"
+                "Flughï¿½he Taupunktendezeit\r\n"
                 " 13000ft 20 sec\r\n"
                 " 25000ft 40 sec\r\n"
                 " 35000ft 12 sec"
@@ -165,17 +165,17 @@ def test_annotation():
     assert chx.upperLimit == 255.0
     assert len(chx.annotation) == 2
     an0, an1 = chx.annotation
-    assert an0.annotation_label.label == "Luftsprungabhängigkeit"
+    assert an0.annotation_label.label == "Luftsprungabhï¿½ngigkeit"
     assert an0.annotation_origin.origin == "Graf Zeppelin"
     assert an0.annotation_text.text == [
-        "Die luftklasseabhängigen Zeitkonstanten t_hinz\r\n",
-        "& t_kunz können mit Hilfe von Luftsprüngen ermittelt werden.\r\n",
-        "Die Taupunktendezeiten in großen Flughöhen sind stark schwankend",
+        "Die luftklasseabhï¿½ngigen Zeitkonstanten t_hinz\r\n",
+        "& t_kunz kï¿½nnen mit Hilfe von Luftsprï¿½ngen ermittelt werden.\r\n",
+        "Die Taupunktendezeiten in groï¿½en Flughï¿½hen sind stark schwankend",
     ]
     assert an1.annotation_label.label == "Taupunktendezeiten"
     assert an1.annotation_origin is None
     assert an1.annotation_text.text == [
-        "Flughöhe Taupunktendezeit\r\n",
+        "Flughï¿½he Taupunktendezeit\r\n",
         " 13000ft 20 sec\r\n",
         " 25000ft 40 sec\r\n",
         " 35000ft 12 sec",
@@ -817,8 +817,8 @@ def test_calibration_coeffs_linear():
     DATA = """
     COEFFS_LINEAR 1.25 -2.0
     /* The physical value (PHYS) with unit is calculated from the */
-    /* control unit’s internal value of revolutions (INT) as follows: */
-    /* PHYS = 1.25 * INT – 2.0 */
+    /* control unitï¿½s internal value of revolutions (INT) as follows: */
+    /* PHYS = 1.25 * INT ï¿½ 2.0 */
     """
     session = parser.parseFromString(DATA)
     coeffs = session.query(model.CoeffsLinear).first()
@@ -844,7 +844,7 @@ def test_compu_method():
             "conversion method for engine temperature"
             TAB_NOINTP /* convers_type */
             "%4.2" /* display format */
-            "°C" /* physical unit */
+            "ï¿½C" /* physical unit */
             COMPU_TAB_REF MOTEMP1
         /end COMPU_METHOD
 
@@ -867,7 +867,7 @@ def test_compu_method():
             "conversion method for air temperature"
             FORM /* convers_type */
             "%4.2" /* display format */
-            "°C" /* physical unit */
+            "ï¿½C" /* physical unit */
             /begin FORMULA
                 "3*X1/100 + 22.7"
             /end FORMULA
@@ -963,7 +963,7 @@ def test_compu_method():
     assert cm[0].longIdentifier == "conversion method for engine temperature"
     assert cm[0].conversionType == "TAB_NOINTP"
     assert cm[0].format == "%4.2"
-    assert cm[0].unit == "°C"
+    assert cm[0].unit == "ï¿½C"
     assert cm[0].compu_tab_ref.conversionTable == "MOTEMP1"
 
     assert cm[1].name == "CM_IDENTITY"
@@ -984,7 +984,7 @@ def test_compu_method():
     assert cm[3].longIdentifier == "conversion method for air temperature"
     assert cm[3].conversionType == "FORM"
     assert cm[3].format == "%4.2"
-    assert cm[3].unit == "°C"
+    assert cm[3].unit == "ï¿½C"
     assert cm[3].formula.f_x == "3*X1/100 + 22.7"
 
     assert cm[4].name == "CM_DiagStatus"
@@ -1117,13 +1117,13 @@ def test_compu_tab():
     assert ct.default_value_numeric.display_value == 99.0
     assert len(ct.pairs) == ct.numberValuePairs
     p0, p1, p2, p3, p4, p5, p6 = ct.pairs
-    assert compareCompuTabPair(p0, inVal=1.0, outVal=4.3) == True
-    assert compareCompuTabPair(p1, inVal=2.0, outVal=4.7) == True
-    assert compareCompuTabPair(p2, inVal=3.0, outVal=5.8) == True
-    assert compareCompuTabPair(p3, inVal=4.0, outVal=14.2) == True
-    assert compareCompuTabPair(p4, inVal=5.0, outVal=16.8) == True
-    assert compareCompuTabPair(p5, inVal=6.0, outVal=17.2) == True
-    assert compareCompuTabPair(p6, inVal=7.0, outVal=19.4) == True
+    assert compareCompuTabPair(p0, inVal=1.0, outVal=4.3)
+    assert compareCompuTabPair(p1, inVal=2.0, outVal=4.7)
+    assert compareCompuTabPair(p2, inVal=3.0, outVal=5.8)
+    assert compareCompuTabPair(p3, inVal=4.0, outVal=14.2)
+    assert compareCompuTabPair(p4, inVal=5.0, outVal=16.8)
+    assert compareCompuTabPair(p5, inVal=6.0, outVal=17.2)
+    assert compareCompuTabPair(p6, inVal=7.0, outVal=19.4)
 
 
 def test_compu_tab_ref():
@@ -1172,10 +1172,10 @@ def test_compu_v_tab():
         p2,
         p3,
     ) = cvt[0].pairs
-    assert compareCompuTabPair(p0, inVal=0.0, outVal="engine off") == True
-    assert compareCompuTabPair(p1, inVal=1.0, outVal="idling") == True
-    assert compareCompuTabPair(p2, inVal=2.0, outVal="partial load") == True
-    assert compareCompuTabPair(p3, inVal=3.0, outVal="full load") == True
+    assert compareCompuTabPair(p0, inVal=0.0, outVal="engine off")
+    assert compareCompuTabPair(p1, inVal=1.0, outVal="idling")
+    assert compareCompuTabPair(p2, inVal=2.0, outVal="partial load")
+    assert compareCompuTabPair(p3, inVal=3.0, outVal="full load")
 
     assert cvt[1].name == "CT_DiagStatus"
     assert cvt[1].longIdentifier == ""
@@ -1183,9 +1183,9 @@ def test_compu_v_tab():
     assert cvt[1].numberValuePairs == 3
     assert cvt[1].numberValuePairs == len(cvt[1].pairs)
     p0, p1, p2 = cvt[1].pairs
-    assert compareCompuTabPair(p0, inVal=0.0, outVal="C_Fail") == True
-    assert compareCompuTabPair(p1, inVal=1.0, outVal="C_Pass") == True
-    assert compareCompuTabPair(p2, inVal=2.0, outVal="C_Indeterminate") == True
+    assert compareCompuTabPair(p0, inVal=0.0, outVal="C_Fail")
+    assert compareCompuTabPair(p1, inVal=1.0, outVal="C_Pass")
+    assert compareCompuTabPair(p2, inVal=2.0, outVal="C_Indeterminate")
 
 
 def compareCompuVTabRangeTriple(pair, inValMin, inValMax, outVal):
@@ -1217,31 +1217,16 @@ def test_compu_v_tab_range():
     assert cvr.numberValueTriples == len(cvr.triples)
     assert cvr.default_value.display_string == "Value_out_of_Range"
     t0, t1, t2, t3, t4 = cvr.triples
-    assert (
-        compareCompuVTabRangeTriple(t0, inValMin=0.0, inValMax=0.0, outVal="ONE")
-        == True
+    assert compareCompuVTabRangeTriple(t0, inValMin=0.0, inValMax=0.0, outVal="ONE")
+    assert compareCompuVTabRangeTriple(
+        t1, inValMin=1.0, inValMax=2.0, outVal="first_section"
     )
-    assert (
-        compareCompuVTabRangeTriple(
-            t1, inValMin=1.0, inValMax=2.0, outVal="first_section"
-        )
-        == True
+    assert compareCompuVTabRangeTriple(t2, inValMin=3.0, inValMax=3.0, outVal="THIRD")
+    assert compareCompuVTabRangeTriple(
+        t3, inValMin=4.0, inValMax=5.0, outVal="second_section"
     )
-    assert (
-        compareCompuVTabRangeTriple(t2, inValMin=3.0, inValMax=3.0, outVal="THIRD")
-        == True
-    )
-    assert (
-        compareCompuVTabRangeTriple(
-            t3, inValMin=4.0, inValMax=5.0, outVal="second_section"
-        )
-        == True
-    )
-    assert (
-        compareCompuVTabRangeTriple(
-            t4, inValMin=6.0, inValMax=500.0, outVal="usual_case"
-        )
-        == True
+    assert compareCompuVTabRangeTriple(
+        t4, inValMin=6.0, inValMax=500.0, outVal="usual_case"
     )
 
 
@@ -2985,11 +2970,11 @@ def test_phone_no():
 def test_phys_unit():
     parser = ParserWrapper("a2l", "physUnit", A2LListener, debug=False)
     DATA = """
-    PHYS_UNIT "°C"
+    PHYS_UNIT "ï¿½C"
     """
     session = parser.parseFromString(DATA)
     pn = session.query(model.PhysUnit).first()
-    assert pn.unit == "°C"
+    assert pn.unit == "ï¿½C"
 
 
 def test_project():
@@ -3059,7 +3044,7 @@ def test_read_only():
     assert chx.lowerLimit == 0.0
     assert chx.upperLimit == 255.0
     assert chx.function_list.name == ["V_LIM"]
-    assert chx.read_only == True
+    assert chx.read_only
     """
     """
 
@@ -3911,17 +3896,17 @@ def test_unit_conversion():
     /begin UNIT
         degC
         "unit for temperature: degree Celsius"
-        "[°C]"
+        "[ï¿½C]"
         DERIVED
         REF_UNIT kelvin
-        UNIT_CONVERSION 1.0 -273.15 /* y [°C] = 1.0 * x [K] + (-273.15) */
+        UNIT_CONVERSION 1.0 -273.15 /* y [ï¿½C] = 1.0 * x [K] + (-273.15) */
     /end UNIT
     """
     session = parser.parseFromString(DATA)
     unit = session.query(model.Unit).first()
     assert unit.name == "degC"
     assert unit.longIdentifier == "unit for temperature: degree Celsius"
-    assert unit.display == "[°C]"
+    assert unit.display == "[ï¿½C]"
     assert unit.type == "DERIVED"
     assert unit.ref_unit.unit == "kelvin"
     assert unit.unit_conversion.gradient == 1.0

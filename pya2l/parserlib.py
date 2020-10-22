@@ -34,7 +34,6 @@ import os
 import sys
 
 import antlr4
-from antlr4.BufferedTokenStream import BufferedTokenStream
 from antlr4.error.ErrorListener import ErrorListener
 
 from pya2l import model
@@ -84,15 +83,15 @@ class ParserWrapper:
         parser.setTrace(trace)
         parser.removeErrorListeners()
         parser.addErrorListener(MyErrorListener())
-        meth = getattr(parser, self.startSymbol)
+        # meth = getattr(parser, self.startSymbol)
         self._syntaxErrors = parser._syntaxErrors
-        tree = meth()
+        # tree = meth()
         if self.listener:
             if self.useDatabase:
                 self.listener.db = self.db
             listener = self.listener()
-            walker = antlr4.ParseTreeWalker()
-            result = walker.walk(listener, tree)
+            # walker = antlr4.ParseTreeWalker()
+            # result = walker.walk(listener, tree)
         if self.useDatabase:
             self.db.session.commit()
             return self.db.session
