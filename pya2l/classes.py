@@ -23,7 +23,6 @@ __copyright__ = """
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
-import sys
 from collections import namedtuple
 
 import six
@@ -130,7 +129,7 @@ class KeywordType(type):
         fixedAttributes = []
         variableAttribute = None
         if attrs:
-            fixedAttributes = [attr[1] for attr in attrs if not MULTIPLE in attr]
+            fixedAttributes = [attr[1] for attr in attrs if MULTIPLE not in attr]
             variableAttribute = [attr[1] for attr in attrs if MULTIPLE in attr]
             if variableAttribute:
                 # print("VA: {} ==> {}".format(newKlass.__name__, variableAttribute))
@@ -173,7 +172,7 @@ class Keyword(object):
 
     @classmethod
     def attributeNames(cls):
-        return [attr[1] for attr in cls.attrs if not MULTIPLE in attr]
+        return [attr[1] for attr in cls.attrs if MULTIPLE not in attr]
 
     def __str__(self):
         return "< %s @%0X >" % (self.__class__.__name__, id(self))

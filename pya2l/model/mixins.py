@@ -24,10 +24,6 @@ __copyright__ = """
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
-import bisect
-from collections import namedtuple
-
-from sqlalchemy import event, func, sql
 
 from pya2l.logger import Logger
 

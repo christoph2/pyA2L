@@ -27,18 +27,13 @@ __copyright__ = """
 __author__ = "Christoph Schueler"
 __version__ = "0.1.0"
 
-import codecs
-import os
 import re
-import sys
 from decimal import Decimal as D
-from pprint import pprint
 
 import antlr4
 
 import pya2l.model as model
 from pya2l.logger import Logger
-from pya2l.parserlib import ParserWrapper
 from pya2l.preprocessor import blank_out
 
 
@@ -80,7 +75,7 @@ def cut_a2ml(data):
         re.VERBOSE | re.DOTALL | re.MULTILINE,
     )
     a2ml = None
-    if_data = []
+    # if_data = []
     match = AML.search(data)
     if match:
         data = blank_out(data, match.span())
@@ -410,7 +405,7 @@ class A2LListener(BaseListener):
         v_frame = delist(self.getList(ctx.v_frame), True)
         v_function = self.getList(ctx.v_function)
         v_group = self.getList(ctx.v_group)
-        v_ifData = self.getList(ctx.v_ifData)
+        # v_ifData = self.getList(ctx.v_ifData)
         v_measurement = self.getList(ctx.v_measurement)
         v_modCommon = delist(self.getList(ctx.v_modCommon), True)
         v_modPar = delist(self.getList(ctx.v_modPar), True)

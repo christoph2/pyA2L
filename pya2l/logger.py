@@ -28,7 +28,6 @@ __author__ = "Christoph Schueler"
 __version__ = "0.1.0"
 
 import logging
-import os
 
 # logging.basicConfig()
 

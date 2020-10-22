@@ -26,7 +26,7 @@ else:
     has_scipy = True
 
 
-RUN_MATH_TEST = has_numpy == True and has_scipy == True
+RUN_MATH_TEST = has_numpy and has_scipy
 
 
 class Value:

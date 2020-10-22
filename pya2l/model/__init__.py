@@ -29,29 +29,13 @@ import datetime
 import mmap
 import re
 import sqlite3
-from functools import partial
 
-from sqlalchemy import (
-    CheckConstraint,
-    Column,
-    ForeignKey,
-    ForeignKeyConstraint,
-    MetaData,
-    PassiveDefault,
-    UniqueConstraint,
-    create_engine,
-    event,
-    func,
-    orm,
-    schema,
-    types,
-)
+from sqlalchemy import Column, ForeignKey, MetaData, create_engine, event, orm, types
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import backref, relationship
-from sqlalchemy.sql import exists
 
 from pya2l.model.mixins import AxisDescrMixIn, CompareByPositionMixIn
 from pya2l.utils import SingletonBase

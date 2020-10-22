@@ -31,7 +31,6 @@ __version__ = "0.9"
 ## Convenience functions for Mako Templates.
 ##
 
-import re
 from io import StringIO
 
 from mako import exceptions

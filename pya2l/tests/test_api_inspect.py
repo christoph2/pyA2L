@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pytest
 
-import pya2l.model as model
 from pya2l.a2l_listener import A2LListener, ParserWrapper
 from pya2l.api.inspect import Measurement, ModCommon, ModPar
 
@@ -34,9 +32,9 @@ def test_measurement_basic():
     assert meas.annotations == []
     assert meas.arraySize is None
     assert meas.bitMask is None
-    assert meas.bitOperation == None
+    assert meas.bitOperation is None
     assert meas.byteOrder is None
-    assert meas.discrete == False
+    assert meas.discrete is False
     assert meas.displayIdentifier is None
     assert meas.ecuAddress is None
     assert meas.ecuAddressExtension is None
@@ -44,12 +42,12 @@ def test_measurement_basic():
     assert meas.format is None
     assert meas.functionList == []
     assert meas.layout is None
-    assert meas.matrixDim == None
-    assert meas.maxRefresh == None
+    assert meas.matrixDim is None
+    assert meas.maxRefresh is None
     assert meas.physUnit is None
-    assert meas.readWrite == False
+    assert meas.readWrite is False
     assert meas.refMemorySegment is None
-    assert meas.symbolLink == None
+    assert meas.symbolLink is None
     assert meas.virtual == []
     assert meas.compuMethod == "NO_COMPU_METHOD"
 
@@ -137,7 +135,7 @@ def test_measurement_full_featured():
     ]
     assert meas.bitOperation == {"amount": 4, "direction": "R", "sign_extend": True}
     assert meas.byteOrder == "MSB_FIRST"
-    assert meas.discrete == True
+    assert meas.discrete
     assert meas.displayIdentifier == "load_engine"
     assert meas.ecuAddress == 0xCAFEBABE
     assert meas.ecuAddressExtension == 42
@@ -148,7 +146,7 @@ def test_measurement_full_featured():
     assert meas.matrixDim == {"x": 2, "y": 4, "z": 3}
     assert meas.maxRefresh == {"rate": 15, "scalingUnit": 3}
     assert meas.physUnit == "mph"
-    assert meas.readWrite == True
+    assert meas.readWrite
     assert meas.refMemorySegment == "Data2"
     assert meas.symbolLink == {"offset": 4711, "symbolName": "VehicleSpeed"}
     assert meas.virtual == ["PHI_BASIS", "PHI_CORR"]
@@ -368,7 +366,7 @@ def test_measurement_compu_method_tab_intp():
     assert meas.compuMethod.unit == "U/min"
     assert meas.compuMethod.longIdentifier == ""
     assert meas.compuMethod.tab["default_value"] == 300.56
-    assert meas.compuMethod.tab["interpolation"] == True
+    assert meas.compuMethod.tab["interpolation"]
     assert meas.compuMethod.tab["num_values"] == 12
     assert meas.compuMethod.tab["in_values"] == [
         -3.0,
@@ -440,7 +438,7 @@ def test_measurement_compu_method_tab_verb():
     assert meas.compuMethod.longIdentifier == "Verbal conversion with default value"
     assert meas.compuMethod.tab_verb["default_value"] == "unknown signal type"
     assert meas.compuMethod.tab_verb["num_values"] == 6
-    assert meas.compuMethod.tab_verb["ranges"] == False
+    assert meas.compuMethod.tab_verb["ranges"] is False
     assert meas.compuMethod.tab_verb["in_values"] == [2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
     assert meas.compuMethod.tab_verb["text_values"] == [
         "red",
@@ -498,10 +496,10 @@ def test_measurement_compu_method_tab_verb_range():
     assert meas.compuMethod.unit == ""
     assert meas.compuMethod.longIdentifier == "verbal range with default value"
     assert meas.compuMethod.name == "CM.VTAB_RANGE.DEFAULT_VALUE"
-    assert meas.compuMethod.statusStringRef == None
+    assert meas.compuMethod.statusStringRef is None
     assert meas.compuMethod.tab_verb["default_value"] == "out of range value"
     assert meas.compuMethod.tab_verb["num_values"] == 11
-    assert meas.compuMethod.tab_verb["ranges"] == True
+    assert meas.compuMethod.tab_verb["ranges"]
     assert meas.compuMethod.tab_verb["lower_values"] == [
         0.0,
         2.0,

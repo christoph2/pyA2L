@@ -29,7 +29,6 @@ __version__ = "0.1.0"
 
 
 import unittest
-from pprint import pprint
 
 from pya2l import aml
 
