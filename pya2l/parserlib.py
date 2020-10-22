@@ -24,8 +24,8 @@ __copyright__ = """
 
    s. FLOSS-EXCEPTION.txt
 """
-__author__  = 'Christoph Schueler'
-__version__ = '0.1.0'
+__author__ = "Christoph Schueler"
+__version__ = "0.1.0"
 
 
 import codecs
@@ -41,41 +41,45 @@ from pya2l import model
 
 
 class MyErrorListener(ErrorListener):
-
     def __init__(self):
         super().__init__()
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        print("line " + str(line) + ":" + str(column) + " " + msg, file = sys.stderr)
+        print("line " + str(line) + ":" + str(column) + " " + msg, file=sys.stderr)
 
 
 class ParserWrapper:
-    """
-    """
-    def __init__(self, grammarName, startSymbol, listener = None, useDatabase = True, debug = False):
+    """"""
+
+    def __init__(
+        self, grammarName, startSymbol, listener=None, useDatabase=True, debug=False
+    ):
         self.debug = debug
         self.grammarName = grammarName
         self.startSymbol = startSymbol
-        self.lexerModule, self.lexerClass = self._load('Lexer')
-        self.parserModule, self.parserClass = self._load('Parser')
+        self.lexerModule, self.lexerClass = self._load("Lexer")
+        self.parserModule, self.parserClass = self._load("Parser")
         self.listener = listener
         self.useDatabase = useDatabase
 
     def _load(self, name):
-        className = '{0}{1}'.format(self.grammarName, name)
-        moduleName = 'pya2l.{0}'.format(className)
+        className = "{0}{1}".format(self.grammarName, name)
+        moduleName = "pya2l.{0}".format(className)
         module = importlib.import_module(moduleName)
         klass = getattr(module, className)
-        return (module, klass, )
+        return (
+            module,
+            klass,
+        )
 
-    def parse(self, input, trace = False):
+    def parse(self, input, trace=False):
         if self.useDatabase:
-            self.db = model.A2LDatabase(self.fnbase, debug = self.debug)
+            self.db = model.A2LDatabase(self.fnbase, debug=self.debug)
         lexer = self.lexerClass(input)
         lexer.removeErrorListeners()
         lexer.addErrorListener(MyErrorListener())
         tokenStream = antlr4.CommonTokenStream(lexer)
-#        tokenStream = BufferedTokenStream(lexer)
+        #        tokenStream = BufferedTokenStream(lexer)
         parser = self.parserClass(tokenStream)
         parser.setTrace(trace)
         parser.removeErrorListeners()
@@ -95,7 +99,7 @@ class ParserWrapper:
         else:
             return listener
 
-    def parseFromFile(self, filename, encoding = 'latin-1', trace = False):
+    def parseFromFile(self, filename, encoding="latin-1", trace=False):
         if filename == ":memory:":
             self.fnbase = ":memory:"
         else:
@@ -103,13 +107,13 @@ class ParserWrapper:
             self.fnbase = os.path.splitext(fname)[0]
         return self.parse(ParserWrapper.stringStream(filename, encoding), trace)
 
-    def parseFromString(self, buf, encoding = 'latin-1', trace = False, dbname = ":memory:"):
+    def parseFromString(self, buf, encoding="latin-1", trace=False, dbname=":memory:"):
         self.fnbase = dbname
         return self.parse(antlr4.InputStream(buf), trace)
 
     @staticmethod
-    def stringStream(fname, encoding = 'latin-1'):
-        return antlr4.InputStream(codecs.open(fname, encoding = encoding).read())
+    def stringStream(fname, encoding="latin-1"):
+        return antlr4.InputStream(codecs.open(fname, encoding=encoding).read())
 
     def _getNumberOfSyntaxErrors(self):
         return self._syntaxErrors

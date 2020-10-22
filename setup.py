@@ -2,13 +2,14 @@
 # pylint: disable=C0111
 import distutils.cmd
 import distutils.log
-from distutils.core import setup
 import os
-from glob import glob
 import subprocess
-from setuptools import find_packages
+from distutils.core import setup
+from glob import glob
+
 import setuptools.command.build_py
 import setuptools.command.develop
+from setuptools import find_packages
 
 ANTLR_VERSION = "4.8"
 ANTLR_RT = "antlr4-python3-runtime == {}".format(ANTLR_VERSION)
@@ -82,7 +83,8 @@ def clean():
     tokens = glob(os.path.join("pya2l", "*tokens"))
     interp = glob(os.path.join("pya2l", "*interp"))
     listener = [
-        glob(os.path.join("pya2l", i + "Listener.py"))[0] for i in ["a2l", "aml"] # No listener for lexer grammars (a2llg.g4).
+        glob(os.path.join("pya2l", i + "Listener.py"))[0]
+        for i in ["a2l", "aml"]  # No listener for lexer grammars (a2llg.g4).
     ]
     for unneeded in tokens + interp + listener:
         os.remove(unneeded)
@@ -133,8 +135,8 @@ setup(
     packages=find_packages(),
     install_requires=INSTALL_REQS,
     tests_require=["pytest", "pytest-runner"],
-    package_data = {
-        "templates": glob('cgen/templates/*.tmpl'),
+    package_data={
+        "templates": glob("cgen/templates/*.tmpl"),
     },
     test_suite="pya2l.tests",
     license="GPLv2",

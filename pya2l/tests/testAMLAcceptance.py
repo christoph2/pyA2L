@@ -24,12 +24,12 @@ __copyright__ = """
 
    s. FLOSS-EXCEPTION.txt
 """
-__author__  = 'Christoph Schueler'
-__version__ = '0.1.0'
+__author__ = "Christoph Schueler"
+__version__ = "0.1.0"
 
 
-from pprint import pprint
 import unittest
+from pprint import pprint
 
 from pya2l import aml
 
@@ -81,17 +81,19 @@ AML = """
 /end A2ML
 """
 
-class TestAcceptance(unittest.TestCase):
 
+class TestAcceptance(unittest.TestCase):
     def setUp(self):
-        self.parser = aml.ParserWrapper('aml', 'amlFile')
+        self.parser = aml.ParserWrapper("aml", "amlFile")
 
     def testBasicAcceptance(self):
         tree = self.parser.parseFromString(AML)
         self.assertEqual(self.parser.numberOfSyntaxErrors, 0)
 
+
 def main():
     unittest.main()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__copyright__="""
+__copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
    (C) 2009-2019 by Christoph Schueler <github.com/Christoph2,
@@ -24,31 +24,52 @@ __copyright__="""
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
-__author__  = 'Christoph Schueler'
-__version__ = '0.9'
+__author__ = "Christoph Schueler"
+__version__ = "0.9"
 
 ##
 ## Convenience functions for Mako Templates.
 ##
 
-from io import StringIO
 import re
+from io import StringIO
 
-from mako.template import Template
-from mako.runtime import Context
 from mako import exceptions
+from mako.runtime import Context
+from mako.template import Template
 
-#from csstuff import strings
+# from csstuff import strings
 
-indentText = lambda text, leftmargin = 0: '\n'.join(["%s%s" % ((" " * leftmargin), line, )  if line else "" for line in text.splitlines()])
+indentText = lambda text, leftmargin=0: "\n".join(
+    [
+        "%s%s"
+        % (
+            (" " * leftmargin),
+            line,
+        )
+        if line
+        else ""
+        for line in text.splitlines()
+    ]
+)
 
 # TODO: rename to 'renderTemplate'!
 
-def doTemplate(tmpl, namespace = {}, leftMargin = 0, rightMargin = 80, formatExceptions = True, encoding = 'utf-8'):
+
+def doTemplate(
+    tmpl,
+    namespace={},
+    leftMargin=0,
+    rightMargin=80,
+    formatExceptions=True,
+    encoding="utf-8",
+):
     buf = StringIO()
     ctx = Context(buf, **namespace)
     try:
-        tobj = Template(filename = tmpl, output_encoding = encoding,  format_exceptions = formatExceptions) #, imports ='re' # TODO: imports parameter.
+        tobj = Template(
+            filename=tmpl, output_encoding=encoding, format_exceptions=formatExceptions
+        )  # , imports ='re' # TODO: imports parameter.
         tobj.render_context(ctx)
     except:
         print(exceptions.text_error_template().render())
@@ -56,18 +77,27 @@ def doTemplate(tmpl, namespace = {}, leftMargin = 0, rightMargin = 80, formatExc
     ##return strings.reformat(buf.getvalue(), leftMargin, rightMargin)
     return buf.getvalue()
 
-def doTemplateFromText(tmpl, namespace = {}, leftMargin = 0, rightMargin = 80, formatExceptions = True, encoding = 'utf-8'):
+
+def doTemplateFromText(
+    tmpl,
+    namespace={},
+    leftMargin=0,
+    rightMargin=80,
+    formatExceptions=True,
+    encoding="utf-8",
+):
     buf = StringIO()
     ctx = Context(buf, **namespace)
     try:
-        tobj = Template(text = tmpl, output_encoding = encoding, format_exceptions = formatExceptions) #, imports ='re'
+        tobj = Template(
+            text=tmpl, output_encoding=encoding, format_exceptions=formatExceptions
+        )  # , imports ='re'
         tobj.render_context(ctx)
     except:
         print(exceptions.text_error_template().render())
         return None
-    return indentText(buf.getvalue(), leftMargin) #, rightMargin)
+    return indentText(buf.getvalue(), leftMargin)  # , rightMargin)
 
 
 def callDef(template, definition, *args, **kwargs):
     return template.get_def(definition).render(*args, **kwargs)
-
