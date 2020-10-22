@@ -24,6 +24,4 @@ __copyright__ = """
 
    s. FLOSS-EXCEPTION.txt
 """
-__author__  = 'Christoph Schueler'
-
-
+__author__ = "Christoph Schueler"

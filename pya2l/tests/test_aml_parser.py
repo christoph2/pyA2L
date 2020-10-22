@@ -7,22 +7,26 @@
 import pytest
 
 from pya2l.aml_listener import (
-        ParserWrapper, AMLListener, map_predefined_type, AMLPredefinedTypes
-    )
+    AMLListener,
+    AMLPredefinedTypes,
+    ParserWrapper,
+    map_predefined_type,
+)
 
 
 def test_type_mapping():
-    assert map_predefined_type('char') == AMLPredefinedTypes.PDT_CHAR
-    assert map_predefined_type('int') == AMLPredefinedTypes.PDT_INT
-    assert map_predefined_type('long') == AMLPredefinedTypes.PDT_LONG
-    assert map_predefined_type('uchar') == AMLPredefinedTypes.PDT_UCHAR
-    assert map_predefined_type('uint') == AMLPredefinedTypes.PDT_UINT
-    assert map_predefined_type('ulong') == AMLPredefinedTypes.PDT_ULONG
-    assert map_predefined_type('double') == AMLPredefinedTypes.PDT_DOUBLE
-    assert map_predefined_type('float') == AMLPredefinedTypes.PDT_FLOAT
+    assert map_predefined_type("char") == AMLPredefinedTypes.PDT_CHAR
+    assert map_predefined_type("int") == AMLPredefinedTypes.PDT_INT
+    assert map_predefined_type("long") == AMLPredefinedTypes.PDT_LONG
+    assert map_predefined_type("uchar") == AMLPredefinedTypes.PDT_UCHAR
+    assert map_predefined_type("uint") == AMLPredefinedTypes.PDT_UINT
+    assert map_predefined_type("ulong") == AMLPredefinedTypes.PDT_ULONG
+    assert map_predefined_type("double") == AMLPredefinedTypes.PDT_DOUBLE
+    assert map_predefined_type("float") == AMLPredefinedTypes.PDT_FLOAT
+
 
 def test_enum_without_tag():
-    parser = ParserWrapper('aml', 'enum_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "enum_type_name", AMLListener, useDatabase=False)
     DATA = """enum {
       "ADDRESS_GRANULARITY_BYTE" = 1,
       "ADDRESS_GRANULARITY_WORD" = 2,
@@ -44,8 +48,9 @@ def test_enum_without_tag():
     assert en2.tag == "ADDRESS_GRANULARITY_DWORD"
     assert en2.constant == 4
 
+
 def test_enum_with_tag():
-    parser = ParserWrapper('aml', 'enum_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "enum_type_name", AMLListener, useDatabase=False)
     DATA = """enum checksum {
           "XCP_ADD_11" = 1,
           "XCP_ADD_12" = 2,
@@ -95,8 +100,9 @@ def test_enum_with_tag():
     assert en9.tag == "XCP_USER_DEFINED"
     assert en9.constant == 255
 
+
 def test_enum_without_constants():
-    parser = ParserWrapper('aml', 'enum_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "enum_type_name", AMLListener, useDatabase=False)
     DATA = """enum {
         "PARITY_NONE",
         "PARITY_ODD",
@@ -118,8 +124,9 @@ def test_enum_without_constants():
     assert en2.tag == "PARITY_EVEN"
     assert en2.constant == 2
 
+
 def test_enum_one_constant():
-    parser = ParserWrapper('aml', 'enum_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "enum_type_name", AMLListener, useDatabase=False)
     DATA = """enum {
         "NO_CHECKSUM" = 10,
         "CHECKSUM_BYTE",
@@ -141,9 +148,10 @@ def test_enum_one_constant():
     assert en2.tag == "CHECKSUM_WORD"
     assert en2.constant == 12
 
+
 @pytest.mark.skip
 def test_enum_unsteady_constants():
-    parser = ParserWrapper('aml', 'enum_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "enum_type_name", AMLListener, useDatabase=False)
     DATA = """enum {
       "UNIT_1NS" = 0,
       "UNIT_10NS" = 1,
@@ -237,8 +245,9 @@ def struct(structs):
     pdt = tn.type_
     assert pdt.type_ == AMLPredefinedTypes.PDT_UCHAR
 
+
 def test_complex_struct():
-    parser = ParserWrapper('aml', 'struct_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "struct_type_name", AMLListener, useDatabase=False)
     DATA = """struct {
         char[101];  /* EVENT_CHANNEL_NAME       */
         char[9];    /* EVENT_CHANNEL_SHORT_NAME */
@@ -257,8 +266,9 @@ def test_complex_struct():
     structs = res.struct_types
     struct(structs)
 
+
 def test_type_definition():
-    parser = ParserWrapper('aml', 'type_definition', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "type_definition", AMLListener, useDatabase=False)
     DATA = """struct {
         char[101];  /* EVENT_CHANNEL_NAME       */
         char[9];    /* EVENT_CHANNEL_SHORT_NAME */
@@ -282,7 +292,9 @@ def test_type_definition():
 
 
 def test_basic_tagged_struct():
-    parser = ParserWrapper('aml', 'taggedstruct_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper(
+        "aml", "taggedstruct_type_name", AMLListener, useDatabase=False
+    )
     DATA = """taggedstruct test {
         "SLAVE" ;
         "MASTER" struct {
@@ -330,8 +342,11 @@ def test_basic_tagged_struct():
     assert tn.name is None
     assert tn.type_.type_ == AMLPredefinedTypes.PDT_UCHAR
 
+
 def test_basic_tagged_union():
-    parser = ParserWrapper('aml', 'taggedunion_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper(
+        "aml", "taggedunion_type_name", AMLListener, useDatabase=False
+    )
     DATA = """
     taggedunion Daq_Event {
         "FIXED_EVENT_LIST" taggedstruct {
@@ -428,6 +443,7 @@ def test_basic_tagged_union():
     assert tn.name is None
     assert tn.type_.type_ == AMLPredefinedTypes.PDT_UINT
 
+
 def block_def(block_definitions):
     assert len(block_definitions) == 1
     bd = block_definitions[0]
@@ -486,7 +502,7 @@ def block_def(block_definitions):
 
 
 def test_basic_block_definition():
-    parser = ParserWrapper('aml', 'block_definition', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "block_definition", AMLListener, useDatabase=False)
     DATA = """
     block "STIM" struct {
         enum {
@@ -503,8 +519,9 @@ def test_basic_block_definition():
     res = parser.parseFromString(DATA)
     block_def(res.block_definitions)
 
+
 def test_basic_declaration():
-    parser = ParserWrapper('aml', 'declaration', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "declaration", AMLListener, useDatabase=False)
     DATA = """
     block "STIM" struct {
         enum {
@@ -525,8 +542,9 @@ def test_basic_declaration():
     assert decl.type_definition is None
     block_def([decl.block_definition])
 
+
 def test_struct_referrers():
-    parser = ParserWrapper('aml', 'struct_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "struct_type_name", AMLListener, useDatabase=False)
     DATA = """
     struct FLX_Parameters {
         taggedunion {
@@ -606,8 +624,9 @@ def test_struct_referrers():
     assert tn.type_.name == "buffer"
     assert tn.type_.members == []
 
+
 def test_taggedstruct_referrers():
-    parser = ParserWrapper('aml', 'struct_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "struct_type_name", AMLListener, useDatabase=False)
     DATA = """
         struct {
             taggedstruct Common_Parameters;  /* default parameters */
@@ -809,8 +828,11 @@ def test_taggedstruct_referrers():
     assert mem.type_.name == "Common_Parameters"
     assert mem.type_.members == []
 
+
 def test_taggedunion_referrers():
-    parser = ParserWrapper('aml', 'taggedstruct_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper(
+        "aml", "taggedstruct_type_name", AMLListener, useDatabase=False
+    )
     DATA = """
     taggedstruct Common_Parameters {
         block "PROTOCOL_LAYER" struct Protocol_Layer;

@@ -24,25 +24,25 @@ __copyright__ = """
 
    s. FLOSS-EXCEPTION.txt
 """
-__author__  = 'Christoph Schueler'
-__version__ = '0.1.0'
+__author__ = "Christoph Schueler"
+__version__ = "0.1.0"
 
 import codecs
-from decimal import Decimal as D
 import os
-from pprint import pprint
 import re
 import sys
+from decimal import Decimal as D
+from pprint import pprint
 
 import antlr4
 
-from pya2l.parserlib import ParserWrapper
-from pya2l.logger import Logger
 import pya2l.model as model
+from pya2l.logger import Logger
+from pya2l.parserlib import ParserWrapper
 from pya2l.preprocessor import blank_out
 
 
-def delist(iterable, scalar = False):
+def delist(iterable, scalar=False):
     if len(iterable) == 0:
         if scalar:
             return None
@@ -59,21 +59,26 @@ def delist(iterable, scalar = False):
         else:
             return [iterable[0]]
 
-def cut_a2ml(data):
-    """
 
-    """
-    AML = re.compile(r"""
+def cut_a2ml(data):
+    """"""
+    AML = re.compile(
+        r"""
     /begin\s+A[23]ML
     (.*?)
     /end\s+A[23]ML
-    """, re.VERBOSE | re.DOTALL | re.MULTILINE)
+    """,
+        re.VERBOSE | re.DOTALL | re.MULTILINE,
+    )
 
-    IF_DATA = re.compile(r"""
+    IF_DATA = re.compile(
+        r"""
     /begin\s+IF_DATA
     (.*?)
     /end\s+IF_DATA
-    """, re.VERBOSE | re.DOTALL | re.MULTILINE)
+    """,
+        re.VERBOSE | re.DOTALL | re.MULTILINE,
+    )
     a2ml = None
     if_data = []
     match = AML.search(data)
@@ -88,8 +93,7 @@ def cut_a2ml(data):
 
 
 class BaseListener(antlr4.ParseTreeListener):
-    """
-    """
+    """"""
 
     value = []
 
@@ -101,7 +105,7 @@ class BaseListener(antlr4.ParseTreeListener):
         return [x.value for x in attr] if attr else []
 
     def getTerminal(self, attr):
-        return attr().getText() if attr() else ''
+        return attr().getText() if attr() else ""
 
     def exitIntegerValue(self, ctx):
         if ctx.i:
@@ -123,7 +127,7 @@ class BaseListener(antlr4.ParseTreeListener):
         ctx.value = ctx.s.text.strip('"') if ctx.s else None
 
     def exitIdentifierValue(self, ctx):
-        text = '.'.join(self.getList(ctx.i))
+        text = ".".join(self.getList(ctx.i))
         ctx.value = text
 
     def exitPartialIdentifier(self, ctx):
@@ -143,206 +147,209 @@ class BaseListener(antlr4.ParseTreeListener):
         ctx.value = value
 
     def _formatMessage(self, msg, location):
-        return "[{0}:{1}] {2}".format(location.start.line, location.start.column + 1, msg)
+        return "[{0}:{1}] {2}".format(
+            location.start.line, location.start.column + 1, msg
+        )
 
-    def _log(self, method, msg, location = None):
+    def _log(self, method, msg, location=None):
         if location:
             method(self._formatMessage(msg, location))
         else:
             method(msg)
 
-    def info(self, msg, location = None):
+    def info(self, msg, location=None):
         self._log(self.logger.info, msg, location)
 
-    def warn(self, msg, location = None):
+    def warn(self, msg, location=None):
         self._log(self.logger.warn, msg, location)
 
-    def error(self, msg, location = None):
+    def error(self, msg, location=None):
         self._log(self.logger.error, msg, location)
 
-    def debug(self, msg, location = None):
+    def debug(self, msg, location=None):
         self._log(self.logger.debug, msg, location)
 
 
 class A2LListener(BaseListener):
-    """
-
-    """
+    """"""
 
     def exitAlignmentByte(self, ctx):
         alignmentBorder = ctx.alignmentBorder.value
-        ctx.value = model.AlignmentByte(alignmentBorder = alignmentBorder)
+        ctx.value = model.AlignmentByte(alignmentBorder=alignmentBorder)
         self.db.session.add(ctx.value)
 
     def exitAlignmentFloat32Ieee(self, ctx):
         alignmentBorder = ctx.alignmentBorder.value
-        ctx.value = model.AlignmentFloat32Ieee(alignmentBorder = alignmentBorder)
+        ctx.value = model.AlignmentFloat32Ieee(alignmentBorder=alignmentBorder)
         self.db.session.add(ctx.value)
 
     def exitAlignmentFloat64Ieee(self, ctx):
         alignmentBorder = ctx.alignmentBorder.value
-        ctx.value = model.AlignmentFloat64Ieee(alignmentBorder = alignmentBorder)
+        ctx.value = model.AlignmentFloat64Ieee(alignmentBorder=alignmentBorder)
         self.db.session.add(ctx.value)
 
     def exitAlignmentInt64(self, ctx):
         alignmentBorder = ctx.alignmentBorder.value
-        ctx.value = model.AlignmentInt64(alignmentBorder = alignmentBorder)
+        ctx.value = model.AlignmentInt64(alignmentBorder=alignmentBorder)
         self.db.session.add(ctx.value)
 
     def exitAlignmentLong(self, ctx):
         alignmentBorder = ctx.alignmentBorder.value
-        ctx.value = model.AlignmentLong(alignmentBorder = alignmentBorder)
+        ctx.value = model.AlignmentLong(alignmentBorder=alignmentBorder)
         self.db.session.add(ctx.value)
 
     def exitAlignmentWord(self, ctx):
         alignmentBorder = ctx.alignmentBorder.value
-        ctx.value = model.AlignmentWord(alignmentBorder = alignmentBorder)
+        ctx.value = model.AlignmentWord(alignmentBorder=alignmentBorder)
         self.db.session.add(ctx.value)
 
     def exitAnnotation(self, ctx):
         v_annotationLabel = delist(self.getList(ctx.v_annotationLabel), True)
         v_annotationOrigin = delist(self.getList(ctx.v_annotationOrigin), True)
         v_annotationText = delist(self.getList(ctx.v_annotationText), True)
-        ctx.value = model.Annotation(annotation_label = v_annotationLabel,
-            annotation_origin = v_annotationOrigin, annotation_text = v_annotationText
+        ctx.value = model.Annotation(
+            annotation_label=v_annotationLabel,
+            annotation_origin=v_annotationOrigin,
+            annotation_text=v_annotationText,
         )
         self.db.session.add(ctx.value)
 
     def exitAnnotationLabel(self, ctx):
         label = ctx.label.value
-        ctx.value = model.AnnotationLabel(label = label)
+        ctx.value = model.AnnotationLabel(label=label)
         self.db.session.add(ctx.value)
 
     def exitAnnotationOrigin(self, ctx):
         origin = ctx.origin.value
-        ctx.value = model.AnnotationOrigin(origin = origin)
+        ctx.value = model.AnnotationOrigin(origin=origin)
         self.db.session.add(ctx.value)
 
     def exitAnnotationText(self, ctx):
         text = self.getList(ctx.text)
-        ctx.value = model.AnnotationText(text = text)
+        ctx.value = model.AnnotationText(text=text)
         self.db.session.add(ctx.value)
 
     def exitBitMask(self, ctx):
         mask = ctx.mask.value
-        ctx.value = model.BitMask(mask = mask)
+        ctx.value = model.BitMask(mask=mask)
         self.db.session.add(ctx.value)
 
     def exitByteOrder(self, ctx):
         byteOrder_ = ctx.byteOrder_.value
-        ctx.value = model.ByteOrder(byteOrder = byteOrder_)
+        ctx.value = model.ByteOrder(byteOrder=byteOrder_)
         self.db.session.add(ctx.value)
 
     def exitCalibrationAccess(self, ctx):
         type_ = ctx.type_.text
-        ctx.value = model.CalibrationAccess(type = type_)
+        ctx.value = model.CalibrationAccess(type=type_)
         self.db.session.add(ctx.value)
 
     def exitDefaultValue(self, ctx):
         display_string = ctx.display_string.value
-        ctx.value = model.DefaultValue(display_string = display_string)
+        ctx.value = model.DefaultValue(display_string=display_string)
         self.db.session.add(ctx.value)
 
     def exitDeposit(self, ctx):
         mode_ = ctx.mode_.text
-        ctx.value = model.Deposit(mode = mode_)
+        ctx.value = model.Deposit(mode=mode_)
 
         self.db.session.add(ctx.value)
 
     def exitDiscrete(self, ctx):
         ctx.value = True
-        #self.db.session.add(ctx.value)
+        # self.db.session.add(ctx.value)
 
     def exitDisplayIdentifier(self, ctx):
         display_name = ctx.display_name.value
-        ctx.value = model.DisplayIdentifier(display_name = display_name)
+        ctx.value = model.DisplayIdentifier(display_name=display_name)
         self.db.session.add(ctx.value)
 
     def exitEcuAddressExtension(self, ctx):
         extension = ctx.extension.value
-        ctx.value = model.EcuAddressExtension(extension = extension)
+        ctx.value = model.EcuAddressExtension(extension=extension)
         self.db.session.add(ctx.value)
 
     def exitExtendedLimits(self, ctx):
         lowerLimit = ctx.lowerLimit.value
         upperLimit = ctx.upperLimit.value
-        ctx.value = model.ExtendedLimits(lowerLimit = lowerLimit, upperLimit = upperLimit)
+        ctx.value = model.ExtendedLimits(lowerLimit=lowerLimit, upperLimit=upperLimit)
         self.db.session.add(ctx.value)
 
     def exitFormat_(self, ctx):
         formatString = ctx.formatString.value
-        ctx.value = model.Format(formatString = formatString)
+        ctx.value = model.Format(formatString=formatString)
         self.db.session.add(ctx.value)
 
     def exitFunctionList(self, ctx):
         name = self.getList(ctx.name)
-        ctx.value = model.FunctionList(name = name)
+        ctx.value = model.FunctionList(name=name)
         self.db.session.add(ctx.value)
 
     def exitGuardRails(self, ctx):
         ctx.value = True
-        #self.db.session.add(ctx.value)
+        # self.db.session.add(ctx.value)
 
     def exitIfData(self, ctx):
-        ctx.value = model.IfData(name = "")
+        ctx.value = model.IfData(name="")
         self.db.session.add(ctx.value)
 
     def exitMatrixDim(self, ctx):
         xDim = ctx.xDim.value
         yDim = ctx.yDim.value
         zDim = ctx.zDim.value
-        ctx.value = model.MatrixDim(xDim = xDim, yDim = yDim, zDim = zDim)
+        ctx.value = model.MatrixDim(xDim=xDim, yDim=yDim, zDim=zDim)
         self.db.session.add(ctx.value)
 
     def exitMaxRefresh(self, ctx):
         scalingUnit = ctx.scalingUnit.value
-        rate  = ctx.rate.value
-        ctx.value = model.MaxRefresh(scalingUnit = scalingUnit, rate = rate)
+        rate = ctx.rate.value
+        ctx.value = model.MaxRefresh(scalingUnit=scalingUnit, rate=rate)
         self.db.session.add(ctx.value)
 
     def exitMonotony(self, ctx):
         monotony_ = ctx.monotony_.text
-        ctx.value = model.Monotony(monotony = monotony_)
+        ctx.value = model.Monotony(monotony=monotony_)
         self.db.session.add(ctx.value)
 
     def exitPhysUnit(self, ctx):
         unit_ = ctx.unit_.value
-        ctx.value = model.PhysUnit(unit = unit_)
+        ctx.value = model.PhysUnit(unit=unit_)
         self.db.session.add(ctx.value)
 
     def exitReadOnly(self, ctx):
         ctx.value = True
-#        self.db.session.add(ctx.value)
+
+    #        self.db.session.add(ctx.value)
 
     def exitRefCharacteristic(self, ctx):
         identifier = self.getList(ctx.identifier)
-        ctx.value = model.RefCharacteristic(identifier = identifier)
+        ctx.value = model.RefCharacteristic(identifier=identifier)
         self.db.session.add(ctx.value)
 
     def exitRefMemorySegment(self, ctx):
         name = ctx.name.value
-        ctx.value = model.RefMemorySegment(name = name)
+        ctx.value = model.RefMemorySegment(name=name)
         self.db.session.add(ctx.value)
 
     def exitRefUnit(self, ctx):
         unit_ = ctx.unit_.value
-        ctx.value = model.RefUnit(unit = unit_)
+        ctx.value = model.RefUnit(unit=unit_)
         self.db.session.add(ctx.value)
 
     def exitStepSize(self, ctx):
         stepSize_ = ctx.stepSize_.value
-        ctx.value = model.StepSize(stepSize = stepSize_)
+        ctx.value = model.StepSize(stepSize=stepSize_)
         self.db.session.add(ctx.value)
 
     def exitSymbolLink(self, ctx):
         symbolName = ctx.symbolName.value
         offset = ctx.offset.value
-        ctx.value = model.SymbolLink(symbolName = symbolName, offset = offset)
+        ctx.value = model.SymbolLink(symbolName=symbolName, offset=offset)
         self.db.session.add(ctx.value)
 
     def exitVersion(self, ctx):
         versionIdentifier = ctx.versionIdentifier.value
-        ctx.value = model.Version(versionIdentifier = versionIdentifier)
+        ctx.value = model.Version(versionIdentifier=versionIdentifier)
         self.db.session.add(ctx.value)
 
     def exitAsap2Version(self, ctx):
@@ -350,15 +357,19 @@ class A2LListener(BaseListener):
         upgradeNo = ctx.upgradeNo.value
 
         if versionNo > 1 or (versionNo == 1 and upgradeNo < 60):
-            self.error("ASAP2 Version '{}.{}' may not parsed correctly.".format(versionNo, upgradeNo))
+            self.error(
+                "ASAP2 Version '{}.{}' may not parsed correctly.".format(
+                    versionNo, upgradeNo
+                )
+            )
 
-        ctx.value = model.Asap2Version(versionNo = versionNo, upgradeNo = upgradeNo)
+        ctx.value = model.Asap2Version(versionNo=versionNo, upgradeNo=upgradeNo)
         self.db.session.add(ctx.value)
 
     def exitA2mlVersion(self, ctx):
         versionNo = ctx.versionNo.value
         upgradeNo = ctx.upgradeNo.value
-        ctx.value = model.A2mlVersion(versionNo = versionNo, upgradeNo = upgradeNo)
+        ctx.value = model.A2mlVersion(versionNo=versionNo, upgradeNo=upgradeNo)
         self.db.session.add(ctx.value)
 
     def exitProject(self, ctx):
@@ -366,19 +377,23 @@ class A2LListener(BaseListener):
         longIdentifier = ctx.longIdentifier.value
         v_header = delist(self.getList(ctx.v_header), True)
         v_module = self.getList(ctx.v_module)
-        ctx.value = model.Project(name = name, longIdentifier = longIdentifier, header = v_header, module = v_module)
+        ctx.value = model.Project(
+            name=name, longIdentifier=longIdentifier, header=v_header, module=v_module
+        )
         self.db.session.add(ctx.value)
 
     def exitHeader(self, ctx):
         comment = ctx.comment.value
         v_projectNo = delist(self.getList(ctx.v_projectNo), True)
         v_version = delist(self.getList(ctx.v_version), True)
-        ctx.value = model.Header(comment = comment, project_no = v_projectNo, version = v_version)
+        ctx.value = model.Header(
+            comment=comment, project_no=v_projectNo, version=v_version
+        )
         self.db.session.add(ctx.value)
 
     def exitProjectNo(self, ctx):
         projectNumber = ctx.projectNumber.value
-        ctx.value = model.ProjectNo(projectNumber = projectNumber)
+        ctx.value = model.ProjectNo(projectNumber=projectNumber)
         self.db.session.add(ctx.value)
 
     def exitModule(self, ctx):
@@ -404,11 +419,26 @@ class A2LListener(BaseListener):
         v_userRights = self.getList(ctx.v_userRights)
         v_variantCoding = delist(self.getList(ctx.v_variantCoding), True)
 
-        ctx.value = model.Module(name = name, longIdentifier = longIdentifier, a2ml = v_a2ml, axis_pts = v_axisPts,
-            characteristic = v_characteristic, compu_method = v_compuMethod, compu_tab = v_compuTab,
-            compu_vtab = v_compuVtab, compu_vtab_range = v_compuVtabRange, frame = v_frame, function = v_function,
-            group = v_group, measurement = v_measurement, mod_common = v_modCommon, mod_par = v_modPar,
-            record_layout = v_recordLayout, unit = v_unit, user_rights = v_userRights, variant_coding = v_variantCoding
+        ctx.value = model.Module(
+            name=name,
+            longIdentifier=longIdentifier,
+            a2ml=v_a2ml,
+            axis_pts=v_axisPts,
+            characteristic=v_characteristic,
+            compu_method=v_compuMethod,
+            compu_tab=v_compuTab,
+            compu_vtab=v_compuVtab,
+            compu_vtab_range=v_compuVtabRange,
+            frame=v_frame,
+            function=v_function,
+            group=v_group,
+            measurement=v_measurement,
+            mod_common=v_modCommon,
+            mod_par=v_modPar,
+            record_layout=v_recordLayout,
+            unit=v_unit,
+            user_rights=v_userRights,
+            variant_coding=v_variantCoding,
         )
         self.db.session.add(ctx.value)
 
@@ -446,17 +476,36 @@ class A2LListener(BaseListener):
         v_stepSize = delist(self.getList(ctx.v_stepSize), True)
         v_symbolLink = delist(self.getList(ctx.v_symbolLink), True)
 
-        ctx.value = model.AxisPts(name = name, longIdentifier = longIdentifier, address = address, inputQuantity = inputQuantity,
-            maxDiff = maxDiff, conversion = conversion, maxAxisPoints = maxAxisPoints,
-            lowerLimit = lowerLimit, upperLimit = upperLimit, annotation = v_annotation, byte_order = v_byteOrder,
-            calibration_access = v_calibrationAccess, deposit = v_deposit, depositAttr = depositAttr,
-            display_identifier = v_displayIdentifier, ecu_address_extension = v_ecuAddressExtension,
-            extended_limits = v_extendedLimits, format = v_format_, function_list = v_functionList, guard_rails = v_guardRails,
-            if_data = v_ifData, monotony = v_monotony, phys_unit = v_physUnit, read_only = v_readOnly,
-            ref_memory_segment = v_refMemorySegment, step_size = v_stepSize, symbol_link = v_symbolLink
+        ctx.value = model.AxisPts(
+            name=name,
+            longIdentifier=longIdentifier,
+            address=address,
+            inputQuantity=inputQuantity,
+            maxDiff=maxDiff,
+            conversion=conversion,
+            maxAxisPoints=maxAxisPoints,
+            lowerLimit=lowerLimit,
+            upperLimit=upperLimit,
+            annotation=v_annotation,
+            byte_order=v_byteOrder,
+            calibration_access=v_calibrationAccess,
+            deposit=v_deposit,
+            depositAttr=depositAttr,
+            display_identifier=v_displayIdentifier,
+            ecu_address_extension=v_ecuAddressExtension,
+            extended_limits=v_extendedLimits,
+            format=v_format_,
+            function_list=v_functionList,
+            guard_rails=v_guardRails,
+            if_data=v_ifData,
+            monotony=v_monotony,
+            phys_unit=v_physUnit,
+            read_only=v_readOnly,
+            ref_memory_segment=v_refMemorySegment,
+            step_size=v_stepSize,
+            symbol_link=v_symbolLink,
         )
         self.db.session.add(ctx.value)
-
 
     def exitCharacteristic(self, ctx):
         name = ctx.name.value
@@ -475,7 +524,9 @@ class A2LListener(BaseListener):
         v_byteOrder = delist(self.getList(ctx.v_byteOrder), True)
         v_calibrationAccess = delist(self.getList(ctx.v_calibrationAccess), True)
         v_comparisonQuantity = delist(self.getList(ctx.v_comparisonQuantity), True)
-        v_dependentCharacteristic = delist(self.getList(ctx.v_dependentCharacteristic), True)
+        v_dependentCharacteristic = delist(
+            self.getList(ctx.v_dependentCharacteristic), True
+        )
         v_discrete = delist(self.getList(ctx.v_discrete), True)
         v_displayIdentifier = delist(self.getList(ctx.v_displayIdentifier), True)
         v_ecuAddressExtension = delist(self.getList(ctx.v_ecuAddressExtension), True)
@@ -493,19 +544,45 @@ class A2LListener(BaseListener):
         v_refMemorySegment = delist(self.getList(ctx.v_refMemorySegment), True)
         v_stepSize = delist(self.getList(ctx.v_stepSize), True)
         v_symbolLink = delist(self.getList(ctx.v_symbolLink), True)
-        v_virtualCharacteristic = delist(self.getList(ctx.v_virtualCharacteristic), True)
+        v_virtualCharacteristic = delist(
+            self.getList(ctx.v_virtualCharacteristic), True
+        )
 
-        ctx.value = model.Characteristic(name = name, longIdentifier = longIdentifier, type = type_, address = address,
-            deposit = deposit_, maxDiff = maxDiff, conversion = conversion, lowerLimit = lowerLimit, upperLimit = upperLimit,
-
-            annotation = v_annotation, axis_descr = v_axisDescr, bit_mask = v_bitMask, byte_order = v_byteOrder,
-            calibration_access = v_calibrationAccess, comparison_quantity = v_comparisonQuantity,
-            dependent_characteristic = v_dependentCharacteristic, discrete = v_discrete, display_identifier = v_displayIdentifier,
-            ecu_address_extension = v_ecuAddressExtension, extended_limits = v_extendedLimits, format = v_format_,
-            function_list = v_functionList, guard_rails = v_guardRails, if_data = v_ifData, map_list = v_mapList,
-            matrix_dim = v_matrixDim, max_refresh = v_maxRefresh, number = v_number, phys_unit = v_physUnit, read_only = v_readOnly,
-            ref_memory_segment = v_refMemorySegment, step_size = v_stepSize, symbol_link = v_symbolLink,
-            virtual_characteristic = v_virtualCharacteristic
+        ctx.value = model.Characteristic(
+            name=name,
+            longIdentifier=longIdentifier,
+            type=type_,
+            address=address,
+            deposit=deposit_,
+            maxDiff=maxDiff,
+            conversion=conversion,
+            lowerLimit=lowerLimit,
+            upperLimit=upperLimit,
+            annotation=v_annotation,
+            axis_descr=v_axisDescr,
+            bit_mask=v_bitMask,
+            byte_order=v_byteOrder,
+            calibration_access=v_calibrationAccess,
+            comparison_quantity=v_comparisonQuantity,
+            dependent_characteristic=v_dependentCharacteristic,
+            discrete=v_discrete,
+            display_identifier=v_displayIdentifier,
+            ecu_address_extension=v_ecuAddressExtension,
+            extended_limits=v_extendedLimits,
+            format=v_format_,
+            function_list=v_functionList,
+            guard_rails=v_guardRails,
+            if_data=v_ifData,
+            map_list=v_mapList,
+            matrix_dim=v_matrixDim,
+            max_refresh=v_maxRefresh,
+            number=v_number,
+            phys_unit=v_physUnit,
+            read_only=v_readOnly,
+            ref_memory_segment=v_refMemorySegment,
+            step_size=v_stepSize,
+            symbol_link=v_symbolLink,
+            virtual_characteristic=v_virtualCharacteristic,
         )
         self.db.session.add(ctx.value)
 
@@ -533,75 +610,96 @@ class A2LListener(BaseListener):
         v_readOnly = delist(self.getList(ctx.v_readOnly), True)
         v_stepSize = delist(self.getList(ctx.v_stepSize), True)
 
-        ctx.value = model.AxisDescr(attribute = attribute, inputQuantity = inputQuantity, conversion = conversion,
-            maxAxisPoints = maxAxisPoints, lowerLimit = lowerLimit, upperLimit = upperLimit,
-            annotation = v_annotation, axis_pts_ref = v_axisPtsRef, byte_order = v_byteOrder, curve_axis_ref = v_curveAxisRef,
-            deposit = v_deposit, extended_limits = v_extendedLimits, fix_axis_par = v_fixAxisPar,
-            fix_axis_par_dist = v_fixAxisParDist, fix_axis_par_list = v_fixAxisParList, format = v_format_,
-            max_grad = v_maxGrad, monotony = v_monotony,
-            phys_unit = v_physUnit, read_only = v_readOnly, step_size = v_stepSize
+        ctx.value = model.AxisDescr(
+            attribute=attribute,
+            inputQuantity=inputQuantity,
+            conversion=conversion,
+            maxAxisPoints=maxAxisPoints,
+            lowerLimit=lowerLimit,
+            upperLimit=upperLimit,
+            annotation=v_annotation,
+            axis_pts_ref=v_axisPtsRef,
+            byte_order=v_byteOrder,
+            curve_axis_ref=v_curveAxisRef,
+            deposit=v_deposit,
+            extended_limits=v_extendedLimits,
+            fix_axis_par=v_fixAxisPar,
+            fix_axis_par_dist=v_fixAxisParDist,
+            fix_axis_par_list=v_fixAxisParList,
+            format=v_format_,
+            max_grad=v_maxGrad,
+            monotony=v_monotony,
+            phys_unit=v_physUnit,
+            read_only=v_readOnly,
+            step_size=v_stepSize,
         )
         self.db.session.add(ctx.value)
 
     def exitAxisPtsRef(self, ctx):
         axisPoints = ctx.axisPoints.value
-        ctx.value = model.AxisPtsRef(axisPoints = axisPoints)
+        ctx.value = model.AxisPtsRef(axisPoints=axisPoints)
         self.db.session.add(ctx.value)
 
     def exitCurveAxisRef(self, ctx):
         curveAxis = ctx.curveAxis.value
-        ctx.value = model.CurveAxisRef(curveAxis = curveAxis)
+        ctx.value = model.CurveAxisRef(curveAxis=curveAxis)
         self.db.session.add(ctx.value)
 
     def exitFixAxisPar(self, ctx):
         offset = ctx.offset.value
         shift = ctx.shift.value
         numberapo = ctx.numberapo.value
-        ctx.value = model.FixAxisPar(offset = offset, shift = shift, numberapo = numberapo)
+        ctx.value = model.FixAxisPar(offset=offset, shift=shift, numberapo=numberapo)
         self.db.session.add(ctx.value)
 
     def exitFixAxisParDist(self, ctx):
         offset = ctx.offset.value
         distance = ctx.distance.value
         numberapo = ctx.numberapo.value
-        ctx.value = model.FixAxisParDist(offset = offset, distance = distance, numberapo = numberapo)
+        ctx.value = model.FixAxisParDist(
+            offset=offset, distance=distance, numberapo=numberapo
+        )
         self.db.session.add(ctx.value)
 
     def exitFixAxisParList(self, ctx):
         axisPts_Value = self.getList(ctx.axisPts_Value)
-        ctx.value = model.FixAxisParList(axisPts_Value = axisPts_Value)
+        ctx.value = model.FixAxisParList(axisPts_Value=axisPts_Value)
         self.db.session.add(ctx.value)
 
     def exitMaxGrad(self, ctx):
         maxGradient = ctx.maxGradient.value
-        ctx.value = model.MaxGrad(maxGradient = maxGradient)
+        ctx.value = model.MaxGrad(maxGradient=maxGradient)
         self.db.session.add(ctx.value)
 
     def exitComparisonQuantity(self, ctx):
         name = ctx.name.value
-        ctx.value = model.ComparisonQuantity(name = name)
+        ctx.value = model.ComparisonQuantity(name=name)
         self.db.session.add(ctx.value)
 
     def exitDependentCharacteristic(self, ctx):
         formula_ = ctx.formula_.value
         characteristic_ = self.getList(ctx.characteristic_)
-        ctx.value = model.DependentCharacteristic(formula = formula_, characteristic_id = characteristic_)
+        ctx.value = model.DependentCharacteristic(
+            formula=formula_, characteristic_id=characteristic_
+        )
         self.db.session.add(ctx.value)
 
     def exitMapList(self, ctx):
         name = self.getList(ctx.name)
-        ctx.value = model.MapList(name = name)
+        ctx.value = model.MapList(name=name)
         self.db.session.add(ctx.value)
 
     def exitNumber(self, ctx):
         number_ = ctx.number_.value
-        ctx.value = model.Number(number = number_)
+        ctx.value = model.Number(number=number_)
         self.db.session.add(ctx.value)
 
     def exitVirtualCharacteristic(self, ctx):
         formula_ = ctx.formula_.value
         characteristic_ = self.getList(ctx.characteristic_)
-        ctx.value = model.VirtualCharacteristic(formula = formula_, characteristic_id = characteristic_)
+        ctx.value = model.VirtualCharacteristic(
+            formula=formula_, characteristic_id=characteristic_
+        )
         self.db.session.add(ctx.value)
 
     def exitCompuMethod(self, ctx):
@@ -618,9 +716,18 @@ class A2LListener(BaseListener):
         v_refUnit = delist(self.getList(ctx.v_refUnit), True)
         v_statusStringRef = delist(self.getList(ctx.v_statusStringRef), True)
 
-        ctx.value = model.CompuMethod(name = name, longIdentifier = longIdentifier, conversionType = conversionType,
-            format = format__, unit = unit_, coeffs = v_coeffs, coeffs_linear = v_coeffsLinear, compu_tab_ref = v_compuTabRef,
-            formula = v_formula, ref_unit = v_refUnit, status_string_ref = v_statusStringRef
+        ctx.value = model.CompuMethod(
+            name=name,
+            longIdentifier=longIdentifier,
+            conversionType=conversionType,
+            format=format__,
+            unit=unit_,
+            coeffs=v_coeffs,
+            coeffs_linear=v_coeffsLinear,
+            compu_tab_ref=v_compuTabRef,
+            formula=v_formula,
+            ref_unit=v_refUnit,
+            status_string_ref=v_statusStringRef,
         )
         self.db.session.add(ctx.value)
 
@@ -631,34 +738,34 @@ class A2LListener(BaseListener):
         d = ctx.d.value
         e = ctx.e.value
         f = ctx.f.value
-        ctx.value = model.Coeffs(a = a, b = b, c = c, d = d, e = e, f = f)
+        ctx.value = model.Coeffs(a=a, b=b, c=c, d=d, e=e, f=f)
         self.db.session.add(ctx.value)
 
     def exitCoeffsLinear(self, ctx):
         a = ctx.a.value
         b = ctx.b.value
-        ctx.value = model.CoeffsLinear(a = a , b = b)
+        ctx.value = model.CoeffsLinear(a=a, b=b)
         self.db.session.add(ctx.value)
 
     def exitCompuTabRef(self, ctx):
         conversionTable = ctx.conversionTable.value
-        ctx.value = model.CompuTabRef(conversionTable = conversionTable)
+        ctx.value = model.CompuTabRef(conversionTable=conversionTable)
         self.db.session.add(ctx.value)
 
     def exitFormula(self, ctx):
         f_x = ctx.f_x.value
         v_formulaInv = delist(self.getList(ctx.v_formulaInv), True)
-        ctx.value = model.Formula(f_x = f_x, formula_inv = v_formulaInv)
+        ctx.value = model.Formula(f_x=f_x, formula_inv=v_formulaInv)
         self.db.session.add(ctx.value)
 
     def exitFormulaInv(self, ctx):
         g_x = ctx.g_x.value
-        ctx.value = model.FormulaInv(g_x = g_x)
+        ctx.value = model.FormulaInv(g_x=g_x)
         self.db.session.add(ctx.value)
 
     def exitStatusStringRef(self, ctx):
         conversionTable = ctx.conversionTable.value
-        ctx.value = model.StatusStringRef(conversionTable = conversionTable)
+        ctx.value = model.StatusStringRef(conversionTable=conversionTable)
         self.db.session.add(ctx.value)
 
     def exitCompuTab(self, ctx):
@@ -666,7 +773,7 @@ class A2LListener(BaseListener):
         longIdentifier = ctx.longIdentifier.value
         conversionType = ctx.conversionType.text
         numberValuePairs = ctx.numberValuePairs.value
-    # TODO: check length of following pairs.
+        # TODO: check length of following pairs.
 
         inVal = self.getList(ctx.inVal)
         outVal = self.getList(ctx.outVal)
@@ -675,38 +782,47 @@ class A2LListener(BaseListener):
         v_defaultValue = delist(self.getList(ctx.v_defaultValue), True)
         v_defaultValueNumeric = delist(self.getList(ctx.v_defaultValueNumeric), True)
 
-        ctx.value = model.CompuTab(name = name, longIdentifier = longIdentifier, conversionType = conversionType,
-            numberValuePairs = numberValuePairs, default_value = v_defaultValue, default_value_numeric = v_defaultValueNumeric
+        ctx.value = model.CompuTab(
+            name=name,
+            longIdentifier=longIdentifier,
+            conversionType=conversionType,
+            numberValuePairs=numberValuePairs,
+            default_value=v_defaultValue,
+            default_value_numeric=v_defaultValueNumeric,
         )
         for inVal, outVal in pairs:
-            pair = model.CompuTabPair(inVal = inVal, outVal = outVal)
+            pair = model.CompuTabPair(inVal=inVal, outVal=outVal)
             self.db.session.add(pair)
             ctx.value.pairs.append(pair)
         self.db.session.add(ctx.value)
 
     def exitDefaultValueNumeric(self, ctx):
         display_value = ctx.display_value.value
-        ctx.value = model.DefaultValueNumeric(display_value = display_value)
+        ctx.value = model.DefaultValueNumeric(display_value=display_value)
         self.db.session.add(ctx.value)
 
     def exitCompuVtab(self, ctx):
         name = ctx.name.value
         longIdentifier = ctx.longIdentifier.value
-        conversionType = 'TAB_VERB'
-    # Fixed value by Std.
+        conversionType = "TAB_VERB"
+        # Fixed value by Std.
 
         numberValuePairs = ctx.numberValuePairs.value
-    # TODO: check length of following pairs.
+        # TODO: check length of following pairs.
         inVal = self.getList(ctx.inVal)
         outVal = self.getList(ctx.outVal)
         pairs = zip(inVal, outVal)
         v_defaultValue = delist(self.getList(ctx.v_defaultValue), True)
 
-        ctx.value = model.CompuVtab(name = name, longIdentifier = longIdentifier, conversionType = conversionType,
-            numberValuePairs = numberValuePairs, default_value = v_defaultValue
+        ctx.value = model.CompuVtab(
+            name=name,
+            longIdentifier=longIdentifier,
+            conversionType=conversionType,
+            numberValuePairs=numberValuePairs,
+            default_value=v_defaultValue,
         )
         for inVal, outVal in pairs:
-            pair = model.CompuVtabPair(inVal = inVal, outVal = outVal)
+            pair = model.CompuVtabPair(inVal=inVal, outVal=outVal)
             self.db.session.add(pair)
             ctx.value.pairs.append(pair)
         self.db.session.add(ctx.value)
@@ -714,7 +830,9 @@ class A2LListener(BaseListener):
     def exitCompuVtabRange(self, ctx):
         name = ctx.name.value
         longIdentifier = ctx.longIdentifier.value
-        numberValueTriples = ctx.numberValueTriples.value # TODO: check length of following triples
+        numberValueTriples = (
+            ctx.numberValueTriples.value
+        )  # TODO: check length of following triples
 
         inValMin = self.getList(ctx.inValMin)
         inValMax = self.getList(ctx.inValMax)
@@ -722,11 +840,16 @@ class A2LListener(BaseListener):
         triples = zip(inValMin, inValMax, outVal)
         v_defaultValue = delist(self.getList(ctx.v_defaultValue), True)
 
-        ctx.value = model.CompuVtabRange(name = name, longIdentifier = longIdentifier, numberValueTriples = numberValueTriples,
-            default_value = v_defaultValue
+        ctx.value = model.CompuVtabRange(
+            name=name,
+            longIdentifier=longIdentifier,
+            numberValueTriples=numberValueTriples,
+            default_value=v_defaultValue,
         )
         for inValMin, inValMax, outVal in triples:
-            triple = model.CompuVtabRangeTriple(inValMin = inValMin, inValMax = inValMax, outVal = outVal)
+            triple = model.CompuVtabRangeTriple(
+                inValMin=inValMin, inValMax=inValMax, outVal=outVal
+            )
             self.db.session.add(triple)
             ctx.value.triples.append(triple)
         self.db.session.add(ctx.value)
@@ -739,14 +862,19 @@ class A2LListener(BaseListener):
 
         v_frameMeasurement = delist(self.getList(ctx.v_frameMeasurement), True)
         v_ifData = self.getList(ctx.v_ifData)
-        ctx.value = model.Frame(name = name, longIdentifier = longIdentifier, scalingUnit = scalingUnit, rate = rate,
-            frame_measurement = v_frameMeasurement, if_data = v_ifData
+        ctx.value = model.Frame(
+            name=name,
+            longIdentifier=longIdentifier,
+            scalingUnit=scalingUnit,
+            rate=rate,
+            frame_measurement=v_frameMeasurement,
+            if_data=v_ifData,
         )
         self.db.session.add(ctx.value)
 
     def exitFrameMeasurement(self, ctx):
         identifier = self.getList(ctx.identifier)
-        ctx.value = model.FrameMeasurement(identifier = identifier)
+        ctx.value = model.FrameMeasurement(identifier=identifier)
         self.db.session.add(ctx.value)
 
     def exitFunction(self, ctx):
@@ -763,41 +891,49 @@ class A2LListener(BaseListener):
         v_refCharacteristic = delist(self.getList(ctx.v_refCharacteristic), True)
         v_subFunction = delist(self.getList(ctx.v_subFunction), True)
 
-        ctx.value = model.Function(name = name, longIdentifier = longIdentifier, annotation = v_annotation,
-            def_characteristic = v_defCharacteristic, function_version = v_functionVersion, if_data = v_ifData,
-            in_measurement = v_inMeasurement, loc_measurement = v_locMeasurement, out_measurement = v_outMeasurement,
-            ref_characteristic = v_refCharacteristic, sub_function = v_subFunction
+        ctx.value = model.Function(
+            name=name,
+            longIdentifier=longIdentifier,
+            annotation=v_annotation,
+            def_characteristic=v_defCharacteristic,
+            function_version=v_functionVersion,
+            if_data=v_ifData,
+            in_measurement=v_inMeasurement,
+            loc_measurement=v_locMeasurement,
+            out_measurement=v_outMeasurement,
+            ref_characteristic=v_refCharacteristic,
+            sub_function=v_subFunction,
         )
         self.db.session.add(ctx.value)
 
     def exitDefCharacteristic(self, ctx):
         identifier = self.getList(ctx.identifier)
-        ctx.value = model.DefCharacteristic(identifier = identifier)
+        ctx.value = model.DefCharacteristic(identifier=identifier)
         self.db.session.add(ctx.value)
 
     def exitFunctionVersion(self, ctx):
         versionIdentifier = ctx.versionIdentifier.value
-        ctx.value = model.FunctionVersion(versionIdentifier = versionIdentifier)
+        ctx.value = model.FunctionVersion(versionIdentifier=versionIdentifier)
         self.db.session.add(ctx.value)
 
     def exitInMeasurement(self, ctx):
         identifier = self.getList(ctx.identifier)
-        ctx.value = model.InMeasurement(identifier = identifier)
+        ctx.value = model.InMeasurement(identifier=identifier)
         self.db.session.add(ctx.value)
 
     def exitLocMeasurement(self, ctx):
         identifier = self.getList(ctx.identifier)
-        ctx.value = model.LocMeasurement(identifier = identifier)
+        ctx.value = model.LocMeasurement(identifier=identifier)
         self.db.session.add(ctx.value)
 
     def exitOutMeasurement(self, ctx):
         identifier = self.getList(ctx.identifier)
-        ctx.value = model.OutMeasurement(identifier = identifier)
+        ctx.value = model.OutMeasurement(identifier=identifier)
         self.db.session.add(ctx.value)
 
     def exitSubFunction(self, ctx):
         identifier = self.getList(ctx.identifier)
-        ctx.value = model.SubFunction(identifier = identifier)
+        ctx.value = model.SubFunction(identifier=identifier)
         self.db.session.add(ctx.value)
 
     def exitGroup(self, ctx):
@@ -812,15 +948,22 @@ class A2LListener(BaseListener):
         v_root = delist(self.getList(ctx.v_root), True)
         v_subGroup = delist(self.getList(ctx.v_subGroup), True)
 
-        ctx.value = model.Group(groupName = groupName, groupLongIdentifier = groupLongIdentifier,
-            annotation = v_annotation, function_list = v_functionList, if_data = v_ifData,
-            ref_characteristic = v_refCharacteristic, ref_measurement = v_refMeasurement, root = v_root, sub_group = v_subGroup
+        ctx.value = model.Group(
+            groupName=groupName,
+            groupLongIdentifier=groupLongIdentifier,
+            annotation=v_annotation,
+            function_list=v_functionList,
+            if_data=v_ifData,
+            ref_characteristic=v_refCharacteristic,
+            ref_measurement=v_refMeasurement,
+            root=v_root,
+            sub_group=v_subGroup,
         )
         self.db.session.add(ctx.value)
 
     def exitRefMeasurement(self, ctx):
         identifier = self.getList(ctx.identifier)
-        ctx.value = model.RefMeasurement(identifier = identifier)
+        ctx.value = model.RefMeasurement(identifier=identifier)
         self.db.session.add(ctx.value)
 
     def exitRoot(self, ctx):
@@ -829,7 +972,7 @@ class A2LListener(BaseListener):
 
     def exitSubGroup(self, ctx):
         identifier = self.getList(ctx.identifier)
-        ctx.value = model.SubGroup(identifier = identifier)
+        ctx.value = model.SubGroup(identifier=identifier)
         self.db.session.add(ctx.value)
 
     def exitMeasurement(self, ctx):
@@ -863,37 +1006,61 @@ class A2LListener(BaseListener):
         v_refMemorySegment = delist(self.getList(ctx.v_refMemorySegment), True)
         v_symbolLink = delist(self.getList(ctx.v_symbolLink), True)
         v_virtual = delist(self.getList(ctx.v_virtual), True)
-        ctx.value = model.Measurement(name = name, longIdentifier = longIdentifier, datatype = datatype,
-            conversion = conversion, resolution = resolution, accuracy = accuracy, lowerLimit = lowerLimit,
-            upperLimit = upperLimit, annotation = v_annotation, array_size = v_arraySize, bit_mask = v_bitMask,
-            bit_operation = v_bitOperation, byte_order = v_byteOrder, discrete = v_discrete,
-            display_identifier = v_displayIdentifier, ecu_address = v_ecuAddress, ecu_address_extension = v_ecuAddressExtension,
-            error_mask = v_errorMask, format = v_format_, function_list = v_functionList, if_data = v_ifData, layout = v_layout,
-            matrix_dim = v_matrixDim, max_refresh = v_maxRefresh, phys_unit = v_physUnit, read_write = v_readWrite,
-            ref_memory_segment = v_refMemorySegment, symbol_link = v_symbolLink, virtual = v_virtual
+        ctx.value = model.Measurement(
+            name=name,
+            longIdentifier=longIdentifier,
+            datatype=datatype,
+            conversion=conversion,
+            resolution=resolution,
+            accuracy=accuracy,
+            lowerLimit=lowerLimit,
+            upperLimit=upperLimit,
+            annotation=v_annotation,
+            array_size=v_arraySize,
+            bit_mask=v_bitMask,
+            bit_operation=v_bitOperation,
+            byte_order=v_byteOrder,
+            discrete=v_discrete,
+            display_identifier=v_displayIdentifier,
+            ecu_address=v_ecuAddress,
+            ecu_address_extension=v_ecuAddressExtension,
+            error_mask=v_errorMask,
+            format=v_format_,
+            function_list=v_functionList,
+            if_data=v_ifData,
+            layout=v_layout,
+            matrix_dim=v_matrixDim,
+            max_refresh=v_maxRefresh,
+            phys_unit=v_physUnit,
+            read_write=v_readWrite,
+            ref_memory_segment=v_refMemorySegment,
+            symbol_link=v_symbolLink,
+            virtual=v_virtual,
         )
         self.db.session.add(ctx.value)
 
     def exitArraySize(self, ctx):
         number_ = ctx.number_.value
-        ctx.value = model.ArraySize(number = number_)
+        ctx.value = model.ArraySize(number=number_)
         self.db.session.add(ctx.value)
 
     def exitBitOperation(self, ctx):
         v_leftShift = delist(self.getList(ctx.v_leftShift), True)
         v_rightShift = delist(self.getList(ctx.v_rightShift), True)
         v_signExtend = delist(self.getList(ctx.v_signExtend), True)
-        ctx.value = model.BitOperation(left_shift = v_leftShift, right_shift = v_rightShift, sign_extend = v_signExtend)
+        ctx.value = model.BitOperation(
+            left_shift=v_leftShift, right_shift=v_rightShift, sign_extend=v_signExtend
+        )
         self.db.session.add(ctx.value)
 
     def exitLeftShift(self, ctx):
         bitcount = ctx.bitcount.value
-        ctx.value = model.LeftShift(bitcount = bitcount)
+        ctx.value = model.LeftShift(bitcount=bitcount)
         self.db.session.add(ctx.value)
 
     def exitRightShift(self, ctx):
         bitcount = ctx.bitcount.value
-        ctx.value = model.RightShift(bitcount = bitcount)
+        ctx.value = model.RightShift(bitcount=bitcount)
         self.db.session.add(ctx.value)
 
     def exitSignExtend(self, ctx):
@@ -902,17 +1069,17 @@ class A2LListener(BaseListener):
 
     def exitEcuAddress(self, ctx):
         address = ctx.address.value
-        ctx.value = model.EcuAddress(address = address)
+        ctx.value = model.EcuAddress(address=address)
         self.db.session.add(ctx.value)
 
     def exitErrorMask(self, ctx):
         mask = ctx.mask.value
-        ctx.value = model.ErrorMask(mask = mask)
+        ctx.value = model.ErrorMask(mask=mask)
         self.db.session.add(ctx.value)
 
     def exitLayout(self, ctx):
         indexMode = ctx.indexMode.text
-        ctx.value = model.Layout(indexMode = indexMode)
+        ctx.value = model.Layout(indexMode=indexMode)
         self.db.session.add(ctx.value)
 
     def exitReadWrite(self, ctx):
@@ -921,7 +1088,7 @@ class A2LListener(BaseListener):
 
     def exitVirtual(self, ctx):
         measuringChannel = self.getList(ctx.measuringChannel)
-        ctx.value = model.Virtual(measuringChannel = measuringChannel)
+        ctx.value = model.Virtual(measuringChannel=measuringChannel)
         self.db.session.add(ctx.value)
 
     def exitModCommon(self, ctx):
@@ -938,22 +1105,29 @@ class A2LListener(BaseListener):
         v_deposit = delist(self.getList(ctx.v_deposit), True)
         v_sRecLayout = delist(self.getList(ctx.v_sRecLayout), True)
 
-        ctx.value = model.ModCommon(comment = comment, alignment_byte = v_alignmentByte,
-            alignment_float32_ieee = v_alignmentFloat32Ieee, alignment_float64_ieee = v_alignmentFloat64Ieee,
-            alignment_int64 = v_alignmentInt64, alignment_long = v_alignmentLong, alignment_word = v_alignmentWord,
-            byte_order = v_byteOrder, data_size = v_dataSize, deposit = v_deposit, s_rec_layout = v_sRecLayout
-
+        ctx.value = model.ModCommon(
+            comment=comment,
+            alignment_byte=v_alignmentByte,
+            alignment_float32_ieee=v_alignmentFloat32Ieee,
+            alignment_float64_ieee=v_alignmentFloat64Ieee,
+            alignment_int64=v_alignmentInt64,
+            alignment_long=v_alignmentLong,
+            alignment_word=v_alignmentWord,
+            byte_order=v_byteOrder,
+            data_size=v_dataSize,
+            deposit=v_deposit,
+            s_rec_layout=v_sRecLayout,
         )
         self.db.session.add(ctx.value)
 
     def exitDataSize(self, ctx):
         size = ctx.size.value
-        ctx.value = model.DataSize(size = size)
+        ctx.value = model.DataSize(size=size)
         self.db.session.add(ctx.value)
 
     def exitSRecLayout(self, ctx):
         name = ctx.name.value
-        ctx.value = model.SRecLayout(name = name)
+        ctx.value = model.SRecLayout(name=name)
         self.db.session.add(ctx.value)
 
     def exitModPar(self, ctx):
@@ -976,64 +1150,84 @@ class A2LListener(BaseListener):
         v_user = delist(self.getList(ctx.v_user), True)
         v_version = delist(self.getList(ctx.v_version), True)
 
-        ctx.value = model.ModPar(comment = comment, addr_epk = v_addrEpk, calibration_method = v_calibrationMethod,
-            cpu_type = v_cpuType, customer = v_customer, customer_no = v_customerNo, ecu = v_ecu,
-            ecu_calibration_offset = v_ecuCalibrationOffset, epk = v_epk, memory_layout = v_memoryLayout,
-            memory_segment = v_memorySegment, no_of_interfaces = v_noOfInterfaces, phone_no = v_phoneNo,
-            supplier = v_supplier, system_constant = v_systemConstant, user = v_user, version = v_version)
+        ctx.value = model.ModPar(
+            comment=comment,
+            addr_epk=v_addrEpk,
+            calibration_method=v_calibrationMethod,
+            cpu_type=v_cpuType,
+            customer=v_customer,
+            customer_no=v_customerNo,
+            ecu=v_ecu,
+            ecu_calibration_offset=v_ecuCalibrationOffset,
+            epk=v_epk,
+            memory_layout=v_memoryLayout,
+            memory_segment=v_memorySegment,
+            no_of_interfaces=v_noOfInterfaces,
+            phone_no=v_phoneNo,
+            supplier=v_supplier,
+            system_constant=v_systemConstant,
+            user=v_user,
+            version=v_version,
+        )
         self.db.session.add(ctx.value)
 
     def exitAddrEpk(self, ctx):
         address = ctx.address.value
-        ctx.value = model.AddrEpk(address = address)
+        ctx.value = model.AddrEpk(address=address)
         self.db.session.add(ctx.value)
 
     def exitCalibrationMethod(self, ctx):
         method = ctx.method.value
         version_ = ctx.version_.value
         v_calibrationHandle = self.getList(ctx.v_calibrationHandle)
-        ctx.value = model.CalibrationMethod(method = method, version = version_, calibration_handle = v_calibrationHandle)
+        ctx.value = model.CalibrationMethod(
+            method=method, version=version_, calibration_handle=v_calibrationHandle
+        )
         self.db.session.add(ctx.value)
 
     def exitCalibrationHandle(self, ctx):
         handle = self.getList(ctx.handle)
-        v_calibrationHandleText = delist(self.getList(ctx.v_calibrationHandleText), True)
-        ctx.value = model.CalibrationHandle(handle = handle, calibration_handle_text = v_calibrationHandleText)
+        v_calibrationHandleText = delist(
+            self.getList(ctx.v_calibrationHandleText), True
+        )
+        ctx.value = model.CalibrationHandle(
+            handle=handle, calibration_handle_text=v_calibrationHandleText
+        )
         self.db.session.add(ctx.value)
 
     def exitCalibrationHandleText(self, ctx):
         text = ctx.text.value
-        ctx.value = model.CalibrationHandleText(text = text)
+        ctx.value = model.CalibrationHandleText(text=text)
         self.db.session.add(ctx.value)
 
     def exitCpuType(self, ctx):
         cPU = ctx.cPU.value
-        ctx.value = model.CpuType(cPU = cPU)
+        ctx.value = model.CpuType(cPU=cPU)
         self.db.session.add(ctx.value)
 
     def exitCustomer(self, ctx):
         customer_ = ctx.customer_.value
-        ctx.value = model.Customer(customer = customer_)
+        ctx.value = model.Customer(customer=customer_)
         self.db.session.add(ctx.value)
 
     def exitCustomerNo(self, ctx):
         number_ = ctx.number_.value
-        ctx.value = model.CustomerNo(number = number_)
+        ctx.value = model.CustomerNo(number=number_)
         self.db.session.add(ctx.value)
 
     def exitEcu(self, ctx):
         controlUnit = ctx.controlUnit.value
-        ctx.value = model.Ecu(controlUnit = controlUnit)
+        ctx.value = model.Ecu(controlUnit=controlUnit)
         self.db.session.add(ctx.value)
 
     def exitEcuCalibrationOffset(self, ctx):
         offset = ctx.offset.value
-        ctx.value = model.EcuCalibrationOffset(offset = offset)
+        ctx.value = model.EcuCalibrationOffset(offset=offset)
         self.db.session.add(ctx.value)
 
     def exitEpk(self, ctx):
         identifier = ctx.identifier.value
-        ctx.value = model.Epk(identifier = identifier)
+        ctx.value = model.Epk(identifier=identifier)
         self.db.session.add(ctx.value)
 
     def exitMemoryLayout(self, ctx):
@@ -1048,8 +1242,16 @@ class A2LListener(BaseListener):
 
         v_ifData = self.getList(ctx.v_ifData)
 
-        ctx.value = model.MemoryLayout(prgType = prgType, address = address, size = size, offset_0 = offset_0,
-            offset_1 = offset_1, offset_2 = offset_2, offset_3 = offset_3, offset_4 = offset_4, if_data = v_ifData
+        ctx.value = model.MemoryLayout(
+            prgType=prgType,
+            address=address,
+            size=size,
+            offset_0=offset_0,
+            offset_1=offset_1,
+            offset_2=offset_2,
+            offset_3=offset_3,
+            offset_4=offset_4,
+            if_data=v_ifData,
         )
         self.db.session.add(ctx.value)
 
@@ -1069,36 +1271,47 @@ class A2LListener(BaseListener):
 
         v_ifData = self.getList(ctx.v_ifData)
 
-        ctx.value = model.MemorySegment(name = name, longIdentifier = longIdentifier, prgType = prgType,
-            memoryType = memoryType, attribute = attribute, address = address, size = size, offset_0 = offset_0,
-            offset_1 = offset_1, offset_2 = offset_2, offset_3 = offset_3, offset_4 = offset_4, if_data = v_ifData
+        ctx.value = model.MemorySegment(
+            name=name,
+            longIdentifier=longIdentifier,
+            prgType=prgType,
+            memoryType=memoryType,
+            attribute=attribute,
+            address=address,
+            size=size,
+            offset_0=offset_0,
+            offset_1=offset_1,
+            offset_2=offset_2,
+            offset_3=offset_3,
+            offset_4=offset_4,
+            if_data=v_ifData,
         )
         self.db.session.add(ctx.value)
 
     def exitNoOfInterfaces(self, ctx):
         num = ctx.num.value
-        ctx.value = model.NoOfInterfaces(num = num)
+        ctx.value = model.NoOfInterfaces(num=num)
         self.db.session.add(ctx.value)
 
     def exitPhoneNo(self, ctx):
         telnum = ctx.telnum.value
-        ctx.value = model.PhoneNo(telnum = telnum)
+        ctx.value = model.PhoneNo(telnum=telnum)
         self.db.session.add(ctx.value)
 
     def exitSupplier(self, ctx):
         manufacturer = ctx.manufacturer.value
-        ctx.value = model.Supplier(manufacturer = manufacturer)
+        ctx.value = model.Supplier(manufacturer=manufacturer)
         self.db.session.add(ctx.value)
 
     def exitSystemConstant(self, ctx):
         name = ctx.name.value
         value_ = ctx.value_.value
-        ctx.value = model.SystemConstant(name = name, value = value_)
+        ctx.value = model.SystemConstant(name=name, value=value_)
         self.db.session.add(ctx.value)
 
     def exitUser(self, ctx):
         userName = ctx.userName.value
-        ctx.value = model.User(userName = userName)
+        ctx.value = model.User(userName=userName)
         self.db.session.add(ctx.value)
 
     def exitRecordLayout(self, ctx):
@@ -1166,25 +1379,69 @@ class A2LListener(BaseListener):
         v_srcAddr4 = delist(self.getList(ctx.v_srcAddr4), True)
         v_srcAddr5 = delist(self.getList(ctx.v_srcAddr5), True)
 
-        ctx.value = model.RecordLayout(name = name, alignment_byte = v_alignmentByte,
-            alignment_float32_ieee = v_alignmentFloat32Ieee, alignment_float64_ieee = v_alignmentFloat64Ieee,
-            alignment_int64 = v_alignmentInt64, alignment_long = v_alignmentLong, alignment_word = v_alignmentWord,
-            axis_pts_x = v_axisPtsX, axis_pts_y = v_axisPtsY, axis_pts_z = v_axisPtsZ, axis_pts_4 = v_axisPts4,
-            axis_pts_5 = v_axisPts5, axis_rescale_x = v_axisRescaleX, axis_rescale_y = v_axisRescaleY,
-            axis_rescale_z = v_axisRescaleZ, axis_rescale_4 = v_axisRescale4, axis_rescale_5 = v_axisRescale5,
-            dist_op_x = v_distOpX, dist_op_y = v_distOpY, dist_op_z = v_distOpZ, dist_op_4 = v_distOp4,
-            dist_op_5 = v_distOp5, fix_no_axis_pts_x = v_fixNoAxisPtsX, fix_no_axis_pts_y = v_fixNoAxisPtsY,
-            fix_no_axis_pts_z = v_fixNoAxisPtsZ, fix_no_axis_pts_4 = v_fixNoAxisPts4, fix_no_axis_pts_5 = v_fixNoAxisPts5,
-            fnc_values = v_fncValues, identification = v_identification, no_axis_pts_x = v_noAxisPtsX,
-            no_axis_pts_y = v_noAxisPtsY, no_axis_pts_z = v_noAxisPtsZ, no_axis_pts_4 = v_noAxisPts4,
-            no_axis_pts_5 = v_noAxisPts5, static_record_layout = v_staticRecordLayout, no_rescale_x = v_noRescaleX,
-            no_rescale_y = v_noRescaleY, no_rescale_z = v_noRescaleZ, no_rescale_4 = v_noRescale4,
-            no_rescale_5 = v_noRescale5, offset_x = v_offsetX, offset_y = v_offsetY, offset_z = v_offsetZ,
-            offset_4 = v_offset4, offset_5 = v_offset5, reserved = v_reserved, rip_addr_w = v_ripAddrW,
-            rip_addr_x = v_ripAddrX, rip_addr_y = v_ripAddrY, rip_addr_z = v_ripAddrZ, rip_addr_4 = v_ripAddr4,
-            rip_addr_5 = v_ripAddr5, shift_op_x = v_shiftOpX, shift_op_y = v_shiftOpY, shift_op_z = v_shiftOpZ,
-            shift_op_4 = v_shiftOp4, shift_op_5 = v_shiftOp5, src_addr_x = v_srcAddrX, src_addr_y = v_srcAddrY,
-            src_addr_z = v_srcAddrZ, src_addr_4 = v_srcAddr4, src_addr_5 = v_srcAddr5,
+        ctx.value = model.RecordLayout(
+            name=name,
+            alignment_byte=v_alignmentByte,
+            alignment_float32_ieee=v_alignmentFloat32Ieee,
+            alignment_float64_ieee=v_alignmentFloat64Ieee,
+            alignment_int64=v_alignmentInt64,
+            alignment_long=v_alignmentLong,
+            alignment_word=v_alignmentWord,
+            axis_pts_x=v_axisPtsX,
+            axis_pts_y=v_axisPtsY,
+            axis_pts_z=v_axisPtsZ,
+            axis_pts_4=v_axisPts4,
+            axis_pts_5=v_axisPts5,
+            axis_rescale_x=v_axisRescaleX,
+            axis_rescale_y=v_axisRescaleY,
+            axis_rescale_z=v_axisRescaleZ,
+            axis_rescale_4=v_axisRescale4,
+            axis_rescale_5=v_axisRescale5,
+            dist_op_x=v_distOpX,
+            dist_op_y=v_distOpY,
+            dist_op_z=v_distOpZ,
+            dist_op_4=v_distOp4,
+            dist_op_5=v_distOp5,
+            fix_no_axis_pts_x=v_fixNoAxisPtsX,
+            fix_no_axis_pts_y=v_fixNoAxisPtsY,
+            fix_no_axis_pts_z=v_fixNoAxisPtsZ,
+            fix_no_axis_pts_4=v_fixNoAxisPts4,
+            fix_no_axis_pts_5=v_fixNoAxisPts5,
+            fnc_values=v_fncValues,
+            identification=v_identification,
+            no_axis_pts_x=v_noAxisPtsX,
+            no_axis_pts_y=v_noAxisPtsY,
+            no_axis_pts_z=v_noAxisPtsZ,
+            no_axis_pts_4=v_noAxisPts4,
+            no_axis_pts_5=v_noAxisPts5,
+            static_record_layout=v_staticRecordLayout,
+            no_rescale_x=v_noRescaleX,
+            no_rescale_y=v_noRescaleY,
+            no_rescale_z=v_noRescaleZ,
+            no_rescale_4=v_noRescale4,
+            no_rescale_5=v_noRescale5,
+            offset_x=v_offsetX,
+            offset_y=v_offsetY,
+            offset_z=v_offsetZ,
+            offset_4=v_offset4,
+            offset_5=v_offset5,
+            reserved=v_reserved,
+            rip_addr_w=v_ripAddrW,
+            rip_addr_x=v_ripAddrX,
+            rip_addr_y=v_ripAddrY,
+            rip_addr_z=v_ripAddrZ,
+            rip_addr_4=v_ripAddr4,
+            rip_addr_5=v_ripAddr5,
+            shift_op_x=v_shiftOpX,
+            shift_op_y=v_shiftOpY,
+            shift_op_z=v_shiftOpZ,
+            shift_op_4=v_shiftOp4,
+            shift_op_5=v_shiftOp5,
+            src_addr_x=v_srcAddrX,
+            src_addr_y=v_srcAddrY,
+            src_addr_z=v_srcAddrZ,
+            src_addr_4=v_srcAddr4,
+            src_addr_5=v_srcAddr5,
         )
         self.db.session.add(ctx.value)
 
@@ -1193,7 +1450,12 @@ class A2LListener(BaseListener):
         datatype = ctx.datatype.value
         indexIncr = ctx.indexIncr.value
         addressing = ctx.addressing.value
-        ctx.value = model.AxisPtsX(position = position, datatype = datatype, indexIncr = indexIncr, addressing = addressing)
+        ctx.value = model.AxisPtsX(
+            position=position,
+            datatype=datatype,
+            indexIncr=indexIncr,
+            addressing=addressing,
+        )
         self.db.session.add(ctx.value)
 
     def exitAxisPtsY(self, ctx):
@@ -1201,7 +1463,12 @@ class A2LListener(BaseListener):
         datatype = ctx.datatype.value
         indexIncr = ctx.indexIncr.value
         addressing = ctx.addressing.value
-        ctx.value = model.AxisPtsY(position = position, datatype = datatype, indexIncr = indexIncr, addressing = addressing)
+        ctx.value = model.AxisPtsY(
+            position=position,
+            datatype=datatype,
+            indexIncr=indexIncr,
+            addressing=addressing,
+        )
         self.db.session.add(ctx.value)
 
     def exitAxisPtsZ(self, ctx):
@@ -1209,7 +1476,12 @@ class A2LListener(BaseListener):
         datatype = ctx.datatype.value
         indexIncr = ctx.indexIncr.value
         addressing = ctx.addressing.value
-        ctx.value = model.AxisPtsZ(position = position, datatype = datatype, indexIncr = indexIncr, addressing = addressing)
+        ctx.value = model.AxisPtsZ(
+            position=position,
+            datatype=datatype,
+            indexIncr=indexIncr,
+            addressing=addressing,
+        )
         self.db.session.add(ctx.value)
 
     def exitAxisPts4(self, ctx):
@@ -1217,7 +1489,12 @@ class A2LListener(BaseListener):
         datatype = ctx.datatype.value
         indexIncr = ctx.indexIncr.value
         addressing = ctx.addressing.value
-        ctx.value = model.AxisPts4(position = position, datatype = datatype, indexIncr = indexIncr, addressing = addressing)
+        ctx.value = model.AxisPts4(
+            position=position,
+            datatype=datatype,
+            indexIncr=indexIncr,
+            addressing=addressing,
+        )
         self.db.session.add(ctx.value)
 
     def exitAxisPts5(self, ctx):
@@ -1225,7 +1502,12 @@ class A2LListener(BaseListener):
         datatype = ctx.datatype.value
         indexIncr = ctx.indexIncr.value
         addressing = ctx.addressing.value
-        ctx.value = model.AxisPts5(position = position, datatype = datatype, indexIncr = indexIncr, addressing = addressing)
+        ctx.value = model.AxisPts5(
+            position=position,
+            datatype=datatype,
+            indexIncr=indexIncr,
+            addressing=addressing,
+        )
         self.db.session.add(ctx.value)
 
     def exitAxisRescaleX(self, ctx):
@@ -1234,8 +1516,12 @@ class A2LListener(BaseListener):
         maxNumberOfRescalePairs = ctx.maxNumberOfRescalePairs.value
         indexIncr = ctx.indexIncr.value
         addressing = ctx.addressing.value
-        ctx.value = model.AxisRescaleX(position = position, datatype = datatype,
-            maxNumberOfRescalePairs = maxNumberOfRescalePairs, indexIncr = indexIncr, addressing = addressing
+        ctx.value = model.AxisRescaleX(
+            position=position,
+            datatype=datatype,
+            maxNumberOfRescalePairs=maxNumberOfRescalePairs,
+            indexIncr=indexIncr,
+            addressing=addressing,
         )
         self.db.session.add(ctx.value)
 
@@ -1245,8 +1531,12 @@ class A2LListener(BaseListener):
         maxNumberOfRescalePairs = ctx.maxNumberOfRescalePairs.value
         indexIncr = ctx.indexIncr.value
         addressing = ctx.addressing.value
-        ctx.value = model.AxisRescaleY(position = position, datatype = datatype,
-            maxNumberOfRescalePairs = maxNumberOfRescalePairs, indexIncr = indexIncr, addressing = addressing
+        ctx.value = model.AxisRescaleY(
+            position=position,
+            datatype=datatype,
+            maxNumberOfRescalePairs=maxNumberOfRescalePairs,
+            indexIncr=indexIncr,
+            addressing=addressing,
         )
         self.db.session.add(ctx.value)
 
@@ -1256,8 +1546,12 @@ class A2LListener(BaseListener):
         maxNumberOfRescalePairs = ctx.maxNumberOfRescalePairs.value
         indexIncr = ctx.indexIncr.value
         addressing = ctx.addressing.value
-        ctx.value = model.AxisRescaleZ(position = position, datatype = datatype,
-            maxNumberOfRescalePairs = maxNumberOfRescalePairs, indexIncr = indexIncr, addressing = addressing
+        ctx.value = model.AxisRescaleZ(
+            position=position,
+            datatype=datatype,
+            maxNumberOfRescalePairs=maxNumberOfRescalePairs,
+            indexIncr=indexIncr,
+            addressing=addressing,
         )
         self.db.session.add(ctx.value)
 
@@ -1267,8 +1561,12 @@ class A2LListener(BaseListener):
         maxNumberOfRescalePairs = ctx.maxNumberOfRescalePairs.value
         indexIncr = ctx.indexIncr.value
         addressing = ctx.addressing.value
-        ctx.value = model.AxisRescale4(position = position, datatype = datatype,
-            maxNumberOfRescalePairs = maxNumberOfRescalePairs, indexIncr = indexIncr, addressing = addressing
+        ctx.value = model.AxisRescale4(
+            position=position,
+            datatype=datatype,
+            maxNumberOfRescalePairs=maxNumberOfRescalePairs,
+            indexIncr=indexIncr,
+            addressing=addressing,
         )
         self.db.session.add(ctx.value)
 
@@ -1278,64 +1576,68 @@ class A2LListener(BaseListener):
         maxNumberOfRescalePairs = ctx.maxNumberOfRescalePairs.value
         indexIncr = ctx.indexIncr.value
         addressing = ctx.addressing.value
-        ctx.value = model.AxisRescale5(position = position, datatype = datatype,
-            maxNumberOfRescalePairs = maxNumberOfRescalePairs, indexIncr = indexIncr, addressing = addressing
+        ctx.value = model.AxisRescale5(
+            position=position,
+            datatype=datatype,
+            maxNumberOfRescalePairs=maxNumberOfRescalePairs,
+            indexIncr=indexIncr,
+            addressing=addressing,
         )
         self.db.session.add(ctx.value)
 
     def exitDistOpX(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.DistOpX(position = position, datatype = datatype)
+        ctx.value = model.DistOpX(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitDistOpY(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.DistOpY(position = position, datatype = datatype)
+        ctx.value = model.DistOpY(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitDistOpZ(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.DistOpZ(position = position, datatype = datatype)
+        ctx.value = model.DistOpZ(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitDistOp4(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.DistOp4(position = position, datatype = datatype)
+        ctx.value = model.DistOp4(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitDistOp5(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.DistOp5(position = position, datatype = datatype)
+        ctx.value = model.DistOp5(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitFixNoAxisPtsX(self, ctx):
         numberOfAxisPoints = ctx.numberOfAxisPoints.value
-        ctx.value = model.FixNoAxisPtsX(numberOfAxisPoints = numberOfAxisPoints)
+        ctx.value = model.FixNoAxisPtsX(numberOfAxisPoints=numberOfAxisPoints)
         self.db.session.add(ctx.value)
 
     def exitFixNoAxisPtsY(self, ctx):
         numberOfAxisPoints = ctx.numberOfAxisPoints.value
-        ctx.value = model.FixNoAxisPtsY(numberOfAxisPoints = numberOfAxisPoints)
+        ctx.value = model.FixNoAxisPtsY(numberOfAxisPoints=numberOfAxisPoints)
         self.db.session.add(ctx.value)
 
     def exitFixNoAxisPtsZ(self, ctx):
         numberOfAxisPoints = ctx.numberOfAxisPoints.value
-        ctx.value = model.FixNoAxisPtsZ(numberOfAxisPoints = numberOfAxisPoints)
+        ctx.value = model.FixNoAxisPtsZ(numberOfAxisPoints=numberOfAxisPoints)
         self.db.session.add(ctx.value)
 
     def exitFixNoAxisPts4(self, ctx):
         numberOfAxisPoints = ctx.numberOfAxisPoints.value
-        ctx.value = model.FixNoAxisPts4(numberOfAxisPoints = numberOfAxisPoints)
+        ctx.value = model.FixNoAxisPts4(numberOfAxisPoints=numberOfAxisPoints)
         self.db.session.add(ctx.value)
 
     def exitFixNoAxisPts5(self, ctx):
         numberOfAxisPoints = ctx.numberOfAxisPoints.value
-        ctx.value = model.FixNoAxisPts5(numberOfAxisPoints = numberOfAxisPoints)
+        ctx.value = model.FixNoAxisPts5(numberOfAxisPoints=numberOfAxisPoints)
         self.db.session.add(ctx.value)
 
     def exitFncValues(self, ctx):
@@ -1343,43 +1645,48 @@ class A2LListener(BaseListener):
         datatype = ctx.datatype.value
         indexMode = ctx.indexMode.text
         addresstype = ctx.addresstype.value
-        ctx.value = model.FncValues(position = position, datatype = datatype, indexMode = indexMode, addresstype = addresstype)
+        ctx.value = model.FncValues(
+            position=position,
+            datatype=datatype,
+            indexMode=indexMode,
+            addresstype=addresstype,
+        )
         self.db.session.add(ctx.value)
 
     def exitIdentification(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.Identification(position = position, datatype = datatype)
+        ctx.value = model.Identification(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitNoAxisPtsX(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.NoAxisPtsX(position = position, datatype = datatype)
+        ctx.value = model.NoAxisPtsX(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitNoAxisPtsY(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.NoAxisPtsY(position = position, datatype = datatype)
+        ctx.value = model.NoAxisPtsY(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitNoAxisPtsZ(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.NoAxisPtsZ(position = position, datatype = datatype)
+        ctx.value = model.NoAxisPtsZ(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitNoAxisPts4(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.NoAxisPts4(position = position, datatype = datatype)
+        ctx.value = model.NoAxisPts4(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitNoAxisPts5(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.NoAxisPts5(position = position, datatype = datatype)
+        ctx.value = model.NoAxisPts5(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitStaticRecordLayout(self, ctx):
@@ -1389,163 +1696,163 @@ class A2LListener(BaseListener):
     def exitNoRescaleX(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.NoRescaleX(position = position, datatype = datatype)
+        ctx.value = model.NoRescaleX(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitNoRescaleY(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.NoRescaleY(position = position, datatype = datatype)
+        ctx.value = model.NoRescaleY(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitNoRescaleZ(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.NoRescaleZ(position = position, datatype = datatype)
+        ctx.value = model.NoRescaleZ(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitNoRescale4(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.NoRescale4(position = position, datatype = datatype)
+        ctx.value = model.NoRescale4(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitNoRescale5(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.NoRescale5(position = position, datatype = datatype)
+        ctx.value = model.NoRescale5(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitOffsetX(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.OffsetX(position = position, datatype = datatype)
+        ctx.value = model.OffsetX(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitOffsetY(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.OffsetY(position = position, datatype = datatype)
+        ctx.value = model.OffsetY(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitOffsetZ(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.OffsetZ(position = position, datatype = datatype)
+        ctx.value = model.OffsetZ(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitOffset4(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.Offset4(position = position, datatype = datatype)
+        ctx.value = model.Offset4(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitOffset5(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.Offset5(position = position, datatype = datatype)
+        ctx.value = model.Offset5(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitReserved(self, ctx):
         position = ctx.position.value
         dataSize = ctx.dataSize_.value
-        ctx.value = model.Reserved(position = position, dataSize = dataSize)
+        ctx.value = model.Reserved(position=position, dataSize=dataSize)
         self.db.session.add(ctx.value)
 
     def exitRipAddrW(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.RipAddrW(position = position, datatype = datatype)
+        ctx.value = model.RipAddrW(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitRipAddrX(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.RipAddrX(position = position, datatype = datatype)
+        ctx.value = model.RipAddrX(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitRipAddrY(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.RipAddrY(position = position, datatype = datatype)
+        ctx.value = model.RipAddrY(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitRipAddrZ(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.RipAddrZ(position = position, datatype = datatype)
+        ctx.value = model.RipAddrZ(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitRipAddr4(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.RipAddr4(position = position, datatype = datatype)
+        ctx.value = model.RipAddr4(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitRipAddr5(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.RipAddr5(position = position, datatype = datatype)
+        ctx.value = model.RipAddr5(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitShiftOpX(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.ShiftOpX(position = position, datatype = datatype)
+        ctx.value = model.ShiftOpX(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitShiftOpY(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.ShiftOpY(position = position, datatype = datatype)
+        ctx.value = model.ShiftOpY(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitShiftOpZ(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.ShiftOpZ(position = position, datatype = datatype)
+        ctx.value = model.ShiftOpZ(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitShiftOp4(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.ShiftOp4(position = position, datatype = datatype)
+        ctx.value = model.ShiftOp4(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitShiftOp5(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.ShiftOp5(position = position, datatype = datatype)
+        ctx.value = model.ShiftOp5(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitSrcAddrX(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.SrcAddrX(position = position, datatype = datatype)
+        ctx.value = model.SrcAddrX(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitSrcAddrY(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.SrcAddrY(position = position, datatype = datatype)
+        ctx.value = model.SrcAddrY(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitSrcAddrZ(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.SrcAddrZ(position = position, datatype = datatype)
+        ctx.value = model.SrcAddrZ(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitSrcAddr4(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.SrcAddr4(position = position, datatype = datatype)
+        ctx.value = model.SrcAddr4(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitSrcAddr5(self, ctx):
         position = ctx.position.value
         datatype = ctx.datatype.value
-        ctx.value = model.SrcAddr5(position = position, datatype = datatype)
+        ctx.value = model.SrcAddr5(position=position, datatype=datatype)
         self.db.session.add(ctx.value)
 
     def exitUnit(self, ctx):
@@ -1558,8 +1865,14 @@ class A2LListener(BaseListener):
         v_refUnit = delist(self.getList(ctx.v_refUnit), True)
         v_unitConversion = delist(self.getList(ctx.v_unitConversion), True)
 
-        ctx.value = model.Unit(name = name, longIdentifier = longIdentifier, display = display, type = type_,
-            si_exponents = v_siExponents, ref_unit = v_refUnit, unit_conversion = v_unitConversion
+        ctx.value = model.Unit(
+            name=name,
+            longIdentifier=longIdentifier,
+            display=display,
+            type=type_,
+            si_exponents=v_siExponents,
+            ref_unit=v_refUnit,
+            unit_conversion=v_unitConversion,
         )
         self.db.session.add(ctx.value)
 
@@ -1571,15 +1884,21 @@ class A2LListener(BaseListener):
         temperature = ctx.temperature.value
         amountOfSubstance = ctx.amountOfSubstance.value
         luminousIntensity = ctx.luminousIntensity.value
-        ctx.value = model.SiExponents(length = length, mass = mass, time = time,
-            electricCurrent = electricCurrent, temperature = temperature, amountOfSubstance = amountOfSubstance,
-        luminousIntensity = luminousIntensity)
+        ctx.value = model.SiExponents(
+            length=length,
+            mass=mass,
+            time=time,
+            electricCurrent=electricCurrent,
+            temperature=temperature,
+            amountOfSubstance=amountOfSubstance,
+            luminousIntensity=luminousIntensity,
+        )
         self.db.session.add(ctx.value)
 
     def exitUnitConversion(self, ctx):
         gradient = ctx.gradient.value
         offset = ctx.offset.value
-        ctx.value = model.UnitConversion(gradient = gradient, offset = offset)
+        ctx.value = model.UnitConversion(gradient=gradient, offset=offset)
         self.db.session.add(ctx.value)
 
     def exitUserRights(self, ctx):
@@ -1588,12 +1907,14 @@ class A2LListener(BaseListener):
         v_readOnly = delist(self.getList(ctx.v_readOnly), True)
         v_refGroup = self.getList(ctx.v_refGroup)
 
-        ctx.value = model.UserRights(userLevelId = userLevelId, read_only = v_readOnly, ref_group = v_refGroup)
+        ctx.value = model.UserRights(
+            userLevelId=userLevelId, read_only=v_readOnly, ref_group=v_refGroup
+        )
         self.db.session.add(ctx.value)
 
     def exitRefGroup(self, ctx):
         identifier = self.getList(ctx.identifier)
-        ctx.value = model.RefGroup(identifier = identifier)
+        ctx.value = model.RefGroup(identifier=identifier)
         self.db.session.add(ctx.value)
 
     def exitVariantCoding(self, ctx):
@@ -1610,8 +1931,13 @@ class A2LListener(BaseListener):
         var_naming = relationship("VarNaming", back_populates = "variant_coding", uselist = False)
         var_separator = relationship("VarSeparator", back_populates = "variant_coding", uselist = False)
         """
-        ctx.value = model.VariantCoding(var_characteristic = v_varCharacteristic, var_criterion = v_varCriterion,
-            var_forbidden_comb = v_varForbiddenComb, var_naming = v_varNaming, var_separator = v_varSeparator)
+        ctx.value = model.VariantCoding(
+            var_characteristic=v_varCharacteristic,
+            var_criterion=v_varCriterion,
+            var_forbidden_comb=v_varForbiddenComb,
+            var_naming=v_varNaming,
+            var_separator=v_varSeparator,
+        )
         self.db.session.add(ctx.value)
 
     def exitVarCharacteristic(self, ctx):
@@ -1620,12 +1946,14 @@ class A2LListener(BaseListener):
 
         v_varAddress = delist(self.getList(ctx.v_varAddress), True)
 
-        ctx.value = model.VarCharacteristic(name = name, criterionName = criterionName, var_address = v_varAddress)
+        ctx.value = model.VarCharacteristic(
+            name=name, criterionName=criterionName, var_address=v_varAddress
+        )
         self.db.session.add(ctx.value)
 
     def exitVarAddress(self, ctx):
         address = self.getList(ctx.address)
-        ctx.value = model.VarAddress(address = address)
+        ctx.value = model.VarAddress(address=address)
         self.db.session.add(ctx.value)
 
     def exitVarCriterion(self, ctx):
@@ -1634,21 +1962,27 @@ class A2LListener(BaseListener):
         value_ = self.getList(ctx.value_)
 
         v_varMeasurement = delist(self.getList(ctx.v_varMeasurement), True)
-        v_varSelectionCharacteristic = delist(self.getList(ctx.v_varSelectionCharacteristic), True)
+        v_varSelectionCharacteristic = delist(
+            self.getList(ctx.v_varSelectionCharacteristic), True
+        )
 
-        ctx.value = model.VarCriterion(name = name, longIdentifier = longIdentifier, value = value_,
-            var_measurement = v_varMeasurement, var_selection_characteristic = v_varSelectionCharacteristic
+        ctx.value = model.VarCriterion(
+            name=name,
+            longIdentifier=longIdentifier,
+            value=value_,
+            var_measurement=v_varMeasurement,
+            var_selection_characteristic=v_varSelectionCharacteristic,
         )
         self.db.session.add(ctx.value)
 
     def exitVarMeasurement(self, ctx):
         name = ctx.name.value
-        ctx.value = model.VarMeasurement(name = name)
+        ctx.value = model.VarMeasurement(name=name)
         self.db.session.add(ctx.value)
 
     def exitVarSelectionCharacteristic(self, ctx):
         name = ctx.name.value
-        ctx.value = model.VarSelectionCharacteristic(name = name)
+        ctx.value = model.VarSelectionCharacteristic(name=name)
         self.db.session.add(ctx.value)
 
     def exitVarForbiddenComb(self, ctx):
@@ -1657,19 +1991,19 @@ class A2LListener(BaseListener):
         pairs = zip(criterionName, criterionValue)
         ctx.value = model.VarForbiddenComb()
         for name, value in pairs:
-            pair = model.VarForbiddedCombPair(criterionName = name, criterionValue = value)
+            pair = model.VarForbiddedCombPair(criterionName=name, criterionValue=value)
             self.db.session.add(pair)
             ctx.value.pairs.append(pair)
         self.db.session.add(ctx.value)
 
     def exitVarNaming(self, ctx):
         tag = ctx.tag.text
-        ctx.value = model.VarNaming(tag = tag)
+        ctx.value = model.VarNaming(tag=tag)
         self.db.session.add(ctx.value)
 
     def exitVarSeparator(self, ctx):
         separator = ctx.separator.value
-        ctx.value = model.VarSeparator(separator = separator)
+        ctx.value = model.VarSeparator(separator=separator)
         self.db.session.add(ctx.value)
 
     def exitDataType(self, ctx):
@@ -1686,4 +2020,3 @@ class A2LListener(BaseListener):
 
     def exitAddrtype(self, ctx):
         ctx.value = ctx.v.text if ctx.v else None
-

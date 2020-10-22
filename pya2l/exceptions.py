@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__copyright__="""
+__copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
    (C) 2009-2020 by Christoph Schueler <cpu12.gems@googlemail.com>
@@ -26,16 +26,14 @@ __copyright__="""
 """
 """
 
+
 class MathError(Exception):
-    """General mathematical error, e.g. operation could not be executed.
-    """
+    """General mathematical error, e.g. operation could not be executed."""
+
 
 class StructuralError(Exception):
-    """Structural error, e.g. missing model element.
-    """
+    """Structural error, e.g. missing model element."""
+
 
 class RangeError(Exception):
-    """A numerical value is out of range.
-    """
-
-
+    """A numerical value is out of range."""

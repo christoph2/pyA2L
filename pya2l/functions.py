@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__copyright__="""
+__copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
    (C) 2009-2020 by Christoph Schueler <cpu12.gems@googlemail.com>
@@ -27,10 +27,10 @@ __copyright__="""
 """
 
 import bisect
-from collections import OrderedDict
 import math
-from operator import itemgetter
 import re
+from collections import OrderedDict
+from operator import itemgetter
 
 try:
     import numpy as np
@@ -38,8 +38,8 @@ except ImportError:
     pass
 
 try:
-    from scipy.interpolate import RegularGridInterpolator
     from scipy import interpolate
+    from scipy.interpolate import RegularGridInterpolator
 except ImportError:
     pass
 
@@ -50,22 +50,19 @@ except ImportError:
 else:
     has_numexpr = True
 
-from pya2l import exceptions
-from pya2l import model
-
+from pya2l import exceptions, model
 
 POW = re.compile(r"pow\s*\((?P<params>.*?)\s*\)")
 SYSC = re.compile(r"sysc\s*\((?P<param>.*?)\s*\)")
 
 
 def fix_axis_par(offset: int, shift: int, num_apo: int) -> list:
-    """
-    """
+    """"""
     return np.array([offset + (i * (2 ** shift)) for i in range(num_apo)])
 
+
 def fix_axis_par_dist(offset: int, distance: int, num_apo: int) -> list:
-    """
-    """
+    """"""
     return np.array([offset + (i * distance) for i in range(num_apo)])
 
 
@@ -89,10 +86,11 @@ class Interpolate1D:
     default: float or None
         returned if x is out of boundaries.
     """
-    def __init__(self, pairs, saturate = True):
+
+    def __init__(self, pairs, saturate=True):
         xs, ys = zip(*pairs)
 
-        if any(x1 -x0 <= 0 for x0, x1 in zip(xs, xs[1 : ])):
+        if any(x1 - x0 <= 0 for x0, x1 in zip(xs, xs[1:])):
             raise ValueError("'xs' must be in strictly increasing order.")
         self.min_x = min(xs)
         self.max_x = max(xs)
@@ -104,7 +102,9 @@ class Interpolate1D:
             fill_value = None
             bounds_error = True
 
-        self.interp = interpolate.interp1d(x = xs, y = ys, kind = "linear", bounds_error = bounds_error, fill_value = fill_value)
+        self.interp = interpolate.interp1d(
+            x=xs, y=ys, kind="linear", bounds_error=bounds_error, fill_value=fill_value
+        )
 
     def __call__(self, x):
         """Interpolate a single value.
@@ -150,7 +150,7 @@ class Lookup:
 '''
 
 
-def axis_rescale(no_rescale_x : int, no_axis_pts : int, axis, virtual):
+def axis_rescale(no_rescale_x: int, no_axis_pts: int, axis, virtual):
     """
     Parameters
     ----------
@@ -177,7 +177,9 @@ def axis_rescale(no_rescale_x : int, no_axis_pts : int, axis, virtual):
             if kdv >= virtual[idx + 1]:
                 break
             k += 1
-            x = axis[idx] + (((k - 1) * d) - virtual[idx]) * (axis[idx + 1] - axis[idx]) / (virtual[idx + 1] - virtual[idx])
+            x = axis[idx] + (((k - 1) * d) - virtual[idx]) * (
+                axis[idx + 1] - axis[idx]
+            ) / (virtual[idx + 1] - virtual[idx])
             xs.append(x)
     xs.append(axis[no_rescale_x - 1])
     return np.array(xs)
@@ -200,10 +202,12 @@ class NormalizationAxes:
         self.xn = np.array(x_norm)
         self.yn = np.array(y_norm)
         self.zm = np.array(z_map)
-        self.ip_x = Interpolate1D(pairs = zip(self.xn[:, 0], self.xn[:, 1]))
-        self.ip_y = Interpolate1D(pairs = zip(self.yn[:, 0], self.yn[:, 1]))
+        self.ip_x = Interpolate1D(pairs=zip(self.xn[:, 0], self.xn[:, 1]))
+        self.ip_y = Interpolate1D(pairs=zip(self.yn[:, 0], self.yn[:, 1]))
         x_size, y_size = self.zm.shape
-        self.ip_m = RegularGridInterpolator((np.arange(x_size), np.arange(y_size)), self.zm, method = "linear")
+        self.ip_m = RegularGridInterpolator(
+            (np.arange(x_size), np.arange(y_size)), self.zm, method="linear"
+        )
 
     def __call__(self, x, y):
         """
@@ -279,8 +283,7 @@ class RatFunc:
 
 
 class Identical:
-    """Identity function.
-    """
+    """Identity function."""
 
     def __init__(self):
         pass
@@ -314,16 +317,14 @@ class Linear:
         self.p = np.poly1d([a, b])
 
     def int_to_physical(self, i):
-        """
-        """
+        """"""
         return self.p(i)
 
     def _eval_pti(self, p):
         return (self.p - p).roots[0]
 
     def physical_to_int(self, p):
-        """
-        """
+        """"""
         if hasattr(p, "__iter__"):
             return [self._eval_pti(i) for i in p]
         else:
@@ -344,23 +345,21 @@ class LookupTable:
             returned if value is not in mapping.
     """
 
-    def __init__(self, mapping, default = None):
+    def __init__(self, mapping, default=None):
         mapping = ((int(item[0]), item[1]) for item in mapping)
         self.mapping = dict(mapping)
         self.mapping_inv = {v: k for k, v in self.mapping.items()}
         self.default = default
 
     def int_to_physical(self, i):
-        """
-        """
+        """"""
         if hasattr(i, "__iter__"):
             return [self.mapping.get(r, self.default) for r in i]
         else:
             return self.mapping.get(i, self.default)
 
     def physical_to_int(self, p):
-        """
-        """
+        """"""
 
         if hasattr(p, "__iter__") and not isinstance(p, str):
             return [self.mapping_inv.get(r) for r in p]
@@ -369,24 +368,21 @@ class LookupTable:
 
 
 class InterpolatedTable:
-    """Table with linear interpolation.
-    """
+    """Table with linear interpolation."""
 
-    def __init__(self, pairs, default = None):
-        self.interp = Interpolate1D(pairs, saturate = False)
+    def __init__(self, pairs, default=None):
+        self.interp = Interpolate1D(pairs, saturate=False)
         self.default = default
 
     def int_to_physical(self, i):
-        """
-        """
+        """"""
         try:
             return self.interp(i)
         except ValueError:
             return self.default
 
     def physical_to_int(self, p):
-        """
-        """
+        """"""
         raise NotImplementedError()
 
 
@@ -408,17 +404,19 @@ class LookupTableWithRanges:
             Datatype of keys.
     """
 
-    def __init__(self, mapping, default = None, dtype = int):
+    def __init__(self, mapping, default=None, dtype=int):
         if not (dtype is int or dtype is float):
             raise ValueError("dtype must be either int or float")
         mapping = ((dtype(item[0]), dtype(item[1]), item[2]) for item in mapping)
-        self.mapping = sorted(mapping, key = itemgetter(0))
+        self.mapping = sorted(mapping, key=itemgetter(0))
         self.min_values = [item[0] for item in self.mapping]
         self.max_values = [item[1] for item in self.mapping]
         self.minimum = min(self.min_values)
         self.maximum = max(self.max_values)
         self.display_values = [item[2] for item in self.mapping]
-        self.dict_inv = dict(zip(self.display_values, self.min_values)) # min_value, according to spec.
+        self.dict_inv = dict(
+            zip(self.display_values, self.min_values)
+        )  # min_value, according to spec.
         self.default = default
         if dtype == int:
             self.in_range = lambda x, l, r: l <= x <= r
@@ -426,8 +424,7 @@ class LookupTableWithRanges:
             self.in_range = lambda x, l, r: l <= x < r
 
     def _lookup(self, x):
-        """
-        """
+        """"""
         if not (self.minimum <= x <= self.maximum):
             return self.default
         pos = bisect.bisect_right(self.min_values, x) - 1
@@ -440,16 +437,14 @@ class LookupTableWithRanges:
             return self.default
 
     def int_to_physical(self, i):
-        """
-        """
+        """"""
         if hasattr(i, "__iter__"):
             return [self._lookup(r) for r in i]
         else:
             return self._lookup(i)
 
     def physical_to_int(self, p):
-        """
-        """
+        """"""
         if hasattr(p, "__iter__") and not isinstance(p, str):
             return [self.dict_inv.get(r, None) for r in p]
         else:
@@ -471,7 +466,7 @@ class FormulaBase:
     system_constants: list of 2-tuples (name, value)
     """
 
-    def __init__(self, formula, inverse_formula = None, system_constants = None):
+    def __init__(self, formula, inverse_formula=None, system_constants=None):
         if not formula:
             raise ValueError("Formula cannot be None or empty.")
         if system_constants:
@@ -479,7 +474,9 @@ class FormulaBase:
         else:
             self.system_constants = {}
         self.formula = self._replace_special_symbols(formula)
-        self.inverse_formula = self._replace_special_symbols(inverse_formula) if inverse_formula else None
+        self.inverse_formula = (
+            self._replace_special_symbols(inverse_formula) if inverse_formula else None
+        )
 
     def sysc(self, key):
         return self.system_constants[key]
@@ -488,7 +485,7 @@ class FormulaBase:
         if len(args) == 0:
             raise ValueError("Formula called with no paramters.")
         xs = {"X{}".format(i): v for i, v in enumerate(args, 1)}
-        if len(args) == 1:          # In this case...
+        if len(args) == 1:  # In this case...
             xs["X"] = xs.get("X1")  # ... create an alias.
         namespace = self.MATH_FUNCS
         namespace.update(xs)
@@ -496,6 +493,7 @@ class FormulaBase:
             namespace[key] = key
         namespace["sysc"] = self.sysc
         return namespace
+
 
 if has_numexpr:
 
@@ -514,17 +512,22 @@ if has_numexpr:
         system_constants: list of 2-tuples (name, value)
         """
 
-        MATH_FUNCS = {
-        }
+        MATH_FUNCS = {}
 
         def _replace_special_symbols(self, text):
-            result = text.replace("&&", " and ").replace("||", " or ").replace("!", "not ").\
-                replace("acos", "arccos").replace("asin", "arcsin").replace("atan", "arctan")
+            result = (
+                text.replace("&&", " and ")
+                .replace("||", " or ")
+                .replace("!", "not ")
+                .replace("acos", "arccos")
+                .replace("asin", "arcsin")
+                .replace("atan", "arctan")
+            )
             while True:
                 # replace 'pow(a, b)' with '(a ** b)'
                 match = POW.search(result)
                 if match:
-                    params = [p.strip() for p in match.group('params').split(',')]
+                    params = [p.strip() for p in match.group("params").split(",")]
                     assert len(params) == 2
                     pow_expr = "({0} ** {1})".format(*params)
                     head = result[: match.start()]
@@ -533,9 +536,9 @@ if has_numexpr:
                 else:
                     break
             while True:
-                match = SYSC.search(result) # replace 'sysc(a)' with value of 'a'
+                match = SYSC.search(result)  # replace 'sysc(a)' with value of 'a'
                 if match:
-                    param = match.group('param').strip()
+                    param = match.group("param").strip()
                     value = self.sysc(param)
                     head = result[: match.start()]
                     tail = result[match.end() :]
@@ -545,16 +548,21 @@ if has_numexpr:
             return result
 
         def int_to_physical(self, *args):
-            """
-            """
-            return numexpr.evaluate(self.formula, local_dict = self._build_namespace(*args))
+            """"""
+            return numexpr.evaluate(
+                self.formula, local_dict=self._build_namespace(*args)
+            )
 
         def physical_to_int(self, *args):
-            """
-            """
+            """"""
             if self.inverse_formula is None:
-                raise NotImplementedError("Formula: physical_to_int() requires inverse_formula.")
-            return numexpr.evaluate(self.inverse_formula, local_dict = self._build_namespace(*args))
+                raise NotImplementedError(
+                    "Formula: physical_to_int() requires inverse_formula."
+                )
+            return numexpr.evaluate(
+                self.inverse_formula, local_dict=self._build_namespace(*args)
+            )
+
 
 else:
 
@@ -574,37 +582,40 @@ else:
         """
 
         MATH_FUNCS = {
-            'abs'  : math.fabs,
-            'acos' : math.acos,
-            'asin' : math.asin,
-            'atan' : math.atan,
-            'cos'  : math.cos,
-            'cosh' : math.cosh,
-            'exp'  : math.exp,
-            'log'  : math.log,
-            'log10': math.log10,
-            'pow'  : math.pow,
-            'sin'  : math.sin,
-            'sinh' : math.sinh,
-            'sqrt' : math.sqrt,
-            'tan'  : math.tan,
-            'tanh' : math.tanh,
+            "abs": math.fabs,
+            "acos": math.acos,
+            "asin": math.asin,
+            "atan": math.atan,
+            "cos": math.cos,
+            "cosh": math.cosh,
+            "exp": math.exp,
+            "log": math.log,
+            "log10": math.log10,
+            "pow": math.pow,
+            "sin": math.sin,
+            "sinh": math.sinh,
+            "sqrt": math.sqrt,
+            "tan": math.tan,
+            "tanh": math.tanh,
         }
 
         def _replace_special_symbols(self, text):
-            return text.replace("&&", " and ").replace("||", " or ").replace("!", "not ")
+            return (
+                text.replace("&&", " and ").replace("||", " or ").replace("!", "not ")
+            )
 
         def int_to_physical(self, *args):
-            """
-            """
+            """"""
             return eval(self.formula, dict(), self._build_namespace(*args))
 
         def physical_to_int(self, *args):
-            """
-            """
+            """"""
             if self.inverse_formula is None:
-                raise NotImplementedError("Formula: physical_to_int() requires inverse_formula.")
+                raise NotImplementedError(
+                    "Formula: physical_to_int() requires inverse_formula."
+                )
             return eval(self.inverse_formula, dict(), self._build_namespace(*args))
+
 
 class CompuMethod:
     """
@@ -623,7 +634,11 @@ class CompuMethod:
             self.evaluator = Identical()
         elif conversionType == "FORM":
             formula = compu_method.formula.f_x
-            formula_inv = compu_method.formula.formula_inv.g_x if compu_method.formula.formula_inv else None
+            formula_inv = (
+                compu_method.formula.formula_inv.g_x
+                if compu_method.formula.formula_inv
+                else None
+            )
             system_constants = []
             constants_text = session.query(model.SystemConstant).all()
             for cons in constants_text:
@@ -633,45 +648,82 @@ class CompuMethod:
                     value = float(text)
                 except ValueError:
                     value = text
-                system_constants.append((name, value, ))
+                system_constants.append(
+                    (
+                        name,
+                        value,
+                    )
+                )
             self.evaluator = Formula(formula, formula_inv, system_constants)
         elif conversionType == "LINEAR":
             coeffs = compu_method.coeffs_linear
             if coeffs is None:
-                raise exceptions.StructuralError("'LINEAR' requires coefficients (COEFFS_LINEAR).")
+                raise exceptions.StructuralError(
+                    "'LINEAR' requires coefficients (COEFFS_LINEAR)."
+                )
             self.evaluator = Linear(coeffs)
         elif conversionType == "RAT_FUNC":
             coeffs = compu_method.coeffs
             if coeffs is None:
-                raise exceptions.StructuralError("'RAT_FUNC' requires coefficients (COEFFS).")
+                raise exceptions.StructuralError(
+                    "'RAT_FUNC' requires coefficients (COEFFS)."
+                )
             self.evaluator = RatFunc(coeffs)
         elif conversionType in ("TAB_INTP", "TAB_NOINTP"):
             klass = InterpolatedTable if conversionType == "TAB_INTP" else LookupTable
             table_name = compu_method.compu_tab_ref.conversionTable
-            table = session.query(model.CompuTab).filter(model.CompuTab.name == table_name).first()
+            table = (
+                session.query(model.CompuTab)
+                .filter(model.CompuTab.name == table_name)
+                .first()
+            )
             if table is None:
-                raise exceptions.StructuralError("'TAB_INTP' and 'TAB_NOINTP requires a conversation table.")
+                raise exceptions.StructuralError(
+                    "'TAB_INTP' and 'TAB_NOINTP requires a conversation table."
+                )
             pairs = [(p.inVal, p.outVal) for p in table.pairs]
-            default_numeric = table.default_value_numeric.display_value if table.default_value_numeric else None
-            default = table.default_value.display_string if table.default_value else None
+            default_numeric = (
+                table.default_value_numeric.display_value
+                if table.default_value_numeric
+                else None
+            )
+            default = (
+                table.default_value.display_string if table.default_value else None
+            )
             if default_numeric and default:
-                raise exceptions.StructuralError("Cannot use both DEFAULT_VALUE and DEFAULT_VALUE_NUMERIC.")
+                raise exceptions.StructuralError(
+                    "Cannot use both DEFAULT_VALUE and DEFAULT_VALUE_NUMERIC."
+                )
             default = default_numeric if not default_numeric is None else default
             self.evaluator = klass(pairs, default)
         elif conversionType == "TAB_VERB":
             table_name = compu_method.compu_tab_ref.conversionTable
-            table = session.query(model.CompuVtab).filter(model.CompuVtab.name == table_name).first()
+            table = (
+                session.query(model.CompuVtab)
+                .filter(model.CompuVtab.name == table_name)
+                .first()
+            )
             if table is None:
-                table = session.query(model.CompuVtabRange).filter(model.CompuVtabRange.name == table_name).first()
+                table = (
+                    session.query(model.CompuVtabRange)
+                    .filter(model.CompuVtabRange.name == table_name)
+                    .first()
+                )
                 if table is None:
-                    raise exceptions.StructuralError("'TAB_VERB' requires a conversation table.")
+                    raise exceptions.StructuralError(
+                        "'TAB_VERB' requires a conversation table."
+                    )
                 triples = [(p.inValMin, p.inValMax, p.outVal) for p in table.triples]
-                default = table.default_value.display_string if table.default_value else None
+                default = (
+                    table.default_value.display_string if table.default_value else None
+                )
                 # TODO: datatype !?
                 self.evaluator = LookupTableWithRanges(triples, default)
             else:
                 pairs = [(p.inVal, p.outVal) for p in table.pairs]
-                default = table.default_value.display_string if table.default_value else None
+                default = (
+                    table.default_value.display_string if table.default_value else None
+                )
                 self.evaluator = LookupTable(pairs, default)
         else:
             raise ValueError("Unknown conversation type '{}'.".format(conversionType))

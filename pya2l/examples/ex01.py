@@ -1,4 +1,3 @@
-
 #
 # Just import an .a2l file, nothing more.
 #

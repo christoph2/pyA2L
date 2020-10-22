@@ -24,22 +24,22 @@ __copyright__ = """
 
    s. FLOSS-EXCEPTION.txt
 """
-__author__  = 'Christoph Schueler'
-__version__ = '0.1.0'
+__author__ = "Christoph Schueler"
+__version__ = "0.1.0"
 
 import logging
 import os
 
-#logging.basicConfig()
+# logging.basicConfig()
+
 
 class Logger(object):
 
-    LOGGER_BASE_NAME = 'pya2l'
+    LOGGER_BASE_NAME = "pya2l"
     FORMAT = "[%(levelname)s (%(name)s)]: %(message)s"
 
     def __init__(self, name, level=logging.WARN):
-        self.logger = logging.getLogger(
-            "{0}.{1}".format(self.LOGGER_BASE_NAME, name))
+        self.logger = logging.getLogger("{0}.{1}".format(self.LOGGER_BASE_NAME, name))
         self.logger.setLevel(level)
         handler = logging.StreamHandler()
         handler.setLevel(level)
