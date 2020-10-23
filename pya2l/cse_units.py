@@ -43,9 +43,9 @@ class Referer(IntEnum):
 
 
 CSE = {
-    0: CSE_Type(0, "1 ï¿½sec", Referer.TIME, ""),
-    1: CSE_Type(1, "10 ï¿½sec", Referer.TIME, ""),
-    2: CSE_Type(2, "100 ï¿½sec", Referer.TIME, ""),
+    0: CSE_Type(0, "1 µsec", Referer.TIME, ""),
+    1: CSE_Type(1, "10 µsec", Referer.TIME, ""),
+    2: CSE_Type(2, "100 µsec", Referer.TIME, ""),
     3: CSE_Type(3, "1 msec", Referer.TIME, ""),
     4: CSE_Type(4, "10 msec", Referer.TIME, ""),
     5: CSE_Type(5, "100 msec", Referer.TIME, ""),
