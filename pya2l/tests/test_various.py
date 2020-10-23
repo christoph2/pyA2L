@@ -61,4 +61,4 @@ def test_filename_with_arbitrary_ext():
 
 
 def test_cse_units():
-    assert CSE.get(2) == CSE_Type(2, "100 µsec", Referer.TIME, "")
+    assert CSE.get(2) == CSE_Type(2, "100 ï¿½sec", Referer.TIME, "")
