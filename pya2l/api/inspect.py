@@ -2364,6 +2364,7 @@ class CompuMethod(CachedBase):
         "tab",
         "tab_verb",
         "statusStringRef",
+        "refUnit",
     )
 
     def __init__(self, session, name: str, module_name: str = None):
@@ -2388,10 +2389,9 @@ class CompuMethod(CachedBase):
             if self.compu_method.status_string_ref
             else None
         )
-
-        """
-        [-> REF_UNIT]
-        """
+        self.refUnit = (
+            self.compu_method.ref_unit.unit if self.compu_method.ref_unit else None
+        )
         cm_type = self.conversionType
         if cm_type == "IDENTICAL":
             pass
@@ -2468,3 +2468,38 @@ class CompuMethod(CachedBase):
                     self.tab_verb["default_value"] = (
                         cvt.default_value.display_string if cvt.default_value else None
                     )
+
+    def __str__(self):
+        names = (
+            self.name,
+            self.longIdentifier,
+            self.conversionType,
+            self.format,
+            self.unit,
+            self.coeffs,
+            self.coeffs_linear,
+            self.formula,
+            self.tab,
+            self.tab_verb,
+            self.statusStringRef,
+            self.refUnit,
+        )
+        return """
+CompuMethod {{
+    name               = "{}";
+    longIdentifier     = "{}";
+    conversionType     = {};
+    format             = "{}";
+    unit               = "{}";
+    coeffs             = {};
+    coeffs_linear      = {};
+    formula            = {};
+    tab                = {};
+    tab_verb           = {};
+    statusStringRef    = {};
+    refUnit            = {};
+}}""".format(
+            *names
+        )
+
+    __repr__ = __str__

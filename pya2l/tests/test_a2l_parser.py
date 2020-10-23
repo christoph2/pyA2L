@@ -3097,8 +3097,8 @@ def test_record_layout():
             AXIS_PTS_Y 6 UBYTE INDEX_INCR DIRECT
             NO_AXIS_PTS_X 2 UBYTE
             NO_AXIS_PTS_Y 5 UBYTE
-//            SRC_ADDR_X 1
-//            SRC_ADDR_Y 4
+            SRC_ADDR_X 1
+            SRC_ADDR_Y 4
             ALIGNMENT_BYTE 2
         /end RECORD_LAYOUT
         /begin RECORD_LAYOUT RESCALE_SST
