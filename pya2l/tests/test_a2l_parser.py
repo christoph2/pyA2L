@@ -130,18 +130,18 @@ def test_annotation():
         0.0               /* lower limit    */
         255.0             /* upper limit    */
         /begin ANNOTATION
-            ANNOTATION_LABEL "Luftsprungabh�ngigkeit"
+            ANNOTATION_LABEL "Luftsprungabhängigkeit"
             ANNOTATION_ORIGIN "Graf Zeppelin"
             /begin ANNOTATION_TEXT
-                "Die luftklasseabh�ngigen Zeitkonstanten t_hinz\r\n"
-                "& t_kunz k�nnen mit Hilfe von Luftspr�ngen ermittelt werden.\r\n"
-                "Die Taupunktendezeiten in gro�en Flugh�hen sind stark schwankend"
+                "Die luftklasseabhängigen Zeitkonstanten t_hinz\r\n"
+                "& t_kunz können mit Hilfe von Luftsprüngen ermittelt werden.\r\n"
+                "Die Taupunktendezeiten in großen Flughöhen sind stark schwankend"
             /end ANNOTATION_TEXT
         /end ANNOTATION
         /begin ANNOTATION
             ANNOTATION_LABEL "Taupunktendezeiten"
             /begin ANNOTATION_TEXT
-                "Flugh�he Taupunktendezeit\r\n"
+                "Flughöhe Taupunktendezeit\r\n"
                 " 13000ft 20 sec\r\n"
                 " 25000ft 40 sec\r\n"
                 " 35000ft 12 sec"
@@ -166,17 +166,17 @@ def test_annotation():
     assert chx.upperLimit == 255.0
     assert len(chx.annotation) == 2
     an0, an1 = chx.annotation
-    assert an0.annotation_label.label == "Luftsprungabh�ngigkeit"
+    assert an0.annotation_label.label == "Luftsprungabhängigkeit"
     assert an0.annotation_origin.origin == "Graf Zeppelin"
     assert an0.annotation_text.text == [
-        "Die luftklasseabh�ngigen Zeitkonstanten t_hinz\r\n",
-        "& t_kunz k�nnen mit Hilfe von Luftspr�ngen ermittelt werden.\r\n",
-        "Die Taupunktendezeiten in gro�en Flugh�hen sind stark schwankend",
+        "Die luftklasseabhängigen Zeitkonstanten t_hinz\r\n",
+        "& t_kunz können mit Hilfe von Luftsprüngen ermittelt werden.\r\n",
+        "Die Taupunktendezeiten in großen Flughöhen sind stark schwankend",
     ]
     assert an1.annotation_label.label == "Taupunktendezeiten"
     assert an1.annotation_origin is None
     assert an1.annotation_text.text == [
-        "Flugh�he Taupunktendezeit\r\n",
+        "Flughöhe Taupunktendezeit\r\n",
         " 13000ft 20 sec\r\n",
         " 25000ft 40 sec\r\n",
         " 35000ft 12 sec",
@@ -818,8 +818,8 @@ def test_calibration_coeffs_linear():
     DATA = """
     COEFFS_LINEAR 1.25 -2.0
     /* The physical value (PHYS) with unit is calculated from the */
-    /* control unit�s internal value of revolutions (INT) as follows: */
-    /* PHYS = 1.25 * INT � 2.0 */
+    /* control unit’s internal value of revolutions (INT) as follows: */
+    /* PHYS = 1.25 * INT – 2.0 */
     """
     session = parser.parseFromString(DATA)
     coeffs = session.query(model.CoeffsLinear).first()
@@ -845,7 +845,7 @@ def test_compu_method():
             "conversion method for engine temperature"
             TAB_NOINTP /* convers_type */
             "%4.2" /* display format */
-            "�C" /* physical unit */
+            "°C" /* physical unit */
             COMPU_TAB_REF MOTEMP1
         /end COMPU_METHOD
 
@@ -868,7 +868,7 @@ def test_compu_method():
             "conversion method for air temperature"
             FORM /* convers_type */
             "%4.2" /* display format */
-            "�C" /* physical unit */
+            "°C" /* physical unit */
             /begin FORMULA
                 "3*X1/100 + 22.7"
             /end FORMULA
@@ -964,7 +964,7 @@ def test_compu_method():
     assert cm[0].longIdentifier == "conversion method for engine temperature"
     assert cm[0].conversionType == "TAB_NOINTP"
     assert cm[0].format == "%4.2"
-    assert cm[0].unit == "�C"
+    assert cm[0].unit == "°C"
     assert cm[0].compu_tab_ref.conversionTable == "MOTEMP1"
 
     assert cm[1].name == "CM_IDENTITY"
@@ -985,7 +985,7 @@ def test_compu_method():
     assert cm[3].longIdentifier == "conversion method for air temperature"
     assert cm[3].conversionType == "FORM"
     assert cm[3].format == "%4.2"
-    assert cm[3].unit == "�C"
+    assert cm[3].unit == "°C"
     assert cm[3].formula.f_x == "3*X1/100 + 22.7"
 
     assert cm[4].name == "CM_DiagStatus"
@@ -2971,11 +2971,11 @@ def test_phone_no():
 def test_phys_unit():
     parser = ParserWrapper("a2l", "physUnit", A2LListener, debug=False)
     DATA = """
-    PHYS_UNIT "�C"
+    PHYS_UNIT "°C"
     """
     session = parser.parseFromString(DATA)
     pn = session.query(model.PhysUnit).first()
-    assert pn.unit == "�C"
+    assert pn.unit == "°C"
 
 
 def test_project():
@@ -3897,17 +3897,17 @@ def test_unit_conversion():
     /begin UNIT
         degC
         "unit for temperature: degree Celsius"
-        "[�C]"
+        "[°C]"
         DERIVED
         REF_UNIT kelvin
-        UNIT_CONVERSION 1.0 -273.15 /* y [�C] = 1.0 * x [K] + (-273.15) */
+        UNIT_CONVERSION 1.0 -273.15 /* y [°C] = 1.0 * x [K] + (-273.15) */
     /end UNIT
     """
     session = parser.parseFromString(DATA)
     unit = session.query(model.Unit).first()
     assert unit.name == "degC"
     assert unit.longIdentifier == "unit for temperature: degree Celsius"
-    assert unit.display == "[�C]"
+    assert unit.display == "[°C]"
     assert unit.type == "DERIVED"
     assert unit.ref_unit.unit == "kelvin"
     assert unit.unit_conversion.gradient == 1.0

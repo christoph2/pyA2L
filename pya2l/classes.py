@@ -312,7 +312,7 @@ class ARRAY_SIZE(Keyword):
             Uint,
             "Number",
         )  # Number of measurement values included in respective measurement
-        # object  (maximum    value  of  �Number�: 32767).
+        # object  (maximum    value  of  ‘Number’: 32767).
     ]
     # The use of this keyword should be replaced by MATRIX_DIM.
 
