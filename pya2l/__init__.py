@@ -90,7 +90,8 @@ class DB(object):
         """
         from os import unlink
 
-        from pya2l.a2l_listener import A2LListener, ParserWrapper, cut_a2ml
+        from pya2l.a2l_listener import A2LListener, cut_a2ml
+        from pya2l.parserlib import ParserWrapper
 
         self.in_memory = in_memory
 
