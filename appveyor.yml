@@ -7,13 +7,12 @@ environment:
     secure: Cx6jEa48Lx4/h9qiwR/N+0zsyf85D1rITrnG44XySbuiYPfg77ZS1wlkGx/B8zdM
 
   matrix:
-
     # For Python versions available on Appveyor, see
     # http://www.appveyor.com/docs/installed-software#python
     # The list here is complete (excluding Python 2.6, which
     # isn't covered by this document) at the time of writing.
 
-      #- PYTHON: "C:\\Python34"
+    #- PYTHON: "C:\\Python34"
     - PYTHON: "C:\\Python35"
     - PYTHON: "C:\\Python36"
     - PYTHON: "C:\\Python37"
@@ -27,16 +26,13 @@ install:
   - set PATH=%PYTHON%\Scripts;%PATH%
   - "%PYTHON%\\python.exe -m pip install --upgrade pip"
   - pip install wheel coveralls coverage codeclimate-test-reporter"
-  - pip install numpy scipy"
-  - pip install -r requirements.txt
+  - pip install -r requirements.txt -r requirements.test.txt
   - cmd: curl -O -L https://www.antlr.org/download/antlr-4.8-complete.jar
   - cmd: set CLASSPATH = "%APPVEYOR_BUILD_FOLDER%\\antlr-4.8-complete.jar"
   - cmd: set CLASSPATH
   - cmd: dir
   - cmd: cd pya2l
   - cmd: cd ..
-
-
 
 build: off
 
@@ -74,15 +70,14 @@ on_success:
   #- python-codacy-coverage -r coverage.xml
 
 deploy:
-- provider: GitHub
-  artifact: '*.*'
-  description: Test release -- do not use
-  auth_token:
-    secure: Wiweaot1JAHzV9mMZ3Zhn/5XUuLe5XYAyfpRZmWNpLW7fMW1FhAdoRliiAhz3Sv6
-  draft: false
-  prerelease: true
+  - provider: GitHub
+    artifact: "*.*"
+    description: Test release -- do not use
+    auth_token:
+      secure: Wiweaot1JAHzV9mMZ3Zhn/5XUuLe5XYAyfpRZmWNpLW7fMW1FhAdoRliiAhz3Sv6
+    draft: false
+    prerelease: true
 
 cache:
-    - "%APPDATA%\\pip\\Cache -> appveyor.yml" 
-    - "%LOCALAPPDATA%\\pip\\Cache -> appveyor.yml" 
-
+  - "%APPDATA%\\pip\\Cache -> appveyor.yml"
+  - "%LOCALAPPDATA%\\pip\\Cache -> appveyor.yml"

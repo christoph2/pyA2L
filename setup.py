@@ -6,13 +6,27 @@ import os
 import subprocess
 from distutils.core import setup
 from glob import glob
+from pathlib import Path
 
 import setuptools.command.build_py
 import setuptools.command.develop
+from pkg_resources import parse_requirements
 from setuptools import find_packages
 
-ANTLR_VERSION = "4.8"
-ANTLR_RT = "antlr4-python3-runtime == {}".format(ANTLR_VERSION)
+
+def _parse_requirements(filepath):
+    with filepath.open() as requirements_txt:
+        requirements = list(parse_requirements(requirements_txt))
+
+    return requirements
+
+
+base_requirements = _parse_requirements(Path(__file__).parent / "requirements.txt")
+ANTLR_VERSION = next(
+    req.specs[0][1]
+    for req in base_requirements
+    if req.project_name == "antlr4-python3-runtime"
+)
 
 
 def findAntlr():
@@ -107,8 +121,6 @@ class CustomDevelop(setuptools.command.develop.develop):
         super().run()
 
 
-INSTALL_REQS = [ANTLR_RT, "mako", "six", "SQLAlchemy", "sortedcontainers"]
-
 with open(os.path.join("pya2l", "version.py"), "r") as f:
     for line in f:
         if line.startswith("__version__"):
@@ -133,8 +145,10 @@ setup(
         "develop": CustomDevelop,
     },
     packages=find_packages(),
-    install_requires=INSTALL_REQS,
-    tests_require=["pytest", "pytest-runner"],
+    install_requires=map(str, base_requirements),
+    tests_require=map(
+        str, _parse_requirements(Path(__file__).parent / "requirements.test.txt")
+    ),
     package_data={
         "templates": glob("cgen/templates/*.tmpl"),
     },
