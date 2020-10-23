@@ -25,8 +25,8 @@ install:
   # We need wheel installed to build wheels
   - set PATH=%PYTHON%\Scripts;%PATH%
   - "%PYTHON%\\python.exe -m pip install --upgrade pip"
-  - pip install wheel coveralls coverage codeclimate-test-reporter"
-  - pip install -r requirements.txt -r requirements.test.txt
+  - pip install wheel coveralls coverage codeclimate-test-reporter
+  - pip install -r requirements.txt -r requirements.setup.txt pytest
   - cmd: curl -O -L https://www.antlr.org/download/antlr-4.8-complete.jar
   - cmd: set CLASSPATH = "%APPVEYOR_BUILD_FOLDER%\\antlr-4.8-complete.jar"
   - cmd: set CLASSPATH

@@ -1,5 +1,4 @@
-import pya2l.model as model
-from pya2l import DB
+from pya2l import DB, model
 
 db = DB()
 session = db.open_existing("ASAP2_Demo_V161")

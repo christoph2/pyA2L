@@ -21,10 +21,14 @@ def _parse_requirements(filepath):
     return requirements
 
 
-base_requirements = _parse_requirements(Path(__file__).parent / "requirements.txt")
+BASE_REQUIREMENTS = _parse_requirements(Path(__file__).parent / "requirements.txt")
+SETUP_REQUIREMENTS = _parse_requirements(
+    Path(__file__).parent / "requirements.setup.txt"
+)
+TEST_REQUIREMENTS = _parse_requirements(Path(__file__).parent / "requirements.test.txt")
 ANTLR_VERSION = next(
     req.specs[0][1]
-    for req in base_requirements
+    for req in BASE_REQUIREMENTS
     if req.project_name == "antlr4-python3-runtime"
 )
 
@@ -124,7 +128,7 @@ class CustomDevelop(setuptools.command.develop.develop):
 with open(os.path.join("pya2l", "version.py"), "r") as f:
     for line in f:
         if line.startswith("__version__"):
-            version = line.split("=")[-1].strip().strip('"')
+            VERSION = line.split("=")[-1].strip().strip('"')
             break
 
 with open("README.md", "r") as fh:
@@ -132,7 +136,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="pya2ldb",
-    version=version,
+    version=VERSION,
     description="A2L for Python",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
@@ -145,10 +149,9 @@ setup(
         "develop": CustomDevelop,
     },
     packages=find_packages(),
-    install_requires=map(str, base_requirements),
-    tests_require=map(
-        str, _parse_requirements(Path(__file__).parent / "requirements.test.txt")
-    ),
+    install_requires=map(str, BASE_REQUIREMENTS),
+    setup_requires=map(str, SETUP_REQUIREMENTS),
+    tests_require=map(str, TEST_REQUIREMENTS),
     package_data={
         "templates": glob("cgen/templates/*.tmpl"),
     },

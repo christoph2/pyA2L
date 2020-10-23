@@ -1,4 +1,4 @@
-mako
-six
 antlr4-python3-runtime==4.8
+Mako
+six
 SQLAlchemy
