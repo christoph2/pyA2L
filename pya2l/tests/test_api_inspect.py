@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pytest
 
-import pya2l.model as model
-from pya2l.a2l_listener import ParserWrapper, A2LListener
+from pya2l.a2l_listener import A2LListener
 from pya2l.api.inspect import Measurement, ModCommon, ModPar
-
+from pya2l.parserlib import ParserWrapper
 
 
 def test_measurement_basic():
-    parser = ParserWrapper('a2l', 'measurement', A2LListener, debug = False)
+    parser = ParserWrapper("a2l", "measurement", A2LListener, debug=False)
     DATA = """
     /begin MEASUREMENT
         N /* name */
@@ -35,9 +33,9 @@ def test_measurement_basic():
     assert meas.annotations == []
     assert meas.arraySize is None
     assert meas.bitMask is None
-    assert meas.bitOperation == None
+    assert meas.bitOperation is None
     assert meas.byteOrder is None
-    assert meas.discrete == False
+    assert meas.discrete is False
     assert meas.displayIdentifier is None
     assert meas.ecuAddress is None
     assert meas.ecuAddressExtension is None
@@ -45,17 +43,18 @@ def test_measurement_basic():
     assert meas.format is None
     assert meas.functionList == []
     assert meas.layout is None
-    assert meas.matrixDim == None
-    assert meas.maxRefresh == None
+    assert meas.matrixDim is None
+    assert meas.maxRefresh is None
     assert meas.physUnit is None
-    assert meas.readWrite == False
+    assert meas.readWrite is False
     assert meas.refMemorySegment is None
-    assert meas.symbolLink == None
+    assert meas.symbolLink is None
     assert meas.virtual == []
-    assert meas.compuMethod == 'NO_COMPU_METHOD'
+    assert meas.compuMethod == "NO_COMPU_METHOD"
+
 
 def test_measurement_full_featured():
-    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
     DATA = """
     /begin MODULE testModule ""
         /begin COMPU_METHOD Velocity
@@ -128,28 +127,30 @@ def test_measurement_full_featured():
     assert meas.upperLimit == 8400.0
     assert meas.arraySize == 8
     assert meas.bitMask == 0x0FFF
-    assert meas.annotations == [{
-            'label': 'ASAM Workinggroup',
-            'origin': 'Python Universe',
-            'text': ['Test the A2L annotation', 'Another line']
-        }]
-    assert meas.bitOperation == {'amount': 4, 'direction': 'R', 'sign_extend': True}
+    assert meas.annotations == [
+        {
+            "label": "ASAM Workinggroup",
+            "origin": "Python Universe",
+            "text": ["Test the A2L annotation", "Another line"],
+        }
+    ]
+    assert meas.bitOperation == {"amount": 4, "direction": "R", "sign_extend": True}
     assert meas.byteOrder == "MSB_FIRST"
-    assert meas.discrete == True
-    assert meas.displayIdentifier == 'load_engine'
-    assert meas.ecuAddress == 0xcafebabe
+    assert meas.discrete
+    assert meas.displayIdentifier == "load_engine"
+    assert meas.ecuAddress == 0xCAFEBABE
     assert meas.ecuAddressExtension == 42
     assert meas.errorMask == 1
     assert meas.format == "%4.2f"
     assert meas.functionList == ["ID_ADJUSTM", "FL_ADJUSTM"]
     assert meas.layout == "ROW_DIR"
-    assert meas.matrixDim == {'x': 2, 'y': 4, 'z': 3}
-    assert meas.maxRefresh == {'rate': 15, 'scalingUnit': 3}
+    assert meas.matrixDim == {"x": 2, "y": 4, "z": 3}
+    assert meas.maxRefresh == {"rate": 15, "scalingUnit": 3}
     assert meas.physUnit == "mph"
-    assert meas.readWrite == True
+    assert meas.readWrite
     assert meas.refMemorySegment == "Data2"
-    assert meas.symbolLink == {'offset': 4711, 'symbolName': 'VehicleSpeed'}
-    assert meas.virtual == ['PHI_BASIS', 'PHI_CORR']
+    assert meas.symbolLink == {"offset": 4711, "symbolName": "VehicleSpeed"}
+    assert meas.virtual == ["PHI_BASIS", "PHI_CORR"]
     assert meas.compuMethod.conversionType == "RAT_FUNC"
     assert meas.compuMethod.unit == "km/h"
     assert meas.compuMethod.format == "%6.2"
@@ -161,8 +162,9 @@ def test_measurement_full_featured():
     assert meas.compuMethod.coeffs["e"] == 0.0
     assert meas.compuMethod.coeffs["f"] == 1.0
 
+
 def test_measurement_no_compu_method():
-    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
     DATA = """
     /begin MODULE testModule ""
         /begin MEASUREMENT
@@ -179,10 +181,11 @@ def test_measurement_no_compu_method():
     """
     session = parser.parseFromString(DATA)
     meas = Measurement(session, "N")
-    assert meas.compuMethod == 'NO_COMPU_METHOD'
+    assert meas.compuMethod == "NO_COMPU_METHOD"
+
 
 def test_measurement_compu_method_identical():
-    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
     DATA = """
     /begin MODULE testModule ""
         /begin COMPU_METHOD CM.IDENTICAL
@@ -203,13 +206,16 @@ def test_measurement_compu_method_identical():
     """
     session = parser.parseFromString(DATA)
     meas = Measurement(session, "N")
-    assert meas.compuMethod.format == '%3.0'
-    assert meas.compuMethod.conversionType == 'IDENTICAL'
+    assert meas.compuMethod.format == "%3.0"
+    assert meas.compuMethod.conversionType == "IDENTICAL"
     assert meas.compuMethod.unit == "hours"
-    assert meas.compuMethod.longIdentifier == 'conversion that delivers always phys = int'
+    assert (
+        meas.compuMethod.longIdentifier == "conversion that delivers always phys = int"
+    )
+
 
 def test_measurement_compu_method_form():
-    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
     DATA = """
     /begin MODULE testModule ""
         /begin COMPU_METHOD CM.FORM.X_PLUS_4
@@ -233,15 +239,16 @@ def test_measurement_compu_method_form():
     """
     session = parser.parseFromString(DATA)
     meas = Measurement(session, "N")
-    assert meas.compuMethod.format == '%6.1'
+    assert meas.compuMethod.format == "%6.1"
     assert meas.compuMethod.conversionType == "FORM"
     assert meas.compuMethod.unit == "rpm"
     assert meas.compuMethod.longIdentifier == ""
     assert meas.compuMethod.formula["formula"] == "X1+4"
     assert meas.compuMethod.formula["formula_inv"] == "X1-4"
 
+
 def test_measurement_compu_method_linear():
-    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
     DATA = """
     /begin MODULE testModule ""
         /begin COMPU_METHOD CM.LINEAR.MUL_2
@@ -264,15 +271,19 @@ def test_measurement_compu_method_linear():
     session = parser.parseFromString(DATA)
     meas = Measurement(session, "N")
 
-    assert meas.compuMethod.format == '%3.1'
+    assert meas.compuMethod.format == "%3.1"
     assert meas.compuMethod.conversionType == "LINEAR"
     assert meas.compuMethod.unit == "m/s"
-    assert meas.compuMethod.longIdentifier == 'Linear function with parameter set for phys = f(int) = 2*int + 0'
+    assert (
+        meas.compuMethod.longIdentifier
+        == "Linear function with parameter set for phys = f(int) = 2*int + 0"
+    )
     assert meas.compuMethod.coeffs_linear["a"] == 2.0
     assert meas.compuMethod.coeffs_linear["b"] == 0.0
 
+
 def test_measurement_compu_method_rat_func():
-    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
     DATA = """
     /begin MODULE testModule ""
         /begin COMPU_METHOD CM.RAT_FUNC.DIV_81_9175
@@ -295,10 +306,13 @@ def test_measurement_compu_method_rat_func():
     session = parser.parseFromString(DATA)
     meas = Measurement(session, "N")
 
-    assert meas.compuMethod.format == '%8.4'
-    assert meas.compuMethod.conversionType == 'RAT_FUNC'
-    assert meas.compuMethod.unit == 'grad C'
-    assert meas.compuMethod.longIdentifier == 'rational function with parameter set for impl = f(phys) = phys * 81.9175'
+    assert meas.compuMethod.format == "%8.4"
+    assert meas.compuMethod.conversionType == "RAT_FUNC"
+    assert meas.compuMethod.unit == "grad C"
+    assert (
+        meas.compuMethod.longIdentifier
+        == "rational function with parameter set for impl = f(phys) = phys * 81.9175"
+    )
     assert meas.compuMethod.coeffs["a"] == 0.0
     assert meas.compuMethod.coeffs["b"] == 81.9175
     assert meas.compuMethod.coeffs["c"] == 0.0
@@ -306,8 +320,9 @@ def test_measurement_compu_method_rat_func():
     assert meas.compuMethod.coeffs["e"] == 0.0
     assert meas.compuMethod.coeffs["f"] == 1.0
 
+
 def test_measurement_compu_method_tab_intp():
-    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
     DATA = """
     /begin MODULE testModule ""
         /begin COMPU_METHOD CM.TAB_INTP.DEFAULT_VALUE
@@ -347,18 +362,45 @@ def test_measurement_compu_method_tab_intp():
     """
     session = parser.parseFromString(DATA)
     meas = Measurement(session, "N")
-    assert meas.compuMethod.format == '%8.4'
-    assert meas.compuMethod.conversionType == 'TAB_INTP'
-    assert meas.compuMethod.unit == 'U/min'
-    assert meas.compuMethod.longIdentifier == ''
-    assert meas.compuMethod.tab['default_value'] == 300.56
-    assert meas.compuMethod.tab['interpolation'] ==  True
-    assert meas.compuMethod.tab['num_values'] == 12
-    assert meas.compuMethod.tab['in_values'] ==  [-3.0, -1.0, 0.0, 2.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 13.0]
-    assert meas.compuMethod.tab['out_values'] == [98.0, 99.0, 100.0, 102.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0]
+    assert meas.compuMethod.format == "%8.4"
+    assert meas.compuMethod.conversionType == "TAB_INTP"
+    assert meas.compuMethod.unit == "U/min"
+    assert meas.compuMethod.longIdentifier == ""
+    assert meas.compuMethod.tab["default_value"] == 300.56
+    assert meas.compuMethod.tab["interpolation"]
+    assert meas.compuMethod.tab["num_values"] == 12
+    assert meas.compuMethod.tab["in_values"] == [
+        -3.0,
+        -1.0,
+        0.0,
+        2.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        13.0,
+    ]
+    assert meas.compuMethod.tab["out_values"] == [
+        98.0,
+        99.0,
+        100.0,
+        102.0,
+        104.0,
+        105.0,
+        106.0,
+        107.0,
+        108.0,
+        109.0,
+        110.0,
+        111.0,
+    ]
+
 
 def test_measurement_compu_method_tab_verb():
-    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
     DATA = """
     /begin MODULE testModule ""
         /begin COMPU_METHOD CM.TAB_VERB.DEFAULT_VALUE
@@ -391,18 +433,26 @@ def test_measurement_compu_method_tab_verb():
     """
     session = parser.parseFromString(DATA)
     meas = Measurement(session, "N")
-    assert meas.compuMethod.format == '%12.0'
-    assert meas.compuMethod.conversionType == 'TAB_VERB'
+    assert meas.compuMethod.format == "%12.0"
+    assert meas.compuMethod.conversionType == "TAB_VERB"
     assert meas.compuMethod.unit == ""
-    assert meas.compuMethod.longIdentifier == 'Verbal conversion with default value'
-    assert meas.compuMethod.tab_verb['default_value'] == "unknown signal type"
-    assert meas.compuMethod.tab_verb['num_values'] == 6
-    assert meas.compuMethod.tab_verb['ranges'] == False
-    assert meas.compuMethod.tab_verb['in_values'] == [2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
-    assert meas.compuMethod.tab_verb['text_values'] == ['red', 'orange', 'yellow', 'green', 'blue', 'violet']
+    assert meas.compuMethod.longIdentifier == "Verbal conversion with default value"
+    assert meas.compuMethod.tab_verb["default_value"] == "unknown signal type"
+    assert meas.compuMethod.tab_verb["num_values"] == 6
+    assert meas.compuMethod.tab_verb["ranges"] is False
+    assert meas.compuMethod.tab_verb["in_values"] == [2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
+    assert meas.compuMethod.tab_verb["text_values"] == [
+        "red",
+        "orange",
+        "yellow",
+        "green",
+        "blue",
+        "violet",
+    ]
+
 
 def test_measurement_compu_method_tab_verb_range():
-    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
     DATA = """
     /begin MODULE testModule ""
         /begin COMPU_METHOD CM.VTAB_RANGE.DEFAULT_VALUE
@@ -442,22 +492,58 @@ def test_measurement_compu_method_tab_verb_range():
     """
     session = parser.parseFromString(DATA)
     meas = Measurement.get(session, "N")
-    assert meas.compuMethod.format == '%4.2'
-    assert meas.compuMethod.conversionType == 'TAB_VERB'
-    assert meas.compuMethod.unit == ''
-    assert meas.compuMethod.longIdentifier == 'verbal range with default value'
+    assert meas.compuMethod.format == "%4.2"
+    assert meas.compuMethod.conversionType == "TAB_VERB"
+    assert meas.compuMethod.unit == ""
+    assert meas.compuMethod.longIdentifier == "verbal range with default value"
     assert meas.compuMethod.name == "CM.VTAB_RANGE.DEFAULT_VALUE"
-    assert meas.compuMethod.statusStringRef == None
+    assert meas.compuMethod.statusStringRef is None
     assert meas.compuMethod.tab_verb["default_value"] == "out of range value"
     assert meas.compuMethod.tab_verb["num_values"] == 11
-    assert meas.compuMethod.tab_verb["ranges"] == True
-    assert meas.compuMethod.tab_verb['lower_values'] == [0.0, 2.0, 4.0, 14.0, 18.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0]
-    assert meas.compuMethod.tab_verb['text_values'] == ['Zero_to_one', 'two_to_three', 'four_to_seven', 'fourteen_to_seventeen',
-            'eigteen_to_ninetynine', 'hundred', 'hundredone', 'hundredtwo', 'hundredthree', 'hundredfour', 'hundredfive']
-    assert meas.compuMethod.tab_verb['upper_values'] == [1.0, 3.0, 7.0, 17.0, 99.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0]
+    assert meas.compuMethod.tab_verb["ranges"]
+    assert meas.compuMethod.tab_verb["lower_values"] == [
+        0.0,
+        2.0,
+        4.0,
+        14.0,
+        18.0,
+        100.0,
+        101.0,
+        102.0,
+        103.0,
+        104.0,
+        105.0,
+    ]
+    assert meas.compuMethod.tab_verb["text_values"] == [
+        "Zero_to_one",
+        "two_to_three",
+        "four_to_seven",
+        "fourteen_to_seventeen",
+        "eigteen_to_ninetynine",
+        "hundred",
+        "hundredone",
+        "hundredtwo",
+        "hundredthree",
+        "hundredfour",
+        "hundredfive",
+    ]
+    assert meas.compuMethod.tab_verb["upper_values"] == [
+        1.0,
+        3.0,
+        7.0,
+        17.0,
+        99.0,
+        100.0,
+        101.0,
+        102.0,
+        103.0,
+        104.0,
+        105.0,
+    ]
+
 
 def test_mod_par_full_featured():
-    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
     DATA = """
     /begin MODULE testModule ""
         /begin MOD_PAR "Note: Provisional release for test purposes only!"
@@ -503,69 +589,71 @@ def test_mod_par_full_featured():
     """
     session = parser.parseFromString(DATA)
     mp = ModPar(session, "testModule")
-    assert mp.comment == 'Note: Provisional release for test purposes only!'
+    assert mp.comment == "Note: Provisional release for test purposes only!"
 
-    assert mp.version == 'Test version of 01.02.1994'
+    assert mp.version == "Test version of 01.02.1994"
     assert mp.addrEpk[0] == 284280
-    assert mp.epk == 'EPROM identifier test'
-    assert mp.supplier == 'M&K GmbH Chemnitz'
-    assert mp.customer == 'LANZ-Landmaschinen'
-    assert mp.customerNo == '0123456789'
-    assert mp.user == 'A.N.Wender'
-    assert mp.phoneNo == '09951 56456'
-    assert mp.ecu == 'Engine control'
-    assert mp.cpu == 'Motorola 0815'
+    assert mp.epk == "EPROM identifier test"
+    assert mp.supplier == "M&K GmbH Chemnitz"
+    assert mp.customer == "LANZ-Landmaschinen"
+    assert mp.customerNo == "0123456789"
+    assert mp.user == "A.N.Wender"
+    assert mp.phoneNo == "09951 56456"
+    assert mp.ecu == "Engine control"
+    assert mp.cpu == "Motorola 0815"
     assert mp.noOfInterfaces == 2
     ms = mp.memorySegments[0]
     assert ms == {
-        'address': 196608,
-        'attribute': 'EXTERN',
-        'longIdentifier': 'external RAM',
-        'memoryType': 'RAM',
-        'name': 'ext_Ram',
-        'offset_0': -1,
-        'offset_1': -1,
-        'offset_2': -1,
-        'offset_3': -1,
-        'offset_4': -1,
-        'prgType': 'DATA',
-        'size': 4096
+        "address": 196608,
+        "attribute": "EXTERN",
+        "longIdentifier": "external RAM",
+        "memoryType": "RAM",
+        "name": "ext_Ram",
+        "offset_0": -1,
+        "offset_1": -1,
+        "offset_2": -1,
+        "offset_3": -1,
+        "offset_4": -1,
+        "prgType": "DATA",
+        "size": 4096,
     }
     m0, m1, m2 = mp.memoryLayouts
     assert m0 == {
-        'address': 0,
-        'offset_0': -1,
-        'offset_1': -1,
-        'offset_2': -1,
-        'offset_3': -1,
-        'offset_4': -1,
-        'prgType': 'PRG_RESERVED',
-        'size': 1024
+        "address": 0,
+        "offset_0": -1,
+        "offset_1": -1,
+        "offset_2": -1,
+        "offset_3": -1,
+        "offset_4": -1,
+        "prgType": "PRG_RESERVED",
+        "size": 1024,
     }
     assert m1 == {
-        'address': 1024,
-        'offset_0': -1,
-        'offset_1': -1,
-        'offset_2': -1,
-        'offset_3': -1,
-        'offset_4': -1,
-        'prgType': 'PRG_CODE',
-        'size': 15360
+        "address": 1024,
+        "offset_0": -1,
+        "offset_1": -1,
+        "offset_2": -1,
+        "offset_3": -1,
+        "offset_4": -1,
+        "prgType": "PRG_CODE",
+        "size": 15360,
     }
-    assert m2 == {'address': 16384,
-        'offset_0': -1,
-        'offset_1': -1,
-        'offset_2': -1,
-        'offset_3': -1,
-        'offset_4': -1,
-        'prgType': 'PRG_DATA',
-        'size': 22528
+    assert m2 == {
+        "address": 16384,
+        "offset_0": -1,
+        "offset_1": -1,
+        "offset_2": -1,
+        "offset_3": -1,
+        "offset_4": -1,
+        "prgType": "PRG_DATA",
+        "size": 22528,
     }
     sc = mp.systemConstants
-    assert sc == {'CONTROLLERx constant1': 0.33, 'CONTROLLERx constant2': 2.79}
+    assert sc == {"CONTROLLERx constant1": 0.33, "CONTROLLERx constant2": 2.79}
+
 
 def test_mod_par_basic():
-    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
     DATA = """
     /begin MODULE testModule ""
         /begin MOD_PAR "Note: Provisional release for test purposes only!"
@@ -574,7 +662,7 @@ def test_mod_par_basic():
     """
     session = parser.parseFromString(DATA)
     mp = ModPar(session, "testModule")
-    assert mp.comment == 'Note: Provisional release for test purposes only!'
+    assert mp.comment == "Note: Provisional release for test purposes only!"
     assert mp.version is None
     assert mp.addrEpk == []
     assert mp.epk is None
@@ -590,8 +678,9 @@ def test_mod_par_basic():
     assert mp.memoryLayouts == []
     assert mp.systemConstants == {}
 
+
 def test_mod_common_f7ull_featured():
-    parser = ParserWrapper('a2l', 'module', A2LListener, debug = False)
+    parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
     DATA = """
     /begin MODULE testModule ""
         /begin MOD_COMMON "Characteristic maps always deposited in same mode"
@@ -611,11 +700,17 @@ def test_mod_common_f7ull_featured():
     """
     session = parser.parseFromString(DATA)
     mc = ModCommon(session, "testModule")
-    assert mc.comment == 'Characteristic maps always deposited in same mode'
-    #assert mc.sRecLayout.name == "S_ABL"
+    assert mc.comment == "Characteristic maps always deposited in same mode"
+    # assert mc.sRecLayout.name == "S_ABL"
     assert mc.sRecLayout == "S_ABL"
-    assert mc.deposit == 'ABSOLUTE'
-    assert mc.byteOrder == 'MSB_LAST'
+    assert mc.deposit == "ABSOLUTE"
+    assert mc.byteOrder == "MSB_LAST"
     assert mc.dataSize == 16
-    assert mc.alignment == {'FLOAT64': 8, 'DWORD': 4, 'BYTE': 1, 'WORD': 2, 'QWORD': 8, 'FLOAT32': 4}
-
+    assert mc.alignment == {
+        "FLOAT64": 8,
+        "DWORD": 4,
+        "BYTE": 1,
+        "WORD": 2,
+        "QWORD": 8,
+        "FLOAT32": 4,
+    }

@@ -24,58 +24,54 @@ __copyright__ = """
 
    s. FLOSS-EXCEPTION.txt
 """
-__author__  = 'Christoph Schueler'
-__version__ = '0.1.0'
+__author__ = "Christoph Schueler"
+__version__ = "0.1.0"
 
 
-from collections import OrderedDict, namedtuple
-from decimal import Decimal as D
 import enum
-import json
-import re
+from decimal import Decimal as D
 
 import antlr4
 
-from pya2l.parserlib import ParserWrapper
-
 
 class AMLPredefinedTypes(enum.IntEnum):
-    """
-    """
-    PDT_CHAR    = 0
-    PDT_INT     = 1
-    PDT_LONG    = 2
-    PDT_UCHAR   = 3
-    PDT_UINT    = 4
-    PDT_ULONG   = 5
-    PDT_DOUBLE  = 6
-    PDT_FLOAT   = 7
+    """"""
+
+    PDT_CHAR = 0
+    PDT_INT = 1
+    PDT_LONG = 2
+    PDT_UCHAR = 3
+    PDT_UINT = 4
+    PDT_ULONG = 5
+    PDT_DOUBLE = 6
+    PDT_FLOAT = 7
 
 
 def map_predefined_type(name):
     MAP = {
-        'char': AMLPredefinedTypes.PDT_CHAR,
-        'int': AMLPredefinedTypes.PDT_INT,
-        'long': AMLPredefinedTypes.PDT_LONG,
-        'uchar': AMLPredefinedTypes.PDT_UCHAR,
-        'uint': AMLPredefinedTypes.PDT_UINT,
-        'ulong': AMLPredefinedTypes.PDT_ULONG,
-        'double': AMLPredefinedTypes.PDT_DOUBLE,
-        'float': AMLPredefinedTypes.PDT_FLOAT,
+        "char": AMLPredefinedTypes.PDT_CHAR,
+        "int": AMLPredefinedTypes.PDT_INT,
+        "long": AMLPredefinedTypes.PDT_LONG,
+        "uchar": AMLPredefinedTypes.PDT_UCHAR,
+        "uint": AMLPredefinedTypes.PDT_UINT,
+        "ulong": AMLPredefinedTypes.PDT_ULONG,
+        "double": AMLPredefinedTypes.PDT_DOUBLE,
+        "float": AMLPredefinedTypes.PDT_FLOAT,
     }
     return MAP.get(name)
 
 
 def createEnumeration(name, enumerators):
     class Enumeration:
-
         def __init__(self, name, enumerators):
             self.name = name
             self.enumerators = enumerators
             self._renumber_constants()
 
         def __repr__(self):
-            return "Enumeration(name = {}, enumerators = {})".format(self.name, self.enumerators)
+            return "Enumeration(name = {}, enumerators = {})".format(
+                self.name, self.enumerators
+            )
 
         def _renumber_constants(self):
             """ISO C/C++ like enumerator numbering.
@@ -95,9 +91,9 @@ def createEnumeration(name, enumerators):
     res = Enumeration(name, enumerators)
     return res
 
+
 def createEnumerator(tag, constant):
     class Enumerator:
-
         def __init__(self, tag, constant):
             self.tag = tag
             self.constant = constant
@@ -107,63 +103,71 @@ def createEnumerator(tag, constant):
 
     return Enumerator(tag, constant)
 
+
 def createTaggedUnion(name, members):
     class TaggedUnion:
-
         def __init__(self, name, members):
             self.name = name
             self.members = members
 
         def __repr__(self):
-            return "TaggedUnion(name = {}, members = {})".format(self.name, self.members)
+            return "TaggedUnion(name = {}, members = {})".format(
+                self.name, self.members
+            )
 
     res = TaggedUnion(name, members)
     return res
 
+
 def createTaggedUnionMember(tag, member, block_definition):
     class TaggedUnionMember:
-
         def __init__(self, tag, member, block_definition):
             self.tag = tag
             self.member = member
             self.block_definition = block_definition
 
         def __repr__(self):
-            return "TaggedUnionMember(tag = {}, member = {}, block_definition = {})".format(self.tag, self.member, self.block_definition)
+            return "TaggedUnionMember(tag = {}, member = {}, block_definition = {})".format(
+                self.tag, self.member, self.block_definition
+            )
 
     res = TaggedUnionMember(tag, member, block_definition)
     return res
 
+
 def createMember(type_name, array_specifier):
     class Member:
-
         def __init__(self, type_name, array_specifier):
             self.type_name = type_name
             self.array_specifier = array_specifier
 
         def __repr__(self):
-            return "Member(type_name = {}{})".format(self.type_name, self.array_specifier or "")
+            return "Member(type_name = {}{})".format(
+                self.type_name, self.array_specifier or ""
+            )
 
     res = Member(type_name, array_specifier)
     return res
 
+
 def createTypeName(tag, name, type_):
     class TypeName:
-
         def __init__(self, tag, name, type_):
             self.tag = tag
             self.name = name
             self.type_ = type_
 
         def __repr__(self):
-            return "TypeName(tag = {}, name = {}, type = {})".format(self.tag, self.name, self.type_)
+            return "TypeName(tag = {}, name = {}, type = {})".format(
+                self.tag, self.name, self.type_
+            )
 
     res = TypeName(tag, name, type_)
     return res
 
+
 def createPredefinedType(name):
     class PredefinedType:
-
         def __init__(self, type_):
             self.type_ = type_
 
@@ -173,9 +177,9 @@ def createPredefinedType(name):
     res = PredefinedType(map_predefined_type(name))
     return res
 
+
 def createStructType(name, members):
     class StructType:
-
         def __init__(self, name, members):
             self.name = name
             self.members = members
@@ -186,49 +190,57 @@ def createStructType(name, members):
     res = StructType(name, members)
     return res
 
+
 def createTaggedStructType(name, members):
     class TaggedStructType:
-
         def __init__(self, name, members):
             self.name = name
             self.members = members
 
         def __repr__(self):
-            return "TaggedStructType(name = {}, members = {})".format(self.name, self.members)
+            return "TaggedStructType(name = {}, members = {})".format(
+                self.name, self.members
+            )
 
     res = TaggedStructType(name, members)
     return res
 
+
 def createTaggedStructDefinition(tag, member, multiple):
     class TaggedStructDefinition:
-
         def __init__(self, tag, member, multiple):
             self.tag = tag
             self.member = member
             self.multiple = multiple
 
         def __repr__(self):
-            return "TaggedStructDefinition(tag = {}, member = {}, multiple = {})".format(self.tag, self.member, self.multiple)
+            return (
+                "TaggedStructDefinition(tag = {}, member = {}, multiple = {})".format(
+                    self.tag, self.member, self.multiple
+                )
+            )
 
     res = TaggedStructDefinition(tag, member, multiple)
     return res
 
+
 def createStructMember(value, multiple):
     class StructMember:
-
         def __init__(self, value, multiple):
             self.value = value
             self.multiple = multiple
 
         def __repr__(self):
-            return "StructMember(value = {}, multiple = {})".format(self.value, self.multiple)
+            return "StructMember(value = {}, multiple = {})".format(
+                self.value, self.multiple
+            )
 
     res = StructMember(value, multiple)
     return res
 
+
 def createTaggedStructMember(taggedstruct_definition, block_definition, multiple):
     class TaggedStructMember:
-
         def __init__(self, taggedstruct_definition, block_definition, multiple):
             self.taggedstruct_definition = taggedstruct_definition
             self.block_definition = block_definition
@@ -242,36 +254,40 @@ def createTaggedStructMember(taggedstruct_definition, block_definition, multiple
     res = TaggedStructMember(taggedstruct_definition, block_definition, multiple)
     return res
 
+
 def createDeclaration(block_definition, type_definition):
     class Declaration:
-
         def __init__(self, block_definition, type_definition):
             self.block_definition = block_definition
             self.type_definition = type_definition
 
         def __repr__(self):
-            return "Declaration(block_definition = {}, type_definition = {})".format(self.block_definition, self.type_definition)
+            return "Declaration(block_definition = {}, type_definition = {})".format(
+                self.block_definition, self.type_definition
+            )
 
     res = Declaration(block_definition, type_definition)
     return res
 
+
 def createBlockDefinition(tag, type_name, member):
     class BlockDefinition:
-
         def __init__(self, tag, type_name, member):
             self.tag = tag
             self.type_name = type_name
             self.member = member
 
         def __repr__(self):
-            return "BlockDefinition(tag = {}, type_name = {}, member = {})".format(self.tag, self.type_name, self.member)
+            return "BlockDefinition(tag = {}, type_name = {}, member = {})".format(
+                self.tag, self.type_name, self.member
+            )
 
     res = BlockDefinition(tag, type_name, member)
     return res
 
+
 def createTypeDefinition(type_name):
     class TypeDefinition:
-
         def __init__(self, type_name):
             self.type_name = type_name
 
@@ -317,7 +333,7 @@ class AMLListener(antlr4.ParseTreeListener):
         ctx.value = createTypeName(tag, name, tp)
 
     def exitPredefined_type_name(self, ctx):
-        ctx.value =  createPredefinedType(ctx.name.text)
+        ctx.value = createPredefinedType(ctx.name.text)
 
     def exitStruct_type_name(self, ctx):
         is_referrer = False
@@ -371,7 +387,9 @@ class AMLListener(antlr4.ParseTreeListener):
         else:
             blockDefinition = None
         mult = True if ctx.m0 or ctx.m1 else False
-        ctx.value = createTaggedStructMember(taggedstructDefinition, blockDefinition, mult)
+        ctx.value = createTaggedStructMember(
+            taggedstructDefinition, blockDefinition, mult
+        )
 
     def exitTaggedstruct_definition(self, ctx):
         mult = True if ctx.mult else False
@@ -413,7 +431,7 @@ class AMLListener(antlr4.ParseTreeListener):
     def exitTagged_union_member(self, ctx):
         tag = ctx.t.value if ctx.t else None
         member = ctx.m.value if ctx.m else None
-        blockDefinition = ctx.b.value  if ctx.b else None
+        blockDefinition = ctx.b.value if ctx.b else None
         ctx.value = createTaggedUnionMember(tag, member, blockDefinition)
 
     def exitTaggedunion_type_name(self, ctx):
@@ -465,7 +483,7 @@ class AMLListener(antlr4.ParseTreeListener):
         ctx.value = ctx.s.text.strip('"') if ctx.s else None
 
     def exitTagValue(self, ctx):
-        ctx.value = ctx.s.text.replace('"', '') if ctx.s else None
+        ctx.value = ctx.s.text.replace('"', "") if ctx.s else None
 
     def exitIdentifierValue(self, ctx):
         ctx.value = ctx.i.text if ctx.i else None
@@ -478,4 +496,3 @@ class AMLListener(antlr4.ParseTreeListener):
         elif ctx.f:
             value = D(ctx.f.text)
         ctx.value = value
-

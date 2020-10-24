@@ -1,20 +1,17 @@
-
-
-import pytest
-
 from pya2l.utils import align_as, padding
 
+
 def test_alignment_1():
-    assert align_as(0, 1)  == 0
-    assert align_as(1, 1)  == 1
-    assert align_as(2, 1)  == 2
-    assert align_as(3, 1)  == 3
-    assert align_as(4, 1)  == 4
-    assert align_as(5, 1)  == 5
-    assert align_as(6, 1)  == 6
-    assert align_as(7, 1)  == 7
-    assert align_as(8, 1)  == 8
-    assert align_as(9, 1)  == 9
+    assert align_as(0, 1) == 0
+    assert align_as(1, 1) == 1
+    assert align_as(2, 1) == 2
+    assert align_as(3, 1) == 3
+    assert align_as(4, 1) == 4
+    assert align_as(5, 1) == 5
+    assert align_as(6, 1) == 6
+    assert align_as(7, 1) == 7
+    assert align_as(8, 1) == 8
+    assert align_as(9, 1) == 9
     assert align_as(10, 1) == 10
     assert align_as(11, 1) == 11
     assert align_as(12, 1) == 12
@@ -38,17 +35,18 @@ def test_alignment_1():
     assert align_as(30, 1) == 30
     assert align_as(31, 1) == 31
 
+
 def test_alignment_2():
-    assert align_as(0, 2)  == 0
-    assert align_as(1, 2)  == 2
-    assert align_as(2, 2)  == 2
-    assert align_as(3, 2)  == 4
-    assert align_as(4, 2)  == 4
-    assert align_as(5, 2)  == 6
-    assert align_as(6, 2)  == 6
-    assert align_as(7, 2)  == 8
-    assert align_as(8, 2)  == 8
-    assert align_as(9, 2)  == 10
+    assert align_as(0, 2) == 0
+    assert align_as(1, 2) == 2
+    assert align_as(2, 2) == 2
+    assert align_as(3, 2) == 4
+    assert align_as(4, 2) == 4
+    assert align_as(5, 2) == 6
+    assert align_as(6, 2) == 6
+    assert align_as(7, 2) == 8
+    assert align_as(8, 2) == 8
+    assert align_as(9, 2) == 10
     assert align_as(10, 2) == 10
     assert align_as(11, 2) == 12
     assert align_as(12, 2) == 12
@@ -72,17 +70,18 @@ def test_alignment_2():
     assert align_as(30, 2) == 30
     assert align_as(31, 2) == 32
 
+
 def test_alignment_4():
-    assert align_as(0, 4)  == 0
-    assert align_as(1, 4)  == 4
-    assert align_as(2, 4)  == 4
-    assert align_as(3, 4)  == 4
-    assert align_as(4, 4)  == 4
-    assert align_as(5, 4)  == 8
-    assert align_as(6, 4)  == 8
-    assert align_as(7, 4)  == 8
-    assert align_as(8, 4)  == 8
-    assert align_as(9, 4)  == 12
+    assert align_as(0, 4) == 0
+    assert align_as(1, 4) == 4
+    assert align_as(2, 4) == 4
+    assert align_as(3, 4) == 4
+    assert align_as(4, 4) == 4
+    assert align_as(5, 4) == 8
+    assert align_as(6, 4) == 8
+    assert align_as(7, 4) == 8
+    assert align_as(8, 4) == 8
+    assert align_as(9, 4) == 12
     assert align_as(10, 4) == 12
     assert align_as(11, 4) == 12
     assert align_as(12, 4) == 12
@@ -106,17 +105,18 @@ def test_alignment_4():
     assert align_as(30, 4) == 32
     assert align_as(31, 4) == 32
 
+
 def test_alignment_8():
-    assert align_as(0, 8)  == 0
-    assert align_as(1, 8)  == 8
-    assert align_as(2, 8)  == 8
-    assert align_as(3, 8)  == 8
-    assert align_as(4, 8)  == 8
-    assert align_as(5, 8)  == 8
-    assert align_as(6, 8)  == 8
-    assert align_as(7, 8)  == 8
-    assert align_as(8, 8)  == 8
-    assert align_as(9, 8)  == 16
+    assert align_as(0, 8) == 0
+    assert align_as(1, 8) == 8
+    assert align_as(2, 8) == 8
+    assert align_as(3, 8) == 8
+    assert align_as(4, 8) == 8
+    assert align_as(5, 8) == 8
+    assert align_as(6, 8) == 8
+    assert align_as(7, 8) == 8
+    assert align_as(8, 8) == 8
+    assert align_as(9, 8) == 16
     assert align_as(10, 8) == 16
     assert align_as(11, 8) == 16
     assert align_as(12, 8) == 16
@@ -140,17 +140,18 @@ def test_alignment_8():
     assert align_as(30, 8) == 32
     assert align_as(31, 8) == 32
 
+
 def test_padding_1():
-    assert padding(0, 1)  == 0
-    assert padding(1, 1)  == 0
-    assert padding(2, 1)  == 0
-    assert padding(3, 1)  == 0
-    assert padding(4, 1)  == 0
-    assert padding(5, 1)  == 0
-    assert padding(6, 1)  == 0
-    assert padding(7, 1)  == 0
-    assert padding(8, 1)  == 0
-    assert padding(9, 1)  == 0
+    assert padding(0, 1) == 0
+    assert padding(1, 1) == 0
+    assert padding(2, 1) == 0
+    assert padding(3, 1) == 0
+    assert padding(4, 1) == 0
+    assert padding(5, 1) == 0
+    assert padding(6, 1) == 0
+    assert padding(7, 1) == 0
+    assert padding(8, 1) == 0
+    assert padding(9, 1) == 0
     assert padding(10, 1) == 0
     assert padding(11, 1) == 0
     assert padding(12, 1) == 0
@@ -174,17 +175,18 @@ def test_padding_1():
     assert padding(30, 1) == 0
     assert padding(31, 1) == 0
 
+
 def test_padding_2():
-    assert padding(0, 2)  == 0
-    assert padding(1, 2)  == 1
-    assert padding(2, 2)  == 0
-    assert padding(3, 2)  == 1
-    assert padding(4, 2)  == 0
-    assert padding(5, 2)  == 1
-    assert padding(6, 2)  == 0
-    assert padding(7, 2)  == 1
-    assert padding(8, 2)  == 0
-    assert padding(9, 2)  == 1
+    assert padding(0, 2) == 0
+    assert padding(1, 2) == 1
+    assert padding(2, 2) == 0
+    assert padding(3, 2) == 1
+    assert padding(4, 2) == 0
+    assert padding(5, 2) == 1
+    assert padding(6, 2) == 0
+    assert padding(7, 2) == 1
+    assert padding(8, 2) == 0
+    assert padding(9, 2) == 1
     assert padding(10, 2) == 0
     assert padding(11, 2) == 1
     assert padding(12, 2) == 0
@@ -208,17 +210,18 @@ def test_padding_2():
     assert padding(30, 2) == 0
     assert padding(31, 2) == 1
 
+
 def test_padding_4():
-    assert padding(0, 4)  == 0
-    assert padding(1, 4)  == 3
-    assert padding(2, 4)  == 2
-    assert padding(3, 4)  == 1
-    assert padding(4, 4)  == 0
-    assert padding(5, 4)  == 3
-    assert padding(6, 4)  == 2
-    assert padding(7, 4)  == 1
-    assert padding(8, 4)  == 0
-    assert padding(9, 4)  == 3
+    assert padding(0, 4) == 0
+    assert padding(1, 4) == 3
+    assert padding(2, 4) == 2
+    assert padding(3, 4) == 1
+    assert padding(4, 4) == 0
+    assert padding(5, 4) == 3
+    assert padding(6, 4) == 2
+    assert padding(7, 4) == 1
+    assert padding(8, 4) == 0
+    assert padding(9, 4) == 3
     assert padding(10, 4) == 2
     assert padding(11, 4) == 1
     assert padding(12, 4) == 0
@@ -242,17 +245,18 @@ def test_padding_4():
     assert padding(30, 4) == 2
     assert padding(31, 4) == 1
 
+
 def test_padding_8():
-    assert padding(0, 8)  == 0
-    assert padding(1, 8)  == 7
-    assert padding(2, 8)  == 6
-    assert padding(3, 8)  == 5
-    assert padding(4, 8)  == 4
-    assert padding(5, 8)  == 3
-    assert padding(6, 8)  == 2
-    assert padding(7, 8)  == 1
-    assert padding(8, 8)  == 0
-    assert padding(9, 8)  == 7
+    assert padding(0, 8) == 0
+    assert padding(1, 8) == 7
+    assert padding(2, 8) == 6
+    assert padding(3, 8) == 5
+    assert padding(4, 8) == 4
+    assert padding(5, 8) == 3
+    assert padding(6, 8) == 2
+    assert padding(7, 8) == 1
+    assert padding(8, 8) == 0
+    assert padding(9, 8) == 7
     assert padding(10, 8) == 6
     assert padding(11, 8) == 5
     assert padding(12, 8) == 4

@@ -29,19 +29,22 @@ __copyright__ = """
 
    s. FLOSS-EXCEPTION.txt
 """
-__author__  = 'Christoph Schueler'
-__version__ = '0.1.0'
+__author__ = "Christoph Schueler"
+__version__ = "0.1.0"
 
 
 import re
 import string
 
-
 CPP_COMMENT = re.compile(r"""(?://)(?P<cmt>.*)""", re.DOTALL | re.UNICODE | re.VERBOSE)
-MULTILINE_START = re.compile(r"""(?:/\*)(?P<cmt>[^*]*)(?P<close>\*/)?""", re.DOTALL | re.UNICODE | re.VERBOSE)
-MULTILINE_END = re.compile(r"""(?:\*/)(?P<text>.*)""", re.DOTALL | re.UNICODE | re.VERBOSE)
+MULTILINE_START = re.compile(
+    r"""(?:/\*)(?P<cmt>[^*]*)(?P<close>\*/)?""", re.DOTALL | re.UNICODE | re.VERBOSE
+)
+MULTILINE_END = re.compile(
+    r"""(?:\*/)(?P<text>.*)""", re.DOTALL | re.UNICODE | re.VERBOSE
+)
 
-PRINTABLES = string.printable[ : string.printable.find(" ")]
+PRINTABLES = string.printable[: string.printable.find(" ")]
 TR_PRINTABLES = str.maketrans(PRINTABLES, " " * len(PRINTABLES))
 
 
@@ -62,17 +65,16 @@ def blank_out(text, span):
     """
     start, end = span
 
-    header = text[0 : start]
-    section = text[start : end]
+    header = text[0:start]
+    section = text[start:end]
     section = section.translate(TR_PRINTABLES)
-    footer = text[end : ]
+    footer = text[end:]
     text = header + section + footer
     return text
 
 
 class Preprocessor:
-    """
-    """
+    """"""
 
     def __init__(self):
         pass
@@ -85,7 +87,7 @@ class Preprocessor:
             if multiline:
                 match = MULTILINE_END.search(line)
                 if match:
-                    rl = line[match.end() : ]
+                    rl = line[match.end() :]
                     result.append(match.group("text"))
                     multiline = False
                     continue
@@ -113,13 +115,11 @@ class Preprocessor:
                 result.append(rl)
             else:
                 result.append(line)
-        return '\n'.join(result)
+        return "\n".join(result)
 
     def uncomment(self):
         pass
 
     def escape_quotes(self, line):
-        """
-
-        """
+        """"""
         pass

@@ -1,9 +1,4 @@
-pytest
-pytest-runner
-enum34
-mock
-mako
+antlr4-python3-runtime==4.8
+Mako
 six
-antlr4-python3-runtime == 4.8
 SQLAlchemy
-sortedcontainers

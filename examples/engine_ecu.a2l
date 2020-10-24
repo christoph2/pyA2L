@@ -5,7 +5,11 @@ ASAP2_VERSION 1 61
 ment on module"    
            /* Detailed description of a device */ 
  
-    /include "supp1_if.aml"   /* Specification of the interface-specific parts */    
+    /include "supp1_if.aml"   /* Specification of the interface-specific 
+    L-1
+    L-2
+    L-3
+    parts */    
      
     /begin MOD_PAR    "Comment" 
         VERSION      "Test version 09.11.93" 

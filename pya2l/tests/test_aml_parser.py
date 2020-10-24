@@ -6,23 +6,23 @@
 
 import pytest
 
-from pya2l.aml_listener import (
-        ParserWrapper, AMLListener, map_predefined_type, AMLPredefinedTypes
-    )
+from pya2l.aml_listener import AMLListener, AMLPredefinedTypes, map_predefined_type
+from pya2l.parserlib import ParserWrapper
 
 
 def test_type_mapping():
-    assert map_predefined_type('char') == AMLPredefinedTypes.PDT_CHAR
-    assert map_predefined_type('int') == AMLPredefinedTypes.PDT_INT
-    assert map_predefined_type('long') == AMLPredefinedTypes.PDT_LONG
-    assert map_predefined_type('uchar') == AMLPredefinedTypes.PDT_UCHAR
-    assert map_predefined_type('uint') == AMLPredefinedTypes.PDT_UINT
-    assert map_predefined_type('ulong') == AMLPredefinedTypes.PDT_ULONG
-    assert map_predefined_type('double') == AMLPredefinedTypes.PDT_DOUBLE
-    assert map_predefined_type('float') == AMLPredefinedTypes.PDT_FLOAT
+    assert map_predefined_type("char") == AMLPredefinedTypes.PDT_CHAR
+    assert map_predefined_type("int") == AMLPredefinedTypes.PDT_INT
+    assert map_predefined_type("long") == AMLPredefinedTypes.PDT_LONG
+    assert map_predefined_type("uchar") == AMLPredefinedTypes.PDT_UCHAR
+    assert map_predefined_type("uint") == AMLPredefinedTypes.PDT_UINT
+    assert map_predefined_type("ulong") == AMLPredefinedTypes.PDT_ULONG
+    assert map_predefined_type("double") == AMLPredefinedTypes.PDT_DOUBLE
+    assert map_predefined_type("float") == AMLPredefinedTypes.PDT_FLOAT
+
 
 def test_enum_without_tag():
-    parser = ParserWrapper('aml', 'enum_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "enum_type_name", AMLListener, useDatabase=False)
     DATA = """enum {
       "ADDRESS_GRANULARITY_BYTE" = 1,
       "ADDRESS_GRANULARITY_WORD" = 2,
@@ -44,8 +44,9 @@ def test_enum_without_tag():
     assert en2.tag == "ADDRESS_GRANULARITY_DWORD"
     assert en2.constant == 4
 
+
 def test_enum_with_tag():
-    parser = ParserWrapper('aml', 'enum_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "enum_type_name", AMLListener, useDatabase=False)
     DATA = """enum checksum {
           "XCP_ADD_11" = 1,
           "XCP_ADD_12" = 2,
@@ -95,8 +96,9 @@ def test_enum_with_tag():
     assert en9.tag == "XCP_USER_DEFINED"
     assert en9.constant == 255
 
+
 def test_enum_without_constants():
-    parser = ParserWrapper('aml', 'enum_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "enum_type_name", AMLListener, useDatabase=False)
     DATA = """enum {
         "PARITY_NONE",
         "PARITY_ODD",
@@ -118,8 +120,9 @@ def test_enum_without_constants():
     assert en2.tag == "PARITY_EVEN"
     assert en2.constant == 2
 
+
 def test_enum_one_constant():
-    parser = ParserWrapper('aml', 'enum_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "enum_type_name", AMLListener, useDatabase=False)
     DATA = """enum {
         "NO_CHECKSUM" = 10,
         "CHECKSUM_BYTE",
@@ -141,9 +144,10 @@ def test_enum_one_constant():
     assert en2.tag == "CHECKSUM_WORD"
     assert en2.constant == 12
 
+
 @pytest.mark.skip
 def test_enum_unsteady_constants():
-    parser = ParserWrapper('aml', 'enum_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "enum_type_name", AMLListener, useDatabase=False)
     DATA = """enum {
       "UNIT_1NS" = 0,
       "UNIT_10NS" = 1,
@@ -176,21 +180,21 @@ def struct(structs):
     assert tn.tag is None
     assert tn.name is None
     assert m0.value.array_specifier == [101]
-    assert m0.multiple == False
+    assert m0.multiple is False
     m1 = members[1]
     tn = m1.value.type_name
     assert tn.type_.type_ == AMLPredefinedTypes.PDT_CHAR
     assert tn.tag is None
     assert tn.name is None
     assert m1.value.array_specifier == [9]
-    assert m1.multiple == False
+    assert m1.multiple is False
     m2 = members[2]
     tn = m2.value.type_name
     assert tn.type_.type_ == AMLPredefinedTypes.PDT_UINT
     assert tn.tag is None
     assert tn.name is None
     assert m2.value.array_specifier == []
-    assert m2.multiple == False
+    assert m2.multiple is False
     m3 = members[3]
     tn = m3.value.type_name
     assert tn.tag is None
@@ -209,36 +213,37 @@ def struct(structs):
     assert en2.tag == "DAQ_STIM"
     assert en2.constant == 3
     m4 = members[4]
-    assert m4.multiple == False
+    assert m4.multiple is False
     tn = m4.value.type_name
     assert tn.tag is None
     assert tn.name is None
     pdt = tn.type_
     assert pdt.type_ == AMLPredefinedTypes.PDT_UCHAR
     m5 = members[5]
-    assert m5.multiple == False
+    assert m5.multiple is False
     tn = m5.value.type_name
     assert tn.tag is None
     assert tn.name is None
     pdt = tn.type_
     assert pdt.type_ == AMLPredefinedTypes.PDT_UCHAR
     m6 = members[6]
-    assert m6.multiple == False
+    assert m6.multiple is False
     tn = m6.value.type_name
     assert tn.tag is None
     assert tn.name is None
     pdt = tn.type_
     assert pdt.type_ == AMLPredefinedTypes.PDT_UCHAR
     m7 = members[7]
-    assert m7.multiple == False
+    assert m7.multiple is False
     tn = m7.value.type_name
     assert tn.tag is None
     assert tn.name is None
     pdt = tn.type_
     assert pdt.type_ == AMLPredefinedTypes.PDT_UCHAR
 
+
 def test_complex_struct():
-    parser = ParserWrapper('aml', 'struct_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "struct_type_name", AMLListener, useDatabase=False)
     DATA = """struct {
         char[101];  /* EVENT_CHANNEL_NAME       */
         char[9];    /* EVENT_CHANNEL_SHORT_NAME */
@@ -257,8 +262,9 @@ def test_complex_struct():
     structs = res.struct_types
     struct(structs)
 
+
 def test_type_definition():
-    parser = ParserWrapper('aml', 'type_definition', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "type_definition", AMLListener, useDatabase=False)
     DATA = """struct {
         char[101];  /* EVENT_CHANNEL_NAME       */
         char[9];    /* EVENT_CHANNEL_SHORT_NAME */
@@ -282,7 +288,9 @@ def test_type_definition():
 
 
 def test_basic_tagged_struct():
-    parser = ParserWrapper('aml', 'taggedstruct_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper(
+        "aml", "taggedstruct_type_name", AMLListener, useDatabase=False
+    )
     DATA = """taggedstruct test {
         "SLAVE" ;
         "MASTER" struct {
@@ -299,16 +307,16 @@ def test_basic_tagged_struct():
     assert len(members) == 2
     m0 = members[0]
     assert m0.block_definition is None
-    assert m0.multiple == False
+    assert m0.multiple is False
     tsd = m0.taggedstruct_definition
     assert tsd.tag == "SLAVE"
-    assert tsd.multiple == False
+    assert tsd.multiple is False
     assert tsd.member is None
     m1 = members[1]
     assert m1.block_definition is None
     tsd = m1.taggedstruct_definition
     assert tsd.tag == "MASTER"
-    assert tsd.multiple == False
+    assert tsd.multiple is False
     member = tsd.member
     tn = member.type_name
     assert tn.tag is None
@@ -318,20 +326,23 @@ def test_basic_tagged_struct():
     members = struct.members
     assert len(members) == 2
     m0 = members[0]
-    assert m0.multiple == False
+    assert m0.multiple is False
     tn = m0.value.type_name
     assert tn.tag is None
     assert tn.name is None
     assert tn.type_.type_ == AMLPredefinedTypes.PDT_UCHAR
     m1 = members[1]
-    assert m1.multiple == False
+    assert m1.multiple is False
     tn = m1.value.type_name
     assert tn.tag is None
     assert tn.name is None
     assert tn.type_.type_ == AMLPredefinedTypes.PDT_UCHAR
 
+
 def test_basic_tagged_union():
-    parser = ParserWrapper('aml', 'taggedunion_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper(
+        "aml", "taggedunion_type_name", AMLListener, useDatabase=False
+    )
     DATA = """
     taggedunion Daq_Event {
         "FIXED_EVENT_LIST" taggedstruct {
@@ -362,11 +373,11 @@ def test_basic_tagged_union():
     assert tn.name is None
     assert len(tn.members) == 1
     mem = tn.members[0]
-    assert mem.multiple == True
+    assert mem.multiple
     assert mem.block_definition is None
     td = mem.taggedstruct_definition
     assert td.tag == "EVENT"
-    assert td.multiple == False
+    assert td.multiple is False
     tn = td.member.type_name
     assert tn.tag is None
     assert tn.name is None
@@ -382,7 +393,7 @@ def test_basic_tagged_union():
     members = tp.members
     assert len(members) == 2
     m0 = members[0]
-    assert m0.multiple == False
+    assert m0.multiple is False
     assert m0.taggedstruct_definition is None
     bd = m0.block_definition
     assert bd.tag == "AVAILABLE_EVENT_LIST"
@@ -396,16 +407,16 @@ def test_basic_tagged_union():
     assert len(ms) == 1
     m = ms[0]
     assert m.block_definition is None
-    assert m.multiple == True
+    assert m.multiple
     tsd = m.taggedstruct_definition
-    assert tsd.multiple == False
+    assert tsd.multiple is False
     assert tsd.tag == "EVENT"
     tn = tsd.member.type_name
     assert tn.tag is None
     assert tn.name is None
     assert tn.type_.type_ == AMLPredefinedTypes.PDT_UINT
     m1 = members[1]
-    assert m1.multiple == False
+    assert m1.multiple is False
     assert m1.taggedstruct_definition is None
     bd = m1.block_definition
     assert bd.tag == "DEFAULT_EVENT_LIST"
@@ -419,14 +430,15 @@ def test_basic_tagged_union():
     assert len(ms) == 1
     m = ms[0]
     assert m.block_definition is None
-    assert m.multiple == True
+    assert m.multiple
     tsd = m.taggedstruct_definition
-    assert tsd.multiple == False
+    assert tsd.multiple is False
     assert tsd.tag == "EVENT"
     tn = tsd.member.type_name
     assert tn.tag is None
     assert tn.name is None
     assert tn.type_.type_ == AMLPredefinedTypes.PDT_UINT
+
 
 def block_def(block_definitions):
     assert len(block_definitions) == 1
@@ -478,15 +490,15 @@ def block_def(block_definitions):
     assert len(members) == 1
     mem = members[0]
     assert mem.block_definition is None
-    assert mem.multiple == False
+    assert mem.multiple is False
     tsd = mem.taggedstruct_definition
     assert tsd.tag == "BIT_STIM_SUPPORTED"
     assert tsd.member is None
-    assert tsd.multiple == False
+    assert tsd.multiple is False
 
 
 def test_basic_block_definition():
-    parser = ParserWrapper('aml', 'block_definition', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "block_definition", AMLListener, useDatabase=False)
     DATA = """
     block "STIM" struct {
         enum {
@@ -503,8 +515,9 @@ def test_basic_block_definition():
     res = parser.parseFromString(DATA)
     block_def(res.block_definitions)
 
+
 def test_basic_declaration():
-    parser = ParserWrapper('aml', 'declaration', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "declaration", AMLListener, useDatabase=False)
     DATA = """
     block "STIM" struct {
         enum {
@@ -525,8 +538,9 @@ def test_basic_declaration():
     assert decl.type_definition is None
     block_def([decl.block_definition])
 
+
 def test_struct_referrers():
-    parser = ParserWrapper('aml', 'struct_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "struct_type_name", AMLListener, useDatabase=False)
     DATA = """
     struct FLX_Parameters {
         taggedunion {
@@ -548,7 +562,7 @@ def test_struct_referrers():
     members = struct.members
     assert len(members) == 3
     m0 = members[0]
-    assert m0.multiple == False
+    assert m0.multiple is False
     tn = m0.value.type_name
     assert tn.tag is None
     assert tn.name is None
@@ -567,7 +581,7 @@ def test_struct_referrers():
     assert tn.type_.name == "buffer"
     assert tn.type_.members == []
     m1 = members[1]
-    assert m1.multiple == False
+    assert m1.multiple is False
     tn = m1.value.type_name
     assert tn.tag is None
     assert tn.name is None
@@ -586,7 +600,7 @@ def test_struct_referrers():
     assert tn.type_.name == "buffer"
     assert tn.type_.members == []
     m2 = members[2]
-    assert m2.multiple == False
+    assert m2.multiple is False
     tn = m2.value.type_name
     assert tn.tag is None
     assert tn.name is None
@@ -595,7 +609,7 @@ def test_struct_referrers():
     members = tst.members
     assert len(members) == 1
     mem = members[0]
-    assert mem.multiple == True
+    assert mem.multiple
     assert mem.taggedstruct_definition is None
     bd = mem.block_definition
     assert bd.tag == "POOL_BUFFER"
@@ -606,8 +620,9 @@ def test_struct_referrers():
     assert tn.type_.name == "buffer"
     assert tn.type_.members == []
 
+
 def test_taggedstruct_referrers():
-    parser = ParserWrapper('aml', 'struct_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper("aml", "struct_type_name", AMLListener, useDatabase=False)
     DATA = """
         struct {
             taggedstruct Common_Parameters;  /* default parameters */
@@ -640,14 +655,14 @@ def test_taggedstruct_referrers():
         };
     """
     res = parser.parseFromString(DATA)
-    structs = res.struct_types
+    # structs = res.struct_types
     assert len(res.tagged_struct_types) == 1
     tst = res.tagged_struct_types[0]
     assert tst.name == "bus_systems"
     members = tst.members
     assert len(members) == 6
     m0 = members[0]
-    assert m0.multiple == False
+    assert m0.multiple is False
     assert m0.taggedstruct_definition is None
     bd = m0.block_definition
     assert bd.tag == "XCP_ON_CAN"
@@ -660,21 +675,21 @@ def test_taggedstruct_referrers():
     ms = tp.members
     assert len(ms) == 2
     m00 = ms[0]
-    assert m00.multiple == False
+    assert m00.multiple is False
     mem = m00.value.type_name
     assert mem.tag is None
     assert mem.name == "CAN_Parameters"
     assert mem.type_.name == "CAN_Parameters"
     assert mem.type_.members == []
     m01 = ms[1]
-    assert m01.multiple == False
+    assert m01.multiple is False
     mem = m01.value.type_name
     assert mem.tag is None
     assert mem.name == "Common_Parameters"
     assert mem.type_.name == "Common_Parameters"
     assert mem.type_.members == []
     m1 = members[1]
-    assert m1.multiple == False
+    assert m1.multiple is False
     assert m1.taggedstruct_definition is None
     bd = m1.block_definition
     assert bd.tag == "XCP_ON_SxI"
@@ -687,21 +702,21 @@ def test_taggedstruct_referrers():
     ms = tp.members
     assert len(ms) == 2
     m00 = ms[0]
-    assert m00.multiple == False
+    assert m00.multiple is False
     mem = m00.value.type_name
     assert mem.tag is None
     assert mem.name == "SxI_Parameters"
     assert mem.type_.name == "SxI_Parameters"
     assert mem.type_.members == []
     m01 = ms[1]
-    assert m01.multiple == False
+    assert m01.multiple is False
     mem = m01.value.type_name
     assert mem.tag is None
     assert mem.name == "Common_Parameters"
     assert mem.type_.name == "Common_Parameters"
     assert mem.type_.members == []
     m2 = members[2]
-    assert m2.multiple == False
+    assert m2.multiple is False
     assert m2.taggedstruct_definition is None
     bd = m2.block_definition
     assert bd.tag == "XCP_ON_TCP_IP"
@@ -714,21 +729,21 @@ def test_taggedstruct_referrers():
     ms = tp.members
     assert len(ms) == 2
     m00 = ms[0]
-    assert m00.multiple == False
+    assert m00.multiple is False
     mem = m00.value.type_name
     assert mem.tag is None
     assert mem.name == "TCP_IP_Parameters"
     assert mem.type_.name == "TCP_IP_Parameters"
     assert mem.type_.members == []
     m01 = ms[1]
-    assert m01.multiple == False
+    assert m01.multiple is False
     mem = m01.value.type_name
     assert mem.tag is None
     assert mem.name == "Common_Parameters"
     assert mem.type_.name == "Common_Parameters"
     assert mem.type_.members == []
     m3 = members[3]
-    assert m3.multiple == False
+    assert m3.multiple is False
     assert m3.taggedstruct_definition is None
     bd = m3.block_definition
     assert bd.tag == "XCP_ON_UDP_IP"
@@ -741,21 +756,21 @@ def test_taggedstruct_referrers():
     ms = tp.members
     assert len(ms) == 2
     m00 = ms[0]
-    assert m00.multiple == False
+    assert m00.multiple is False
     mem = m00.value.type_name
     assert mem.tag is None
     assert mem.name == "UDP_Parameters"
     assert mem.type_.name == "UDP_Parameters"
     assert mem.type_.members == []
     m01 = ms[1]
-    assert m01.multiple == False
+    assert m01.multiple is False
     mem = m01.value.type_name
     assert mem.tag is None
     assert mem.name == "Common_Parameters"
     assert mem.type_.name == "Common_Parameters"
     assert mem.type_.members == []
     m4 = members[4]
-    assert m4.multiple == False
+    assert m4.multiple is False
     assert m4.taggedstruct_definition is None
     bd = m4.block_definition
     assert bd.tag == "XCP_ON_USB"
@@ -768,21 +783,21 @@ def test_taggedstruct_referrers():
     ms = tp.members
     assert len(ms) == 2
     m00 = ms[0]
-    assert m00.multiple == False
+    assert m00.multiple is False
     mem = m00.value.type_name
     assert mem.tag is None
     assert mem.name == "USB_Parameters"
     assert mem.type_.name == "USB_Parameters"
     assert mem.type_.members == []
     m01 = ms[1]
-    assert m01.multiple == False
+    assert m01.multiple is False
     mem = m01.value.type_name
     assert mem.tag is None
     assert mem.name == "Common_Parameters"
     assert mem.type_.name == "Common_Parameters"
     assert mem.type_.members == []
     m5 = members[5]
-    assert m5.multiple == False
+    assert m5.multiple is False
     assert m5.taggedstruct_definition is None
     bd = m5.block_definition
     assert bd.tag == "XCP_ON_FLX"
@@ -795,22 +810,25 @@ def test_taggedstruct_referrers():
     ms = tp.members
     assert len(ms) == 2
     m00 = ms[0]
-    assert m00.multiple == False
+    assert m00.multiple is False
     mem = m00.value.type_name
     assert mem.tag is None
     assert mem.name == "FLX_Parameters"
     assert mem.type_.name == "FLX_Parameters"
     assert mem.type_.members == []
     m01 = ms[1]
-    assert m01.multiple == False
+    assert m01.multiple is False
     mem = m01.value.type_name
     assert mem.tag is None
     assert mem.name == "Common_Parameters"
     assert mem.type_.name == "Common_Parameters"
     assert mem.type_.members == []
 
+
 def test_taggedunion_referrers():
-    parser = ParserWrapper('aml', 'taggedstruct_type_name', AMLListener, useDatabase = False)
+    parser = ParserWrapper(
+        "aml", "taggedstruct_type_name", AMLListener, useDatabase=False
+    )
     DATA = """
     taggedstruct Common_Parameters {
         block "PROTOCOL_LAYER" struct Protocol_Layer;
@@ -830,7 +848,7 @@ def test_taggedunion_referrers():
     members = ts.members
     assert len(members) == 6
     m0 = members[0]
-    assert m0.multiple == False
+    assert m0.multiple is False
     assert m0.taggedstruct_definition is None
     bd = m0.block_definition
     assert bd.member is None
@@ -841,7 +859,7 @@ def test_taggedunion_referrers():
     assert tn.type_.name == "Protocol_Layer"
     assert tn.type_.members == []
     m1 = members[1]
-    assert m1.multiple == False
+    assert m1.multiple is False
     assert m1.taggedstruct_definition is None
     bd = m1.block_definition
     assert bd.member is None
@@ -852,7 +870,7 @@ def test_taggedunion_referrers():
     assert tn.type_.name == "Segment"
     assert tn.type_.members == []
     m2 = members[2]
-    assert m2.multiple == False
+    assert m2.multiple is False
     assert m2.taggedstruct_definition is None
     bd = m2.block_definition
     assert bd.member is None
@@ -863,7 +881,7 @@ def test_taggedunion_referrers():
     assert tn.type_.name == "Daq"
     assert tn.type_.members == []
     m3 = members[3]
-    assert m3.multiple == False
+    assert m3.multiple is False
     assert m3.taggedstruct_definition is None
     bd = m3.block_definition
     assert bd.member is None
@@ -874,7 +892,7 @@ def test_taggedunion_referrers():
     assert tn.type_.name == "Pag"
     assert tn.type_.members == []
     m4 = members[4]
-    assert m4.multiple == False
+    assert m4.multiple is False
     assert m4.taggedstruct_definition is None
     bd = m4.block_definition
     assert bd.member is None
@@ -885,7 +903,7 @@ def test_taggedunion_referrers():
     assert tn.type_.name == "Pgm"
     assert tn.type_.members == []
     m5 = members[5]
-    assert m5.multiple == False
+    assert m5.multiple is False
     assert m5.taggedstruct_definition is None
     bd = m5.block_definition
     assert bd.member is None

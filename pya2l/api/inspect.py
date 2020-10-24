@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__copyright__="""
+__copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
    (C) 2020 by Christoph Schueler <cpu12.gems@googlemail.com>
@@ -27,78 +27,73 @@ __copyright__="""
 """
 
 import collections
-from functools import partial
-from operator import attrgetter
 import weakref
 
-from pya2l import DB
 import pya2l.model as model
 from pya2l.utils import align_as
 
-
-DB_CACHE_SIZE = 4096    # Completly arbitrary, could be configurable.
+DB_CACHE_SIZE = 4096  # Completly arbitrary, could be configurable.
 
 ASAM_TO_NUMPY_TYPES = {
-    "UBYTE":           "uint8",
-    "SBYTE":           "int8",
-    "BYTE":            "int8",
-    "UWORD":           "uint16",
-    "SWORD":           "int16",
-    "WORD":            "int16",
-    "ULONG":           "uint32",
-    "SLONG":           "int32",
-    "LONG":            "int32",
-    "A_UINT64":        "uint64",
-    "A_INT64":         "int64",
-    "FLOAT32_IEEE":    "float32",
-    "FLOAT64_IEEE":    "float64",
+    "UBYTE": "uint8",
+    "SBYTE": "int8",
+    "BYTE": "int8",
+    "UWORD": "uint16",
+    "SWORD": "int16",
+    "WORD": "int16",
+    "ULONG": "uint32",
+    "SLONG": "int32",
+    "LONG": "int32",
+    "A_UINT64": "uint64",
+    "A_INT64": "int64",
+    "FLOAT32_IEEE": "float32",
+    "FLOAT64_IEEE": "float64",
 }
 
 ASAM_TYPE_SIZES = {
-    "BYTE":            1,
-    "UBYTE":           1,
-    "SBYTE":           1,
-    "WORD":            2,
-    "UWORD":           2,
-    "SWORD":           2,
-    "LONG":            4,
-    "ULONG":           4,
-    "SLONG":           4,
-    "A_UINT64":        8,
-    "A_INT64":         8,
-    "FLOAT32_IEEE":    4,
-    "FLOAT64_IEEE":    8,
+    "BYTE": 1,
+    "UBYTE": 1,
+    "SBYTE": 1,
+    "WORD": 2,
+    "UWORD": 2,
+    "SWORD": 2,
+    "LONG": 4,
+    "ULONG": 4,
+    "SLONG": 4,
+    "A_UINT64": 8,
+    "A_INT64": 8,
+    "FLOAT32_IEEE": 4,
+    "FLOAT64_IEEE": 8,
 }
 
 NATURAL_ALIGNMENTS = {
-    "BYTE":     1,
-    "WORD":     2,
-    "DWORD":    4,
-    "QWORD":    8,
-    "FLOAT32":  4,
-    "FLOAT64":  8,
+    "BYTE": 1,
+    "WORD": 2,
+    "DWORD": 4,
+    "QWORD": 8,
+    "FLOAT32": 4,
+    "FLOAT64": 8,
 }
 
 ASAM_ALIGNMENT_TYPES = {
-    "BYTE":            "BYTE",
-    "UBYTE":           "BYTE",
-    "SBYTE":           "BYTE",
-    "WORD":            "WORD",
-    "UWORD":           "WORD",
-    "SWORD":           "WORD",
-    "LONG":            "DWORD",
-    "ULONG":           "DWORD",
-    "SLONG":           "DWORD",
-    "A_UINT64":        "QWORD",
-    "A_INT64":         "QWORD",
-    "FLOAT32_IEEE":    "FLOAT32",
-    "FLOAT64_IEEE":    "FLOAT64",
+    "BYTE": "BYTE",
+    "UBYTE": "BYTE",
+    "SBYTE": "BYTE",
+    "WORD": "WORD",
+    "UWORD": "WORD",
+    "SWORD": "WORD",
+    "LONG": "DWORD",
+    "ULONG": "DWORD",
+    "SLONG": "DWORD",
+    "A_UINT64": "QWORD",
+    "A_INT64": "QWORD",
+    "FLOAT32_IEEE": "FLOAT32",
+    "FLOAT64_IEEE": "FLOAT64",
 }
 
 
 def asam_type_size(datatype: str):
-    """
-    """
+    """"""
     return ASAM_TYPE_SIZES[datatype]
 
 
@@ -107,15 +102,12 @@ def asam_align_as(alignment: dict, datatype: str, offset: int):
 
 
 def all_axes_names():
-    """
-    """
+    """"""
     return list("x y z 4 5".split())
 
 
 def get_module(session, module_name: str = None):
-    """
-
-    """
+    """"""
     query = session.query(model.Module)
     if module_name:
         query = query.filter(model.Module.name == module_name)
@@ -157,11 +149,10 @@ def _annotations(session, refs):
 
 
 def fnc_np_shape(matrixDim):
-    """Convert `matrixDim` dict to tuple suitable as Numpy array `shape` argument.
-    """
+    """Convert `matrixDim` dict to tuple suitable as Numpy array `shape` argument."""
     if matrixDim is None:
         return None
-    result=[]
+    result = []
     for dim in ("x", "y", "z"):
         d = matrixDim[dim]
         if d is None or d <= 1:
@@ -172,8 +163,7 @@ def fnc_np_shape(matrixDim):
 
 
 def fnc_np_order(order):
-    """
-    """
+    """"""
 
 
 class CachedBase:
@@ -191,16 +181,16 @@ class CachedBase:
     """
 
     _cache = weakref.WeakValueDictionary()
-    _strong_ref = collections.deque(maxlen = DB_CACHE_SIZE)
+    _strong_ref = collections.deque(maxlen=DB_CACHE_SIZE)
 
     @classmethod
     def get(cls, session, name: str = None, module_name: str = None):
-     entry = (cls.__name__, name)
-     if not entry in cls._cache:
-         inst = cls(session, name, module_name)
-         cls._cache[entry] = inst
-         cls._strong_ref.append(inst)
-     return cls._cache[entry]
+        entry = (cls.__name__, name)
+        if entry not in cls._cache:
+            inst = cls(session, name, module_name)
+            cls._cache[entry] = inst
+            cls._strong_ref.append(inst)
+        return cls._cache[entry]
 
 
 class ModPar(CachedBase):
@@ -314,30 +304,57 @@ class ModPar(CachedBase):
         Version identifier.
     """
 
-    __slots__ = ("modpar", "comment", "addrEpk", "cpu", "customer", "customerNo", "ecu", "ecuCalibrationOffset",
-        "epk", "memoryLayouts", "memorySegments", "noOfInterfaces", "phoneNo", "supplier", "systemConstants",
-        "user", "version",
+    __slots__ = (
+        "modpar",
+        "comment",
+        "addrEpk",
+        "cpu",
+        "customer",
+        "customerNo",
+        "ecu",
+        "ecuCalibrationOffset",
+        "epk",
+        "memoryLayouts",
+        "memorySegments",
+        "noOfInterfaces",
+        "phoneNo",
+        "supplier",
+        "systemConstants",
+        "user",
+        "version",
     )
 
-    def __init__(self, session, name = None, module_name: str = None):
+    def __init__(self, session, name=None, module_name: str = None):
         module = get_module(session, module_name)
         self.modpar = module.mod_par
         self.comment = self.modpar.comment
         self.addrEpk = [a.address for a in self.modpar.addr_epk]
         self.cpu = self.modpar.cpu_type.cPU if self.modpar.cpu_type else None
         self.customer = self.modpar.customer.customer if self.modpar.customer else None
-        self.customerNo = self.modpar.customer_no.number if self.modpar.customer_no else None
+        self.customerNo = (
+            self.modpar.customer_no.number if self.modpar.customer_no else None
+        )
         self.ecu = self.modpar.ecu.controlUnit if self.modpar.ecu else None
-        self.ecuCalibrationOffset = self.modpar.ecu_calibration_offset.offset if self.modpar.ecu_calibration_offset else None
-        self.epk =  self.modpar.epk.identifier if self.modpar.epk else None
+        self.ecuCalibrationOffset = (
+            self.modpar.ecu_calibration_offset.offset
+            if self.modpar.ecu_calibration_offset
+            else None
+        )
+        self.epk = self.modpar.epk.identifier if self.modpar.epk else None
         self.memoryLayouts = self._dissect_memory_layouts(self.modpar.memory_layout)
         self.memorySegments = self._dissect_memory_segments(self.modpar.memory_segment)
-        self.noOfInterfaces = self.modpar.no_of_interfaces.num if self.modpar.no_of_interfaces else None
+        self.noOfInterfaces = (
+            self.modpar.no_of_interfaces.num if self.modpar.no_of_interfaces else None
+        )
         self.phoneNo = self.modpar.phone_no.telnum if self.modpar.phone_no else None
-        self.supplier = self.modpar.supplier.manufacturer if self.modpar.supplier else None
+        self.supplier = (
+            self.modpar.supplier.manufacturer if self.modpar.supplier else None
+        )
         self.systemConstants = self._dissect_sysc(self.modpar.system_constant)
         self.user = self.modpar.user.userName if self.modpar.user else None
-        self.version = self.modpar.version.versionIdentifier if self.modpar.version else None
+        self.version = (
+            self.modpar.version.versionIdentifier if self.modpar.version else None
+        )
 
     @staticmethod
     def _dissect_sysc(constants):
@@ -399,10 +416,23 @@ class ModPar(CachedBase):
         return result
 
     def __str__(self):
-        names = (self.comment, self.addrEpk, self.cpu or "", self.customer or "", self.customerNo or "", self.ecu or "",
-            self.ecuCalibrationOffset or 0, self.epk or "", self.memoryLayouts, self.memorySegments,
-            self.noOfInterfaces or 0, self.phoneNo or "", self.supplier or "", self.systemConstants,
-            self.user or "", self.version or ""
+        names = (
+            self.comment,
+            self.addrEpk,
+            self.cpu or "",
+            self.customer or "",
+            self.customerNo or "",
+            self.ecu or "",
+            self.ecuCalibrationOffset or 0,
+            self.epk or "",
+            self.memoryLayouts,
+            self.memorySegments,
+            self.noOfInterfaces or 0,
+            self.phoneNo or "",
+            self.supplier or "",
+            self.systemConstants,
+            self.user or "",
+            self.version or "",
         )
         return """
 ModPar {{
@@ -422,7 +452,9 @@ ModPar {{
     systemConstants         = {};
     user                    = "{}";
     version                 = "{}";
-}}""".format(*names)
+}}""".format(
+            *names
+        )
 
     __repr__ = __str__
 
@@ -459,34 +491,59 @@ class ModCommon(CachedBase):
 
     """
 
-    __slots__ = ("modcommon", "comment", "alignment", "byteOrder", "dataSize", "deposit", "sRecLayout")
+    __slots__ = (
+        "modcommon",
+        "comment",
+        "alignment",
+        "byteOrder",
+        "dataSize",
+        "deposit",
+        "sRecLayout",
+    )
 
-    def __init__(self, session, name = None, module_name: str = None):
+    def __init__(self, session, name=None, module_name: str = None):
         module = get_module(session, module_name)
         self.modcommon = module.mod_common
         self.comment = self.modcommon.comment
         self.alignment = {
-            "BYTE": self.modcommon.alignment_byte.alignmentBorder if self.modcommon.alignment_byte \
-                else NATURAL_ALIGNMENTS["BYTE"],
-            "WORD": self.modcommon.alignment_word.alignmentBorder if self.modcommon.alignment_word \
-                else NATURAL_ALIGNMENTS["WORD"],
-            "DWORD": self.modcommon.alignment_long.alignmentBorder if self.modcommon.alignment_long \
-                else NATURAL_ALIGNMENTS["DWORD"],
-            "QWORD": self.modcommon.alignment_int64.alignmentBorder if self.modcommon.alignment_int64 \
-                else NATURAL_ALIGNMENTS["QWORD"],
-            "FLOAT32": self.modcommon.alignment_float32_ieee.alignmentBorder if self.modcommon.alignment_float32_ieee \
-                else NATURAL_ALIGNMENTS["FLOAT32"],
-            "FLOAT64": self.modcommon.alignment_float64_ieee.alignmentBorder if self.modcommon.alignment_float64_ieee \
-                else NATURAL_ALIGNMENTS["FLOAT64"],
+            "BYTE": self.modcommon.alignment_byte.alignmentBorder
+            if self.modcommon.alignment_byte
+            else NATURAL_ALIGNMENTS["BYTE"],
+            "WORD": self.modcommon.alignment_word.alignmentBorder
+            if self.modcommon.alignment_word
+            else NATURAL_ALIGNMENTS["WORD"],
+            "DWORD": self.modcommon.alignment_long.alignmentBorder
+            if self.modcommon.alignment_long
+            else NATURAL_ALIGNMENTS["DWORD"],
+            "QWORD": self.modcommon.alignment_int64.alignmentBorder
+            if self.modcommon.alignment_int64
+            else NATURAL_ALIGNMENTS["QWORD"],
+            "FLOAT32": self.modcommon.alignment_float32_ieee.alignmentBorder
+            if self.modcommon.alignment_float32_ieee
+            else NATURAL_ALIGNMENTS["FLOAT32"],
+            "FLOAT64": self.modcommon.alignment_float64_ieee.alignmentBorder
+            if self.modcommon.alignment_float64_ieee
+            else NATURAL_ALIGNMENTS["FLOAT64"],
         }
-        self.byteOrder = self.modcommon.byte_order.byteOrder if self.modcommon.byte_order else None
-        self.dataSize = self.modcommon.data_size.size if self.modcommon.data_size else None
+        self.byteOrder = (
+            self.modcommon.byte_order.byteOrder if self.modcommon.byte_order else None
+        )
+        self.dataSize = (
+            self.modcommon.data_size.size if self.modcommon.data_size else None
+        )
         self.deposit = self.modcommon.deposit.mode if self.modcommon.deposit else None
-        self.sRecLayout = self.modcommon.s_rec_layout.name if self.modcommon.s_rec_layout else None
+        self.sRecLayout = (
+            self.modcommon.s_rec_layout.name if self.modcommon.s_rec_layout else None
+        )
 
     def __str__(self):
         names = (
-            self.comment, self.alignment, self.byteOrder, self.dataSize or "", self.deposit or "", self.sRecLayout or ""
+            self.comment,
+            self.alignment,
+            self.byteOrder,
+            self.dataSize or "",
+            self.deposit or "",
+            self.sRecLayout or "",
         )
         return """
 ModCommon {{
@@ -496,24 +553,48 @@ ModCommon {{
     dataSize    = "{}";
     deposit     = "{}";
     sRecLayout  = "{}";
-}}""".format(*names)
+}}""".format(
+            *names
+        )
 
     __repr__ = __str__
 
 
 class AxisDescr(CachedBase):
-    """
-    """
+    """"""
 
-    __slots__ = ("attribute", "inputQuantity", "_conversionRef", "compuMethod", "maxAxisPoints", "lowerLimit",
-        "upperLimit", "byteOrder", "annotations", "axisPtsRef", "curveAxisRef", "deposit",
-        "extendedLimits", "fixAxisPar", "fixAxisParDist", "fixAxisParList", "format", "maxGrad",
-        "monotony", "physUnit", "readOnly", "stepSize"
+    __slots__ = (
+        "attribute",
+        "inputQuantity",
+        "_conversionRef",
+        "compuMethod",
+        "maxAxisPoints",
+        "lowerLimit",
+        "upperLimit",
+        "byteOrder",
+        "annotations",
+        "axisPtsRef",
+        "curveAxisRef",
+        "deposit",
+        "extendedLimits",
+        "fixAxisPar",
+        "fixAxisParDist",
+        "fixAxisParList",
+        "format",
+        "maxGrad",
+        "monotony",
+        "physUnit",
+        "readOnly",
+        "stepSize",
     )
 
-    def __init__(self, session, axis, module_name = None):
+    def __init__(self, session, axis, module_name=None):
         self.attribute = axis.attribute
-        self.axisPtsRef  = AxisPts.get(session, axis.axis_pts_ref.axisPoints) if axis.axis_pts_ref else None
+        self.axisPtsRef = (
+            AxisPts.get(session, axis.axis_pts_ref.axisPoints)
+            if axis.axis_pts_ref
+            else None
+        )
         if self.attribute in ("COM_AXIS", "RES_AXIS", "CURVE_AXIS"):
             pass
         else:
@@ -524,16 +605,25 @@ class AxisDescr(CachedBase):
         self.lowerLimit = axis.lowerLimit
         self.upperLimit = axis.upperLimit
 
-        self.compuMethod = CompuMethod.get(session, self._conversionRef) \
-            if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
+        self.compuMethod = (
+            CompuMethod.get(session, self._conversionRef)
+            if self._conversionRef != "NO_COMPU_METHOD"
+            else "NO_COMPU_METHOD"
+        )
         self.annotations = _annotations(session, axis.annotation)
         self.byteOrder = axis.byte_order.byteOrder if axis.byte_order else None
-        self.curveAxisRef  = Characteristic.get(session, axis.curve_axis_ref.curveAxis) if axis.curve_axis_ref else None
+        self.curveAxisRef = (
+            Characteristic.get(session, axis.curve_axis_ref.curveAxis)
+            if axis.curve_axis_ref
+            else None
+        )
         self.deposit = axis.deposit.mode if axis.deposit else None
         self.extendedLimits = self._dissect_extended_limits(axis.extended_limits)
         self.fixAxisPar = self._dissect_fix_axis_par(axis.fix_axis_par)
         self.fixAxisParDist = self._dissect_fix_axis_par_dist(axis.fix_axis_par_dist)
-        self.fixAxisParList = axis.fix_axis_par_list.axisPts_Value if axis.fix_axis_par_list else []
+        self.fixAxisParList = (
+            axis.fix_axis_par_list.axisPts_Value if axis.fix_axis_par_list else []
+        )
         self.format = axis.format.formatString if axis.format else None
         self.maxGrad = axis.max_grad.maxGradient if axis.max_grad else None
         self.monotony = axis.monotony.monotony if axis.monotony else None
@@ -574,10 +664,28 @@ class AxisDescr(CachedBase):
         return result
 
     def __str__(self):
-        names = (self.attribute, self.inputQuantity, self.compuMethod, self.maxAxisPoints, self.lowerLimit,
-            self.upperLimit, self.annotations, self.byteOrder, self.axisPtsRef, self.curveAxisRef, self.deposit,
-            self.extendedLimits, self.fixAxisPar, self.fixAxisParDist, self.fixAxisParList, self.format,
-            self.maxGrad, self.monotony or "", self.physUnit or "", self.readOnly, self.stepSize
+        names = (
+            self.attribute,
+            self.inputQuantity,
+            self.compuMethod,
+            self.maxAxisPoints,
+            self.lowerLimit,
+            self.upperLimit,
+            self.annotations,
+            self.byteOrder,
+            self.axisPtsRef,
+            self.curveAxisRef,
+            self.deposit,
+            self.extendedLimits,
+            self.fixAxisPar,
+            self.fixAxisParDist,
+            self.fixAxisParList,
+            self.format,
+            self.maxGrad,
+            self.monotony or "",
+            self.physUnit or "",
+            self.readOnly,
+            self.stepSize,
         )
         return """
 AxisDescr {{
@@ -603,7 +711,9 @@ AxisDescr {{
     readOnly        = {};
     stepSize        = {};
 
-}}""".format(*names)
+}}""".format(
+            *names
+        )
 
     __repr__ = __str__
 
@@ -631,65 +741,161 @@ class Characteristic(CachedBase):
 
     """
 
-    __slots__ = ("characteristic", "name", "longIdentifier", "type", "address", "deposit", "maxDiff",
-        "_conversionRef", "lowerLimit", "upperLimit", "annotations", "axisDescriptions",
-        "bitMask", "byteOrder", "compuMethod", "calibrationAccess", "comparisonQuantity", "dependentCharacteristic",
-        "discrete", "displayIdentifier", "ecuAddressExtension", "extendedLimits", "format", "functionList",
-        "guardRails", "mapList", "matrixDim", "maxRefresh", "number", "physUnit", "readOnly", "refMemorySegment",
-        "stepSize", "symbolLink", "virtualCharacteristic", "fnc_np_shape", "_record_layout_components"
+    __slots__ = (
+        "characteristic",
+        "name",
+        "longIdentifier",
+        "type",
+        "address",
+        "deposit",
+        "maxDiff",
+        "_conversionRef",
+        "lowerLimit",
+        "upperLimit",
+        "annotations",
+        "axisDescriptions",
+        "bitMask",
+        "byteOrder",
+        "compuMethod",
+        "calibrationAccess",
+        "comparisonQuantity",
+        "dependentCharacteristic",
+        "discrete",
+        "displayIdentifier",
+        "ecuAddressExtension",
+        "extendedLimits",
+        "format",
+        "functionList",
+        "guardRails",
+        "mapList",
+        "matrixDim",
+        "maxRefresh",
+        "number",
+        "physUnit",
+        "readOnly",
+        "refMemorySegment",
+        "stepSize",
+        "symbolLink",
+        "virtualCharacteristic",
+        "fnc_np_shape",
+        "_record_layout_components",
     )
 
     def __init__(self, session, name: str, module_name: str = None):
-        self.characteristic = session.query(model.Characteristic).filter(model.Characteristic.name == name).first()
+        self.characteristic = (
+            session.query(model.Characteristic)
+            .filter(model.Characteristic.name == name)
+            .first()
+        )
         self.name = name
         self.longIdentifier = self.characteristic.longIdentifier
         self.type = self.characteristic.type
         self.address = self.characteristic.address
-        self.deposit = RecordLayout.get(session, self.characteristic.deposit, module_name)
+        self.deposit = RecordLayout.get(
+            session, self.characteristic.deposit, module_name
+        )
         self.maxDiff = self.characteristic.maxDiff
         self._conversionRef = self.characteristic.conversion
-        self.compuMethod = CompuMethod.get(session, self._conversionRef)\
-            if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
+        self.compuMethod = (
+            CompuMethod.get(session, self._conversionRef)
+            if self._conversionRef != "NO_COMPU_METHOD"
+            else "NO_COMPU_METHOD"
+        )
         self.lowerLimit = self.characteristic.lowerLimit
         self.upperLimit = self.characteristic.upperLimit
         self.annotations = _annotations(session, self.characteristic.annotation)
-        self.bitMask = self.characteristic.bit_mask.mask if self.characteristic.bit_mask else None
-        self.byteOrder = self.characteristic.byte_order.byteOrder if self.characteristic.byte_order else None
-        self.axisDescriptions = [AxisDescr.get(session, a) for a in self.characteristic.axis_descr]
+        self.bitMask = (
+            self.characteristic.bit_mask.mask if self.characteristic.bit_mask else None
+        )
+        self.byteOrder = (
+            self.characteristic.byte_order.byteOrder
+            if self.characteristic.byte_order
+            else None
+        )
+        self.axisDescriptions = [
+            AxisDescr.get(session, a) for a in self.characteristic.axis_descr
+        ]
         self.calibrationAccess = self.characteristic.calibration_access
         self.comparisonQuantity = self.characteristic.comparison_quantity
-        self.dependentCharacteristic = self.characteristic.dependent_characteristic.formula \
-            if self.characteristic.dependent_characteristic else None
+        self.dependentCharacteristic = (
+            self.characteristic.dependent_characteristic.formula
+            if self.characteristic.dependent_characteristic
+            else None
+        )
         self.discrete = self.characteristic.discrete
-        self.displayIdentifier = self.characteristic.display_identifier.display_name \
-            if self.characteristic.display_identifier else None
-        self.ecuAddressExtension = self.characteristic.ecu_address_extension.extension \
-            if self.characteristic.ecu_address_extension else None
-        self.extendedLimits = self._dissect_extended_limits(self.characteristic.extended_limits)
-        self.format = self.characteristic.format.formatString if self.characteristic.format else None
-        self.functionList = [f.name for f in self.characteristic.function_list] if self.characteristic.function_list else []
-        self.guardRails =self.characteristic.guard_rails
-        self.mapList = [f.name for f in self.characteristic.map_list] if self.characteristic.map_list else []
+        self.displayIdentifier = (
+            self.characteristic.display_identifier.display_name
+            if self.characteristic.display_identifier
+            else None
+        )
+        self.ecuAddressExtension = (
+            self.characteristic.ecu_address_extension.extension
+            if self.characteristic.ecu_address_extension
+            else None
+        )
+        self.extendedLimits = self._dissect_extended_limits(
+            self.characteristic.extended_limits
+        )
+        self.format = (
+            self.characteristic.format.formatString
+            if self.characteristic.format
+            else None
+        )
+        self.functionList = (
+            [f.name for f in self.characteristic.function_list]
+            if self.characteristic.function_list
+            else []
+        )
+        self.guardRails = self.characteristic.guard_rails
+        self.mapList = (
+            [f.name for f in self.characteristic.map_list]
+            if self.characteristic.map_list
+            else []
+        )
         self.matrixDim = self._dissect_matrix_dim(self.characteristic.matrix_dim)
         self.maxRefresh = self._dissect_max_refresh(self.characteristic.max_refresh)
-        self.number = self.characteristic.number.number if self.characteristic.number else None
+        self.number = (
+            self.characteristic.number.number if self.characteristic.number else None
+        )
         self.physUnit = self.characteristic.phys_unit
         self.readOnly = self.characteristic.read_only
         self.refMemorySegment = self.characteristic.ref_memory_segment
         self.stepSize = self.characteristic.step_size
         self.symbolLink = self._dissect_symbol_link(self.characteristic.symbol_link)
-        self.virtualCharacteristic = self.characteristic.virtual_characteristic.formula \
-            if self.characteristic.virtual_characteristic else None
-        self.fnc_np_shape = fnc_np_shape(self.matrixDim) or (None if self.number is None else (self.number, ))
+        self.virtualCharacteristic = (
+            self.characteristic.virtual_characteristic.formula
+            if self.characteristic.virtual_characteristic
+            else None
+        )
+        self.fnc_np_shape = fnc_np_shape(self.matrixDim) or (
+            None if self.number is None else (self.number,)
+        )
         self._set_components()
 
     def _set_components(self):
-        ITEMS = ("axisPts", "axisRescale", "distOp", "fncValues", "identification", "noAxisPts", "noRescale",
-        "offset", "reserved", "ripAddr", "srcAddr", "shiftOp", "reserved")
+        ITEMS = (
+            "axisPts",
+            "axisRescale",
+            "distOp",
+            "fncValues",
+            "identification",
+            "noAxisPts",
+            "noRescale",
+            "offset",
+            "reserved",
+            "ripAddr",
+            "srcAddr",
+            "shiftOp",
+            "reserved",
+        )
 
         items = {name: getattr(self.deposit, name) for name in ITEMS}
-        self._record_layout_components = RecordLayoutComponents(self, items, self.deposit.alignment)
-        self._record_layout_components.calculate_offsets_and_sizes(self.fnc_allocated_memory)
+        self._record_layout_components = RecordLayoutComponents(
+            self, items, self.deposit.alignment
+        )
+        self._record_layout_components.calculate_offsets_and_sizes(
+            self.fnc_allocated_memory
+        )
 
     def axisDescription(self, axis):
         MAP = {
@@ -703,7 +909,7 @@ class Characteristic(CachedBase):
         if isinstance(axis, int):
             index = axis
         elif isinstance(axis, str):
-            if not axis in MAP:
+            if axis not in MAP:
                 raise ValueError("'{}' is an invalid axis name.".format(axis))
             index = MAP.get(axis)
         if index > len(descriptions) - 1:
@@ -741,8 +947,7 @@ class Characteristic(CachedBase):
 
     @property
     def fnc_element_size(self):
-        """Size of a single function value.
-        """
+        """Size of a single function value."""
         if self.deposit is None:
             return None
         else:
@@ -750,14 +955,13 @@ class Characteristic(CachedBase):
 
     @property
     def fnc_allocated_memory(self):
-        """Statically allocated memory by function value(s).
-        """
+        """Statically allocated memory by function value(s)."""
         dim = self.dim
         element_size = self.fnc_element_size
         if self.type == "VALUE":
-            return element_size # Scalar Characteristic
+            return element_size  # Scalar Characteristic
         elif self.type == "ASCII":
-            return dim["x"]     # Chars are always 8bit quantities.
+            return dim["x"]  # Chars are always 8bit quantities.
         else:
             axes_names = all_axes_names()
             result = 1
@@ -770,8 +974,7 @@ class Characteristic(CachedBase):
 
     @property
     def axes_allocated_memory(self):
-        """Statically allocated memory by axes.
-        """
+        """Statically allocated memory by axes."""
         if self.type in ("VALUE", "ASCII", "VAL_BLK"):
             return 0
         else:
@@ -784,23 +987,26 @@ class Characteristic(CachedBase):
                     break
                 axis_desc = self.axisDescription(axis)
                 axis_pts = self.deposit.axisPts.get(axis)
-                if axis_desc.attribute in ("COM_AXIS", "FIX_AXIS", "RES_AXIS", "CURVE_AXIS"):
+                if axis_desc.attribute in (
+                    "COM_AXIS",
+                    "FIX_AXIS",
+                    "RES_AXIS",
+                    "CURVE_AXIS",
+                ):
                     continue
                 result += value * asam_type_size(axis_pts["datatype"])
             return result
 
     @property
     def total_allocated_memory(self):
-        """Total amount of statically allocated memory by Characteristic.
-        """
+        """Total amount of statically allocated memory by Characteristic."""
         return self.record_layout_components.sizeof
 
     @property
     def dim(self):
-        """Statically allocated dimensions.
-        """
+        """Statically allocated dimensions."""
         if self.type == "VALUE":
-            return {}   # n/a
+            return {}  # n/a
         result = {"x": None, "y": None, "z": None, "4": None, "5": None}
         if self.type == "ASCII":
             result["x"] = self._ascii_length
@@ -813,7 +1019,7 @@ class Characteristic(CachedBase):
             axes_names = all_axes_names()
             for desc in self.axisDescriptions:
                 if axes_names == []:
-                    break # More than five axes means malformed Characteristic.
+                    break  # More than five axes means malformed Characteristic.
                 axis_name = axes_names.pop(0)
                 result[axis_name] = desc.maxAxisPoints
         return result
@@ -872,13 +1078,40 @@ class Characteristic(CachedBase):
 
     def __str__(self):
         names = (
-            self.name, self.longIdentifier, self.type, self.address, self.deposit,
-            self.maxDiff, self.compuMethod, self.lowerLimit, self.upperLimit, self.annotations, self.axisDescriptions,
-            self.bitMask, self.byteOrder, self.calibrationAccess, self.comparisonQuantity, self.dependentCharacteristic,
-            self.discrete, self.displayIdentifier, self.ecuAddressExtension, self.extendedLimits, self.format,
-            self.functionList, self.guardRails, self.mapList, self.matrixDim, self.maxRefresh, self.number,
-            self.physUnit, self.readOnly, self.refMemorySegment, self.stepSize, self.symbolLink, self.virtualCharacteristic,
-            self.fnc_np_shape
+            self.name,
+            self.longIdentifier,
+            self.type,
+            self.address,
+            self.deposit,
+            self.maxDiff,
+            self.compuMethod,
+            self.lowerLimit,
+            self.upperLimit,
+            self.annotations,
+            self.axisDescriptions,
+            self.bitMask,
+            self.byteOrder,
+            self.calibrationAccess,
+            self.comparisonQuantity,
+            self.dependentCharacteristic,
+            self.discrete,
+            self.displayIdentifier,
+            self.ecuAddressExtension,
+            self.extendedLimits,
+            self.format,
+            self.functionList,
+            self.guardRails,
+            self.mapList,
+            self.matrixDim,
+            self.maxRefresh,
+            self.number,
+            self.physUnit,
+            self.readOnly,
+            self.refMemorySegment,
+            self.stepSize,
+            self.symbolLink,
+            self.virtualCharacteristic,
+            self.fnc_np_shape,
         )
         return """
 Characteristic {{
@@ -915,47 +1148,91 @@ Characteristic {{
     stepSize                = {};
     symbolLink              = {};
     virtualCharacteristic   = {};
-}}""".format(*names)
+}}""".format(
+            *names
+        )
 
     __repr__ = __str__
 
 
 class AxisPts(CachedBase):
-    """
-    """
+    """"""
 
-    __slots__ = ("axis", "name", "longIdentifier", "address", "inputQuantity", "deposit", "maxDiff",
-        "_conversionRef", "compuMethod", "maxAxisPoints", "lowerLimit", "upperLimit",
-        "annotations", "byteOrder", "calibrationAccess", "deposit", "displayIdentifier", "ecuAddressExtension",
-        "extendedLimits", "format", "functionList", "guardRails", "monotony", "physUnit", "readOnly",
-        "refMemorySegment", "stepSize", "symbolLink", "depositAttr", "_record_layout_components"
+    __slots__ = (
+        "axis",
+        "name",
+        "longIdentifier",
+        "address",
+        "inputQuantity",
+        "deposit",
+        "maxDiff",
+        "_conversionRef",
+        "compuMethod",
+        "maxAxisPoints",
+        "lowerLimit",
+        "upperLimit",
+        "annotations",
+        "byteOrder",
+        "calibrationAccess",
+        "deposit",
+        "displayIdentifier",
+        "ecuAddressExtension",
+        "extendedLimits",
+        "format",
+        "functionList",
+        "guardRails",
+        "monotony",
+        "physUnit",
+        "readOnly",
+        "refMemorySegment",
+        "stepSize",
+        "symbolLink",
+        "depositAttr",
+        "_record_layout_components",
     )
 
     def __init__(self, session, name: str, module_name: str = None):
-        self.axis = session.query(model.AxisPts).filter(model.AxisPts.name == name).first()
+        self.axis = (
+            session.query(model.AxisPts).filter(model.AxisPts.name == name).first()
+        )
         self.name = name
         self.longIdentifier = self.axis.longIdentifier
         self.address = self.axis.address
-        self.inputQuantity = self.axis.inputQuantity    # REF: Measurement
+        self.inputQuantity = self.axis.inputQuantity  # REF: Measurement
         self.depositAttr = RecordLayout.get(session, self.axis.depositAttr)
         self.deposit = self.axis.deposit.mode if self.axis.deposit else None
         self.maxDiff = self.axis.maxDiff
         self._conversionRef = self.axis.conversion
-        self.compuMethod = CompuMethod.get(session, self._conversionRef) \
-            if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
+        self.compuMethod = (
+            CompuMethod.get(session, self._conversionRef)
+            if self._conversionRef != "NO_COMPU_METHOD"
+            else "NO_COMPU_METHOD"
+        )
         self.maxAxisPoints = self.axis.maxAxisPoints
         self.lowerLimit = self.axis.lowerLimit
         self.upperLimit = self.axis.upperLimit
         self.annotations = _annotations(session, self.axis.annotation)
-        self.byteOrder = self.axis.byte_order.byteOrder if self.axis.byte_order else None
+        self.byteOrder = (
+            self.axis.byte_order.byteOrder if self.axis.byte_order else None
+        )
         self.calibrationAccess = self.axis.calibration_access
         self.deposit = self.axis.deposit.mode if self.axis.deposit else None
-        self.displayIdentifier = self.axis.display_identifier.display_name if self.axis.display_identifier else None
-        self.ecuAddressExtension = self.axis.ecu_address_extension.extension if self.axis.ecu_address_extension else None
+        self.displayIdentifier = (
+            self.axis.display_identifier.display_name
+            if self.axis.display_identifier
+            else None
+        )
+        self.ecuAddressExtension = (
+            self.axis.ecu_address_extension.extension
+            if self.axis.ecu_address_extension
+            else None
+        )
         self.extendedLimits = self._dissect_extended_limits(self.axis.extended_limits)
         self.format = self.axis.format.formatString if self.axis.format else None
-        self.functionList = [f.name for f in self.axis.function_list] if self.axis.function_list else []
-        self.guardRails =self.axis.guard_rails
+        self.functionList = (
+            [f.name for f in self.axis.function_list] if self.axis.function_list else []
+        )
+        self.guardRails = self.axis.guard_rails
         self.monotony = self.axis.monotony
         self.physUnit = self.axis.phys_unit
         self.readOnly = self.axis.read_only
@@ -965,29 +1242,41 @@ class AxisPts(CachedBase):
         self._set_components()
 
     def _set_components(self):
-        ITEMS = ("axisPts", "axisRescale", "distOp", "fncValues", "identification", "noAxisPts", "noRescale",
-        "offset", "reserved", "ripAddr", "srcAddr", "shiftOp", "reserved")
+        ITEMS = (
+            "axisPts",
+            "axisRescale",
+            "distOp",
+            "fncValues",
+            "identification",
+            "noAxisPts",
+            "noRescale",
+            "offset",
+            "reserved",
+            "ripAddr",
+            "srcAddr",
+            "shiftOp",
+            "reserved",
+        )
 
         items = {name: getattr(self.depositAttr, name) for name in ITEMS}
-        self._record_layout_components = RecordLayoutComponents(self, items, self.depositAttr.alignment)
+        self._record_layout_components = RecordLayoutComponents(
+            self, items, self.depositAttr.alignment
+        )
         self._record_layout_components.calculate_offsets_and_sizes(None)
 
     @property
     def record_layout_components(self):
         return self._record_layout_components
 
-
     @property
     def axis_allocated_memory(self):
-        """Statically allocated memory by axis.
-        """
+        """Statically allocated memory by axis."""
         axis = self.record_layout_components.axes("x")
         return axis["memSize"]
 
     @property
     def total_allocated_memory(self):
-        """Total amount of statically allocated memory by AxisPts.
-        """
+        """Total amount of statically allocated memory by AxisPts."""
         return self.record_layout_components.sizeof
 
     @staticmethod
@@ -1012,11 +1301,32 @@ class AxisPts(CachedBase):
 
     def __str__(self):
         names = (
-            self.name, self.longIdentifier, self.address, self.inputQuantity, self.maxDiff, self.compuMethod,
-            self.maxAxisPoints, self.lowerLimit, self.upperLimit, self.annotations, self.byteOrder, self.calibrationAccess,
-            self.deposit, self.depositAttr, self.ecuAddressExtension, self.extendedLimits, self.format,
-            self.functionList, self.guardRails, self.monotony, self.physUnit, self.readOnly, self.refMemorySegment,
-            self.stepSize, self.symbolLink, self.displayIdentifier
+            self.name,
+            self.longIdentifier,
+            self.address,
+            self.inputQuantity,
+            self.maxDiff,
+            self.compuMethod,
+            self.maxAxisPoints,
+            self.lowerLimit,
+            self.upperLimit,
+            self.annotations,
+            self.byteOrder,
+            self.calibrationAccess,
+            self.deposit,
+            self.depositAttr,
+            self.ecuAddressExtension,
+            self.extendedLimits,
+            self.format,
+            self.functionList,
+            self.guardRails,
+            self.monotony,
+            self.physUnit,
+            self.readOnly,
+            self.refMemorySegment,
+            self.stepSize,
+            self.symbolLink,
+            self.displayIdentifier,
         )
         return """
 AxisPts {{
@@ -1046,7 +1356,9 @@ AxisPts {{
     stepSize            = {};
     symbolLink          = {};
     displayIdentifier   = "{}";
-}}""".format(*names)
+}}""".format(
+            *names
+        )
 
     __repr__ = __str__
 
@@ -1241,15 +1553,46 @@ class Measurement(CachedBase):
                 verbal conversion table.
     """
 
-    __slots__ = ("measurement", "name", "longIdentifier", "datatype", "_conversionRef", "resolution",
-        "accuracy", "lowerLimit", "upperLimit", "annotations", "arraySize", "bitMask", "bitOperation",
-        "byteOrder", "discrete", "displayIdentifier", "ecuAddress", "ecuAddressExtension",
-        "errorMask", "format", "functionList", "layout", "matrixDim", "maxRefresh", "physUnit",
-        "readWrite", "refMemorySegment", "symbolLink", "virtual", "compuMethod", "fnc_np_shape"
-        )
+    __slots__ = (
+        "measurement",
+        "name",
+        "longIdentifier",
+        "datatype",
+        "_conversionRef",
+        "resolution",
+        "accuracy",
+        "lowerLimit",
+        "upperLimit",
+        "annotations",
+        "arraySize",
+        "bitMask",
+        "bitOperation",
+        "byteOrder",
+        "discrete",
+        "displayIdentifier",
+        "ecuAddress",
+        "ecuAddressExtension",
+        "errorMask",
+        "format",
+        "functionList",
+        "layout",
+        "matrixDim",
+        "maxRefresh",
+        "physUnit",
+        "readWrite",
+        "refMemorySegment",
+        "symbolLink",
+        "virtual",
+        "compuMethod",
+        "fnc_np_shape",
+    )
 
     def __init__(self, session, name: str, module_name: str = None):
-        self.measurement = session.query(model.Measurement).filter(model.Measurement.name == name).first()
+        self.measurement = (
+            session.query(model.Measurement)
+            .filter(model.Measurement.name == name)
+            .first()
+        )
         self.name = name
         self.longIdentifier = self.measurement.longIdentifier
         self.datatype = self.measurement.datatype
@@ -1259,39 +1602,103 @@ class Measurement(CachedBase):
         self.lowerLimit = self.measurement.lowerLimit
         self.upperLimit = self.measurement.upperLimit
         self.annotations = _annotations(session, self.measurement.annotation)
-        self.arraySize = self.measurement.array_size.number if self.measurement.array_size else None
-        self.bitMask = self.measurement.bit_mask.mask if self.measurement.bit_mask else None
+        self.arraySize = (
+            self.measurement.array_size.number if self.measurement.array_size else None
+        )
+        self.bitMask = (
+            self.measurement.bit_mask.mask if self.measurement.bit_mask else None
+        )
         self.bitOperation = self._dissect_bit_operation(self.measurement.bit_operation)
-        self.byteOrder = self.measurement.byte_order.byteOrder if self.measurement.byte_order else None
+        self.byteOrder = (
+            self.measurement.byte_order.byteOrder
+            if self.measurement.byte_order
+            else None
+        )
         self.discrete = self.measurement.discrete
-        self.displayIdentifier = self.measurement.display_identifier.display_name \
-            if self.measurement.display_identifier else None
-        self.ecuAddress = self.measurement.ecu_address.address if self.measurement.ecu_address else None
-        self.ecuAddressExtension = self.measurement.ecu_address_extension.extension \
-            if self.measurement.ecu_address_extension else None
-        self.errorMask = self.measurement.error_mask.mask if self.measurement.error_mask else None
-        self.format = self.measurement.format.formatString if self.measurement.format else None
-        self.functionList = self.measurement.function_list.name if self.measurement.function_list else []
-        self.layout = self.measurement.layout.indexMode if self.measurement.layout else None
+        self.displayIdentifier = (
+            self.measurement.display_identifier.display_name
+            if self.measurement.display_identifier
+            else None
+        )
+        self.ecuAddress = (
+            self.measurement.ecu_address.address
+            if self.measurement.ecu_address
+            else None
+        )
+        self.ecuAddressExtension = (
+            self.measurement.ecu_address_extension.extension
+            if self.measurement.ecu_address_extension
+            else None
+        )
+        self.errorMask = (
+            self.measurement.error_mask.mask if self.measurement.error_mask else None
+        )
+        self.format = (
+            self.measurement.format.formatString if self.measurement.format else None
+        )
+        self.functionList = (
+            self.measurement.function_list.name
+            if self.measurement.function_list
+            else []
+        )
+        self.layout = (
+            self.measurement.layout.indexMode if self.measurement.layout else None
+        )
         self.matrixDim = self._dissect_matrix_dim(self.measurement.matrix_dim)
         self.maxRefresh = self._dissect_max_refresh(self.measurement.max_refresh)
-        self.physUnit = self.measurement.phys_unit.unit if self.measurement.phys_unit else None
+        self.physUnit = (
+            self.measurement.phys_unit.unit if self.measurement.phys_unit else None
+        )
         self.readWrite = False if self.measurement.read_write is None else True
-        self.refMemorySegment = self.measurement.ref_memory_segment.name if self.measurement.ref_memory_segment else None
+        self.refMemorySegment = (
+            self.measurement.ref_memory_segment.name
+            if self.measurement.ref_memory_segment
+            else None
+        )
         self.symbolLink = self._dissect_symbol_link(self.measurement.symbol_link)
-        self.virtual = self.measurement.virtual.measuringChannel if self.measurement.virtual else []
-        self.compuMethod = CompuMethod.get(session, self._conversionRef) \
-            if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
+        self.virtual = (
+            self.measurement.virtual.measuringChannel
+            if self.measurement.virtual
+            else []
+        )
+        self.compuMethod = (
+            CompuMethod.get(session, self._conversionRef)
+            if self._conversionRef != "NO_COMPU_METHOD"
+            else "NO_COMPU_METHOD"
+        )
 
         self.fnc_np_shape = fnc_np_shape(self.matrixDim)
 
     def __str__(self):
         names = (
-            self.name, self.longIdentifier, self.datatype, self.resolution, self.accuracy, self.lowerLimit,
-            self.upperLimit, self.annotations, self.arraySize, self.bitMask, self.bitOperation, self.byteOrder,
-            self.discrete, self.displayIdentifier, self.ecuAddress or 0, self.ecuAddressExtension, self.errorMask,
-            self.format, self.functionList, self.layout, self.matrixDim, self.maxRefresh, self.physUnit,
-            self.refMemorySegment, self.readWrite, self.symbolLink, self.virtual, self.compuMethod
+            self.name,
+            self.longIdentifier,
+            self.datatype,
+            self.resolution,
+            self.accuracy,
+            self.lowerLimit,
+            self.upperLimit,
+            self.annotations,
+            self.arraySize,
+            self.bitMask,
+            self.bitOperation,
+            self.byteOrder,
+            self.discrete,
+            self.displayIdentifier,
+            self.ecuAddress or 0,
+            self.ecuAddressExtension,
+            self.errorMask,
+            self.format,
+            self.functionList,
+            self.layout,
+            self.matrixDim,
+            self.maxRefresh,
+            self.physUnit,
+            self.refMemorySegment,
+            self.readWrite,
+            self.symbolLink,
+            self.virtual,
+            self.compuMethod,
         )
         return """
 Measurement {{
@@ -1323,7 +1730,9 @@ Measurement {{
     symbolLink = {};
     virtual = {};
     compuMethod = {};
-}}""".format(*names)
+}}""".format(
+            *names
+        )
 
     __repr__ = __str__
 
@@ -1332,12 +1741,12 @@ Measurement {{
         if bit_op is not None:
             result = {}
             if bit_op.left_shift is not None:
-                result['direction'] = "L"
-                result['amount'] = bit_op.left_shift.bitcount
+                result["direction"] = "L"
+                result["amount"] = bit_op.left_shift.bitcount
             elif bit_op.right_shift is not None:
-                result['direction'] = "R"
-                result['amount'] = bit_op.right_shift.bitcount
-            result['sign_extend'] = False if bit_op.sign_extend is None else True
+                result["direction"] = "R"
+                result["amount"] = bit_op.right_shift.bitcount
+            result["sign_extend"] = False if bit_op.sign_extend is None else True
         else:
             result = None
         return result
@@ -1375,31 +1784,56 @@ Measurement {{
 
 
 class RecordLayout(CachedBase):
-    """
-    """
+    """"""
 
-    __slots__ = ("layout", "name", "alignment", "axisPts", "axisRescale", "distOp", "fixNoAxisPts",
-        "fncValues", "identification", "noAxisPts", "noRescale", "offset", "reserved", "ripAddr",
-        "srcAddr", "shiftOp", "staticRecordLayout", "_mod_common"
+    __slots__ = (
+        "layout",
+        "name",
+        "alignment",
+        "axisPts",
+        "axisRescale",
+        "distOp",
+        "fixNoAxisPts",
+        "fncValues",
+        "identification",
+        "noAxisPts",
+        "noRescale",
+        "offset",
+        "reserved",
+        "ripAddr",
+        "srcAddr",
+        "shiftOp",
+        "staticRecordLayout",
+        "_mod_common",
     )
 
     def __init__(self, session, name: str, module_name: str = None):
-        self.layout = session.query(model.RecordLayout).filter(model.RecordLayout.name == name).first()
+        self.layout = (
+            session.query(model.RecordLayout)
+            .filter(model.RecordLayout.name == name)
+            .first()
+        )
         self._mod_common = ModCommon.get(session)
         self.name = name
         self.alignment = {
-            "BYTE": self.layout.alignment_byte.alignmentBorder if self.layout.alignment_byte \
-                else self._mod_common.alignment["BYTE"],
-            "WORD": self.layout.alignment_word.alignmentBorder if self.layout.alignment_word \
-                else self._mod_common.alignment["WORD"],
-            "DWORD": self.layout.alignment_long.alignmentBorder if self.layout.alignment_long \
-                else self._mod_common.alignment["DWORD"],
-            "QWORD": self.layout.alignment_int64.alignmentBorder if self.layout.alignment_int64 \
-                else self._mod_common.alignment["QWORD"],
-            "FLOAT32": self.layout.alignment_float32_ieee.alignmentBorder if self.layout.alignment_float32_ieee \
-                else self._mod_common.alignment["FLOAT32"],
-            "FLOAT64": self.layout.alignment_float64_ieee.alignmentBorder if self.layout.alignment_float64_ieee \
-                else self._mod_common.alignment["FLOAT64"],
+            "BYTE": self.layout.alignment_byte.alignmentBorder
+            if self.layout.alignment_byte
+            else self._mod_common.alignment["BYTE"],
+            "WORD": self.layout.alignment_word.alignmentBorder
+            if self.layout.alignment_word
+            else self._mod_common.alignment["WORD"],
+            "DWORD": self.layout.alignment_long.alignmentBorder
+            if self.layout.alignment_long
+            else self._mod_common.alignment["DWORD"],
+            "QWORD": self.layout.alignment_int64.alignmentBorder
+            if self.layout.alignment_int64
+            else self._mod_common.alignment["QWORD"],
+            "FLOAT32": self.layout.alignment_float32_ieee.alignmentBorder
+            if self.layout.alignment_float32_ieee
+            else self._mod_common.alignment["FLOAT32"],
+            "FLOAT64": self.layout.alignment_float64_ieee.alignmentBorder
+            if self.layout.alignment_float64_ieee
+            else self._mod_common.alignment["FLOAT64"],
         }
         self.axisPts = {
             "x": self._dissect_axis_pts(self.layout.axis_pts_x),
@@ -1452,7 +1886,11 @@ class RecordLayout(CachedBase):
             "4": self._dissect_offset(self.layout.offset_4),
             "5": self._dissect_offset(self.layout.offset_5),
         }
-        self.reserved = self._dissect_reserved(self.layout.reserved[0]) if self.layout.reserved else {}
+        self.reserved = (
+            self._dissect_reserved(self.layout.reserved[0])
+            if self.layout.reserved
+            else {}
+        )
         self.ripAddr = {
             "w": self._dissect_rip_addr(self.layout.rip_addr_w),
             "x": self._dissect_rip_addr(self.layout.rip_addr_x),
@@ -1475,7 +1913,9 @@ class RecordLayout(CachedBase):
             "4": self._dissect_shift_op(self.layout.shift_op_4),
             "5": self._dissect_shift_op(self.layout.shift_op_5),
         }
-        self.staticRecordLayout = False if self.layout.static_record_layout is None else True
+        self.staticRecordLayout = (
+            False if self.layout.static_record_layout is None else True
+        )
 
     @staticmethod
     def _dissect_axis_pts(axis):
@@ -1615,20 +2055,18 @@ class RecordLayout(CachedBase):
 
     @property
     def fnc_asam_dtype(self):
-        """Return `str` (e.g. `SLONG`).
-        """
+        """Return `str` (e.g. `SLONG`)."""
         if self.fncValues is None:
             return None
-        fnc_asam_dtype = self.fncValues.get('datatype')
+        fnc_asam_dtype = self.fncValues.get("datatype")
         return None if fnc_asam_dtype is None else fnc_asam_dtype
 
     @property
     def fnc_np_dtype(self):
-        """Return `str` (e.g. `int32`) suitable for Numpy.
-        """
+        """Return `str` (e.g. `int32`) suitable for Numpy."""
         if self.fncValues is None:
             return None
-        fnc_asam_dtype = self.fncValues.get('datatype')
+        fnc_asam_dtype = self.fncValues.get("datatype")
         if fnc_asam_dtype is None:
             return None
         fnc_np_dtype = ASAM_TO_NUMPY_TYPES.get(fnc_asam_dtype)
@@ -1636,20 +2074,19 @@ class RecordLayout(CachedBase):
 
     @property
     def fnc_element_size(self):
-        """Get the size of a single function value.
-        """
+        """Get the size of a single function value."""
         asam_dtype = self.fnc_asam_dtype
         return asam_type_size(asam_dtype)
 
     @property
     def fnc_np_order(self):
         """Return `str` suitable for Numpy.
-            - "C": C order ==> row-major.
-            - "F": Fortran order ==> column-major.
+        - "C": C order ==> row-major.
+        - "F": Fortran order ==> column-major.
         """
         if self.fncValues is None:
             return None
-        indexMode = self.fncValues.get('indexMode')
+        indexMode = self.fncValues.get("indexMode")
         if indexMode is None:
             return None
         if indexMode == "COLUMN_DIR":
@@ -1661,9 +2098,22 @@ class RecordLayout(CachedBase):
 
     def __str__(self):
         names = (
-            self.name, self.alignment, self.axisPts, self.axisRescale, self.distOp, self.fixNoAxisPts,
-            self.fncValues, self.identification, self.noAxisPts, self.noRescale, self.offset, self.reserved,
-            self.ripAddr, self.srcAddr, self.shiftOp, self.staticRecordLayout
+            self.name,
+            self.alignment,
+            self.axisPts,
+            self.axisRescale,
+            self.distOp,
+            self.fixNoAxisPts,
+            self.fncValues,
+            self.identification,
+            self.noAxisPts,
+            self.noRescale,
+            self.offset,
+            self.reserved,
+            self.ripAddr,
+            self.srcAddr,
+            self.shiftOp,
+            self.staticRecordLayout,
         )
         return """
 RecordLayout {{
@@ -1683,14 +2133,15 @@ RecordLayout {{
     srcAddr            = {};
     shiftOp            = {};
     staticRecordLayout = {};
-}}""".format(*names)
+}}""".format(
+            *names
+        )
 
     __repr__ = __str__
 
 
 class RecordLayoutComponents:
-    """
-    """
+    """"""
 
     def __init__(self, parent, items: dict, alignment: dict):
         self.parent = parent
@@ -1709,10 +2160,18 @@ class RecordLayoutComponents:
                 if v:
                     entry[k] = v
             if entry:
-                if item_name in ("axisPts", "axisRescale", "distOp", "noAxisPts", "noRescale", "offset",
-                    "srcAddr", "shiftOp"):
+                if item_name in (
+                    "axisPts",
+                    "axisRescale",
+                    "distOp",
+                    "noAxisPts",
+                    "noRescale",
+                    "offset",
+                    "srcAddr",
+                    "shiftOp",
+                ):
                     s, p = self._get_details(entry, item_name, all_axes_names())
-                    if not item_name in ("axisPts", "axisRescale"):
+                    if item_name not in ("axisPts", "axisRescale"):
                         sizeof += s
                     positions.update(p)
                 elif item_name == "ripAddr":
@@ -1723,7 +2182,7 @@ class RecordLayoutComponents:
                     # These components are not related to any axis.
                     pos = entry["position"]
                     positions[pos] = entry
-                    entry['type'] = item_name
+                    entry["type"] = item_name
                     if item_name == "fncValues":
                         self._fncValues = entry
                     elif item_name == "identification":
@@ -1732,15 +2191,14 @@ class RecordLayoutComponents:
                     elif item_name == "reserved":
                         sizeof += asam_type_size(entry["datatype"])
                 result.append(entry)
-        self._components_by_pos = sorted(positions.items(), key = lambda k: k[0])
+        self._components_by_pos = sorted(positions.items(), key=lambda k: k[0])
         if isinstance(parent, Characteristic):
             self._calculate_sizes_characteristic()
         elif isinstance(parent, AxisPts):
             self._calculate_sizes_axis_pts()
 
     def _calculate_sizes_characteristic(self):
-        """
-        """
+        """"""
         total_mem_size = 0
         total_length = 0
         func_value_length = 1
@@ -1754,45 +2212,49 @@ class RecordLayoutComponents:
                 mem_size = maxAxisPoints * asam_type_size(axis_pts["datatype"])
             else:
                 if axis_descr.attribute == "FIX_AXIS":
-                    mem_size = 0    # No memory occupied in case of fix axis.
+                    mem_size = 0  # No memory occupied in case of fix axis.
                 else:
                     # Should never be reached.
                     raise TypeError("No axis_pts {}".format(axis_descr.attribute))
-            self.axes(axis)['maxAxisPoints'] = maxAxisPoints
-            self.axes(axis)['memSize'] = mem_size
+            self.axes(axis)["maxAxisPoints"] = maxAxisPoints
+            self.axes(axis)["memSize"] = mem_size
             if axis_pts:
-                axis_pts['maxAxisPoints'] = maxAxisPoints
-                axis_pts['memSize'] = mem_size
+                axis_pts["maxAxisPoints"] = maxAxisPoints
+                axis_pts["memSize"] = mem_size
             total_mem_size += mem_size
 
     def _calculate_sizes_axis_pts(self):
-        """
-        """
-        total_mem_size = 0
-        total_length = 0
+        """"""
+        # total_mem_size = 0
+        # total_length = 0
         x_axis = self.axes("x")
         maxAxisPoints = self.parent.maxAxisPoints
-        axis_pts = x_axis.get("axisPts")    # Exactly one axis per AXIS_PTS.
+        axis_pts = x_axis.get("axisPts")  # Exactly one axis per AXIS_PTS.
         if not axis_pts:
-            axis_res = x_axis.get("axisRescale")    # Rescale axis?
+            axis_res = x_axis.get("axisRescale")  # Rescale axis?
             if not axis_res:
-                raise TypeError("Type of axis '{}' is neither standard nor rescale".format(self.parent.name))
-            noRescale = x_axis.get("noRescale")
-            element_size = asam_type_size(axis_res.get("datatype")) * 2    # In this case elements are pairs.
+                raise TypeError(
+                    "Type of axis '{}' is neither standard nor rescale".format(
+                        self.parent.name
+                    )
+                )
+            # noRescale = x_axis.get("noRescale")
+            element_size = (
+                asam_type_size(axis_res.get("datatype")) * 2
+            )  # In this case elements are pairs.
         else:
             element_size = asam_type_size(axis_pts.get("datatype"))
         mem_size = maxAxisPoints * element_size
-        x_axis['maxAxisPoints'] = maxAxisPoints
-        x_axis['memSize'] = mem_size
+        x_axis["maxAxisPoints"] = maxAxisPoints
+        x_axis["memSize"] = mem_size
         if axis_pts:
-            axis_pts['maxAxisPoints'] = maxAxisPoints
-            axis_pts['memSize'] = mem_size
+            axis_pts["maxAxisPoints"] = maxAxisPoints
+            axis_pts["memSize"] = mem_size
 
     def calculate_offsets_and_sizes(self, fnc_allocated_memory: int):
-        """
-        """
+        """"""
         offset = 0
-        axis_pts = {n: self.axis_pts(n) for n in self.axes_names}
+        # axis_pts = {n: self.axis_pts(n) for n in self.axes_names}
         for idx, (_, pos) in enumerate(self._components_by_pos):
             tp = pos["type"]
             if len(tp) == 2:
@@ -1806,7 +2268,7 @@ class RecordLayoutComponents:
                 size = self.axes(axis).get("memSize")
             else:
                 size = asam_type_size(datatype)
-            pos['offset'] = offset
+            pos["offset"] = offset
             alignment = asam_align_as(self.alignment, datatype, offset)
             offset = alignment + size
         self._sizeof = offset
@@ -1821,11 +2283,11 @@ class RecordLayoutComponents:
                 self._axes_names.add(key)
                 pos = dim_entry["position"]
                 sizeof += asam_type_size(dim_entry["datatype"])
-                dim_entry['type'] = (name, key)
+                dim_entry["type"] = (name, key)
                 positions[pos] = dim_entry
         return sizeof, positions
 
-    def axes(self, axis = None):
+    def axes(self, axis=None):
         if axis is None:
             result = self._axes.items()
         else:
@@ -1845,8 +2307,7 @@ class RecordLayoutComponents:
 
     @property
     def sizeof(self):
-        """Size of record layout, respecting alignment.
-        """
+        """Size of record layout, respecting alignment."""
         return self._sizeof
 
     @property
@@ -1861,8 +2322,7 @@ class RecordLayoutComponents:
 
     @property
     def axes_count(self):
-        """
-        """
+        """"""
         return len(self._axes_names)
 
     def __len__(self):
@@ -1888,17 +2348,31 @@ class RecordLayoutComponents:
     __repr__ = __str__
 
 
-
 class CompuMethod(CachedBase):
-    """
-    """
+    """"""
 
-    __slots__ = ("compu_method", "name", "longIdentifier", "conversionType", "format", "unit",
-        "coeffs", "coeffs_linear", "formula", "tab", "tab_verb", "statusStringRef"
+    __slots__ = (
+        "compu_method",
+        "name",
+        "longIdentifier",
+        "conversionType",
+        "format",
+        "unit",
+        "coeffs",
+        "coeffs_linear",
+        "formula",
+        "tab",
+        "tab_verb",
+        "statusStringRef",
+        "refUnit",
     )
 
     def __init__(self, session, name: str, module_name: str = None):
-        self.compu_method = session.query(model.CompuMethod).filter(model.CompuMethod.name == name).first()
+        self.compu_method = (
+            session.query(model.CompuMethod)
+            .filter(model.CompuMethod.name == name)
+            .first()
+        )
         self.name = name
         self.longIdentifier = self.compu_method.longIdentifier
         self.conversionType = self.compu_method.conversionType
@@ -1910,18 +2384,23 @@ class CompuMethod(CachedBase):
         self.formula = {}
         self.tab = {}
         self.tab_verb = {}
-        self.statusStringRef = self.compu_method.status_string_ref.conversionTable \
-            if self.compu_method.status_string_ref else None
-
-        """
-        [-> REF_UNIT]
-        """
+        self.statusStringRef = (
+            self.compu_method.status_string_ref.conversionTable
+            if self.compu_method.status_string_ref
+            else None
+        )
+        self.refUnit = (
+            self.compu_method.ref_unit.unit if self.compu_method.ref_unit else None
+        )
         cm_type = self.conversionType
         if cm_type == "IDENTICAL":
             pass
         elif cm_type == "FORM":
-            self.formula["formula_inv"] = self.compu_method.formula.formula_inv.g_x \
-                if self.compu_method.formula.formula_inv else None
+            self.formula["formula_inv"] = (
+                self.compu_method.formula.formula_inv.g_x
+                if self.compu_method.formula.formula_inv
+                else None
+            )
             self.formula["formula"] = self.compu_method.formula.f_x
         elif cm_type == "LINEAR":
             self.coeffs_linear["a"] = self.compu_method.coeffs_linear.a
@@ -1934,27 +2413,51 @@ class CompuMethod(CachedBase):
             self.coeffs["e"] = self.compu_method.coeffs.e
             self.coeffs["f"] = self.compu_method.coeffs.f
         elif cm_type in ("TAB_INTP", "TAB_NOINTP"):
-            cvt = session.query(model.CompuTab).filter(model.CompuTab.name == \
-                self.compu_method.compu_tab_ref.conversionTable).first()
+            cvt = (
+                session.query(model.CompuTab)
+                .filter(
+                    model.CompuTab.name
+                    == self.compu_method.compu_tab_ref.conversionTable
+                )
+                .first()
+            )
             pairs = cvt.pairs
             self.tab["num_values"] = len(pairs)
             self.tab["interpolation"] = True if cm_type == "TAB_INTP" else False
-            self.tab["default_value"] = cvt.default_value_numeric.display_value if cvt.default_value_numeric else None
+            self.tab["default_value"] = (
+                cvt.default_value_numeric.display_value
+                if cvt.default_value_numeric
+                else None
+            )
             self.tab["in_values"] = [x.inVal for x in pairs]
             self.tab["out_values"] = [x.outVal for x in pairs]
         elif cm_type == "TAB_VERB":
-            cvt = session.query(model.CompuVtab).filter(model.CompuVtab.name == \
-                self.compu_method.compu_tab_ref.conversionTable).first()
+            cvt = (
+                session.query(model.CompuVtab)
+                .filter(
+                    model.CompuVtab.name
+                    == self.compu_method.compu_tab_ref.conversionTable
+                )
+                .first()
+            )
             if cvt:
                 self.tab_verb["ranges"] = False
                 pairs = cvt.pairs
                 self.tab_verb["num_values"] = len(pairs)
                 self.tab_verb["in_values"] = [x.inVal for x in pairs]
                 self.tab_verb["text_values"] = [x.outVal for x in pairs]
-                self.tab_verb["default_value"] = cvt.default_value.display_string if cvt.default_value else None
+                self.tab_verb["default_value"] = (
+                    cvt.default_value.display_string if cvt.default_value else None
+                )
             else:
-                cvt = session.query(model.CompuVtabRange).filter(model.CompuVtabRange.name == \
-                        self.compu_method.compu_tab_ref.conversionTable).first()
+                cvt = (
+                    session.query(model.CompuVtabRange)
+                    .filter(
+                        model.CompuVtabRange.name
+                        == self.compu_method.compu_tab_ref.conversionTable
+                    )
+                    .first()
+                )
                 if cvt:
                     self.tab_verb["ranges"] = True
                     triples = cvt.triples
@@ -1962,4 +2465,41 @@ class CompuMethod(CachedBase):
                     self.tab_verb["lower_values"] = [x.inValMin for x in triples]
                     self.tab_verb["upper_values"] = [x.inValMax for x in triples]
                     self.tab_verb["text_values"] = [x.outVal for x in triples]
-                    self.tab_verb["default_value"] = cvt.default_value.display_string if cvt.default_value else None
+                    self.tab_verb["default_value"] = (
+                        cvt.default_value.display_string if cvt.default_value else None
+                    )
+
+    def __str__(self):
+        names = (
+            self.name,
+            self.longIdentifier,
+            self.conversionType,
+            self.format,
+            self.unit,
+            self.coeffs,
+            self.coeffs_linear,
+            self.formula,
+            self.tab,
+            self.tab_verb,
+            self.statusStringRef,
+            self.refUnit,
+        )
+        return """
+CompuMethod {{
+    name               = "{}";
+    longIdentifier     = "{}";
+    conversionType     = {};
+    format             = "{}";
+    unit               = "{}";
+    coeffs             = {};
+    coeffs_linear      = {};
+    formula            = {};
+    tab                = {};
+    tab_verb           = {};
+    statusStringRef    = {};
+    refUnit            = {};
+}}""".format(
+            *names
+        )
+
+    __repr__ = __str__

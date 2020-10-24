@@ -24,35 +24,40 @@ __copyright__ = """
 
    s. FLOSS-EXCEPTION.txt
 """
-__author__  = 'Christoph Schueler'
+__author__ = "Christoph Schueler"
 __version__ = "0.10.2"
 
 
-import io
-from os import path
 import pkgutil
 import sys
+from os import path
 
-from pya2l.logger import Logger
 import pya2l.model as model
+from pya2l.logger import Logger
 from pya2l.templates import doTemplateFromText
 
 
-
 class InvalidA2LDatabase(Exception):
-    """
-    """
+    """"""
+
     pass
 
+
 class DB(object):
-    """
-    """
+    """"""
 
     A2L_TEMPLATE = pkgutil.get_data("pya2l", "cgen/templates/a2l.tmpl")
 
     logger = Logger(__name__)
 
-    def import_a2l(self, file_name, debug = False, in_memory = False, remove_existing = False, encoding = "latin-1"):
+    def import_a2l(
+        self,
+        file_name,
+        debug=False,
+        in_memory=False,
+        remove_existing=False,
+        encoding="latin-1",
+    ):
         """Import `.a2l` file to `.a2ldb` database.
 
 
@@ -84,11 +89,13 @@ class DB(object):
         ``AML`` and ``IF_DATA`` sections are currently not processed.
         """
         from os import unlink
-        from pya2l.a2l_listener import ParserWrapper, A2LListener, cut_a2ml
+
+        from pya2l.a2l_listener import A2LListener, cut_a2ml
+        from pya2l.parserlib import ParserWrapper
 
         self.in_memory = in_memory
 
-        parser = ParserWrapper('a2l', 'a2lFile', A2LListener, debug = debug)
+        parser = ParserWrapper("a2l", "a2lFile", A2LListener, debug=debug)
         self._set_path_components(file_name)
         if not in_memory:
             if remove_existing:
@@ -98,16 +105,17 @@ class DB(object):
                     pass
             elif path.exists(self._dbfn):
                 raise OSError("file '{}' already exists.".format(self._dbfn))
-        data = open(self._a2lfn, encoding = encoding).read()
+        data = open(self._a2lfn, encoding=encoding).read()
         data, a2ml = cut_a2ml(data)
-        self.session = parser.parseFromString(data, dbname = self._dbfn)
+        self.session = parser.parseFromString(data, dbname=self._dbfn)
         return self.session
 
-    def export_a2l(self, file_name = sys.stdout, encoding = "ascii"):
-        """
-        """
-        namespace = dict(session = self.db.session, model = model)
-        data = doTemplateFromText(self.A2L_TEMPLATE, namespace, formatExceptions = False, encoding = encoding)
+    def export_a2l(self, file_name=sys.stdout, encoding="ascii"):
+        """"""
+        namespace = dict(session=self.db.session, model=model)
+        data = doTemplateFromText(
+            self.A2L_TEMPLATE, namespace, formatExceptions=False, encoding=encoding
+        )
         result = []
         for line in data.splitlines():
             line = line.rstrip()
@@ -115,21 +123,19 @@ class DB(object):
                 continue
             else:
                 result.append(line)
-        result = '\n'.join(result)
+        result = "\n".join(result)
         print(result)
-        #with io.open("{}.render".format(file_name), "w", encoding = encoding, newline = "\r\n") as outf:
+        # with io.open("{}.render".format(file_name), "w", encoding = encoding, newline = "\r\n") as outf:
         #    outf.write(res)
 
     def open_create(self, file_name):
-        """Open or create an A2LDB.
-        """
+        """Open or create an A2LDB."""
         self.in_memory = False
         self._set_path_components(file_name)
         if not path.exists(self._dbfn):
             return self.import_a2l(self._a2lfn)
         else:
             return self.open_existing(self._dbfn)
-
 
     def open_existing(self, file_name):
         """Open an existing `.a2ldb` database.
@@ -160,11 +166,12 @@ class DB(object):
             if res:
                 return self.session
             else:
-                raise InvalidA2LDatabase("Database seems to be corrupted. No meta-data found.")
+                raise InvalidA2LDatabase(
+                    "Database seems to be corrupted. No meta-data found."
+                )
 
     def _set_path_components(self, file_name):
-        """
-        """
+        """"""
         self._pth, self._base = path.split(file_name)
         fbase, ext = path.splitext(self._base)
         if self.in_memory:
