@@ -28,8 +28,7 @@ jobs:
       - name: Install dependencies
         run: |
           wget https://www.antlr.org/download/antlr-4.8-complete.jar
-          export CLASSPATH="./antlr-4.8-complete.jar:$CLASSPATH"
-          ls
+          export CLASSPATH=".:${pwd}/antlr-4.8-complete.jar:$CLASSPATH"
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           python setup.py install
@@ -42,5 +41,6 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with pytest
         run: |
+          export CLASSPATH=".:${pwd}/antlr-4.8-complete.jar:$CLASSPATH"
           pip install -r requirements.test.txt
           pytest
