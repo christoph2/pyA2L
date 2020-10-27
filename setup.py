@@ -15,7 +15,7 @@ from setuptools import find_packages
 
 
 def _parse_requirements(filepath):
-    with open(filepath) as text_io:
+    with filepath.open() as text_io:
         requirements = list(parse_requirements(text_io))
 
     return requirements
@@ -125,13 +125,13 @@ class CustomDevelop(setuptools.command.develop.develop):
         super().run()
 
 
-with open(ROOT_DIRPATH / "pya2l" / "version.py") as f:
+with ROOT_DIRPATH.joinpath("pya2l", "version.py").open() as f:
     for line in f:
         if line.startswith("__version__"):
             VERSION = line.split("=")[-1].strip().strip('"')
             break
 
-with open(ROOT_DIRPATH / "README.md") as fh:
+with ROOT_DIRPATH.joinpath("README.md").open() as fh:
     LONG_DESCRIPTION = fh.read()
 
 setup(
