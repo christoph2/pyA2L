@@ -5,7 +5,7 @@ import distutils.log
 import os
 import subprocess
 from distutils.core import setup
-from glob import glob
+from itertools import chain
 from pathlib import Path
 
 import setuptools.command.build_py
@@ -15,17 +15,17 @@ from setuptools import find_packages
 
 
 def _parse_requirements(filepath):
-    with filepath.open() as requirements_txt:
-        requirements = list(parse_requirements(requirements_txt))
+    with open(filepath) as text_io:
+        requirements = list(parse_requirements(text_io))
 
     return requirements
 
 
-BASE_REQUIREMENTS = _parse_requirements(Path(__file__).parent / "requirements.txt")
-SETUP_REQUIREMENTS = _parse_requirements(
-    Path(__file__).parent / "requirements.setup.txt"
-)
-TEST_REQUIREMENTS = _parse_requirements(Path(__file__).parent / "requirements.test.txt")
+ROOT_DIRPATH = Path(__file__).parent
+
+BASE_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.txt")
+SETUP_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.setup.txt")
+TEST_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.test.txt")
 ANTLR_VERSION = next(
     req.specs[0][1]
     for req in BASE_REQUIREMENTS
@@ -77,9 +77,9 @@ class AntlrAutogen(distutils.cmd.Command):
 
     def finalize_options(self):
         """Post-process options."""
-        a2lGrammar = os.path.join("pya2l", "a2l.g4")
-        a2llgGrammar = os.path.join("pya2l", "a2llg.g4")
-        amlGrammar = os.path.join("pya2l", "aml.g4")
+        a2lGrammar = str(ROOT_DIRPATH / "pya2l" / "a2l.g4")
+        a2llgGrammar = str(ROOT_DIRPATH / "pya2l" / "a2llg.g4")
+        amlGrammar = str(ROOT_DIRPATH / "pya2l" / "aml.g4")
         # distutils.cmd.Command should not have __init__().
         # pylint: disable=W0201
         self.arguments = [a2lGrammar, a2llgGrammar, amlGrammar, "-Dlanguage=Python3"]
@@ -98,14 +98,14 @@ class AntlrAutogen(distutils.cmd.Command):
 
 def clean():
     """Remove unneeded files."""
-    tokens = glob(os.path.join("pya2l", "*tokens"))
-    interp = glob(os.path.join("pya2l", "*interp"))
-    listener = [
-        glob(os.path.join("pya2l", i + "Listener.py"))[0]
-        for i in ["a2l", "aml"]  # No listener for lexer grammars (a2llg.g4).
-    ]
-    for unneeded in tokens + interp + listener:
-        os.remove(unneeded)
+    tokens = ROOT_DIRPATH.joinpath("pya2l").glob("*tokens")
+    interp = ROOT_DIRPATH.joinpath("pya2l").glob("*interp")
+    listener = (
+        list(ROOT_DIRPATH.joinpath("pya2l").glob(i + "Listener.py"))[0]
+        for i in ("a2l", "aml")  # No listener for lexer grammars (a2llg.g4).
+    )
+    for filepath in chain(tokens, interp, listener):
+        os.remove(filepath)
 
 
 # pylint: disable=R0901
@@ -125,13 +125,13 @@ class CustomDevelop(setuptools.command.develop.develop):
         super().run()
 
 
-with open(os.path.join("pya2l", "version.py"), "r") as f:
+with open(ROOT_DIRPATH / "pya2l" / "version.py") as f:
     for line in f:
         if line.startswith("__version__"):
             VERSION = line.split("=")[-1].strip().strip('"')
             break
 
-with open("README.md", "r") as fh:
+with open(ROOT_DIRPATH / "README.md") as fh:
     LONG_DESCRIPTION = fh.read()
 
 setup(
@@ -148,13 +148,12 @@ setup(
         "build_py": CustomBuildPy,
         "develop": CustomDevelop,
     },
-    packages=find_packages(),
-    install_requires=map(str, BASE_REQUIREMENTS),
-    setup_requires=map(str, SETUP_REQUIREMENTS),
-    tests_require=map(str, TEST_REQUIREMENTS),
-    package_data={
-        "templates": glob("cgen/templates/*.tmpl"),
-    },
+    packages=find_packages(where=str(ROOT_DIRPATH)),
+    package_dir={"pya2l": str(ROOT_DIRPATH / "pya2l")},
+    install_requires=list(map(str, BASE_REQUIREMENTS)),
+    setup_requires=list(map(str, SETUP_REQUIREMENTS)),
+    tests_require=list(map(str, TEST_REQUIREMENTS)),
+    package_data={"pya2l.cgen.templates": ["*.tmpl"]},
     test_suite="pya2l.tests",
     license="GPLv2",
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
