@@ -46,7 +46,7 @@ class InvalidA2LDatabase(Exception):
 class DB(object):
     """"""
 
-    A2L_TEMPLATE = pkgutil.get_data("pya2l", "cgen/templates/a2l.tmpl")
+    A2L_TEMPLATE = pkgutil.get_data("pya2l.cgen.templates", "a2l.tmpl")
 
     logger = Logger(__name__)
 
