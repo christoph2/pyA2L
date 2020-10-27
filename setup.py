@@ -105,7 +105,7 @@ def clean():
         for i in ("a2l", "aml")  # No listener for lexer grammars (a2llg.g4).
     )
     for filepath in chain(tokens, interp, listener):
-        os.remove(filepath)
+        os.remove(str(filepath))
 
 
 # pylint: disable=R0901
