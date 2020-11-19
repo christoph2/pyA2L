@@ -1624,7 +1624,7 @@ class Measurement(CachedBase):
         self.bitMask = (
             self.measurement.bit_mask.mask if self.measurement.bit_mask else None
         )
-        self.bitOperation = self._dissect_bit_operation(self.measurement.bit_operation)
+        self.bitOperation = self._dissect_bit_operation(self, self.measurement.bit_operation)
         self.byteOrder = (
             self.measurement.byte_order.byteOrder
             if self.measurement.byte_order
@@ -1753,7 +1753,7 @@ Measurement {{
     __repr__ = __str__
 
     @staticmethod
-    def _dissect_bit_operation(bit_op):
+    def _dissect_bit_operation(obj, bit_op):
         if bit_op is not None:
             result = {}
             if bit_op.left_shift is not None:
@@ -1763,9 +1763,9 @@ Measurement {{
                 result["direction"] = "R"
                 result["amount"] = bit_op.right_shift.bitcount
             result["sign_extend"] = False if bit_op.sign_extend is None else True
-        elif self.bitMask is not None:
+        elif obj.bitMask is not None:
             result["direction"] = "R"
-            result["amount"] = ffs(self.bitMask)
+            result["amount"] = ffs(obj.bitMask)
         else:
             result = None
         return result
