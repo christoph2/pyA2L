@@ -30,7 +30,7 @@ import collections
 import weakref
 
 import pya2l.model as model
-from pya2l.utils import align_as
+from pya2l.utils import align_as, ffs
 
 DB_CACHE_SIZE = 4096  # Completly arbitrary, could be configurable.
 
@@ -1763,6 +1763,9 @@ Measurement {{
                 result["direction"] = "R"
                 result["amount"] = bit_op.right_shift.bitcount
             result["sign_extend"] = False if bit_op.sign_extend is None else True
+        elif self.bitMask is not None:
+            result["direction"] = "R"
+            result["amount"] = ffs(self.bitMask)
         else:
             result = None
         return result

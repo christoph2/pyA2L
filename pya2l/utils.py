@@ -224,3 +224,7 @@ def padding(offset: int, boundary: int):
         Number of padding bytes.
     """
     return -offset & (boundary - 1)
+
+def ffs(v: int) -> int:
+    """Find first set bit (pure Python)."""
+    return (v & (-v)).bit_length() - 1
