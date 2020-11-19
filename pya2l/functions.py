@@ -231,7 +231,7 @@ class RatFunc:
 
     Parameters
     ----------
-    coeffs: object containing coefficients.
+    coeffs: dict containing coefficients.
         a, b, c, d, e, f - coefficients for the specified formula:
         f(x) = (axx + bx + c) / (dxx + ex + f)
 
@@ -246,7 +246,7 @@ class RatFunc:
     """
 
     def __init__(self, coeffs):
-        a, b, c, d, e, f = coeffs.a, coeffs.b, coeffs.c, coeffs.d, coeffs.e, coeffs.f
+        a, b, c, d, e, f = coeffs["a"], coeffs["b"], coeffs["c"], coeffs["d"], coeffs["e"], coeffs["f"]
         self.p = np.poly1d([a, b, c])
         self.q = np.poly1d([d, e, f])
         if self.p.order == 1 and self.q.order == 0:
@@ -300,7 +300,7 @@ class Linear:
 
     Parameters
     ----------
-    coeffs: object containing coefficients.
+    coeffs: dict containing coefficients.
         a, b - coefficients for the specified formula:
         coefficients for the specified formula:
         f(x) = ax + b
@@ -313,7 +313,7 @@ class Linear:
     """
 
     def __init__(self, coeffs):
-        a, b = coeffs.a, coeffs.b
+        a, b = coeffs["a"], coeffs["b"]
         self.p = np.poly1d([a, b])
 
     def int_to_physical(self, i):
@@ -633,12 +633,8 @@ class CompuMethod:
         if conversionType == "IDENTICAL":
             self.evaluator = Identical()
         elif conversionType == "FORM":
-            formula = compu_method.formula.f_x
-            formula_inv = (
-                compu_method.formula.formula_inv.g_x
-                if compu_method.formula.formula_inv
-                else None
-            )
+            formula = compu_method.formula["formula"]
+            formula_inv = compu_method.formula["formula_inv"]
             system_constants = []
             constants_text = session.query(model.SystemConstant).all()
             for cons in constants_text:
@@ -670,61 +666,56 @@ class CompuMethod:
                 )
             self.evaluator = RatFunc(coeffs)
         elif conversionType in ("TAB_INTP", "TAB_NOINTP"):
-            klass = InterpolatedTable if conversionType == "TAB_INTP" else LookupTable
-            table_name = compu_method.compu_tab_ref.conversionTable
-            table = (
-                session.query(model.CompuTab)
-                .filter(model.CompuTab.name == table_name)
-                .first()
-            )
-            if table is None:
-                raise exceptions.StructuralError(
-                    "'TAB_INTP' and 'TAB_NOINTP requires a conversation table."
-                )
-            pairs = [(p.inVal, p.outVal) for p in table.pairs]
-            default_numeric = (
-                table.default_value_numeric.display_value
-                if table.default_value_numeric
-                else None
-            )
-            default = (
-                table.default_value.display_string if table.default_value else None
-            )
-            if default_numeric and default:
-                raise exceptions.StructuralError(
-                    "Cannot use both DEFAULT_VALUE and DEFAULT_VALUE_NUMERIC."
-                )
-            default = default_numeric if default_numeric is not None else default
+            klass = InterpolatedTable if compu_method.tab["interpolation"] else LookupTable
+            pairs = zip(compu_method.tab["in_values"], compu_method.tab["out_values"])
+            default = compu_method.tab["default_value"]
             self.evaluator = klass(pairs, default)
         elif conversionType == "TAB_VERB":
-            table_name = compu_method.compu_tab_ref.conversionTable
-            table = (
-                session.query(model.CompuVtab)
-                .filter(model.CompuVtab.name == table_name)
-                .first()
-            )
-            if table is None:
-                table = (
-                    session.query(model.CompuVtabRange)
-                    .filter(model.CompuVtabRange.name == table_name)
-                    .first()
+            default = compu_method.tab_verb["default_value"]
+            if compu_method.tab_verb["ranges"]:
+                triples = zip(
+                    compu_method.tab_verb["lower_values"],
+                    compu_method.tab_verb["upper_values"],
+                    compu_method.tab_verb["text_values"]
                 )
-                if table is None:
-                    raise exceptions.StructuralError(
-                        "'TAB_VERB' requires a conversation table."
-                    )
-                triples = [(p.inValMin, p.inValMax, p.outVal) for p in table.triples]
-                default = (
-                    table.default_value.display_string if table.default_value else None
-                )
-                # TODO: datatype !?
                 self.evaluator = LookupTableWithRanges(triples, default)
             else:
-                pairs = [(p.inVal, p.outVal) for p in table.pairs]
-                default = (
-                    table.default_value.display_string if table.default_value else None
+                pairs = zip(
+                    compu_method.tab_verb["in_values"],
+                    compu_method.tab_verb["text_values"]
                 )
                 self.evaluator = LookupTable(pairs, default)
+
+##
+##            table_name = compu_method.compu_tab_ref.conversionTable
+##            table = (
+##                session.query(model.CompuVtab)
+##                .filter(model.CompuVtab.name == table_name)
+##                .first()
+##            )
+##            if table is None:
+##                table = (
+##                    session.query(model.CompuVtabRange)
+##                    .filter(model.CompuVtabRange.name == table_name)
+##                    .first()
+##                )
+##                if table is None:
+##                    raise exceptions.StructuralError(
+##                        "'TAB_VERB' requires a conversation table."
+##                    )
+##                triples = [(p.inValMin, p.inValMax, p.outVal) for p in table.triples]
+##                default = (
+##                    table.default_value.display_string if table.default_value else None
+##                )
+##                # TODO: datatype !?
+##                self.evaluator = LookupTableWithRanges(triples, default)
+##            else:
+##                pairs = [(p.inVal, p.outVal) for p in table.pairs]
+##                default = (
+##                    table.default_value.display_string if table.default_value else None
+##                )
+##                self.evaluator = LookupTable(pairs, default)
+##
         else:
             raise ValueError("Unknown conversation type '{}'.".format(conversionType))
 

@@ -2392,6 +2392,8 @@ class CompuMethod(CachedBase):
             .filter(model.CompuMethod.name == name)
             .first()
         )
+        if not self.compu_method:
+            return
         self.name = name
         self.longIdentifier = self.compu_method.longIdentifier
         self.conversionType = self.compu_method.conversionType
