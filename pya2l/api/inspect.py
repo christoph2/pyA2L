@@ -1754,8 +1754,8 @@ Measurement {{
 
     @staticmethod
     def _dissect_bit_operation(obj, bit_op):
+        result = {}
         if bit_op is not None:
-            result = {}
             if bit_op.left_shift is not None:
                 result["direction"] = "L"
                 result["amount"] = bit_op.left_shift.bitcount
