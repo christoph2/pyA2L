@@ -938,6 +938,7 @@ class Characteristic(CachedBase):
 
     @property
     def record_layout_components(self):
+        self._set_components()
         return self._record_layout_components
 
     @property
@@ -1016,6 +1017,7 @@ class Characteristic(CachedBase):
     @property
     def total_allocated_memory(self):
         """Total amount of statically allocated memory by Characteristic."""
+        self._set_components()
         return self.record_layout_components.sizeof
 
     @property
@@ -1282,6 +1284,7 @@ class AxisPts(CachedBase):
 
     @property
     def record_layout_components(self):
+        self._set_components()
         return self._record_layout_components
 
     @property
@@ -2244,8 +2247,6 @@ class RecordLayoutComponents:
 
     def _calculate_sizes_axis_pts(self):
         """"""
-        # total_mem_size = 0
-        # total_length = 0
         x_axis = self.axes("x")
         maxAxisPoints = self.parent.maxAxisPoints
         axis_pts = x_axis.get("axisPts")  # Exactly one axis per AXIS_PTS.

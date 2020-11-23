@@ -685,37 +685,6 @@ class CompuMethod:
                     compu_method.tab_verb["text_values"]
                 )
                 self.evaluator = LookupTable(pairs, default)
-
-##
-##            table_name = compu_method.compu_tab_ref.conversionTable
-##            table = (
-##                session.query(model.CompuVtab)
-##                .filter(model.CompuVtab.name == table_name)
-##                .first()
-##            )
-##            if table is None:
-##                table = (
-##                    session.query(model.CompuVtabRange)
-##                    .filter(model.CompuVtabRange.name == table_name)
-##                    .first()
-##                )
-##                if table is None:
-##                    raise exceptions.StructuralError(
-##                        "'TAB_VERB' requires a conversation table."
-##                    )
-##                triples = [(p.inValMin, p.inValMax, p.outVal) for p in table.triples]
-##                default = (
-##                    table.default_value.display_string if table.default_value else None
-##                )
-##                # TODO: datatype !?
-##                self.evaluator = LookupTableWithRanges(triples, default)
-##            else:
-##                pairs = [(p.inVal, p.outVal) for p in table.pairs]
-##                default = (
-##                    table.default_value.display_string if table.default_value else None
-##                )
-##                self.evaluator = LookupTable(pairs, default)
-##
         else:
             raise ValueError("Unknown conversation type '{}'.".format(conversionType))
 
