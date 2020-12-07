@@ -807,7 +807,7 @@ class Characteristic(CachedBase):
         self.longIdentifier = self.characteristic.longIdentifier
         self.type = self.characteristic.type
         self.address = self.characteristic.address
-        self.deposit = RecordLayout.get(
+        self.deposit = RecordLayout(
             session, self.characteristic.deposit, module_name
         )
         self.maxDiff = self.characteristic.maxDiff
@@ -938,7 +938,6 @@ class Characteristic(CachedBase):
 
     @property
     def record_layout_components(self):
-        self._set_components()
         return self._record_layout_components
 
     @property
@@ -1017,7 +1016,6 @@ class Characteristic(CachedBase):
     @property
     def total_allocated_memory(self):
         """Total amount of statically allocated memory by Characteristic."""
-        self._set_components()
         return self.record_layout_components.sizeof
 
     @property
@@ -1217,7 +1215,7 @@ class AxisPts(CachedBase):
         self.longIdentifier = self.axis.longIdentifier
         self.address = self.axis.address
         self.inputQuantity = self.axis.inputQuantity  # REF: Measurement
-        self.depositAttr = RecordLayout.get(session, self.axis.depositAttr)
+        self.depositAttr = RecordLayout(session, self.axis.depositAttr)
         self.deposit = self.axis.deposit.mode if self.axis.deposit else None
         self.maxDiff = self.axis.maxDiff
         self._conversionRef = self.axis.conversion
@@ -1273,7 +1271,6 @@ class AxisPts(CachedBase):
             "ripAddr",
             "srcAddr",
             "shiftOp",
-            "reserved",
         )
 
         items = {name: getattr(self.depositAttr, name) for name in ITEMS}
@@ -1284,7 +1281,6 @@ class AxisPts(CachedBase):
 
     @property
     def record_layout_components(self):
-        self._set_components()
         return self._record_layout_components
 
     @property
@@ -2353,6 +2349,13 @@ class RecordLayoutComponents:
 
     def __iter__(self):
         return iter(self._components_by_pos)
+
+    def update_component_by_pos(self, pos, component):
+        """Update / replace a record layout component."""
+        tmp_dict = collections.OrderedDict(self._components_by_pos)
+        if pos in tmp_dict:
+            tmp_dict[pos] = component
+            self._components_by_pos = list(tmp_dict.items())
 
     def __next__(self):
         for item in self._components_by_pos:
