@@ -45,8 +45,11 @@ jobs:
           pip install -r requirements.test.txt
           pytest
       - name: Publish package to PyPi
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-        uses: pypa/gh-action-pypi-publish@master
+        uses: casperdcl/deploy-pypi@v1
+        if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
         with:
-          user: ${{ secrets.PYPI_USER_NAME }}
-          password: ${{ secrets.PYPI_PASSWORD }}
+            password: ${{ secrets.PYPI_PASSWORD }}
+            user: ${{ secrets.PYPI_USER_NAME }}
+            build: true
+            skip_existing: true
+
