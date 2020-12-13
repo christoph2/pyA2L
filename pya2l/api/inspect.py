@@ -2586,7 +2586,7 @@ class Function(CachedBase):
         self.outMeasurements =[Measurement.get(session, m) for m in self.function.out_measurement.identifier]
         self.defCharacteristics = [get_characteristic_or_axispts(session, r) for r in self.function.def_characteristic.identifier]
         self.refCharacteristics = [get_characteristic_or_axispts(session, r) for r in self.function.ref_characteristic.identifier]
-        self.subFunctions = [Function.get(session, f) for g in self.function.sub_function.identifier]
+        self.subFunctions = [Function.get(session, g) for g in self.function.sub_function.identifier]
 
     def __str__(self):
         names = (
