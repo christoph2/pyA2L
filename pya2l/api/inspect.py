@@ -29,6 +29,8 @@ __copyright__ = """
 import collections
 import weakref
 
+from sqlalchemy import exists
+
 import pya2l.model as model
 from pya2l.utils import align_as, ffs
 
@@ -2523,6 +2525,184 @@ CompuMethod {{
     tab_verb           = {};
     statusStringRef    = {};
     refUnit            = {};
+}}""".format(
+            *names
+        )
+
+    __repr__ = __str__
+
+
+def get_characteristic_or_axispts(session, name):
+    found = session.query(exists().where(model.Characteristic.name == name)).scalar()
+    if found:
+        return Characteristic.get(session, name)
+    else:
+        found = session.query(exists().where(model.AxisPts.name == name)).scalar()
+        if found:
+            return AxisPts.get(session, name)
+        else:
+            return None
+
+
+class Function(CachedBase):
+    """
+
+    Parameters
+    ----------
+    session: Sqlite3 session object
+
+    Attributes
+    ----------
+    function:
+        Raw Sqlite3 database object.
+
+    name: str
+
+    longIdentifier: str
+        comment, description.
+    """
+    __slots__ = (
+        "function",
+        "name",
+        "longIdentifier",
+        "functionVersion",
+        "inMeasurements",
+        "locMeasurements",
+        "outMeasurements",
+        "defCharacteristics",
+        "refCharacteristics",
+        "subFunctions",
+    )
+    def __init__(self, session, name = None, module_name: str = None):
+        self.function = (
+            session.query(model.Function).filter(model.Function.name == name).first()
+        )
+        self.name = self.function.name
+        self.longIdentifier = self.function.longIdentifier
+        self.annotations = _annotations(session, self.function.annotation)
+        self.functionVersion = self.function.function_version.versionIdentifier if self.function.function_version else None
+        self.inMeasurements = [Measurement.get(session, m) for m in self.function.in_measurement.identifier]
+        self.locMeasurements = [Measurement.get(session, m) for m in self.function.loc_measurement.identifier]
+        self.outMeasurements =[Measurement.get(session, m) for m in self.function.out_measurement.identifier]
+        self.defCharacteristics = [get_characteristic_or_axispts(session, r) for r in self.function.def_characteristic.identifier]
+        self.refCharacteristics = [get_characteristic_or_axispts(session, r) for r in self.function.ref_characteristic.identifier]
+        self.subFunctions = [Function.get(session, f) for g in self.function.sub_function.identifier]
+
+    def __str__(self):
+        names = (
+            self.name,
+            self.longIdentifier,
+            self.annotations,
+            self.functionVersion,
+            self.inMeasurements,
+            self.locMeasurements,
+            self.outMeasurements,
+            self.defCharacteristics,
+            self.refCharacteristics,
+            self.subFunctions,
+        )
+        return """
+Function {{
+    name                = "{}";
+    longIdentifier      = "{}";
+    annotations         = {};
+    functionVersion     = {};
+    inMeasurements      = {};
+    locMeasurements     = {};
+    outMeasurements     = {};
+    defCharacteristics  = {};
+    refCharacteristics  = {};
+    subFunctions        = {};
+";
+}}""".format(
+            *names
+        )
+
+    __repr__ = __str__
+
+
+class Group(CachedBase):
+    """
+
+    Parameters
+    ----------
+    session: Sqlite3 session object
+
+    Attributes
+    ----------
+    group:
+        Raw Sqlite3 database object.
+
+    name: str
+
+    longIdentifier: str
+        comment, description.
+
+    annotations: list
+        s. :func:`_annotations`
+
+    root: bool
+        Group is toplevel.
+
+    characteristics:
+        Adjustable objects in this group.
+
+    measurements:
+        Measurement objects in this group.
+
+    functions:
+
+    subgroups:
+        Aggregated sub-groups.
+    """
+
+    __slots__ = (
+        "group",
+        "name",
+        "longIdentifier",
+        "annotations",
+        "root",
+        "characteristics",
+        "measurements",
+        "functions",
+        "subgroups",
+    )
+
+    def __init__(self, session, name = None, module_name: str = None):
+        self.group = (
+            session.query(model.Group).filter(model.Group.groupName == name).first()
+        )
+        self.name = self.group.groupName
+        self.longIdentifier = self.group.groupLongIdentifier
+        self.annotations = _annotations(session, self.group.annotation)
+        self.root = False if self.group.root is None else True
+        self.characteristics = [get_characteristic_or_axispts(session, r) for r in self.group.ref_characteristic.identifier] if self.group.ref_characteristic else []
+        self.measurements = [Measurement.get(session, m) for m in self.group.ref_measurement.identifier] if self.group.ref_measurement else []
+        self.functions = [Function.get(session, f) for f in self.group.function_list.name] if self.group.function_list else []
+        self.subgroups = [Group.get(session, g) for g in self.group.sub_group.identifier] if self.group.sub_group else []
+
+    def __str__(self):
+        names = (
+            self.name,
+            self.longIdentifier,
+            self.annotations,
+            self.root,
+            self.characteristics,
+            self.measurements,
+            self.functions,
+            self.subgroups,
+        )
+        return """
+Group {{
+    name            = "{}";
+    longIdentifier  = "{}";
+    annotations     = {};
+    root            = {};
+    characteristics = {};
+    measurements    = {};
+    functions       = {};
+    subgroups       = {};
+";
 }}""".format(
             *names
         )

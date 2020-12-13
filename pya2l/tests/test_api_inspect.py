@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 
 
+import pytest
+
 from pya2l.a2l_listener import A2LListener
-from pya2l.api.inspect import Measurement, ModCommon, ModPar
+from pya2l.api.inspect import Group, Measurement, ModCommon, ModPar
 from pya2l.parserlib import ParserWrapper
 
 
@@ -714,3 +716,143 @@ def test_mod_common_f7ull_featured():
         "QWORD": 8,
         "FLOAT32": 4,
     }
+
+@pytest.mark.skip
+def test_group():
+    parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin GROUP SOFTWARE_COMPONENTS
+            "assignment of the definitions to C files"
+            ROOT
+            /begin SUB_GROUP INJE
+                C6TD
+            /end SUB_GROUP
+        /end GROUP
+        /begin GROUP INJE
+            "Subsystem Injection"
+            /begin SUB_GROUP Injec1
+                Injec2
+            /end SUB_GROUP
+        /end GROUP
+        /begin GROUP Injec1
+            "Module filename Injec1"
+            /begin REF_CHARACTERISTIC
+                INJECTION_CURVE
+            /end REF_CHARACTERISTIC
+        /end GROUP
+        /begin GROUP Injec2
+            "Module filename Injec2"
+            /begin REF_CHARACTERISTIC
+                INJECTION_ADJUST
+            /end REF_CHARACTERISTIC
+            /begin REF_MEASUREMENT
+                GAS_INPUT
+                WHEEL_SPEED
+            /end REF_MEASUREMENT
+        /end GROUP
+        /begin GROUP C6TD
+            "Shift Point Control"
+            /begin SUB_GROUP c6tdvder
+                c6tdertf
+            /end SUB_GROUP
+        /end GROUP
+        /begin GROUP c6tdvder
+            "Module filename c6tdvder"
+            /begin REF_CHARACTERISTIC
+                SHIFT23_CURVE
+            /end REF_CHARACTERISTIC
+            /begin REF_MEASUREMENT
+                LOOP_COUN2
+                NO_GEAR
+            /end REF_MEASUREMENT
+        /end GROUP
+        /begin GROUP c6tderft
+            "Module filename c6tderft"
+            /begin REF_CHARACTERISTIC
+                LUP23_CURVE
+            /end REF_CHARACTERISTIC
+            /begin REF_MEASUREMENT
+                TRANSMISSION_SP
+                ENGINE_SPEED
+            /end REF_MEASUREMENT
+        /end GROUP
+        /begin GROUP CALIBRATION_COMPONENTS
+            "assignment of the definitions to
+            calibration components"
+            ROOT
+            /begin SUB_GROUP
+                Winter_Test
+                Summer_Test
+            /end SUB_GROUP
+        /end GROUP
+        /begin GROUP CALIBRATION_COMPONENTS_L4
+            "L4-PCM 2002 cals"
+            ROOT
+            /begin SUB_GROUP LUFT
+                CLOSED_LOOP
+            /end SUB_GROUP
+        /end GROUP
+        /begin GROUP LUFT
+        "Cals in LUFT Subsystem"
+            /begin REF_CHARACTERISTIC
+                KfLUFT_n_EngSpdThrsh
+                KtLUFT_ScaledVE
+                KaLUFT_AirPerCylCoeff
+            /end REF_CHARACTERISTIC
+        /end GROUP
+        /begin GROUP CLOSED_LOOP
+        "Cals in FCLS, FCLP & FCLL Subsystem"
+            /begin REF_CHARACTERISTIC
+                KaFCLP_U_O2LeanThrsh
+                KfFCLP_t_O2AgainstMax
+        /end REF_CHARACTERISTIC
+        /end GROUP
+        /begin GROUP Winter_Test
+            "Flash this in winter time"
+            /begin REF_CHARACTERISTIC
+                GASOLINE_CURVE
+            /end REF_CHARACTERISTIC
+        /end GROUP
+        /begin GROUP Summer_Test
+            "Flash that in summer time"
+            /begin REF_CHARACTERISTIC
+                SUPER_CURVE
+            /end REF_CHARACTERISTIC
+        /end GROUP
+        /begin GROUP SOFTWARE_COMPONENTS
+            "L4-PCM 2002 C modules"
+            ROOT
+            /begin SUB_GROUP
+                luftkmgr.c
+                fclpkout.c
+                viosmeng.c
+            /end SUB_GROUP
+        /end GROUP
+        /begin GROUP luftkmgr.c
+        "Objects in luftkmgr.c"
+            /begin REF_CHARACTERISTIC
+                KtLUFT_ScaledVE
+            /end REF_CHARACTERISTIC
+        /end GROUP
+        /begin GROUP fclpkout.c
+            "Objects in fclpkout.c"
+            /begin REF_CHARACTERISTIC
+                KaFCLP_U_O2LeanThrsh
+                KfFCLP_t_O2AgainstMax
+            /end REF_CHARACTERISTIC
+        /end GROUP
+        /begin GROUP viosmeng.c
+            "Objects in viosmeng.c"
+            /begin REF_CHARACTERISTIC
+                VfVIOS_n_EngSpdLORES
+                VfVIOS_p_AmbientAirPres
+            /end REF_CHARACTERISTIC
+        /end GROUP
+    /end MODULE
+    """
+    session = parser.parseFromString(DATA)
+    gr = Group.get(session, "CALIBRATION_COMPONENTS")
+    gr = Group.get(session, "CALIBRATION_COMPONENTS_L4")
+    gr = Group.get(session, "SOFTWARE_COMPONENTS")
+    print(gr)
