@@ -2681,6 +2681,26 @@ class Group(CachedBase):
         self.functions = [Function.get(session, f) for f in self.group.function_list.name] if self.group.function_list else []
         self.subgroups = [Group.get(session, g) for g in self.group.sub_group.identifier] if self.group.sub_group else []
 
+    @classmethod
+    def get_root_groups(klass, session, ordered = False):
+        """Fetch all groups marked as root/toplevel.
+
+        Parameters
+        ----------
+        session: Sqlite3 session object
+
+        ordered: bool
+            If True, order by group-name.
+
+        """
+        result = []
+        query = session.query(model.Group).filter(model.Group.root != None)
+        if ordered:
+            query = query.order_by(model.Group.groupName)
+        for group in query.all():
+            result.append(Group.get(session, group.groupName))
+        return result
+
     def __str__(self):
         names = (
             self.name,
