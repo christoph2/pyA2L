@@ -1975,10 +1975,9 @@ class RecordLayout(CachedBase):
     @staticmethod
     def _dissect_fix_no_axis_pts(axis):
         if axis is not None:
-            result = {}
-            result["numberOfAxisPoints"] = axis.numberOfAxisPoints
+            result = axis.numberOfAxisPoints
         else:
-            result = {}
+            result = None
         return result
 
     @staticmethod
@@ -2309,11 +2308,24 @@ class RecordLayoutComponents:
         if axis is None:
             result = self._axes.items()
         else:
-            result = self._axes[axis]
+            result = self._axes[self._get_axis_name(axis)]
         return result
 
     def axis_pts(self, axis):
-        return self._axes[axis].get("axisPts")
+        return self._axes[self._get_axis_name(axis)].get("axisPts")
+
+    def _get_axis_name(self, axis):
+        """Get axis name"""
+        AXES = ("x", "y", "z", "4", "5")
+        if isinstance(axis, int):
+            return AXES[axis]
+        elif isinstance(axis, str):
+            if not axis in AXES:
+                raise ValueError("Parameter axis must be [{}].".format(' | '.join(AXES)))
+            return axis
+        else:
+            raise TypeError("Parameter axis must be of type int or str.")
+
 
     @property
     def fncValues(self):
@@ -2581,12 +2593,12 @@ class Function(CachedBase):
         self.longIdentifier = self.function.longIdentifier
         self.annotations = _annotations(session, self.function.annotation)
         self.functionVersion = self.function.function_version.versionIdentifier if self.function.function_version else None
-        self.inMeasurements = [Measurement.get(session, m) for m in self.function.in_measurement.identifier]
-        self.locMeasurements = [Measurement.get(session, m) for m in self.function.loc_measurement.identifier]
-        self.outMeasurements =[Measurement.get(session, m) for m in self.function.out_measurement.identifier]
-        self.defCharacteristics = [get_characteristic_or_axispts(session, r) for r in self.function.def_characteristic.identifier]
-        self.refCharacteristics = [get_characteristic_or_axispts(session, r) for r in self.function.ref_characteristic.identifier]
-        self.subFunctions = [Function.get(session, g) for g in self.function.sub_function.identifier]
+        self.inMeasurements = [Measurement.get(session, m) for m in self.function.in_measurement.identifier] if self.function.in_measurement else []
+        self.locMeasurements = [Measurement.get(session, m) for m in self.function.loc_measurement.identifier] if self.function.loc_measurement else []
+        self.outMeasurements =[Measurement.get(session, m) for m in self.function.out_measurement.identifier] if self.function.out_measurement else []
+        self.defCharacteristics = [get_characteristic_or_axispts(session, r) for r in self.function.def_characteristic.identifier] if self.function.def_characteristic else []
+        self.refCharacteristics = [get_characteristic_or_axispts(session, r) for r in self.function.ref_characteristic.identifier] if self.function.ref_characteristic else []
+        self.subFunctions = [Function.get(session, g) for g in self.function.sub_function.identifier] if self.function.sub_function else []
 
     def __str__(self):
         names = (
