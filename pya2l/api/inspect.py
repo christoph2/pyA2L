@@ -2574,18 +2574,20 @@ class Function(CachedBase):
         comment, description.
     """
     __slots__ = (
+        "session",
         "function",
         "name",
         "longIdentifier",
         "functionVersion",
-        "inMeasurements",
-        "locMeasurements",
-        "outMeasurements",
-        "defCharacteristics",
-        "refCharacteristics",
-        "subFunctions",
+        "_inMeasurements",
+        "_locMeasurements",
+        "_outMeasurements",
+        "_defCharacteristics",
+        "_refCharacteristics",
+        "_subFunctions",
     )
     def __init__(self, session, name = None, module_name: str = None):
+        self.session = session
         self.function = (
             session.query(model.Function).filter(model.Function.name == name).first()
         )
@@ -2593,12 +2595,48 @@ class Function(CachedBase):
         self.longIdentifier = self.function.longIdentifier
         self.annotations = _annotations(session, self.function.annotation)
         self.functionVersion = self.function.function_version.versionIdentifier if self.function.function_version else None
-        self.inMeasurements = [Measurement.get(session, m) for m in self.function.in_measurement.identifier] if self.function.in_measurement else []
-        self.locMeasurements = [Measurement.get(session, m) for m in self.function.loc_measurement.identifier] if self.function.loc_measurement else []
-        self.outMeasurements =[Measurement.get(session, m) for m in self.function.out_measurement.identifier] if self.function.out_measurement else []
-        self.defCharacteristics = [get_characteristic_or_axispts(session, r) for r in self.function.def_characteristic.identifier] if self.function.def_characteristic else []
-        self.refCharacteristics = [get_characteristic_or_axispts(session, r) for r in self.function.ref_characteristic.identifier] if self.function.ref_characteristic else []
-        self.subFunctions = [Function.get(session, g) for g in self.function.sub_function.identifier] if self.function.sub_function else []
+        self._inMeasurements = None
+        self._locMeasurements = None
+        self._outMeasurements = None
+        self._defCharacteristics = None
+        self._refCharacteristics = None
+        self._subFunctions = None
+
+    @property
+    def inMeasurements(self):
+        if self._inMeasurements is None:
+            self._inMeasurements = [Measurement.get(self.session, m) for m in self.function.in_measurement.identifier] if self.function.in_measurement else []
+        return self._inMeasurements
+
+    @property
+    def locMeasurements(self):
+        if self._locMeasurements is None:
+            self._locMeasurements = [Measurement.get(self.session, m) for m in self.function.loc_measurement.identifier] if self.function.loc_measurement else []
+        return self._locMeasurements
+
+    @property
+    def outMeasurements(self):
+        if self._outMeasurements is None:
+            self._outMeasurements = [Measurement.get(self.session, m) for m in self.function.out_measurement.identifier] if self.function.out_measurement else []
+        return self._outMeasurements
+
+    @property
+    def defCharacteristics(self):
+        if self._defCharacteristics is None:
+            self._defCharacteristics = [get_characteristic_or_axispts(self.session, r) for r in self.function.def_characteristic.identifier] if self.function.def_characteristic else []
+        return self._defCharacteristics
+
+    @property
+    def refCharacteristics(self):
+        if self._refCharacteristics is None:
+            self._refCharacteristics = [get_characteristic_or_axispts(self.session, r) for r in self.function.ref_characteristic.identifier] if self.function.ref_characteristic else []
+        return self._refCharacteristics
+
+    @property
+    def subFunctions(self):
+        if self._subFunctions is None:
+            self._subFunctions = [Function.get(self.session, g) for g in self.function.sub_function.identifier] if self.function.sub_function else []
+        return self._subFunctions
 
     def __str__(self):
         names = (
@@ -2669,18 +2707,20 @@ class Group(CachedBase):
     """
 
     __slots__ = (
+        "session",
         "group",
         "name",
         "longIdentifier",
         "annotations",
         "root",
-        "characteristics",
-        "measurements",
-        "functions",
-        "subgroups",
+        "_characteristics",
+        "_measurements",
+        "_functions",
+        "_subgroups",
     )
 
     def __init__(self, session, name = None, module_name: str = None):
+        self.session = session
         self.group = (
             session.query(model.Group).filter(model.Group.groupName == name).first()
         )
@@ -2688,10 +2728,34 @@ class Group(CachedBase):
         self.longIdentifier = self.group.groupLongIdentifier
         self.annotations = _annotations(session, self.group.annotation)
         self.root = False if self.group.root is None else True
-        self.characteristics = [get_characteristic_or_axispts(session, r) for r in self.group.ref_characteristic.identifier] if self.group.ref_characteristic else []
-        self.measurements = [Measurement.get(session, m) for m in self.group.ref_measurement.identifier] if self.group.ref_measurement else []
-        self.functions = [Function.get(session, f) for f in self.group.function_list.name] if self.group.function_list else []
-        self.subgroups = [Group.get(session, g) for g in self.group.sub_group.identifier] if self.group.sub_group else []
+        self._characteristics = None
+        self._measurements = None
+        self._functions = None
+        self._subgroups = None
+
+    @property
+    def characteristics(self):
+        if self._characteristics is None:
+            self._characteristics = [get_characteristic_or_axispts(self.session, r) for r in self.group.ref_characteristic.identifier] if self.group.ref_characteristic else []
+        return self._characteristics
+
+    @property
+    def measurements(self):
+        if self._measurements is None:
+           self. _measurements = [Measurement.get(self.session, m) for m in self.group.ref_measurement.identifier] if self.group.ref_measurement else []
+        return self. _measurements
+
+    @property
+    def functions(self):
+        if self._functions:
+            self._functions = [Function.get(self.session, f) for f in self.group.function_list.name] if self.group.function_list else []
+        return self._functions
+
+    @property
+    def subgroups(self):
+        if self._subgroups is None:
+            self._subgroups = [Group.get(self.session, g) for g in self.group.sub_group.identifier] if self.group.sub_group else []
+        return self._subgroups
 
     @classmethod
     def get_root_groups(klass, session, ordered = False):
