@@ -2747,7 +2747,7 @@ class Group(CachedBase):
 
     @property
     def functions(self):
-        if self._functions:
+        if self._functions is None:
             self._functions = [Function.get(self.session, f) for f in self.group.function_list.name] if self.group.function_list else []
         return self._functions
 
