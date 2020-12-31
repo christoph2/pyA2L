@@ -29,7 +29,7 @@ __copyright__ = """
 import collections
 import weakref
 
-from sqlalchemy import exists
+from sqlalchemy import exists, not_
 
 import pya2l.model as model
 from pya2l.utils import align_as, ffs
@@ -2637,6 +2637,38 @@ class Function(CachedBase):
         if self._subFunctions is None:
             self._subFunctions = [Function.get(self.session, g) for g in self.function.sub_function.identifier] if self.function.sub_function else []
         return self._subFunctions
+
+    @classmethod
+    def get_root_functions(klass, session, ordered = False):
+        """Fetch all toplevel Functions, i.e. Functions not referenced by other constructs.
+
+        Parameters
+        ----------
+        session: Sqlite3 session object
+
+        ordered: bool
+            If True, order by function-name.
+
+        """
+        excluded_funcs = set()
+        sfs = [f.sub_function for f in session.query(model.Function).all() if f.sub_function]
+        for s in sfs:
+            names = s.identifier
+            if names:
+                excluded_funcs.update(names)
+        sgs = [g.function_list for g in session.query(model.Group).all() if g.function_list]
+        for s in sgs:
+            names = s.name
+            if names:
+                excluded_funcs.update(names)
+        func_names = [f[0] for f in session.query(model.Function.name).\
+            filter(not_(model.Function.name.in_(excluded_funcs))).all()]
+        if ordered:
+            funcs = sorted(func_names)
+        result = []
+        for func_name in func_names:
+            result.append(Function.get(session, func_name))
+        return result
 
     def __str__(self):
         names = (
