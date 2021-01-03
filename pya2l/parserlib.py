@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2020 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2021 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -93,6 +93,7 @@ class ParserWrapper:
             walker = antlr4.ParseTreeWalker()
             result = walker.walk(listener, tree)
         if self.useDatabase:
+            self.db.create_indexes()
             self.db.session.commit()
             return self.db.session
         else:
