@@ -1790,7 +1790,7 @@ class AxisPts(Base, HasAnnotations, HasByteOrders, HasCalibrationAccess, HasDepo
 
     __tablename__ = "axis_pts"
 
-    name = StdIdent()
+    name = StdIdent(index = True)
 
     longIdentifier = StdString()
 
@@ -1855,7 +1855,7 @@ class Characteristic(Base, HasAnnotations, HasBitMasks, HasByteOrders, HasCalibr
 
     __tablename__ = "characteristic"
 
-    name = StdIdent()
+    name = StdIdent(index = True)
 
     longIdentifier = StdString()
 
@@ -2291,7 +2291,7 @@ class CompuMethod(Base, HasRefUnits):
 
     __tablename__ = "compu_method"
 
-    name = StdIdent()
+    name = StdIdent(index = True)
 
     longIdentifier = StdString()
 
@@ -2500,7 +2500,7 @@ class CompuTab(Base, HasDefaultValues):
 
     __tablename__ = "compu_tab"
 
-    name = StdIdent()
+    name = StdIdent(index = True)
 
     longIdentifier = StdString()
 
@@ -2562,7 +2562,7 @@ class CompuVtab(Base, HasDefaultValues):
 
     __tablename__ = "compu_vtab"
 
-    name = StdIdent()
+    name = StdIdent(index = True)
 
     longIdentifier = StdString()
 
@@ -2598,7 +2598,7 @@ class CompuVtabRange(Base, HasDefaultValues):
 
     __tablename__ = "compu_vtab_range"
 
-    name = StdIdent()
+    name = StdIdent(index = True)
 
     longIdentifier = StdString()
 
@@ -2631,7 +2631,7 @@ class Frame(Base, HasIfDatas):
 
     __tablename__ = "frame"
 
-    name = StdIdent()
+    name = StdIdent(index = True)
 
     longIdentifier = StdString()
 
@@ -2693,7 +2693,7 @@ class Function(Base, HasAnnotations, HasIfDatas, HasRefCharacteristics):
 
     __tablename__ = "function"
 
-    name = StdIdent()
+    name = StdIdent(index = True)
 
     longIdentifier = StdString()
 
@@ -2901,7 +2901,7 @@ class Group(Base, HasAnnotations, HasFunctionLists, HasIfDatas, HasRefCharacteri
 
     __tablename__ = "group"
 
-    groupName = StdIdent()
+    groupName = StdIdent(index = True)
 
     groupLongIdentifier = StdString()
 
@@ -3013,7 +3013,7 @@ class Measurement(Base, HasAnnotations, HasBitMasks, HasByteOrders, HasDiscretes
 
     __tablename__ = "measurement"
 
-    name = StdIdent()
+    name = StdIdent(index = True)
 
     longIdentifier = StdString()
 
@@ -3886,7 +3886,7 @@ class SystemConstant(Base):
 
     __tablename__ = "system_constant"
 
-    name = StdString()
+    name = StdString(index = True)
 
     value = StdString()
 
@@ -3929,7 +3929,7 @@ class RecordLayout(Base, HasAlignmentBytes, HasAlignmentFloat32Ieees, HasAlignme
 
     __tablename__ = "record_layout"
 
-    name = StdIdent()
+    name = StdIdent(index = True)
 
     __required_parameters__ = (
         Parameter("name", Ident, False),
@@ -5814,7 +5814,7 @@ class VarCharacteristic(Base):
 
     __tablename__ = "var_characteristic"
 
-    name = StdIdent()
+    name = StdIdent(index = True)
 
     _criterionName = relationship(
         "VarCharacteristicIdentifiers",
@@ -5874,7 +5874,7 @@ class VarCriterion(Base):
 
     __tablename__ = "var_criterion"
 
-    name = StdIdent()
+    name = StdIdent(index = True)
 
     longIdentifier = StdString()
 
@@ -5918,7 +5918,7 @@ class VarMeasurement(Base):
 
     __tablename__ = "var_measurement"
 
-    name = StdIdent()
+    name = StdIdent(index = True)
 
     __required_parameters__ = (
         Parameter("name", Ident, False),
@@ -6072,56 +6072,6 @@ class A2LDatabase(object):
 
     def rollback_transaction(self):
         """"""
-
-    def create_indexes(self):
-        """"""
-        axispts_name_index = Index('axispts_name_index', AxisPts.name)
-        axispts_name_index.create(bind = self.engine)
-
-        characteristic_name_index = Index('characteristic_name_index', Characteristic.name)
-        characteristic_name_index.create(bind = self.engine)
-
-        compumethod_name_index = Index('compumethod_name_index', CompuMethod.name)
-        compumethod_name_index.create(bind = self.engine)
-
-        computab_name_index = Index('computab_name_index', CompuTab.name)
-        computab_name_index.create(bind = self.engine)
-
-        compuvtab_name_index = Index('compuvtab_name_index', CompuVtab.name)
-        compuvtab_name_index.create(bind = self.engine)
-
-        compuvtabrange_name_index = Index('compuvtabrange_name_index', CompuVtabRange.name)
-        compuvtabrange_name_index.create(bind = self.engine)
-
-        frame_name_index = Index('frame_name_index', Frame.name)
-        frame_name_index.create(bind = self.engine)
-
-        function_name_index = Index('function_name_index', Function.name)
-        function_name_index.create(bind = self.engine)
-
-        group_groupname_index = Index('group_groupname_index', Group.groupName)
-        group_groupname_index.create(bind = self.engine)
-
-        measurement_name_index = Index('measurement_name_index', Measurement.name)
-        measurement_name_index.create(bind = self.engine)
-
-        systemconstant_name_index = Index('systemconstant_name_index', SystemConstant.name)
-        systemconstant_name_index.create(bind = self.engine)
-
-        recordlayout_name_index = Index('recordlayout_name_index', RecordLayout.name)
-        recordlayout_name_index.create(bind = self.engine)
-
-        unit_name_index = Index('unit_name_index', Unit.name)
-        unit_name_index.create(bind = self.engine)
-
-        varcharacteristic_name_index = Index('varcharacteristic_name_index', VarCharacteristic.name)
-        varcharacteristic_name_index.create(bind = self.engine)
-
-        varcriterion_name_index = Index('varcriterion_name_index', VarCriterion.name)
-        varcriterion_name_index.create(bind = self.engine)
-
-        varmeasurement_name_index = Index('varmeasurement_name_index', VarMeasurement.name)
-        varmeasurement_name_index.create(bind = self.engine)
 
 
 KEYWORD_MAP = {

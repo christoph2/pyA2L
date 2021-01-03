@@ -93,7 +93,6 @@ class ParserWrapper:
             walker = antlr4.ParseTreeWalker()
             result = walker.walk(listener, tree)
         if self.useDatabase:
-            self.db.create_indexes()
             self.db.session.commit()
             return self.db.session
         else:
