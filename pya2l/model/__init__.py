@@ -277,23 +277,25 @@ def StdULong(default = 0, primary_key = False, unique = False):
     )
 
 
-def StdString(default = 0, primary_key = False, unique = False):
+def StdString(default = 0, primary_key = False, unique = False, index = False):
     return Column(
         types.VARCHAR(256),
         default = default,
         nullable = False,
         primary_key = primary_key,
         unique = unique,
+        index = index,
     )
 
 
-def StdIdent(default = 0, primary_key = False, unique = False):
+def StdIdent(default = 0, primary_key = False, unique = False, index = False):
     return Column(
         types.VARCHAR(1025),
         default = default,
         nullable = False,
         primary_key = primary_key,
         unique = unique,
+        index = index,
     )
 
 
@@ -302,7 +304,7 @@ class DefCharacteristicIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "def_characteristic_identifiers"
 
     dci_rid = Column(types.Integer, ForeignKey("def_characteristic.rid"))
-    identifier = StdIdent()
+    identifier = StdIdent(index = True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -314,7 +316,7 @@ class OutMeasurementIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "out_measurement_identifiers"
 
     om_rid = Column(types.Integer, ForeignKey("out_measurement.rid"))
-    identifier = StdIdent()
+    identifier = StdIdent(index = True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -326,7 +328,7 @@ class InMeasurementIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "in_measurement_identifiers"
 
     im_rid = Column(types.Integer, ForeignKey("in_measurement.rid"))
-    identifier = StdIdent()
+    identifier = StdIdent(index = True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -338,7 +340,7 @@ class LocMeasurementIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "loc_measurement_identifiers"
 
     lm_rid = Column(types.Integer, ForeignKey("loc_measurement.rid"))
-    identifier = StdIdent()
+    identifier = StdIdent(index = True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -350,7 +352,7 @@ class RefMeasurementIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "ref_measurement_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("ref_measurement.rid"))
-    identifier = StdIdent()
+    identifier = StdIdent(index = True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -362,7 +364,7 @@ class FrameMeasurementIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "frame_measurement_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("frame_measurement.rid"))
-    identifier = StdIdent()
+    identifier = StdIdent(index = True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -374,7 +376,7 @@ class SubGroupIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "sub_group_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("sub_group.rid"))
-    identifier = StdIdent()
+    identifier = StdIdent(index = True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -386,7 +388,7 @@ class SubFunctionIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "sub_function_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("sub_function.rid"))
-    identifier = StdIdent()
+    identifier = StdIdent(index = True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -398,7 +400,7 @@ class RefGroupIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "ref_group_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("ref_group.rid"))
-    identifier = StdIdent()
+    identifier = StdIdent(index = True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -410,7 +412,7 @@ class MapListIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "map_list_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("map_list.rid"))
-    name = StdIdent()
+    name = StdIdent(index = True)
     position = StdLong()
 
     def __init__(self, name):
@@ -422,7 +424,7 @@ class VarCharacteristicIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "var_characteristic_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("var_characteristic.rid"))
-    criterionName = StdIdent()
+    criterionName = StdIdent(index = True)
     position = StdLong()
 
     def __init__(self, criterionName):
@@ -434,7 +436,7 @@ class VarCriterionIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "var_criterion_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("var_criterion.rid"))
-    value = StdIdent()
+    value = StdIdent(index = True)
     position = StdLong()
 
     def __init__(self, value):
@@ -446,7 +448,7 @@ class FunctionListIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "function_list_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("function_list.rid"))
-    name = StdIdent()
+    name = StdIdent(index = True)
     position = StdLong()
 
     def __init__(self, name):
@@ -458,7 +460,7 @@ class RefCharacteristicIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "ref_characteristic_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("ref_characteristic.rid"))
-    identifier = StdIdent()
+    identifier = StdIdent(index = True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -470,7 +472,7 @@ class DependentCharacteristicIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "dependent_characteristic_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("dependent_characteristic.rid"))
-    characteristic = StdIdent()
+    characteristic = StdIdent(index = True)
     position = StdLong()
 
     def __init__(self, characteristic):
@@ -482,7 +484,7 @@ class VirtualCharacteristicIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "virtual_characteristic_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("virtual_characteristic.rid"))
-    characteristic = StdIdent()
+    characteristic = StdIdent(index = True)
     position = StdLong()
 
     def __init__(self, characteristic):
@@ -6073,9 +6075,6 @@ class A2LDatabase(object):
 
     def create_indexes(self):
         """"""
-        #refcharacteristic_identifier_index = Index('refcharacteristic_identifier_index', RefCharacteristic.identifier)
-        #refcharacteristic_identifier_index.create(bind = self.engine)
-
         axispts_name_index = Index('axispts_name_index', AxisPts.name)
         axispts_name_index.create(bind = self.engine)
 
@@ -6100,29 +6099,8 @@ class A2LDatabase(object):
         function_name_index = Index('function_name_index', Function.name)
         function_name_index.create(bind = self.engine)
 
-        #defcharacteristic_identifier_index = Index('defcharacteristic_identifier_index', DefCharacteristic.identifier)
-        #defcharacteristic_identifier_index.create(bind = self.engine)
-
-        #inmeasurement_identifier_index = Index('inmeasurement_identifier_index', InMeasurement.identifier)
-        #inmeasurement_identifier_index.create(bind = self.engine)
-
-        #locmeasurement_identifier_index = Index('locmeasurement_identifier_index', LocMeasurement.identifier)
-        #locmeasurement_identifier_index.create(bind = self.engine)
-
-        #outmeasurement_identifier_index = Index('outmeasurement_identifier_index', OutMeasurement.identifier)
-        #outmeasurement_identifier_index.create(bind = self.engine)
-
-        #subfunction_identifier_index = Index('subfunction_identifier_index', SubFunction.identifier)
-        #subfunction_identifier_index.create(bind = self.engine)
-
         group_groupname_index = Index('group_groupname_index', Group.groupName)
         group_groupname_index.create(bind = self.engine)
-
-        #refmeasurement_identifier_index = Index('refmeasurement_identifier_index', RefMeasurement.identifier)
-        #refmeasurement_identifier_index.create(bind = self.engine)
-
-        #subgroup_identifier_index = Index('subgroup_identifier_index', SubGroup.identifier)
-        #subgroup_identifier_index.create(bind = self.engine)
 
         measurement_name_index = Index('measurement_name_index', Measurement.name)
         measurement_name_index.create(bind = self.engine)
