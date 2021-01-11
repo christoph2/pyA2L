@@ -341,7 +341,7 @@ project = session.query(model.Project).first()
                             %if dependent_characteristic:
                     /begin DEPENDENT_CHARACTERISTIC
                         "${dependent_characteristic.formula}"  /* formula */
-                        ${" ".join([str(x) for x in dependent_characteristic.characteristic.name ])}
+                        ${" ".join([str(x) for x in dependent_characteristic.characteristic_id ])}
                     /end DEPENDENT_CHARACTERISTIC
                     %endif
                     <% discrete = entry3.discrete %>
@@ -440,7 +440,7 @@ project = session.query(model.Project).first()
                             %if virtual_characteristic:
                     /begin VIRTUAL_CHARACTERISTIC
                         "${virtual_characteristic.formula}"  /* formula */
-                        ${" ".join([str(x) for x in virtual_characteristic.characteristic.name ])}
+                        ${" ".join([str(x) for x in virtual_characteristic.characteristic_id ])}
                     /end VIRTUAL_CHARACTERISTIC
                     %endif
                 /end CHARACTERISTIC
