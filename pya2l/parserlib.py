@@ -94,7 +94,7 @@ class ParserWrapper:
             result = walker.walk(listener, tree)
         if self.useDatabase:
             self.db.session.commit()
-            return self.db.session
+            return self.db
         else:
             return listener
 

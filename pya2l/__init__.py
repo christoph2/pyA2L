@@ -107,7 +107,8 @@ class DB(object):
                 raise OSError("file '{}' already exists.".format(self._dbfn))
         data = open(self._a2lfn, encoding=encoding).read()
         data, a2ml = cut_a2ml(data)
-        self.session = parser.parseFromString(data, dbname=self._dbfn)
+        self.db = parser.parseFromString(data, dbname=self._dbfn)
+        self.session = self.db.session
         return self.session
 
     def export_a2l(self, file_name=sys.stdout, encoding="ascii"):
