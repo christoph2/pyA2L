@@ -23,8 +23,8 @@ def test_measurement_basic():
         8400.0 /* upper limit */
     /end MEASUREMENT
     """
-    session = parser.parseFromString(DATA)
-    meas = Measurement(session, "N")
+    db = parser.parseFromString(DATA)
+    meas = Measurement(db.session, "N")
     assert meas.name == "N"
     assert meas.longIdentifier == "Engine speed"
     assert meas.datatype == "UWORD"
@@ -118,8 +118,8 @@ def test_measurement_full_featured():
     /end MODULE
     """
 
-    session = parser.parseFromString(DATA)
-    meas = Measurement(session, "N")
+    db = parser.parseFromString(DATA)
+    meas = Measurement(db.session, "N")
     assert meas.name == "N"
     assert meas.longIdentifier == "Engine speed"
     assert meas.datatype == "UWORD"
@@ -181,8 +181,8 @@ def test_measurement_no_compu_method():
         /end MEASUREMENT
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    meas = Measurement(session, "N")
+    db = parser.parseFromString(DATA)
+    meas = Measurement(db.session, "N")
     assert meas.compuMethod == "NO_COMPU_METHOD"
 
 
@@ -206,8 +206,8 @@ def test_measurement_compu_method_identical():
         /end MEASUREMENT
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    meas = Measurement(session, "N")
+    db = parser.parseFromString(DATA)
+    meas = Measurement(db.session, "N")
     assert meas.compuMethod.format == "%3.0"
     assert meas.compuMethod.conversionType == "IDENTICAL"
     assert meas.compuMethod.unit == "hours"
@@ -239,8 +239,8 @@ def test_measurement_compu_method_form():
         /end MEASUREMENT
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    meas = Measurement(session, "N")
+    db = parser.parseFromString(DATA)
+    meas = Measurement(db.session, "N")
     assert meas.compuMethod.format == "%6.1"
     assert meas.compuMethod.conversionType == "FORM"
     assert meas.compuMethod.unit == "rpm"
@@ -270,8 +270,8 @@ def test_measurement_compu_method_linear():
         /end MEASUREMENT
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    meas = Measurement(session, "N")
+    db = parser.parseFromString(DATA)
+    meas = Measurement(db.session, "N")
 
     assert meas.compuMethod.format == "%3.1"
     assert meas.compuMethod.conversionType == "LINEAR"
@@ -305,8 +305,8 @@ def test_measurement_compu_method_rat_func():
         /end MEASUREMENT
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    meas = Measurement(session, "N")
+    db = parser.parseFromString(DATA)
+    meas = Measurement(db.session, "N")
 
     assert meas.compuMethod.format == "%8.4"
     assert meas.compuMethod.conversionType == "RAT_FUNC"
@@ -362,8 +362,8 @@ def test_measurement_compu_method_tab_intp():
         /end MEASUREMENT
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    meas = Measurement(session, "N")
+    db = parser.parseFromString(DATA)
+    meas = Measurement(db.session, "N")
     assert meas.compuMethod.format == "%8.4"
     assert meas.compuMethod.conversionType == "TAB_INTP"
     assert meas.compuMethod.unit == "U/min"
@@ -433,8 +433,8 @@ def test_measurement_compu_method_tab_verb():
         /end MEASUREMENT
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    meas = Measurement(session, "N")
+    db = parser.parseFromString(DATA)
+    meas = Measurement(db.session, "N")
     assert meas.compuMethod.format == "%12.0"
     assert meas.compuMethod.conversionType == "TAB_VERB"
     assert meas.compuMethod.unit == ""
@@ -492,8 +492,8 @@ def test_measurement_compu_method_tab_verb_range():
         /end MEASUREMENT
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    meas = Measurement.get(session, "N")
+    db = parser.parseFromString(DATA)
+    meas = Measurement.get(db.session, "N")
     assert meas.compuMethod.format == "%4.2"
     assert meas.compuMethod.conversionType == "TAB_VERB"
     assert meas.compuMethod.unit == ""
@@ -589,8 +589,8 @@ def test_mod_par_full_featured():
         /end MOD_PAR
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    mp = ModPar(session, "testModule")
+    db = parser.parseFromString(DATA)
+    mp = ModPar(db.session, "testModule")
     assert mp.comment == "Note: Provisional release for test purposes only!"
 
     assert mp.version == "Test version of 01.02.1994"
@@ -662,8 +662,8 @@ def test_mod_par_basic():
         /end MOD_PAR
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    mp = ModPar(session, "testModule")
+    db = parser.parseFromString(DATA)
+    mp = ModPar(db.session, "testModule")
     assert mp.comment == "Note: Provisional release for test purposes only!"
     assert mp.version is None
     assert mp.addrEpk == []
@@ -700,8 +700,8 @@ def test_mod_common_f7ull_featured():
         /end MOD_COMMON
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    mc = ModCommon(session, "testModule")
+    db = parser.parseFromString(DATA)
+    mc = ModCommon(db.session, "testModule")
     assert mc.comment == "Characteristic maps always deposited in same mode"
     # assert mc.sRecLayout.name == "S_ABL"
     assert mc.sRecLayout == "S_ABL"
@@ -851,8 +851,8 @@ def test_group():
         /end GROUP
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    gr = Group.get(session, "CALIBRATION_COMPONENTS")
-    gr = Group.get(session, "CALIBRATION_COMPONENTS_L4")
-    gr = Group.get(session, "SOFTWARE_COMPONENTS")
+    db = parser.parseFromString(DATA)
+    gr = Group.get(db.session, "CALIBRATION_COMPONENTS")
+    gr = Group.get(db.session, "CALIBRATION_COMPONENTS_L4")
+    gr = Group.get(db.session, "SOFTWARE_COMPONENTS")
     print(gr)

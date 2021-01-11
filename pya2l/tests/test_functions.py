@@ -838,9 +838,9 @@ def test_compu_method_invalid():
         /end COMPU_METHOD
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
 
 
 def test_compu_method_tab_verb():
@@ -862,9 +862,9 @@ def test_compu_method_tab_verb():
         /end COMPU_VTAB
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
     assert compu.int_to_physical(1) == "SawTooth"
     assert compu.physical_to_int("Sinus") == 3
     assert compu.int_to_physical(10) == "unknown signal type"
@@ -888,9 +888,9 @@ def test_compu_method_tab_verb_no_default_value():
         /end COMPU_VTAB
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
     assert compu.int_to_physical(1) == "SawTooth"
     assert compu.physical_to_int("Sinus") == 3
     assert compu.int_to_physical(10) is None
@@ -908,10 +908,10 @@ def test_compu_method_tab_verb_no_vtab():
         /end COMPU_METHOD
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
     with pytest.raises(exceptions.StructuralError):
-        compu = functions.CompuMethod(session, module.compu_method[0])
+        compu = functions.CompuMethod(db.session, module.compu_method[0])
 
 
 def test_compu_method_tab_nointerp_default():
@@ -943,9 +943,9 @@ def test_compu_method_tab_nointerp_default():
         /end COMPU_TAB
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
     assert compu.int_to_physical(-3) == 98
     assert compu.int_to_physical(8) == 108
     assert compu.physical_to_int(108) == 8
@@ -981,9 +981,9 @@ def test_compu_method_tab_interp_default():
         /end COMPU_TAB
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
     xs = np.arange(-3, 14)
     ys = np.array(
         [
@@ -1041,9 +1041,9 @@ def test_compu_method_tab_interp_no_default():
         /end COMPU_TAB
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
     xs = np.arange(-3, 14)
     ys = np.array(
         [
@@ -1101,9 +1101,9 @@ def test_compu_method_tab_nointerp_no_default():
         /end COMPU_TAB
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
     assert compu.int_to_physical(-3) == 98
     assert compu.int_to_physical(8) == 108
     assert compu.physical_to_int(108) == 8
@@ -1140,10 +1140,10 @@ def test_compu_method_tab_nointerp_both_defaults():
         /end COMPU_TAB
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
     with pytest.raises(exceptions.StructuralError):
-        compu = functions.CompuMethod(session, module.compu_method[0])
+        compu = functions.CompuMethod(db.session, module.compu_method[0])
 
 
 def test_compu_method_tab_verb_ranges():
@@ -1175,9 +1175,9 @@ def test_compu_method_tab_verb_ranges():
         /end COMPU_VTAB_RANGE
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
     assert compu.int_to_physical(0) == "Zero_to_one"
     assert compu.int_to_physical(6) == "four_to_seven"
     assert compu.int_to_physical(45) == "eigteen_to_ninetynine"
@@ -1216,9 +1216,9 @@ def test_compu_method_tab_verb_ranges_no_default():
         /end COMPU_VTAB_RANGE
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
     assert compu.int_to_physical(0) == "Zero_to_one"
     assert compu.int_to_physical(6) == "four_to_seven"
     assert compu.int_to_physical(45) == "eigteen_to_ninetynine"
@@ -1258,9 +1258,9 @@ def test_compu_method_tab_verb_ranges_inv():
         /end COMPU_VTAB_RANGE
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
     assert compu.physical_to_int("Zero_to_one") == 0
     assert compu.physical_to_int("four_to_seven") == 4
     assert compu.physical_to_int("eigteen_to_ninetynine") == 18
@@ -1279,9 +1279,9 @@ def test_compu_method_identical():
         /end COMPU_METHOD
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
     xs = np.arange(-10, 11)
     assert np.array_equal(compu.int_to_physical(xs), xs)
     assert np.array_equal(compu.physical_to_int(xs), xs)
@@ -1299,9 +1299,9 @@ def test_compu_method_rat_func_identical():
         /end COMPU_METHOD
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
     xs = np.arange(-10, 11)
     assert np.array_equal(compu.int_to_physical(xs), xs)
     assert np.array_equal(compu.physical_to_int(xs), xs)
@@ -1319,9 +1319,9 @@ def test_compu_method_rat_func_linear():
         /end COMPU_METHOD
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
     xs = np.arange(-10, 11)
     ys = np.array(
         [
@@ -1363,10 +1363,10 @@ def test_compu_method_rat_func_no_coeffs():
         /end COMPU_METHOD
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
     with pytest.raises(exceptions.StructuralError):
-        compu = functions.CompuMethod(session, module.compu_method[0])
+        compu = functions.CompuMethod(db.session, module.compu_method[0])
 
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
@@ -1381,9 +1381,9 @@ def test_compu_method_linear():
         /end COMPU_METHOD
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
     xs = np.arange(-10, 11)
     assert np.array_equal(compu.int_to_physical(xs), xs * 2.0)
     assert np.array_equal(compu.physical_to_int(xs * 2.0), xs)
@@ -1401,10 +1401,10 @@ def test_compu_method_linear_no_coeffs():
         /end COMPU_METHOD
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
     with pytest.raises(exceptions.StructuralError):
-        compu = functions.CompuMethod(session, None)
+        compu = functions.CompuMethod(db.session, None)
 
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
@@ -1424,9 +1424,9 @@ def test_compu_method_formula_with_inv():
         /end COMPU_METHOD
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
     assert compu.int_to_physical(6) == 10
     assert compu.physical_to_int(4) == 0
 
@@ -1447,9 +1447,9 @@ def test_compu_method_formula_without_inv():
         /end COMPU_METHOD
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
     assert compu.int_to_physical(6) == 10
 
 
@@ -1474,7 +1474,7 @@ def test_compu_method_formula_with_sysc():
         /end COMPU_METHOD
     /end MODULE
     """
-    session = parser.parseFromString(DATA)
-    module = session.query(model.Module).first()
-    compu = functions.CompuMethod(session, inspect.CompuMethod(session, module.compu_method[0].name))
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = functions.CompuMethod(db.session, inspect.CompuMethod(db.session, module.compu_method[0].name))
     assert compu.int_to_physical(23) == 65

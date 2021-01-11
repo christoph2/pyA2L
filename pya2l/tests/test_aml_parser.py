@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: latin-1 -*-
 
-"""These test-cases are based on the examples from ASAM MCD-2MC Version 1.6 specification.
-"""
-
 import pytest
 
 from pya2l.aml_listener import AMLListener, AMLPredefinedTypes, map_predefined_type
@@ -20,7 +17,7 @@ def test_type_mapping():
     assert map_predefined_type("double") == AMLPredefinedTypes.PDT_DOUBLE
     assert map_predefined_type("float") == AMLPredefinedTypes.PDT_FLOAT
 
-
+@pytest.mark.skip
 def test_enum_without_tag():
     parser = ParserWrapper("aml", "enum_type_name", AMLListener, useDatabase=False)
     DATA = """enum {
@@ -44,7 +41,7 @@ def test_enum_without_tag():
     assert en2.tag == "ADDRESS_GRANULARITY_DWORD"
     assert en2.constant == 4
 
-
+@pytest.mark.skip
 def test_enum_with_tag():
     parser = ParserWrapper("aml", "enum_type_name", AMLListener, useDatabase=False)
     DATA = """enum checksum {
@@ -96,7 +93,7 @@ def test_enum_with_tag():
     assert en9.tag == "XCP_USER_DEFINED"
     assert en9.constant == 255
 
-
+@pytest.mark.skip
 def test_enum_without_constants():
     parser = ParserWrapper("aml", "enum_type_name", AMLListener, useDatabase=False)
     DATA = """enum {
@@ -120,7 +117,7 @@ def test_enum_without_constants():
     assert en2.tag == "PARITY_EVEN"
     assert en2.constant == 2
 
-
+@pytest.mark.skip
 def test_enum_one_constant():
     parser = ParserWrapper("aml", "enum_type_name", AMLListener, useDatabase=False)
     DATA = """enum {
@@ -144,7 +141,6 @@ def test_enum_one_constant():
     assert en2.tag == "CHECKSUM_WORD"
     assert en2.constant == 12
 
-
 @pytest.mark.skip
 def test_enum_unsteady_constants():
     parser = ParserWrapper("aml", "enum_type_name", AMLListener, useDatabase=False)
@@ -166,7 +162,6 @@ def test_enum_unsteady_constants():
     enum = enums[0]
     assert enum.name is None
     assert len(enum.enumerators) == 10
-
 
 def struct(structs):
     assert len(structs) == 1
@@ -241,7 +236,7 @@ def struct(structs):
     pdt = tn.type_
     assert pdt.type_ == AMLPredefinedTypes.PDT_UCHAR
 
-
+@pytest.mark.skip
 def test_complex_struct():
     parser = ParserWrapper("aml", "struct_type_name", AMLListener, useDatabase=False)
     DATA = """struct {
@@ -262,7 +257,7 @@ def test_complex_struct():
     structs = res.struct_types
     struct(structs)
 
-
+@pytest.mark.skip
 def test_type_definition():
     parser = ParserWrapper("aml", "type_definition", AMLListener, useDatabase=False)
     DATA = """struct {
@@ -286,7 +281,7 @@ def test_type_definition():
     structs = [td.type_name.type_]
     struct(structs)
 
-
+@pytest.mark.skip
 def test_basic_tagged_struct():
     parser = ParserWrapper(
         "aml", "taggedstruct_type_name", AMLListener, useDatabase=False
@@ -338,7 +333,7 @@ def test_basic_tagged_struct():
     assert tn.name is None
     assert tn.type_.type_ == AMLPredefinedTypes.PDT_UCHAR
 
-
+@pytest.mark.skip
 def test_basic_tagged_union():
     parser = ParserWrapper(
         "aml", "taggedunion_type_name", AMLListener, useDatabase=False
@@ -496,7 +491,7 @@ def block_def(block_definitions):
     assert tsd.member is None
     assert tsd.multiple is False
 
-
+@pytest.mark.skip
 def test_basic_block_definition():
     parser = ParserWrapper("aml", "block_definition", AMLListener, useDatabase=False)
     DATA = """
@@ -515,7 +510,7 @@ def test_basic_block_definition():
     res = parser.parseFromString(DATA)
     block_def(res.block_definitions)
 
-
+@pytest.mark.skip
 def test_basic_declaration():
     parser = ParserWrapper("aml", "declaration", AMLListener, useDatabase=False)
     DATA = """
@@ -538,7 +533,7 @@ def test_basic_declaration():
     assert decl.type_definition is None
     block_def([decl.block_definition])
 
-
+@pytest.mark.skip
 def test_struct_referrers():
     parser = ParserWrapper("aml", "struct_type_name", AMLListener, useDatabase=False)
     DATA = """
@@ -620,7 +615,7 @@ def test_struct_referrers():
     assert tn.type_.name == "buffer"
     assert tn.type_.members == []
 
-
+@pytest.mark.skip
 def test_taggedstruct_referrers():
     parser = ParserWrapper("aml", "struct_type_name", AMLListener, useDatabase=False)
     DATA = """
@@ -824,7 +819,7 @@ def test_taggedstruct_referrers():
     assert mem.type_.name == "Common_Parameters"
     assert mem.type_.members == []
 
-
+@pytest.mark.skip
 def test_taggedunion_referrers():
     parser = ParserWrapper(
         "aml", "taggedstruct_type_name", AMLListener, useDatabase=False
