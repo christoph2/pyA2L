@@ -6013,6 +6013,234 @@ class VarSeparator(Base):
         uselist = False
     )
 
+#
+# Tables for AML meta parser.
+#
+class AMLBaseType(Base):
+    """ """
+
+    discr = Column(types.String(256))
+    __mapper_args__ = {
+        "polymorphic_identity": "AMLBaseType",
+        "polymorphic_on": discr,
+    }
+
+
+class AMLEnumeration(Base):
+    """ """
+
+    name = Column(types.String(256))
+    enumerators = relationship("AMLEnumerator", backref = "aml_enumeration", uselist = True)
+
+
+class AMLEnumerator(Base):
+    """ """
+
+    enumeration_id  = Column(types.Integer,
+        ForeignKey("amlenumeration.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True, primary_key = True,
+    )
+
+    tag  = Column(types.String(256))
+    constant  = Column(types.String(256))
+
+
+class AMLTaggedUnion(AMLBaseType):
+    """ """
+
+    base_type_id = Column(
+        types.Integer,
+        ForeignKey("amlbasetype.rid"),
+        primary_key = True
+    )
+    __mapper_args__ = {
+        "polymorphic_identity": "AMLTaggedUnion"
+    }
+    name = Column(types.String(256))
+    members = relationship("AMLTaggedUnionMember", backref = "aml_tagged_union", uselist = True)
+
+
+class AMLTaggedUnionMember(Base):
+    """ """
+
+    tagged_union_id = Column(types.Integer,
+        ForeignKey("amltaggedunion.base_type_id", onupdate = "CASCADE", ondelete = "CASCADE"),
+        nullable = True,
+        primary_key = True
+    )
+    block_definition_id = Column(types.Integer,
+        ForeignKey("amlblockdefinition.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True
+    )
+    member_id = Column(types.Integer,
+        ForeignKey("amlmember.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True
+    )
+    tag = Column(types.String(256))
+    member = relationship("AMLMember", backref = "aml_tagged_union_member", uselist = False)
+    block_definition = relationship("AMLBlockDefinition", backref = "aml_tagged_union_member", uselist = False)
+
+
+class AMLMember(Base):
+    """ """
+
+    type_name_id = Column(types.Integer,
+        ForeignKey("amltypename.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True, primary_key = True
+    )
+    type_name = relationship("AMLTypeName", backref = "aml_member", uselist = False)
+    array_specifier = Column(types.Boolean)
+
+
+class AMLTypeName(Base):
+    """ """
+
+    base_type_id = Column(types.Integer,
+        ForeignKey("amlbasetype.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True, primary_key = True
+    )
+
+    tag = Column(types.String(256))
+    name = Column(types.String(256))
+    type = relationship("AMLBaseType", backref = "aml_type_name", uselist = False)
+
+
+class AMLPredefinedType(AMLBaseType):
+    """ """
+
+    base_type_id = Column(
+        types.Integer,
+        ForeignKey("amlbasetype.rid"),
+        primary_key = True
+    )
+
+    typeid = StdLong()
+    __mapper_args__ = {
+        "polymorphic_identity": "AMLPredefinedType"
+    }
+
+
+class AMLStructType(AMLBaseType):
+    """ """
+
+    base_type_id = Column(
+        types.Integer,
+        ForeignKey("amlbasetype.rid"),
+        primary_key = True
+    )
+
+    name = Column(types.String(256))
+    members = relationship("AMLStructMember", backref = "aml_struct_type", uselist = True)
+    __mapper_args__ = {
+        "polymorphic_identity": "AMLStructType"
+    }
+
+
+class AMLStructMember(Base):
+    """ """
+
+    struct_type_id = Column(types.Integer,
+        ForeignKey("amlstructtype.base_type_id", onupdate = "CASCADE", ondelete = "CASCADE"),
+        nullable = True,
+        primary_key = True
+    )
+
+    multiple = Column(types.Boolean)
+    member_id = Column(types.Integer,
+        ForeignKey("amlmember.rid", onupdate = "CASCADE", ondelete = "CASCADE"),
+        nullable = True,
+        primary_key = True
+    )
+    member = relationship("AMLMember", backref = "aml_struct_member_type", uselist = False)
+
+
+class AMLTaggedStructType(AMLBaseType):
+    """ """
+
+    base_type_id = Column(
+        types.Integer,
+        ForeignKey("amlbasetype.rid"),
+        primary_key = True
+    )
+
+    name = Column(types.String(256))
+    members = relationship("AMLTaggedStructMember", backref = "aml_tagged_struct_type", uselist = True)
+    __mapper_args__ = {
+        "polymorphic_identity": "AMLTaggedStructType"
+    }
+
+
+class AMLTaggedStructMember(Base):
+    """ """
+
+    tagged_struct_type_id = Column(types.Integer,
+        ForeignKey("amltaggedstructtype.base_type_id", onupdate = "CASCADE", ondelete = "CASCADE"),
+        nullable = True,
+        primary_key = True
+    )
+
+    multiple = Column(types.Boolean)
+    block_definition_id = Column(types.Integer,
+        ForeignKey("amlblockdefinition.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True
+    )
+    block_definition = relationship("AMLBlockDefinition", backref = "aml_tagged_struct_member", uselist = False)
+    tagged_struct_definition_id = Column(types.Integer,
+        ForeignKey("amltaggedstructdefinition.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True
+    )
+    taggedstruct_definition = relationship("AMLTaggedStructDefinition",
+        backref = "aml_tagged_struct_member", uselist = False
+    )
+
+
+class AMLTaggedStructDefinition(Base):
+    """ """
+
+    tag = Column(types.String(256))
+    multiple = Column(types.Boolean)
+    member_id = Column(types.Integer,
+        ForeignKey("amlmember.rid", onupdate = "CASCADE", ondelete = "CASCADE"),
+        nullable = True,
+        primary_key = True
+    )
+    member = relationship("AMLMember", backref = "aml_tagged_struct_definition", uselist = False)
+
+
+class AMLBlockDefinition(Base):
+    """ """
+
+    tag = Column(types.String(256))
+    type_name_id = Column(types.Integer,
+        ForeignKey("amltypename.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True
+    )
+    member_id = Column(types.Integer,
+        ForeignKey("amlmember.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True
+    )
+    type_name = relationship("AMLTypeName", backref = "aml_block_definition", uselist = False)
+    member = relationship("AMLMember", backref = "aml_block_definition", uselist = False)
+
+
+class AMLDeclaration(Base):
+    """ """
+
+    block_definition_id = Column(types.Integer,
+        ForeignKey("amlblockdefinition.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True
+    )
+
+    type_definition_id = Column(types.Integer,
+        ForeignKey("amltypedefinition.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True
+    )
+
+    block_definition = relationship("AMLBlockDefinition", backref = "aml_declaration", uselist = False)
+    type_definition = relationship("AMLTypeDefinition", backref = "aml_declaration", uselist = False)
+
+
+class AMLTypeDefinition(Base):
+    """ """
+
+    type_name_id = Column(types.Integer,
+        ForeignKey("amltypename.rid", onupdate = "CASCADE", ondelete = "CASCADE"),
+        nullable = True,
+        primary_key = True
+    )
+
+    type_name = relationship("AMLTypeName", backref = "aml_type_definition", uselist = False)
+
+
 class A2LDatabase(object):
     def __init__(self, filename, debug = False, logLevel = "INFO"):
         if filename == ":memory:":
