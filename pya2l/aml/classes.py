@@ -283,7 +283,7 @@ class TaggedStructMember(BaseType):
 
     def __repr__(self):
         return "TaggedStructMember(taggedstruct_definition = {}, block_definition = {}, multiple = {})".format(
-            self.taggedstruct_definition, block_definition, self.multiple
+            self.taggedstruct_definition, self.block_definition, self.multiple
         )
 
 
