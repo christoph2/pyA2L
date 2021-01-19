@@ -6026,9 +6026,17 @@ class AMLBaseType(Base):
     }
 
 
-class AMLEnumeration(Base):
+class AMLEnumeration(AMLBaseType):
     """ """
 
+    base_type_id = Column(
+        types.Integer,
+        ForeignKey("amlbasetype.rid"),
+        primary_key = True
+    )
+    __mapper_args__ = {
+        "polymorphic_identity": "AMLEnumeration"
+    }
     name = Column(types.String(256))
     enumerators = relationship("AMLEnumerator", backref = "aml_enumeration", uselist = True)
 
@@ -6037,7 +6045,9 @@ class AMLEnumerator(Base):
     """ """
 
     enumeration_id  = Column(types.Integer,
-        ForeignKey("amlenumeration.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True, primary_key = True,
+        ForeignKey("amlenumeration.base_type_id", onupdate = "CASCADE", ondelete = "CASCADE"),
+        nullable = True,
+        primary_key = True,
     )
 
     tag  = Column(types.String(256))
@@ -6082,22 +6092,37 @@ class AMLMember(Base):
     """ """
 
     type_name_id = Column(types.Integer,
-        ForeignKey("amltypename.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True, primary_key = True
+        ForeignKey("amltypename.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True, primary_key = False
     )
     type_name = relationship("AMLTypeName", backref = "aml_member", uselist = False)
-    array_specifier = Column(types.Boolean)
+    array_specifier = Column(types.String(256))
 
 
 class AMLTypeName(Base):
     """ """
 
     base_type_id = Column(types.Integer,
-        ForeignKey("amlbasetype.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True, primary_key = True
+        ForeignKey("amlbasetype.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True, primary_key = False
     )
 
     tag = Column(types.String(256))
     name = Column(types.String(256))
-    type = relationship("AMLBaseType", backref = "aml_type_name", uselist = False)
+    type = relationship("AMLBaseType", uselist = False)
+
+
+class AMLReferrer(AMLBaseType):
+    """ """
+
+    base_type_id = Column(
+        types.Integer,
+        ForeignKey("amlbasetype.rid"),
+        primary_key = True
+    )
+    category = Column(types.String(256))
+    identifier = Column(types.String(256))
+    __mapper_args__ = {
+        "polymorphic_identity": "AMLReferrer"
+    }
 
 
 class AMLPredefinedType(AMLBaseType):
@@ -6195,7 +6220,7 @@ class AMLTaggedStructDefinition(Base):
     member_id = Column(types.Integer,
         ForeignKey("amlmember.rid", onupdate = "CASCADE", ondelete = "CASCADE"),
         nullable = True,
-        primary_key = True
+        primary_key = False
     )
     member = relationship("AMLMember", backref = "aml_tagged_struct_definition", uselist = False)
 
@@ -6235,7 +6260,7 @@ class AMLTypeDefinition(Base):
     type_name_id = Column(types.Integer,
         ForeignKey("amltypename.rid", onupdate = "CASCADE", ondelete = "CASCADE"),
         nullable = True,
-        primary_key = True
+        primary_key = False
     )
 
     type_name = relationship("AMLTypeName", backref = "aml_type_definition", uselist = False)
