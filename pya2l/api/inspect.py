@@ -4,7 +4,7 @@
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2020 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2020-2021 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -883,7 +883,7 @@ class Characteristic(CachedBase):
         self.virtualCharacteristic = (
             self.characteristic.virtual_characteristic.formula
             if self.characteristic.virtual_characteristic
-            else None
+            else []
         )
         self.fnc_np_shape = fnc_np_shape(self.matrixDim) or (
             None if self.number is None else (self.number,)
@@ -933,6 +933,10 @@ class Characteristic(CachedBase):
         if index > len(descriptions) - 1:
             raise ValueError("axis value out of range.")
         return descriptions[index]
+
+    @property
+    def is_virtual(self):
+        return self.virtualCharacteristic != []
 
     @property
     def num_axes(self):
@@ -1752,6 +1756,10 @@ Measurement {{
         )
 
     __repr__ = __str__
+
+    @property
+    def is_virtual(self):
+        return self.virtual != []
 
     @staticmethod
     def _dissect_bit_operation(obj, bit_op):
