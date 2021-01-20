@@ -27,10 +27,8 @@ __copyright__ = """
 __author__ = "Christoph Schueler"
 __version__ = "0.1.0"
 
-
-import codecs
-import importlib
 import os
+import importlib
 import sys
 
 import antlr4
@@ -112,7 +110,7 @@ class ParserWrapper:
 
     @staticmethod
     def stringStream(fname, encoding="latin-1"):
-        return antlr4.InputStream(codecs.open(fname, encoding=encoding).read())
+        return antlr4.InputStream(open(fname, encoding = encoding).read())
 
     def _getNumberOfSyntaxErrors(self):
         return self._syntaxErrors
