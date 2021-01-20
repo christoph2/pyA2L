@@ -30,7 +30,7 @@ __version__ = "0.10.2"
 
 import pkgutil
 import sys
-from os import path
+from pathlib import Path
 
 import pya2l.model as model
 from pya2l.logger import Logger
@@ -75,6 +75,9 @@ class DB(object):
         remove_existing: bool
             ** DANGER ZONE **: Remove existing database.
 
+        encoding: str
+            File encoding like "latin-1" or "utf-8".
+
         Returns
         -------
         SQLAlchemy session object.
@@ -100,14 +103,14 @@ class DB(object):
         if not in_memory:
             if remove_existing:
                 try:
-                    unlink(self._dbfn)
+                    unlink(str(self._dbfn))
                 except Exception:
                     pass
-            elif path.exists(self._dbfn):
+            elif self._dbfn.exists():
                 raise OSError("file '{}' already exists.".format(self._dbfn))
-        data = open(self._a2lfn, encoding=encoding).read()
+        data = open(str(self._a2lfn), encoding=encoding).read()
         data, a2ml = cut_a2ml(data)
-        self.db = parser.parseFromString(data, dbname=self._dbfn)
+        self.db = parser.parseFromString(data, dbname=str(self._dbfn))
         self.session = self.db.session
         return self.session
 
@@ -133,7 +136,7 @@ class DB(object):
         """Open or create an A2LDB."""
         self.in_memory = False
         self._set_path_components(file_name)
-        if not path.exists(self._dbfn):
+        if not self._dbfn.exists():
             return self.import_a2l(self._a2lfn)
         else:
             return self.open_existing(self._dbfn)
@@ -158,10 +161,10 @@ class DB(object):
         """
         self.in_memory = False
         self._set_path_components(file_name)
-        if not path.exists(self._dbfn):
+        if not self._dbfn.exists():
             raise OSError("file '{}' does not exists.".format(self._dbfn))
         else:
-            self.db = model.A2LDatabase(self._dbfn)
+            self.db = model.A2LDatabase(str(self._dbfn))
             self.session = self.db.session
             res = self.session.query(model.MetaData).first()
             if res:
@@ -173,14 +176,15 @@ class DB(object):
 
     def _set_path_components(self, file_name):
         """"""
-        self._pth, self._base = path.split(file_name)
-        fbase, ext = path.splitext(self._base)
+        if hasattr(self, "_dbfn"):
+            return
+        file_path = Path(file_name)
         if self.in_memory:
             self._dbfn = ":memory:"
         else:
-            self._dbfn = path.join(self._pth, "{}.a2ldb".format(fbase))
-        if not ext or ext.lower() == ".a2l" or ext.lower() == ".a2ldb":
-            self._a2lfn = "{}.a2l".format(fbase)
+            self._dbfn = (file_path.parent / file_path.stem).with_suffix(".a2ldb")
+        if not file_path.suffix:
+            self._a2lfn = (file_path.parent / file_path.stem).with_suffix(".a2l")
         else:
-            self._a2lfn = "{}{}".format(fbase, ext)
-        self._a2lfn = path.join(self._pth, self._a2lfn)
+            self._a2lfn = (file_path.parent / file_path.stem).with_suffix(file_path.suffix)
+        print("FNs  ", self._dbfn, self._a2lfn)
