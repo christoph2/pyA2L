@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2019 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2021 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -27,15 +27,14 @@ __copyright__ = """
 __author__ = "Christoph Schueler"
 __version__ = "0.1.0"
 
-import re
+
 from decimal import Decimal as D
+import re
 
 import antlr4
 
 import pya2l.model as model
 from pya2l.logger import Logger
-from pya2l.preprocessor import blank_out
-
 
 def delist(iterable, scalar=False):
     if len(iterable) == 0:
@@ -54,37 +53,6 @@ def delist(iterable, scalar=False):
         else:
             return [iterable[0]]
 
-
-def cut_a2ml(data):
-    """"""
-    AML = re.compile(
-        r"""
-    /begin\s+A[23]ML
-    (.*?)
-    /end\s+A[23]ML
-    """,
-        re.VERBOSE | re.DOTALL | re.MULTILINE,
-    )
-
-    IF_DATA = re.compile(
-        r"""
-    /begin\s+IF_DATA
-    (.*?)
-    /end\s+IF_DATA
-    """,
-        re.VERBOSE | re.DOTALL | re.MULTILINE,
-    )
-    a2ml = None
-    # if_data = []
-    match = AML.search(data)
-    if match:
-        data = blank_out(data, match.span())
-
-    matches = list(IF_DATA.finditer(data))
-    if matches:
-        for idx, match in enumerate(matches):
-            data = blank_out(data, match.span())
-    return data, a2ml
 
 
 class BaseListener(antlr4.ParseTreeListener):
