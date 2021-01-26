@@ -38,22 +38,31 @@ from pya2l import model
 
 
 class MyErrorListener(ErrorListener):
-    def __init__(self):
+    """ """
+
+    def __init__(self, line_map = None):
         super().__init__()
+        self.line_map = line_map
+        print("LM", line_map)
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        print("line " + str(line) + ":" + str(column) + " " + msg, file=sys.stderr)
+        if self.line_map:
+            file_name, line = self.line_map.lookup(line)
+            print(file_name + "::" +  "line " + str(line) + ":" + str(column) + " " + msg, file = sys.stderr)
+        else:
+            print("line " + str(line) + ":" + str(column) + " " + msg, file = sys.stderr)
 
 
 class ParserWrapper:
     """"""
 
     def __init__(
-        self, grammarName, startSymbol, listener=None, useDatabase=True, debug=False
+        self, grammarName, startSymbol, listener=None, useDatabase=True, debug=False, line_map=None
     ):
         self.debug = debug
         self.grammarName = grammarName
         self.startSymbol = startSymbol
+        self.line_map = line_map
         self.lexerModule, self.lexerClass = self._load("Lexer")
         self.parserModule, self.parserClass = self._load("Parser")
         self.listener = listener
@@ -74,13 +83,12 @@ class ParserWrapper:
             self.db = model.A2LDatabase(self.fnbase, debug=self.debug)
         lexer = self.lexerClass(input)
         lexer.removeErrorListeners()
-        lexer.addErrorListener(MyErrorListener())
+        lexer.addErrorListener(MyErrorListener(self.line_map))
         tokenStream = antlr4.CommonTokenStream(lexer)
-        #        tokenStream = BufferedTokenStream(lexer)
         parser = self.parserClass(tokenStream)
-        parser.setTrace(trace)
         parser.removeErrorListeners()
-        parser.addErrorListener(MyErrorListener())
+        parser.addErrorListener(MyErrorListener(self.line_map))
+        parser.setTrace(trace)
         meth = getattr(parser, self.startSymbol)
         self._syntaxErrors = parser._syntaxErrors
         tree = meth()
