@@ -179,7 +179,7 @@ COMMENT
         -> channel(HIDDEN)
     ;
 
-WS  :   (' ' | '\t' | '\r' | '\n') -> channel(HIDDEN)
+WS  :   (' ' | '\t' | '\r' | '\n') -> skip
     ;
 
 STRING
