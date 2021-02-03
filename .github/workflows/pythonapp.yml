@@ -22,7 +22,7 @@ jobs:
           java-package: jdk
           architecture: x64
       - name: Set up Python 3.8
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.8
       - name: Install dependencies
@@ -44,12 +44,14 @@ jobs:
           export CLASSPATH=".:$(pwd)/antlr-4.8-complete.jar:$CLASSPATH"
           pip install -r requirements.test.txt
           pytest
-      - name: Publish package to PyPi
-        uses: casperdcl/deploy-pypi@v1
-        if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-        with:
-            password: ${{ secrets.PYPI_PASSWORD }}
-            user: ${{ secrets.PYPI_USER_NAME }}
-            build: true
-            skip_existing: true
-
+      - name: Build dists
+        run: |
+             python setup.py bdist_wheel
+      - name: Build and publish
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USER_NAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        if: env.TWINE_USERNAME != null
+        run: |
+          python setup.py bdist_wheel
+          twine upload dist/*
