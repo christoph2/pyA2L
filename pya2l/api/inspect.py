@@ -849,7 +849,7 @@ class Characteristic(CachedBase):
         self.ecuAddressExtension = (
             self.characteristic.ecu_address_extension.extension
             if self.characteristic.ecu_address_extension
-            else None
+            else 0
         )
         self.extendedLimits = self._dissect_extended_limits(
             self.characteristic.extended_limits
@@ -1247,7 +1247,7 @@ class AxisPts(CachedBase):
         self.ecuAddressExtension = (
             self.axis.ecu_address_extension.extension
             if self.axis.ecu_address_extension
-            else None
+            else 0
         )
         self.extendedLimits = self._dissect_extended_limits(self.axis.extended_limits)
         self.format = self.axis.format.formatString if self.axis.format else None
@@ -1449,7 +1449,7 @@ class Measurement(CachedBase):
     ecuAddress: int or None
         Address of the measurement in the memory of the CU.
 
-    ecuAddressExtension: int or None
+    ecuAddressExtension: int
         Additional address information, e.g. paging.
 
     errorMask: int or None
@@ -1649,7 +1649,7 @@ class Measurement(CachedBase):
         self.ecuAddressExtension = (
             self.measurement.ecu_address_extension.extension
             if self.measurement.ecu_address_extension
-            else None
+            else 0
         )
         self.errorMask = (
             self.measurement.error_mask.mask if self.measurement.error_mask else None
