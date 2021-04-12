@@ -31,6 +31,7 @@ __version__ = "0.1.0"
 
 
 import enum
+import json
 
 ##
 ## Model Classes.
