@@ -40,7 +40,7 @@ def test_measurement_basic():
     assert meas.discrete is False
     assert meas.displayIdentifier is None
     assert meas.ecuAddress is None
-    assert meas.ecuAddressExtension is None
+    #assert meas.ecuAddressExtension is None
     assert meas.errorMask is None
     assert meas.format is None
     assert meas.functionList == []
