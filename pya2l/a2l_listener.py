@@ -255,6 +255,7 @@ class A2LListener(BaseListener):
     def exitIfData(self, ctx):
         ctx.value = model.IfData(name="")
         self.db.session.add(ctx.value)
+        #print("EXIT:", ctx.start, ctx.stop)
 
     def exitMatrixDim(self, ctx):
         xDim = ctx.xDim.value
@@ -281,8 +282,7 @@ class A2LListener(BaseListener):
 
     def exitReadOnly(self, ctx):
         ctx.value = True
-
-    #        self.db.session.add(ctx.value)
+        # self.db.session.add(ctx.value)
 
     def exitRefCharacteristic(self, ctx):
         identifier = self.getList(ctx.identifier)

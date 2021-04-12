@@ -32,6 +32,7 @@ import pkgutil
 import sys
 from pathlib import Path
 
+from pya2l.aml.listener import AMLListener
 import pya2l.model as model
 from pya2l.logger import Logger
 from pya2l.templates import doTemplateFromText
@@ -93,12 +94,13 @@ class DB(object):
         """
         from os import unlink
 
-        from pya2l.a2l_listener import A2LListener, cut_a2ml
+        from pya2l.a2l_listener import A2LListener
         from pya2l.parserlib import ParserWrapper
+        from pya2l.preprocessor import Preprocessor
+        from pya2l.aml.db import Importer
 
         self.in_memory = in_memory
 
-        parser = ParserWrapper("a2l", "a2lFile", A2LListener, debug=debug)
         self._set_path_components(file_name)
         if not in_memory:
             if remove_existing:
@@ -108,13 +110,16 @@ class DB(object):
                     pass
             elif self._dbfn.exists():
                 raise OSError("file '{}' already exists.".format(self._dbfn))
-        data = open(str(self._a2lfn), encoding=encoding).read()
-        data, a2ml = cut_a2ml(data)
-        self.db = parser.parseFromString(data, dbname=str(self._dbfn))
+        prepro = Preprocessor()
+        prepro_result = prepro.process(self._a2lfn, encoding = encoding)
+        a2l_parser = ParserWrapper("a2l", "a2lFile", A2LListener, debug=debug, line_map=prepro_result.line_map)
+        self.db = a2l_parser.parseFromString(prepro_result.a2l_data, dbname=str(self._dbfn))
         self.session = self.db.session
+        #aml_parser = ParserWrapper("aml", "amlFile", AMLListener, useDatabase=False)
+        #imp = Importer(self.session, aml_parser.parseFromString(prepro_result.aml_section))
         return self.session
 
-    def export_a2l(self, file_name=sys.stdout, encoding="ascii"):
+    def export_a2l(self, file_name=sys.stdout, encoding="latin-1"):
         """"""
         namespace = dict(session=self.db.session, model=model)
         data = doTemplateFromText(
@@ -187,4 +192,3 @@ class DB(object):
             self._a2lfn = (file_path.parent / file_path.stem).with_suffix(".a2l")
         else:
             self._a2lfn = (file_path.parent / file_path.stem).with_suffix(file_path.suffix)
-        print("FNs  ", self._dbfn, self._a2lfn)

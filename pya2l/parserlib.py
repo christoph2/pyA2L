@@ -43,7 +43,6 @@ class MyErrorListener(ErrorListener):
     def __init__(self, line_map = None):
         super().__init__()
         self.line_map = line_map
-        print("LM", line_map)
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         if self.line_map:
