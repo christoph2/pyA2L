@@ -36,6 +36,7 @@ from pya2l.aml.listener import AMLListener
 import pya2l.model as model
 from pya2l.logger import Logger
 from pya2l.templates import doTemplateFromText
+from pya2l.utils import detect_encoding
 
 
 class InvalidA2LDatabase(Exception):
@@ -111,7 +112,7 @@ class DB(object):
             elif self._dbfn.exists():
                 raise OSError("file '{}' already exists.".format(self._dbfn))
         prepro = Preprocessor()
-        prepro_result = prepro.process(self._a2lfn, encoding = encoding)
+        prepro_result = prepro.process(self._a2lfn, encoding = detect_encoding(self._a2lfn))
         a2l_parser = ParserWrapper("a2l", "a2lFile", A2LListener, debug=debug, line_map=prepro_result.line_map)
         self.db = a2l_parser.parseFromString(prepro_result.a2l_data, dbname=str(self._dbfn))
         self.session = self.db.session
@@ -192,3 +193,4 @@ class DB(object):
             self._a2lfn = (file_path.parent / file_path.stem).with_suffix(".a2l")
         else:
             self._a2lfn = (file_path.parent / file_path.stem).with_suffix(file_path.suffix)
+

@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2020 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2021 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -33,6 +33,7 @@ import sys
 import threading
 from unicodedata import normalize
 
+from chardet.universaldetector import UniversalDetector
 
 def slicer(iterable, sliceLength, converter=None):
     if converter is None:
@@ -228,3 +229,23 @@ def padding(offset: int, boundary: int):
 def ffs(v: int) -> int:
     """Find first set bit (pure Python)."""
     return (v & (-v)).bit_length() - 1
+
+def detect_encoding(file_name: str) -> str:
+    """Detect encoding of a text file.
+
+    Parameters
+    ----------
+    file_name: str
+
+    Returns
+    -------
+    str: Useable as `encoding` paramter to `open`.
+    """
+    detector = UniversalDetector()
+    with open(file_name, "rb") as inf:
+        while not detector.done:
+            line = inf.readline()
+            detector.feed(line)
+        detector.close()
+    return detector.result['encoding']
+
