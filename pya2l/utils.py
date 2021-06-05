@@ -28,6 +28,7 @@ __author__ = "Christoph Schueler"
 __version__ = "0.1.0"
 
 import ctypes
+import pathlib
 import subprocess
 import sys
 import threading
@@ -242,6 +243,8 @@ def detect_encoding(file_name: str) -> str:
     str: Useable as `encoding` paramter to `open`.
     """
     detector = UniversalDetector()
+    if isinstance(file_name, pathlib.WindowsPath):
+        file_name = str(file_name)
     with open(file_name, "rb") as inf:
         while not detector.done:
             line = inf.readline()
