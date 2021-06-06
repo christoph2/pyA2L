@@ -259,9 +259,9 @@ class A2LListener(BaseListener):
 
     def exitMatrixDim(self, ctx):
         xDim = ctx.xDim.value
-        yDim = ctx.yDim.value
-        zDim = ctx.zDim.value
-        ctx.value = model.MatrixDim(xDim=xDim, yDim=yDim, zDim=zDim)
+        yDim = ctx.yDim.value if ctx.yDim else None
+        zDim = ctx.zDim.value if ctx.zDim else None
+        ctx.value = model.MatrixDim(xDim = xDim, yDim = yDim, zDim = zDim)
         self.db.session.add(ctx.value)
 
     def exitMaxRefresh(self, ctx):
