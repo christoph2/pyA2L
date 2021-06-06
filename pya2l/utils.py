@@ -245,10 +245,11 @@ def detect_encoding(file_name: str) -> str:
     detector = UniversalDetector()
     if isinstance(file_name, pathlib.WindowsPath):
         file_name = str(file_name)
-    with open(file_name, "rb") as inf:
-        while not detector.done:
-            line = inf.readline()
-            detector.feed(line)
-        detector.close()
-    return detector.result['encoding']
+    for line in open(file_name, "rb"):
+        detector.feed(line)
+        if detector.done:
+            break
+    result = detector.result['encoding'] if detector.done else "ascii"
+    detector.close()
+    return result
 
