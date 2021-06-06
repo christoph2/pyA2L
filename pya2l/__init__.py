@@ -113,11 +113,10 @@ class DB(object):
                 raise OSError("file '{}' already exists.".format(self._dbfn))
         prepro = Preprocessor()
         prepro_result = prepro.process(self._a2lfn, encoding = detect_encoding(self._a2lfn))
-        a2l_parser = ParserWrapper("a2l", "a2lFile", A2LListener, debug=debug, line_map=prepro_result.line_map)
-        self.db = a2l_parser.parseFromString(prepro_result.a2l_data, dbname=str(self._dbfn))
+        a2l_parser = ParserWrapper("a2l", "a2lFile", A2LListener, debug = debug, line_map = prepro_result.line_map)
+        #print(prepro_result.a2l_data)
+        self.db = a2l_parser.parseFromString(prepro_result.a2l_data, dbname = str(self._dbfn))
         self.session = self.db.session
-        #aml_parser = ParserWrapper("aml", "amlFile", AMLListener, useDatabase=False)
-        #imp = Importer(self.session, aml_parser.parseFromString(prepro_result.aml_section))
         return self.session
 
     def export_a2l(self, file_name=sys.stdout, encoding="latin-1"):
