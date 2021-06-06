@@ -1,7 +1,7 @@
 /*
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2020 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2021 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -175,8 +175,8 @@ ifData:
 matrixDim:
      'MATRIX_DIM'
     xDim = integerValue
-    yDim = integerValue
-    zDim = integerValue
+    (yDim = integerValue)?
+    (zDim = integerValue)?
     ;
 
 maxRefresh:
