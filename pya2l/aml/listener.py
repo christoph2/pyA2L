@@ -28,9 +28,7 @@ __author__ = "Christoph Schueler"
 __version__ = "0.1.0"
 
 
-import enum
 from decimal import Decimal as D
-import json
 
 import antlr4
 
@@ -189,7 +187,8 @@ class AMLListener(antlr4.ParseTreeListener):
         tag = ctx.tag.value
         typename = ctx.tn.value if ctx.tn else None
         member = ctx.mem.value if ctx.mem else None
-        ctx.value = classes.createBlockDefinition(tag, typename, member)
+        mult = True if ctx.mult else False
+        ctx.value = classes.createBlockDefinition(tag, typename, member, mult)
         if tag == "IF_DATA":
             self.root_element = ctx.value
 

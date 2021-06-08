@@ -303,10 +303,11 @@ class BlockDefinition(BaseType):
 
     _is_block = True
 
-    def __init__(self, tag, type_name, member):
+    def __init__(self, tag, type_name, member, multiple):
         self.tag = tag
         self.type_name = type_name
         self.member = member
+        self.mult = multiple
 
     @property
     def type_(self):
@@ -317,8 +318,8 @@ class BlockDefinition(BaseType):
         return self.type_name.type_
 
     def __repr__(self):
-        return "BlockDefinition(tag = {}, type_name = {}, member = {})".format(
-            self.tag, self.type_name, self.member
+        return "BlockDefinition(tag = {}, type_name = {}, member = {} multiple = {})".format(
+            self.tag, self.type_name, self.member, self.multiple
         )
 
 
@@ -396,8 +397,8 @@ def createDeclaration(block_definition, type_definition):
     return Declaration(block_definition, type_definition)
 
 
-def createBlockDefinition(tag, type_name, member):
-    return BlockDefinition(tag, type_name, member)
+def createBlockDefinition(tag, type_name, member, multiple):
+    return BlockDefinition(tag, type_name, member, multiple)
 
 
 def createTypeDefinition(type_name):
