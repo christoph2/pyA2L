@@ -1,9 +1,9 @@
-.. pyXCP documentation master file, created by
+.. pyA2L documentation master file, created by
    sphinx-quickstart on Sun Mar 18 08:53:54 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pyXCP's documentation!
+Welcome to pyA2L's documentation!
 =================================
 
 .. toctree::
