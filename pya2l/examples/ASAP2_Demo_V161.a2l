@@ -2926,6 +2926,43 @@ ASAP2_VERSION 1 61
 /*                                                                                                  */
 /*  ==============================================================================================  */
 
+////////////////////////////
+
+
+  /begin CHARACTERISTIC  
+    tstCom_cal_impl.Analoginput_P11 
+    ""  
+    VAL_BLK 
+    0x0023F7D0 
+    Scalar_FLOAT64_IEEE 
+    0 
+    tstCom_CM_double 
+    -1.7E+308 
+    1.7E+308  
+//    MATRIX_DIM                        4 1 
+  /end CHARACTERISTIC 
+
+  /begin CHARACTERISTIC  
+    tstCom_cal_impl.Analoginput_P12 
+    ""  
+    VALUE 
+    0x0023F800 
+    Scalar_FLOAT64_IEEE 0 
+    tstCom_CM_double 
+    -1.7E+308 
+    1.7E+308  
+  /end CHARACTERISTIC 
+
+  /begin CHARACTERISTIC  tstCom_cal_impl.Analoginput_P2 ""  
+    VALUE 0x0023F5D0 Scalar_FLOAT64_IEEE 0 tstCom_CM_double -1.7E+308 1.7E+308  
+  /end CHARACTERISTIC 
+
+  /begin CHARACTERISTIC  tstCom_cal_impl.Analoginput_P3 ""  
+    VALUE 0x0023F5E8 Scalar_FLOAT64_IEEE 0 tstCom_CM_double -1.7E+308 1.7E+308  
+  /end CHARACTERISTIC 
+////////////////////////////
+
+
     /begin CHARACTERISTIC ASAM.C.SCALAR.UBYTE.IDENTICAL
       "Scalar FW U16 and CDF20 as name"
       VALUE 

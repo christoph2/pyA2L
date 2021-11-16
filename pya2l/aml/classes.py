@@ -307,7 +307,7 @@ class BlockDefinition(BaseType):
         self.tag = tag
         self.type_name = type_name
         self.member = member
-        self.mult = multiple
+        self.multiple = multiple
 
     @property
     def type_(self):
