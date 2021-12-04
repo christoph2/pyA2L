@@ -114,7 +114,9 @@ class DB(object):
         prepro = Preprocessor()
         prepro_result = prepro.process(self._a2lfn, encoding = detect_encoding(self._a2lfn))
         a2l_parser = ParserWrapper("a2l", "a2lFile", A2LListener, debug = debug, line_map = prepro_result.line_map)
-        #print(prepro_result.a2l_data)
+
+        print(prepro_result.if_data_sections)
+
         self.db = a2l_parser.parseFromString(prepro_result.a2l_data, dbname = str(self._dbfn))
         self.session = self.db.session
         return self.session
