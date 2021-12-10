@@ -31,6 +31,7 @@ __version__ = "0.10.2"
 import pkgutil
 import sys
 from pathlib import Path
+import warnings
 
 from pya2l.aml.listener import AMLListener
 import pya2l.model as model
@@ -58,7 +59,7 @@ class DB(object):
         debug=False,
         in_memory=False,
         remove_existing=False,
-        encoding="latin-1",
+        encoding=None,
     ):
         """Import `.a2l` file to `.a2ldb` database.
 
@@ -78,7 +79,7 @@ class DB(object):
             ** DANGER ZONE **: Remove existing database.
 
         encoding: str
-            File encoding like "latin-1" or "utf-8".
+            File encoding like "latin-1" or "utf-8" or None to auto-detect.
 
         Returns
         -------
@@ -112,16 +113,18 @@ class DB(object):
             elif self._dbfn.exists():
                 raise OSError("file '{}' already exists.".format(self._dbfn))
         prepro = Preprocessor()
-        prepro_result = prepro.process(self._a2lfn, encoding = detect_encoding(self._a2lfn))
+
+        if encoding is not None:
+            warnings.warn("Don't use parameter `encoding` anymore -- file encoding is autodetected now.", DeprecationWarning, stacklevel = 2)
+
+        encoding = detect_encoding(self._a2lfn)
+        prepro_result = prepro.process(self._a2lfn, encoding = encoding)
         a2l_parser = ParserWrapper("a2l", "a2lFile", A2LListener, debug = debug, line_map = prepro_result.line_map)
-
-        print(prepro_result.if_data_sections)
-
-        self.db = a2l_parser.parseFromString(prepro_result.a2l_data, dbname = str(self._dbfn))
+        self.db = a2l_parser.parseFromString(prepro_result.a2l_data, dbname = str(self._dbfn), encoding = encoding)
         self.session = self.db.session
         return self.session
 
-    def export_a2l(self, file_name=sys.stdout, encoding="latin-1"):
+    def export_a2l(self, file_name=sys.stdout, encoding="utf-8"):
         """"""
         namespace = dict(session=self.db.session, model=model)
         data = doTemplateFromText(
