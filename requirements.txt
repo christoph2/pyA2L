@@ -1,4 +1,4 @@
-setuptools>=56.0
+setuptools>=43.0
 wheel>=0.33.0
 antlr4-python3-runtime==4.9.3
 chardet
