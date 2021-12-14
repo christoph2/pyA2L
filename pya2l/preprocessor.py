@@ -53,8 +53,8 @@ INCLUDE = re.compile(r'^\s*/include\s+"(?P<phile>[^"]*)"', re.DOTALL | re.UNICOD
 AML_START = re.compile(r'^\s*/begin\s+A[23]ML(?P<section>.*?)', re.VERBOSE | re.DOTALL | re.MULTILINE)
 AML_END = re.compile(r'^\s*/end\s+A[23]ML', re.VERBOSE | re.DOTALL | re.MULTILINE)
 
-IF_DATA_START = re.compile(r'\s*/begin\s+IF_DATA(?P<section>.*?)$', re.VERBOSE | re.DOTALL | re.MULTILINE)
-IF_DATA_END = re.compile(r'^\s*/end\s+IF_DATA', re.VERBOSE | re.DOTALL | re.MULTILINE)
+IF_DATA_START = re.compile(r'/begin(?P<s0>\s+)IF_DATA(?P<s1>\s+)(?P<section>\S*)(?P<tail>.*)$', re.VERBOSE | re.DOTALL | re.MULTILINE)
+IF_DATA_END = re.compile(r'^(?P<section>.*?)/end(?P<s0>\s+)IF_DATA(?P<tail>.*)', re.VERBOSE | re.DOTALL | re.MULTILINE)
 
 PreprocessorResult = namedtuple("PreprocessorResult", "a2l_data aml_section if_data_sections line_map")
 IfDataSection = namedtuple("IfDataSection", "start_line end_line data")
@@ -169,7 +169,7 @@ class Preprocessor:
         abs_file_name = str(pth_obj.absolute())
         if abs_file_name in self.line_map:
             raise RuntimeError("Circular dependency to include file '{}'.".format(abs_file_name))
-        self.logger.debug("Processing file '{}'.".format(abs_file_name))
+        self.logger.info("Pre-processing file '{}'.".format(abs_file_name))
         for num, line in enumerate(f_obj, 1):
             self.absolute_file_number += 1
             line = line.rstrip("\n")
@@ -224,7 +224,7 @@ class Preprocessor:
                 else:
                     mapped_file_name = self.shorten_path(abs_file_name)
                     self.line_map[mapped_file_name].append((start_line_number, self.absolute_file_number, ))
-                    self.logger.debug("Including file '{}'.".format(where))
+                    self.logger.info("Including file '{}'.".format(where))
                     res = self._process_file(where, join_lines = False)
                     result.extend(res)
                     start_line_number = self.absolute_file_number + 1
@@ -245,6 +245,46 @@ class Preprocessor:
         in_aml = False
         in_if_data = False
         if_data_start = if_data_end = None
+        line = ""
+        line_num = 0
+        def cut_out_ifdata():
+            nonlocal if_data_section
+            nonlocal in_if_data
+            nonlocal if_data_start
+            nonlocal line
+            nonlocal line_num
+            nonlocal result
+            nonlocal sections
+            offset = 0
+            while True:
+                match = IF_DATA_START.search(line, offset)
+                if match:
+                    in_if_data = True
+                    s1, e1 =  match.span()
+                    if_data_start = (line_num, s1)
+                    sl = False
+                    gd = match.groupdict()
+                    head = "{}/begin{}IF_DATA{}{}".format(line[ : s1], gd["s0"], gd["s1"], gd["section"])
+                    match_end = IF_DATA_END.search(line[s1 : ])
+                    if match_end:
+                        sl = True
+                        s2, e2 = match_end.span()
+                        offset = s1 + e2 - len(match_end.group("tail"))
+                        section = "{}/end{}IF_DATA".format(match_end.group("section"), match_end.group("s0"))
+                        sections.append(
+                            IfDataSection(if_data_start, (line_num, offset), "{}".format(section))
+                        )
+                        end = "/end{}IF_DATA".format(match_end.group("s0"))
+                        tail = end + match_end.group("tail")
+                        filler = ' ' * (len(line) - (len(head) + len(tail)))
+                        line = head + filler + tail
+                        in_if_data = False
+                    if not sl:
+                        if_data_section.append(match.group(0))
+                        break
+                else:
+                    break
+            result.append(line)
         for line_num, line in enumerate(data.splitlines(), 1):
             if not in_aml:
                 match = AML_START.match(line)
@@ -253,36 +293,22 @@ class Preprocessor:
                     aml_section.append("/begin A2ML")
                 else:
                     if not in_if_data:
-                        #match = IF_DATA_START.match(line)
-                        match = IF_DATA_START.search(line)
-                        if match:
-                            in_if_data = True
-                            if_data_start = line_num
-
-                            start_pos, end_pos =  match.span()
-
-                            ids = "/begin IF_DATA {}".format(match.group("section"))
-
-                            #print("MATCH: '{}' '{}'".format(line[ : start_pos], ids))
-
-                            if_data_section.append(ids)
-                            #result.append(ids)
-                            #result.append(line[start_pos : end_pos])
-                            result.append(line[ : end_pos])
-                        else:
-                            result.append(line)
+                        cut_out_ifdata()
                     else:
-                        if_data_section.append(line.strip())
                         match = IF_DATA_END.match(line)
                         if match:
-                            if_data_end = line_num
-                            section = IfDataSection(if_data_start - 1, if_data_end - 1, '\n'.join(if_data_section))
-                            #print(section, end = "\n\n")    ###########################
+                            s, e = match.span()
+                            if_data_end = (line_num, e - len(match.group("tail")))
+                            if_data_section.append("{}/end{}IF_DATA".format(match.group("section"), match.group("s0")))
+                            section = IfDataSection(if_data_start, if_data_end, '\n'.join(if_data_section))
                             sections.append(section)
                             in_if_data = False
                             if_data_section = []
-                            result.append("/end IF_DATA")
+                            line = "{}/end{}IF_DATA".format(" " * len(match.group("section")), match.group("s0"))
+                            #cut_out_ifdata()
+                            result.append(line)
                         else:
+                            if_data_section.append(line.strip())
                             result.append("")
             else:
                 match = AML_END.match(line)
@@ -295,7 +321,6 @@ class Preprocessor:
                 result.append("")
         self.aml_section = "\n".join(aml_section)
         self.if_data_sections = sections
-        #print("\n".join(result))    ###########################
         return "\n".join(result)
 
     def shorten_path(pth, file_name):
