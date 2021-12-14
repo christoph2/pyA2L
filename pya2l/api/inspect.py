@@ -48,6 +48,7 @@ ASAM_TO_NUMPY_TYPES = {
     "LONG": "int32",
     "A_UINT64": "uint64",
     "A_INT64": "int64",
+    "FLOAT16_IEEE": "float16",
     "FLOAT32_IEEE": "float32",
     "FLOAT64_IEEE": "float64",
 }
@@ -64,6 +65,7 @@ ASAM_TYPE_SIZES = {
     "SLONG": 4,
     "A_UINT64": 8,
     "A_INT64": 8,
+    "FLOAT16_IEEE": 2,
     "FLOAT32_IEEE": 4,
     "FLOAT64_IEEE": 8,
 }
@@ -73,6 +75,7 @@ NATURAL_ALIGNMENTS = {
     "WORD": 2,
     "DWORD": 4,
     "QWORD": 8,
+    "FLOAT16": 2,
     "FLOAT32": 4,
     "FLOAT64": 8,
 }
@@ -89,6 +92,7 @@ ASAM_ALIGNMENT_TYPES = {
     "SLONG": "DWORD",
     "A_UINT64": "QWORD",
     "A_INT64": "QWORD",
+    "FLOAT16_IEEE": "FLOAT16",
     "FLOAT32_IEEE": "FLOAT32",
     "FLOAT64_IEEE": "FLOAT64",
 }
@@ -105,6 +109,7 @@ ASAM_TYPE_RANGES = {
     "SLONG":            (-2147483648, 2147483647),
     "A_UINT64":         (0, 18446744073709551615),
     "A_INT64":          (-9223372036854775808, 9223372036854775807),
+    "FLOAT16_IEEE":     (1.175494351e-38, 3.402823466e+38),     # TODO: Fixme
     "FLOAT32_IEEE":     (1.175494351e-38, 3.402823466e+38),
     "FLOAT64_IEEE":     (2.2250738585072014e-308, 1.7976931348623157e+308),
 }
@@ -493,7 +498,7 @@ class ModCommon(CachedBase):
         comment, description.
 
     alignment: dict
-        keys:  ("BYTE", "WORD", "DWORD", "QWORD", "FLOAT32", "FLOAT64")
+        keys:  ("BYTE", "WORD", "DWORD", "QWORD", "FLOAT16", "FLOAT32", "FLOAT64")
         values: int or None
 
     byteOrder: ["LITTLE_ENDIAN" | "BIG_ENDIAN" | "MSB_LAST" | "MSB_FIRST"] or None
@@ -536,6 +541,9 @@ class ModCommon(CachedBase):
             "QWORD": self.modcommon.alignment_int64.alignmentBorder
             if self.modcommon.alignment_int64
             else NATURAL_ALIGNMENTS["QWORD"],
+            "FLOAT16": self.modcommon.alignment_float16_ieee.alignmentBorder
+            if self.modcommon.alignment_float16_ieee
+            else NATURAL_ALIGNMENTS["FLOAT16"],
             "FLOAT32": self.modcommon.alignment_float32_ieee.alignmentBorder
             if self.modcommon.alignment_float32_ieee
             else NATURAL_ALIGNMENTS["FLOAT32"],
@@ -1406,7 +1414,7 @@ class Measurement(CachedBase):
         comment, description.
 
     datatype: ['UBYTE' | 'SBYTE' | 'UWORD' | 'SWORD' | 'ULONG' | 'SLONG' | 'A_UINT64' | 'A_INT64' |
-        'FLOAT32_IEEE' | 'FLOAT64_IEEE']
+        'FLOAT16_IEEE' | 'FLOAT32_IEEE' | 'FLOAT64_IEEE']
         Type of the Measurement.
 
     resolution: int
@@ -1856,6 +1864,9 @@ class RecordLayout(CachedBase):
             "QWORD": self.layout.alignment_int64.alignmentBorder
             if self.layout.alignment_int64
             else self._mod_common.alignment["QWORD"],
+            "FLOAT16": self.layout.alignment_float16_ieee.alignmentBorder
+            if self.layout.alignment_float16_ieee
+            else self._mod_common.alignment["FLOAT16"],
             "FLOAT32": self.layout.alignment_float32_ieee.alignmentBorder
             if self.layout.alignment_float32_ieee
             else self._mod_common.alignment["FLOAT32"],

@@ -39,6 +39,11 @@ alignmentByte:
     alignmentBorder = integerValue
     ;
 
+alignmentFloat16Ieee:
+     'ALIGNMENT_FLOAT16_IEEE'
+    alignmentBorder = integerValue
+    ;
+
 alignmentFloat32Ieee:
      'ALIGNMENT_FLOAT32_IEEE'
     alignmentBorder = integerValue
@@ -231,6 +236,16 @@ stepSize:
     stepSize_ = numericValue
     ;
 
+structureComponent:
+    BEGIN 'STRUCTURE_COMPONENT'
+    name = identifierValue
+    deposit_ = identifierValue
+    offset = integerValue
+    link = linkType
+    symbol = stringValue
+    END 'STRUCTURE_COMPONENT'
+    ;
+
 symbolLink:
      'SYMBOL_LINK'
     symbolName = stringValue
@@ -302,10 +317,14 @@ module:
         v_function += function |
         v_group += group |
         v_ifData += ifData |
+        v_instance += instance |
         v_measurement += measurement |
         v_modCommon += modCommon |
         v_modPar += modPar |
         v_recordLayout += recordLayout |
+        v_structureComponent += structureComponent |
+        v_typedefMeasurement += typedefMeasurement |
+        v_typedefStructure += typedefStructure |
         v_unit += unit |
         v_userRights += userRights |
         v_variantCoding += variantCoding
@@ -754,6 +773,20 @@ subGroup:
     END 'SUB_GROUP'
     ;
 
+instance:
+    BEGIN 'INSTANCE'
+    name = identifierValue
+    longIdentifier = stringValue
+    typeName = identifierValue
+    address = integerValue
+    /* optional part */
+
+    (
+        v_ifData += ifData
+    )*
+    END 'INSTANCE'
+    ;
+
 measurement:
     BEGIN 'MEASUREMENT'
     name = identifierValue
@@ -861,6 +894,7 @@ modCommon:
 
     (
         v_alignmentByte += alignmentByte |
+        v_alignmentFloat16Ieee += alignmentFloat16Ieee |
         v_alignmentFloat32Ieee += alignmentFloat32Ieee |
         v_alignmentFloat64Ieee += alignmentFloat64Ieee |
         v_alignmentInt64 += alignmentInt64 |
@@ -1081,6 +1115,7 @@ recordLayout:
 
     (
         v_alignmentByte += alignmentByte |
+        v_alignmentFloat16Ieee += alignmentFloat16Ieee |
         v_alignmentFloat32Ieee += alignmentFloat32Ieee |
         v_alignmentFloat64Ieee += alignmentFloat64Ieee |
         v_alignmentInt64 += alignmentInt64 |
@@ -1504,6 +1539,34 @@ srcAddr5:
     datatype = dataType
     ;
 
+typedefMeasurement:
+    BEGIN 'TYPEDEF_MEASUREMENT'
+    name = identifierValue
+    longIdentifier = stringValue
+    datatype = dataType
+    conversion = identifierValue
+    resolution = integerValue
+    accuracy = numericValue
+    lowerLimit = numericValue
+    upperLimit = numericValue
+    END 'TYPEDEF_MEASUREMENT'
+    ;
+
+typedefStructure:
+    BEGIN 'TYPEDEF_STRUCTURE'
+    name = identifierValue
+    longIdentifier = stringValue
+    size = integerValue
+    link = linkType
+    symbol = stringValue
+    /* optional part */
+
+    (
+        v_structureComponent += structureComponent
+    )*
+    END 'TYPEDEF_STRUCTURE'
+    ;
+
 unit:
     BEGIN 'UNIT'
     name = identifierValue
@@ -1665,7 +1728,7 @@ arraySpecifier:
 
 dataType:
     v = ('UBYTE' | 'SBYTE' | 'UWORD' | 'SWORD' | 'ULONG' | 'SLONG' |
-    'A_UINT64' | 'A_INT64' | 'FLOAT32_IEEE' | 'FLOAT64_IEEE')
+    'A_UINT64' | 'A_INT64' | 'FLOAT16_IEEE' | 'FLOAT32_IEEE' | 'FLOAT64_IEEE')
     ;
 
 datasize:
@@ -1682,6 +1745,10 @@ byteOrderValue:
 
 indexorder:
     v = ('INDEX_INCR' | 'INDEX_DECR')
+    ;
+
+linkType:
+    v = 'SYMBOL_TYPE_LINK'
     ;
 
 BEGIN:

@@ -681,7 +681,7 @@ def test_mod_par_basic():
     assert mp.systemConstants == {}
 
 
-def test_mod_common_f7ull_featured():
+def test_mod_common_full_featured():
     parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
     DATA = """
     /begin MODULE testModule ""
@@ -715,6 +715,7 @@ def test_mod_common_f7ull_featured():
         "WORD": 2,
         "QWORD": 8,
         "FLOAT32": 4,
+        "FLOAT16": 2,
     }
 
 @pytest.mark.skip

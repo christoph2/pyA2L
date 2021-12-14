@@ -94,6 +94,7 @@ class Datatype(SingletonBase):
         "SLONG",
         "A_UINT64",
         "A_INT64",
+        "FLOAT16_IEEE",
         "FLOAT32_IEEE",
         "FLOAT64_IEEE",
     )
@@ -114,6 +115,8 @@ class Byteorder(SingletonBase):
 class Indexorder(SingletonBase):
     enum_values = ("INDEX_INCR", "INDEX_DECR")
 
+class Linktype(SingletonBase):
+    enum_values = ("SYMBOL_TYPE_LINK", )
 
 class Parameter(object):
     """"""
@@ -638,6 +641,32 @@ class HasAlignmentBytes(object):
     @declared_attr
     def alignment_byte(cls):
         return relationship("AlignmentByte")
+
+class AlignmentFloat16Ieee(Base):
+    """"""
+
+    __tablename__ = "alignment_float16_ieee"
+
+    alignmentBorder = StdUShort()
+
+    __required_parameters__ = (
+        Parameter("alignmentBorder", Uint, False),
+    )
+
+
+class HasAlignmentFloat16Ieees(object):
+
+    @declared_attr
+    def alignment_float16_ieee_id(cls):
+        return Column(
+            types.Integer,
+            ForeignKey("alignment_float16_ieee.rid"),
+            nullable=True
+        )
+
+    @declared_attr
+    def alignment_float16_ieee(cls):
+        return relationship("AlignmentFloat16Ieee")
 
 class AlignmentFloat32Ieee(Base):
     """"""
@@ -1475,6 +1504,75 @@ class HasStepSizes(object):
     def step_size(cls):
         return relationship("StepSize")
 
+class StructureComponentAssociation(Base):
+
+    __tablename__ = "structure_component_association"
+
+    position = StdLong()
+
+    discriminator = Column(types.String)
+    __mapper_args__ = {"polymorphic_on": discriminator}
+
+
+class StructureComponent(Base):
+    """"""
+
+    _association_id = Column(types.Integer, ForeignKey("structure_component_association.rid"))
+    association = relationship(
+        "StructureComponentAssociation",
+        backref="structure_component",
+        uselist = True
+    )
+    parent = association_proxy("association", "parent")
+
+    name = StdIdent()
+
+    deposit = StdIdent()
+
+    offset = StdULong()
+
+    link = StdString()
+
+    symbol = StdString()
+
+    __required_parameters__ = (
+        Parameter("name", Ident, False),
+        Parameter("deposit", Ident, False),
+        Parameter("offset", Ulong, False),
+        Parameter("link", Linktype, False),
+        Parameter("symbol", String, False),
+    )
+
+    __optional_elements__ = ( )
+
+class HasStructureComponents(object):
+
+    @declared_attr
+    def _structure_component_association_id(cls):
+        return Column(types.Integer, ForeignKey("structure_component_association.rid"))
+
+    @declared_attr
+    def structure_component_association(cls):
+        name = cls.__name__
+        discriminator = name.lower()
+
+        assoc_cls = type(
+            "%sStructureComponentAssociation" % name, (StructureComponentAssociation,),
+            dict(
+                __tablename__ = None,
+                __mapper_args__ = {"polymorphic_identity": discriminator},
+            ),
+        )
+
+        cls.structure_component = association_proxy(
+            "structure_component_association",
+            "structure_component",
+            creator = lambda structure_component: assoc_cls(structure_component = structure_component),
+        )
+        return relationship(
+            assoc_cls, backref = backref("parent", uselist = False, collection_class = ordering_list('position'))
+        )
+
 class SymbolLink(Base):
     """"""
 
@@ -1642,7 +1740,7 @@ class ProjectNo(Base):
     )
 
 
-class Module(Base, HasIfDatas):
+class Module(Base, HasIfDatas, HasStructureComponents):
     """"""
 
     __tablename__ = "module"
@@ -1668,10 +1766,14 @@ class Module(Base, HasIfDatas):
         Element("Function", "FUNCTION", True),
         Element("Group", "GROUP", True),
         Element("IfData", "IF_DATA", True),
+        Element("Instance", "INSTANCE", True),
         Element("Measurement", "MEASUREMENT", True),
         Element("ModCommon", "MOD_COMMON", False),
         Element("ModPar", "MOD_PAR", False),
         Element("RecordLayout", "RECORD_LAYOUT", True),
+        Element("StructureComponent", "STRUCTURE_COMPONENT", True),
+        Element("TypedefMeasurement", "TYPEDEF_MEASUREMENT", True),
+        Element("TypedefStructure", "TYPEDEF_STRUCTURE", True),
         Element("Unit", "UNIT", True),
         Element("UserRights", "USER_RIGHTS", True),
         Element("VariantCoding", "VARIANT_CODING", False),
@@ -1726,6 +1828,11 @@ class Module(Base, HasIfDatas):
         back_populates = "module",
         uselist = True
     )
+    instance = relationship(
+        "Instance",
+        back_populates = "module",
+        uselist = True
+    )
     measurement = relationship(
         "Measurement",
         back_populates = "module",
@@ -1743,6 +1850,16 @@ class Module(Base, HasIfDatas):
     )
     record_layout = relationship(
         "RecordLayout",
+        back_populates = "module",
+        uselist = True
+    )
+    typedef_measurement = relationship(
+        "TypedefMeasurement",
+        back_populates = "module",
+        uselist = True
+    )
+    typedef_structure = relationship(
+        "TypedefStructure",
         back_populates = "module",
         uselist = True
     )
@@ -3008,6 +3125,37 @@ class SubGroup(Base):
     )
 
 
+class Instance(Base, HasIfDatas):
+    """"""
+
+    __tablename__ = "instance"
+
+    name = StdIdent()
+
+    longIdentifier = StdString()
+
+    typeName = StdIdent()
+
+    address = StdULong()
+
+    __required_parameters__ = (
+        Parameter("name", Ident, False),
+        Parameter("longIdentifier", String, False),
+        Parameter("typeName", Ident, False),
+        Parameter("address", Ulong, False),
+    )
+
+    __optional_elements__ = (
+        Element("IfData", "IF_DATA", True),
+    )
+    _module_rid = Column(types.Integer, ForeignKey("module.rid"))
+    module = relationship(
+        "Module",
+        back_populates = "instance",
+        uselist = True
+    )
+
+
 class Measurement(Base, HasAnnotations, HasBitMasks, HasByteOrders, HasDiscretes, HasDisplayIdentifiers, HasEcuAddressExtensions, HasFormats, HasFunctionLists, HasIfDatas, HasMatrixDims, HasMaxRefreshs, HasPhysUnits, HasRefMemorySegments, HasSymbolLinks):
     """"""
 
@@ -3315,7 +3463,7 @@ class Virtual(Base):
     )
 
 
-class ModCommon(Base, HasAlignmentBytes, HasAlignmentFloat32Ieees, HasAlignmentFloat64Ieees, HasAlignmentInt64s, HasAlignmentLongs, HasAlignmentWords, HasByteOrders, HasDeposits):
+class ModCommon(Base, HasAlignmentBytes, HasAlignmentFloat16Ieees, HasAlignmentFloat32Ieees, HasAlignmentFloat64Ieees, HasAlignmentInt64s, HasAlignmentLongs, HasAlignmentWords, HasByteOrders, HasDeposits):
     """"""
 
     __tablename__ = "mod_common"
@@ -3328,6 +3476,7 @@ class ModCommon(Base, HasAlignmentBytes, HasAlignmentFloat32Ieees, HasAlignmentF
 
     __optional_elements__ = (
         Element("AlignmentByte", "ALIGNMENT_BYTE", False),
+        Element("AlignmentFloat16Ieee", "ALIGNMENT_FLOAT16_IEEE", False),
         Element("AlignmentFloat32Ieee", "ALIGNMENT_FLOAT32_IEEE", False),
         Element("AlignmentFloat64Ieee", "ALIGNMENT_FLOAT64_IEEE", False),
         Element("AlignmentInt64", "ALIGNMENT_INT64", False),
@@ -3924,7 +4073,7 @@ class User(Base):
     )
 
 
-class RecordLayout(Base, HasAlignmentBytes, HasAlignmentFloat32Ieees, HasAlignmentFloat64Ieees, HasAlignmentInt64s, HasAlignmentLongs, HasAlignmentWords):
+class RecordLayout(Base, HasAlignmentBytes, HasAlignmentFloat16Ieees, HasAlignmentFloat32Ieees, HasAlignmentFloat64Ieees, HasAlignmentInt64s, HasAlignmentLongs, HasAlignmentWords):
     """"""
 
     __tablename__ = "record_layout"
@@ -3937,6 +4086,7 @@ class RecordLayout(Base, HasAlignmentBytes, HasAlignmentFloat32Ieees, HasAlignme
 
     __optional_elements__ = (
         Element("AlignmentByte", "ALIGNMENT_BYTE", False),
+        Element("AlignmentFloat16Ieee", "ALIGNMENT_FLOAT16_IEEE", False),
         Element("AlignmentFloat32Ieee", "ALIGNMENT_FLOAT32_IEEE", False),
         Element("AlignmentFloat64Ieee", "ALIGNMENT_FLOAT64_IEEE", False),
         Element("AlignmentInt64", "ALIGNMENT_INT64", False),
@@ -5605,6 +5755,81 @@ class SrcAddr5(Base):
     )
 
 
+class TypedefMeasurement(Base):
+    """"""
+
+    __tablename__ = "typedef_measurement"
+
+    name = StdIdent()
+
+    longIdentifier = StdString()
+
+    datatype = StdIdent()
+
+    conversion = StdIdent()
+
+    resolution = StdUShort()
+
+    accuracy = StdFloat()
+
+    lowerLimit = StdFloat()
+
+    upperLimit = StdFloat()
+
+    __required_parameters__ = (
+        Parameter("name", Ident, False),
+        Parameter("longIdentifier", String, False),
+        Parameter("datatype", Datatype, False),
+        Parameter("conversion", Ident, False),
+        Parameter("resolution", Uint, False),
+        Parameter("accuracy", Float, False),
+        Parameter("lowerLimit", Float, False),
+        Parameter("upperLimit", Float, False),
+    )
+
+    __optional_elements__ = ( )
+    _module_rid = Column(types.Integer, ForeignKey("module.rid"))
+    module = relationship(
+        "Module",
+        back_populates = "typedef_measurement",
+        uselist = True
+    )
+
+
+class TypedefStructure(Base, HasStructureComponents):
+    """"""
+
+    __tablename__ = "typedef_structure"
+
+    name = StdIdent()
+
+    longIdentifier = StdString()
+
+    size = StdULong()
+
+    link = StdString()
+
+    symbol = StdString()
+
+    __required_parameters__ = (
+        Parameter("name", Ident, False),
+        Parameter("longIdentifier", String, False),
+        Parameter("size", Ulong, False),
+        Parameter("link", Linktype, False),
+        Parameter("symbol", String, False),
+    )
+
+    __optional_elements__ = (
+        Element("StructureComponent", "STRUCTURE_COMPONENT", True),
+    )
+    _module_rid = Column(types.Integer, ForeignKey("module.rid"))
+    module = relationship(
+        "Module",
+        back_populates = "typedef_structure",
+        uselist = True
+    )
+
+
 class Unit(Base, HasRefUnits):
     """"""
 
@@ -6332,6 +6557,7 @@ KEYWORD_MAP = {
     "A2ML_VERSION" : A2mlVersion,
     "ADDR_EPK" : AddrEpk,
     "ALIGNMENT_BYTE" : AlignmentByte,
+    "ALIGNMENT_FLOAT16_IEEE" : AlignmentFloat32Ieee,
     "ALIGNMENT_FLOAT32_IEEE" : AlignmentFloat32Ieee,
     "ALIGNMENT_FLOAT64_IEEE" : AlignmentFloat64Ieee,
     "ALIGNMENT_INT64" : AlignmentInt64,
@@ -6419,6 +6645,7 @@ KEYWORD_MAP = {
     "IDENTIFICATION" : Identification,
     "IF_DATA" : IfData,
     "IN_MEASUREMENT" : InMeasurement,
+    "INSTANCE": Instance,
     "LAYOUT" : Layout,
     "LEFT_SHIFT" : LeftShift,
     "LOC_MEASUREMENT" : LocMeasurement,
@@ -6490,9 +6717,12 @@ KEYWORD_MAP = {
     "SUB_FUNCTION" : SubFunction,
     "SUB_GROUP" : SubGroup,
     "SUPPLIER" : Supplier,
+    "STRUCTURE_COMPONENT": StructureComponent,
     "SYMBOL_LINK" : SymbolLink,
     "SYSTEM_CONSTANT" : SystemConstant,
     "S_REC_LAYOUT" : SRecLayout,
+    "TYPEDEF_MEASUREMENT": TypedefMeasurement,
+    "TYPEDEF_STRUCTURE": TypedefStructure,
     "UNIT" : Unit,
     "UNIT_CONVERSION" : UnitConversion,
     "USER" : User,

@@ -4,7 +4,7 @@
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2020 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2021 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -90,6 +90,7 @@ class Datatype(SingletonBase):
         "SLONG",
         "A_UINT64",
         "A_INT64",
+        "FLOAT16_IEEE",
         "FLOAT32_IEEE",
         "FLOAT64_IEEE",
     )
@@ -110,6 +111,9 @@ class Byteorder(SingletonBase):
 class Indexorder(SingletonBase):
     enumValues = ("INDEX_INCR", "INDEX_DECR")
 
+
+class Linktype(SingletonBase):
+    enumValues = ("SYMBOL_TYPE_LINK", )
 
 CompuPair = namedtuple("CompuPair", "inVal outVal")
 CompuTriplet = namedtuple("CompuTriplet", "valMin valMax outVal")
@@ -226,6 +230,16 @@ class ADDR_EPK(Keyword):
 
 
 class ALIGNMENT_BYTE(Keyword):
+    attrs = [
+        (
+            Uint,
+            "AlignmentBorder",
+        )  # Describes the border at which the value is aligned to,
+        # i.e. its memory address must be dividable by the value AlignmentBorder.)
+    ]
+
+
+class ALIGNMENT_FLOAT16_IEEE(Keyword):
     attrs = [
         (
             Uint,
@@ -980,6 +994,18 @@ class IN_MEASUREMENT(Keyword):
     attrs = [(Ident, "Identifier", MULTIPLE)]
 
 
+class INSTANCE(Keyword):
+    block = True
+    multiple = True
+    attrs = [
+        (Ident, "Name"),
+        (String, "LongIdentifier"),
+        (Ident, "TypeName"),
+        (Ulong, "Address"),
+    ]
+    children = ["IF_DATA"]
+
+
 class LAYOUT(Keyword):
     attrs = [(Enum, "IndexMode", ("ROW_DIR", "COLUMN_DIR"))]
 
@@ -1108,6 +1134,7 @@ class MOD_COMMON(Keyword):
     block = True
     children = [
         "ALIGNMENT_BYTE",
+        "ALIGNMENT_FLOAT16_IEEE",
         "ALIGNMENT_FLOAT32_IEEE",
         "ALIGNMENT_FLOAT64_IEEE",
         "ALIGNMENT_INT64",
@@ -1163,10 +1190,14 @@ class MODULE(Keyword):
         "FUNCTION",
         "GROUP",
         "IF_DATA",
+        "INSTANCE",
         "MEASUREMENT",
         "MOD_COMMON",
         "MOD_PAR",
         "RECORD_LAYOUT",
+        "STRUCTURE_COMPONENT",
+        "TYPEDEF_MEASUREMENT",
+        "TYPEDEF_STRUCTURE",
         "UNIT",
         "USER_RIGHTS",
         "VARIANT_CODING",
@@ -1357,6 +1388,7 @@ class RECORD_LAYOUT(Keyword):
     block = True
     children = [
         "ALIGNMENT_BYTE",
+        "ALIGNMENT_FLOAT16_IEEE",
         "ALIGNMENT_FLOAT32_IEEE",
         "ALIGNMENT_FLOAT64_IEEE",
         "ALIGNMENT_INT64",
@@ -1660,6 +1692,48 @@ class S_REC_LAYOUT(Keyword):
     ]
 
 
+class STRUCTURE_COMPONENT(Keyword):
+    multiple = True
+    block = True
+    attrs = [
+        (Ident, "Name"),
+        (Ident, "Deposit"),
+        (Ulong, "Offset"),
+        (Linktype, "Link"),
+        (String, "Symbol"),
+    ]
+
+
+class TYPEDEF_MEASUREMENT(Keyword):
+        multiple = True
+        block = True
+        attrs = [
+            (Ident, "Name"),
+            (String, "LongIdentifier"),
+            (Datatype, "Datatype"),
+            (Ident, "Conversion"),
+            (Uint, "Resolution"),
+            (Float, "Accuracy"),
+            (Float, "LowerLimit"),
+            (Float, "UpperLimit"),
+        ]
+
+
+class TYPEDEF_STRUCTURE(Keyword):
+        multiple = True
+        block = True
+        attrs = [
+            (Ident, "Name"),
+            (String, "LongIdentifier"),
+            (Ulong, "Size"),
+            (Linktype, "Link"),
+            (String, "Symbol"),
+        ]
+        children = [
+            "STRUCTURE_COMPONENT",
+        ]
+
+
 class UNIT(Keyword):
     multiple = True
     children = ["SI_EXPONENTS", "REF_UNIT", "UNIT_CONVERSION"]
@@ -1796,6 +1870,7 @@ KEYWORD_MAP = {
     "A2ML_VERSION": A2ML_VERSION,
     "ADDR_EPK": ADDR_EPK,
     "ALIGNMENT_BYTE": ALIGNMENT_BYTE,
+    "ALIGNMENT_FLOAT16_IEEE": ALIGNMENT_FLOAT16_IEEE,
     "ALIGNMENT_FLOAT32_IEEE": ALIGNMENT_FLOAT32_IEEE,
     "ALIGNMENT_FLOAT64_IEEE": ALIGNMENT_FLOAT64_IEEE,
     "ALIGNMENT_INT64": ALIGNMENT_INT64,
@@ -1883,6 +1958,7 @@ KEYWORD_MAP = {
     "IDENTIFICATION": IDENTIFICATION,
     "IF_DATA": IF_DATA,
     "IN_MEASUREMENT": IN_MEASUREMENT,
+    "INSTANCE": INSTANCE,
     "LAYOUT": LAYOUT,
     "LEFT_SHIFT": LEFT_SHIFT,
     "LOC_MEASUREMENT": LOC_MEASUREMENT,
@@ -1951,12 +2027,15 @@ KEYWORD_MAP = {
     "STATIC_RECORD_LAYOUT": STATIC_RECORD_LAYOUT,
     "STATUS_STRING_REF": STATUS_STRING_REF,
     "STEP_SIZE": STEP_SIZE,
+    "STRUCTURE_COMPONENT": STRUCTURE_COMPONENT,
     "SUB_FUNCTION": SUB_FUNCTION,
     "SUB_GROUP": SUB_GROUP,
     "SUPPLIER": SUPPLIER,
     "SYMBOL_LINK": SYMBOL_LINK,
     "SYSTEM_CONSTANT": SYSTEM_CONSTANT,
     "S_REC_LAYOUT": S_REC_LAYOUT,
+    "TYPEDEF_MEASUREMENT": TYPEDEF_MEASUREMENT,
+    "TYPEDEF_STRUCTURE": TYPEDEF_STRUCTURE,
     "UNIT": UNIT,
     "UNIT_CONVERSION": UNIT_CONVERSION,
     "USER": USER,

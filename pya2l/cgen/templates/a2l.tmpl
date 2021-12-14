@@ -731,6 +731,25 @@ project = session.query(model.Project).first()
                 /end IF_DATA
             %endfor
             %endif
+              <% instance = entry2.instance %>
+                    %if instance:
+            %for entry3 in instance:
+                /begin INSTANCE
+                    ${entry3.name}  /* name */
+                    "${entry3.longIdentifier}"  /* longIdentifier */
+                    ${entry3.typeName}  /* typeName */
+                    ${entry3.address}  /* address */
+                    <% if_data = entry3.if_data %>
+                            %if if_data:
+                    %for entry4 in if_data:
+                        /begin IF_DATA
+                            ${entry4.name}  /* name */
+                        /end IF_DATA
+                    %endfor
+                    %endif
+                /end INSTANCE
+            %endfor
+            %endif
               <% measurement = entry2.measurement %>
                     %if measurement:
             %for entry3 in measurement:
@@ -898,6 +917,11 @@ project = session.query(model.Project).first()
                     %if alignment_byte:
                     ALIGNMENT_BYTE
                         ${alignment_byte.alignmentBorder}  /* alignmentBorder */
+                    %endif
+            <% alignment_float16_ieee = mod_common.alignment_float16_ieee %>
+                    %if alignment_float16_ieee:
+                    ALIGNMENT_FLOAT16_IEEE
+                        ${alignment_float16_ieee.alignmentBorder}  /* alignmentBorder */
                     %endif
             <% alignment_float32_ieee = mod_common.alignment_float32_ieee %>
                     %if alignment_float32_ieee:
@@ -1104,6 +1128,11 @@ project = session.query(model.Project).first()
                             %if alignment_byte:
                     ALIGNMENT_BYTE
                         ${alignment_byte.alignmentBorder}  /* alignmentBorder */
+                    %endif
+                    <% alignment_float16_ieee = entry3.alignment_float16_ieee %>
+                            %if alignment_float16_ieee:
+                    ALIGNMENT_FLOAT16_IEEE
+                        ${alignment_float16_ieee.alignmentBorder}  /* alignmentBorder */
                     %endif
                     <% alignment_float32_ieee = entry3.alignment_float32_ieee %>
                             %if alignment_float32_ieee:
@@ -1483,6 +1512,57 @@ project = session.query(model.Project).first()
                         ${src_addr_5.datatype}  /* datatype */
                     %endif
                 /end RECORD_LAYOUT
+            %endfor
+            %endif
+              <% structure_component = entry2.structure_component %>
+                    %if structure_component:
+            %for entry3 in structure_component:
+                /begin STRUCTURE_COMPONENT
+                    ${entry3.name}  /* name */
+                    ${entry3.deposit}  /* deposit */
+                    ${entry3.offset}  /* offset */
+                    ${entry3.link}  /* link */
+                    "${entry3.symbol}"  /* symbol */
+                /end STRUCTURE_COMPONENT
+            %endfor
+            %endif
+              <% typedef_measurement = entry2.typedef_measurement %>
+                    %if typedef_measurement:
+            %for entry3 in typedef_measurement:
+                /begin TYPEDEF_MEASUREMENT
+                    ${entry3.name}  /* name */
+                    "${entry3.longIdentifier}"  /* longIdentifier */
+                    ${entry3.datatype}  /* datatype */
+                    ${entry3.conversion}  /* conversion */
+                    ${entry3.resolution}  /* resolution */
+                    ${entry3.accuracy}  /* accuracy */
+                    ${entry3.lowerLimit}  /* lowerLimit */
+                    ${entry3.upperLimit}  /* upperLimit */
+                /end TYPEDEF_MEASUREMENT
+            %endfor
+            %endif
+              <% typedef_structure = entry2.typedef_structure %>
+                    %if typedef_structure:
+            %for entry3 in typedef_structure:
+                /begin TYPEDEF_STRUCTURE
+                    ${entry3.name}  /* name */
+                    "${entry3.longIdentifier}"  /* longIdentifier */
+                    ${entry3.size}  /* size */
+                    ${entry3.link}  /* link */
+                    "${entry3.symbol}"  /* symbol */
+                    <% structure_component = entry3.structure_component %>
+                            %if structure_component:
+                    %for entry4 in structure_component:
+                        /begin STRUCTURE_COMPONENT
+                            ${entry4.name}  /* name */
+                            ${entry4.deposit}  /* deposit */
+                            ${entry4.offset}  /* offset */
+                            ${entry4.link}  /* link */
+                            "${entry4.symbol}"  /* symbol */
+                        /end STRUCTURE_COMPONENT
+                    %endfor
+                    %endif
+                /end TYPEDEF_STRUCTURE
             %endfor
             %endif
               <% unit = entry2.unit %>

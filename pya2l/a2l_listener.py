@@ -141,6 +141,11 @@ class A2LListener(BaseListener):
         ctx.value = model.AlignmentByte(alignmentBorder=alignmentBorder)
         self.db.session.add(ctx.value)
 
+    def exitAlignmentFloat16Ieee(self, ctx):
+        alignmentBorder = ctx.alignmentBorder.value
+        ctx.value = model.AlignmentFloat16Ieee(alignmentBorder=alignmentBorder)
+        self.db.session.add(ctx.value)
+
     def exitAlignmentFloat32Ieee(self, ctx):
         alignmentBorder = ctx.alignmentBorder.value
         ctx.value = model.AlignmentFloat32Ieee(alignmentBorder=alignmentBorder)
@@ -382,6 +387,10 @@ class A2LListener(BaseListener):
         v_userRights = self.getList(ctx.v_userRights)
         v_variantCoding = delist(self.getList(ctx.v_variantCoding), True)
 
+        v_typedefStructure = self.getList(ctx.v_typedefStructure)
+        v_structureComponent = self.getList(ctx.v_structureComponent)
+        v_typedefMeasurement = self.getList(ctx.v_typedefMeasurement)
+        v_instance = self.getList(ctx.v_instance)
         ctx.value = model.Module(
             name=name,
             longIdentifier=longIdentifier,
@@ -402,6 +411,10 @@ class A2LListener(BaseListener):
             unit=v_unit,
             user_rights=v_userRights,
             variant_coding=v_variantCoding,
+            typedef_measurement = v_typedefMeasurement,
+            typedef_structure = v_typedefStructure,
+            structure_component = v_structureComponent,
+            instance = v_instance
         )
         self.db.session.add(ctx.value)
 
@@ -1002,6 +1015,72 @@ class A2LListener(BaseListener):
         )
         self.db.session.add(ctx.value)
 
+    def exitTypedefMeasurement(self, ctx):
+        name = ctx.name.value
+        longIdentifier = ctx.longIdentifier.value
+        datatype = ctx.datatype.value
+        conversion = ctx.conversion.value
+        resolution = ctx.resolution.value
+        accuracy = ctx.accuracy.value
+        lowerLimit = ctx.lowerLimit.value
+        upperLimit = ctx.upperLimit.value
+        ctx.value = model.TypedefMeasurement(
+            name=name,
+            longIdentifier=longIdentifier,
+            datatype=datatype,
+            conversion=conversion,
+            resolution=resolution,
+            accuracy=accuracy,
+            lowerLimit=lowerLimit,
+            upperLimit=upperLimit
+        )
+        self.db.session.add(ctx.value)
+
+    def exitInstance(self, ctx):
+        name = ctx.name.value
+        longIdentifier = ctx.longIdentifier.value
+        typeName = ctx.typeName.value
+        address = ctx.address.value
+        ctx.value = model.Instance(
+            name = name,
+            longIdentifier = longIdentifier,
+            typeName = typeName,
+            address = address
+        )
+        self.db.session.add(ctx.value)
+
+    def exitTypedefStructure(self, ctx):
+        name = ctx.name.value
+        longIdentifier = ctx.longIdentifier.value
+        size = ctx.size.value
+        link = ctx.link.value
+        symbol = ctx.symbol.value
+        v_structureComponent = self.getList(ctx.v_structureComponent)
+        ctx.value = model.TypedefStructure(
+            name = name,
+            longIdentifier = longIdentifier,
+            size = size,
+            link = link,
+            symbol = symbol,
+            structure_component = v_structureComponent
+        )
+        self.db.session.add(ctx.value)
+
+    def exitStructureComponent(self, ctx):
+        name = ctx.name.value
+        deposit = ctx.deposit_.value
+        offset = ctx.offset.value
+        link = ctx.link.value
+        symbol = ctx.symbol.value
+        ctx.value = model.StructureComponent(
+            name = name,
+            deposit = deposit,
+            offset = offset,
+            link = link,
+            symbol = symbol
+        )
+        self.db.session.add(ctx.value)
+
     def exitArraySize(self, ctx):
         number_ = ctx.number_.value
         ctx.value = model.ArraySize(number=number_)
@@ -1058,6 +1137,7 @@ class A2LListener(BaseListener):
         comment = ctx.comment.value
 
         v_alignmentByte = delist(self.getList(ctx.v_alignmentByte), True)
+        v_alignmentFloat16Ieee = delist(self.getList(ctx.v_alignmentFloat16Ieee), True)
         v_alignmentFloat32Ieee = delist(self.getList(ctx.v_alignmentFloat32Ieee), True)
         v_alignmentFloat64Ieee = delist(self.getList(ctx.v_alignmentFloat64Ieee), True)
         v_alignmentInt64 = delist(self.getList(ctx.v_alignmentInt64), True)
@@ -1071,6 +1151,7 @@ class A2LListener(BaseListener):
         ctx.value = model.ModCommon(
             comment=comment,
             alignment_byte=v_alignmentByte,
+            alignment_float16_ieee=v_alignmentFloat16Ieee,
             alignment_float32_ieee=v_alignmentFloat32Ieee,
             alignment_float64_ieee=v_alignmentFloat64Ieee,
             alignment_int64=v_alignmentInt64,
@@ -1281,6 +1362,7 @@ class A2LListener(BaseListener):
         name = ctx.name.value
 
         v_alignmentByte = delist(self.getList(ctx.v_alignmentByte), True)
+        v_alignmentFloat16Ieee = delist(self.getList(ctx.v_alignmentFloat16Ieee), True)
         v_alignmentFloat32Ieee = delist(self.getList(ctx.v_alignmentFloat32Ieee), True)
         v_alignmentFloat64Ieee = delist(self.getList(ctx.v_alignmentFloat64Ieee), True)
         v_alignmentInt64 = delist(self.getList(ctx.v_alignmentInt64), True)
@@ -1345,6 +1427,7 @@ class A2LListener(BaseListener):
         ctx.value = model.RecordLayout(
             name=name,
             alignment_byte=v_alignmentByte,
+            alignment_float16_ieee=v_alignmentFloat16Ieee,
             alignment_float32_ieee=v_alignmentFloat32Ieee,
             alignment_float64_ieee=v_alignmentFloat64Ieee,
             alignment_int64=v_alignmentInt64,
@@ -1982,4 +2065,7 @@ class A2LListener(BaseListener):
         ctx.value = ctx.v.text if ctx.v else None
 
     def exitAddrtype(self, ctx):
+        ctx.value = ctx.v.text if ctx.v else None
+
+    def exitLinkType(self, ctx):
         ctx.value = ctx.v.text if ctx.v else None
