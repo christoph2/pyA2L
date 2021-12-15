@@ -37,11 +37,11 @@ def main():
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-i", "--import", help = "A2L file to import", dest = "ifn", type = str, metavar = "A2L_file")
     group.add_argument("-e", "--export", help = "A2LDB file to export", dest = "efn", type = str, metavar = "DB_file")
-
-    parser.add_argument("-k", dest = 'keepDirectory', action = "store_true", default = False,
-        help = "keep directory; otherwise create db in current directory")
-    parser.add_argument("-l", help = "loglevel [warn | info | error | debug]", dest = "loglevel", type = str, default = "info")
-    parser.add_argument("-f", "--force-overwrite", help = "Force overwrite of existing file", default = False, action = "store_true")
+    parser.add_argument("-E", "--encoding", help = "Import file encoding, like ascii, latin-1, utf-8", dest = "encoding", type = str, default = None)
+    #parser.add_argument("-k", dest = 'keepDirectory', action = "store_true", default = False,
+    #    help = "keep directory; otherwise create db in current directory")
+    parser.add_argument("-l", help = "Verbosity of log messages", choices = ["warn", "info", "error", "debug", "critical"], dest = "loglevel", type = str, default = "info")
+    #parser.add_argument("-f", "--force-overwrite", help = "Force overwrite of existing file", default = False, action = "store_true")
 
     args = parser.parse_args()
     #print(args)
@@ -57,11 +57,7 @@ def main():
         db.export_a2l(sys.stdout)
     else:
         ifn = Path(args.ifn)
-        session = db.import_a2l(ifn)
-
-#    if not a2ldb_file.exists():
-#        raise RuntimeError("file '{}' does not exist.".format(a2ldb_file))
-
+        session = db.import_a2l(ifn, encoding = args.encoding, loglevel = args.loglevel)
 
 if __name__ == '__main__':
     main()
