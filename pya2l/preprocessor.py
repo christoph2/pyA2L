@@ -37,13 +37,13 @@ __version__ = "0.1.0"
 
 from bisect import bisect
 from collections import defaultdict, namedtuple
-from logging import getLogger
 from os import getenv
 from os.path import pathsep
 from pathlib import Path
 import re
 import string
 
+from pya2l.logger import Logger
 
 CPP_COMMENT = re.compile(r'(?://)(?P<cmt>.*)$', re.DOTALL | re.UNICODE | re.VERBOSE)
 MULTILINE_START = re.compile(r'(?:/\*)(?P<cmt>.*?)', re.DOTALL | re.UNICODE | re.VERBOSE)
@@ -138,10 +138,10 @@ def blank_out(text, span):
 class Preprocessor:
     """"""
 
-    def __init__(self, log_level = "WARN"):
-        self.logger = getLogger(self.__class__.__name__)
-        self.logger.setLevel(log_level)
+    def __init__(self, loglevel = "INFO"):
+        self.logger = Logger(self.__class__.__name__, loglevel)
         include_paths = getenv("ASAP_INCLUDE", "").split(pathsep)
+        self.logger.debug("Pre-processor include directories (considering envvar ASAP_INCLUDE): {}".format(include_paths))
         self.include_paths = [Path(p) for p in include_paths] if include_paths != [''] else []
 
     def process(self, file_name, encoding = "latin-1"):
@@ -169,7 +169,7 @@ class Preprocessor:
         abs_file_name = str(pth_obj.absolute())
         if abs_file_name in self.line_map:
             raise RuntimeError("Circular dependency to include file '{}'.".format(abs_file_name))
-        self.logger.info("Pre-processing file '{}'.".format(abs_file_name))
+        self.logger.info("Pre-processing '{}'[{}]".format(file_name, encoding))
         for num, line in enumerate(f_obj, 1):
             self.absolute_file_number += 1
             line = line.rstrip("\n")
@@ -224,8 +224,8 @@ class Preprocessor:
                 else:
                     mapped_file_name = self.shorten_path(abs_file_name)
                     self.line_map[mapped_file_name].append((start_line_number, self.absolute_file_number, ))
-                    self.logger.info("Including file '{}'.".format(where))
-                    res = self._process_file(where, join_lines = False)
+                    self.logger.info("Including file '{}'".format(where))
+                    res = self._process_file(where, join_lines = False, encoding = encoding)
                     result.extend(res)
                     start_line_number = self.absolute_file_number + 1
         mapped_file_name = self.shorten_path(abs_file_name)

@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2019 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2021 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -37,11 +37,12 @@ class Logger(object):
     LOGGER_BASE_NAME = "pya2l"
     FORMAT = "[%(levelname)s (%(name)s)]: %(message)s"
 
-    def __init__(self, name, level=logging.WARN):
+    def __init__(self, name, level="WARN"):
         self.logger = logging.getLogger("{0}.{1}".format(self.LOGGER_BASE_NAME, name))
-        self.logger.setLevel(level)
+        #self.logger.setLevel(level.upper())
+        self.setLevel(level)
         handler = logging.StreamHandler()
-        handler.setLevel(level)
+        #handler.setLevel(level.upper())
         formatter = logging.Formatter(self.FORMAT)
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)

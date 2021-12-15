@@ -231,7 +231,7 @@ def ffs(v: int) -> int:
     """Find first set bit (pure Python)."""
     return (v & (-v)).bit_length() - 1
 
-def detect_encoding(file_name: str) -> str:
+def detect_encoding(file_name: str = None, text: str = None) -> str:
     """Detect encoding of a text file.
 
     Parameters
@@ -242,10 +242,18 @@ def detect_encoding(file_name: str) -> str:
     -------
     str: Useable as `encoding` paramter to `open`.
     """
+    if not (file_name or text):
+        raise ValueError("Please specify either `file_name` or `text`.")
+    if (file_name and text):
+        raise ValueError("`file_name` and `text` are mutual exclusive.")
     detector = UniversalDetector()
-    if isinstance(file_name, pathlib.WindowsPath):
-        file_name = str(file_name)
-    for line in open(file_name, "rb"):
+    if file_name:
+        if isinstance(file_name, pathlib.WindowsPath):
+            file_name = str(file_name)
+        obj = open(file_name, "rb")
+    else:
+        obj = iter(text.splitlines())
+    for line in obj:
         detector.feed(line)
         if detector.done:
             break

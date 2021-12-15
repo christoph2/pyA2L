@@ -30,6 +30,7 @@ __version__ = "0.10.2"
 
 import pkgutil
 import sys
+import time
 from pathlib import Path
 import warnings
 
@@ -51,8 +52,6 @@ class DB(object):
 
     A2L_TEMPLATE = pkgutil.get_data("pya2l.cgen.templates", "a2l.tmpl")
 
-    logger = Logger(__name__)
-
     def import_a2l(
         self,
         file_name,
@@ -60,6 +59,7 @@ class DB(object):
         in_memory=False,
         remove_existing=False,
         encoding=None,
+        loglevel = "INFO"
     ):
         """Import `.a2l` file to `.a2ldb` database.
 
@@ -81,6 +81,9 @@ class DB(object):
         encoding: str
             File encoding like "latin-1" or "utf-8" or None to auto-detect.
 
+        loglevel: str
+            "INFO" | "WARN" | "DEBUG" | "ERROR" | "CRITICAL"
+
         Returns
         -------
         SQLAlchemy session object.
@@ -101,6 +104,8 @@ class DB(object):
         from pya2l.preprocessor import Preprocessor
         from pya2l.aml.db import Importer
 
+        start_time = time.clock()
+        self.logger = Logger(self.__class__.__name__, loglevel)
         self.in_memory = in_memory
 
         self._set_path_components(file_name)
@@ -112,16 +117,15 @@ class DB(object):
                     pass
             elif self._dbfn.exists():
                 raise OSError("file '{}' already exists.".format(self._dbfn))
-        prepro = Preprocessor()
+        prepro = Preprocessor(loglevel = loglevel)
 
-        if encoding is not None:
-            warnings.warn("Don't use parameter `encoding` anymore -- file encoding is autodetected now.", DeprecationWarning, stacklevel = 2)
-
-        encoding = detect_encoding(self._a2lfn)
+        encoding = encoding or detect_encoding(file_name = self._a2lfn)
         prepro_result = prepro.process(self._a2lfn, encoding = encoding)
         a2l_parser = ParserWrapper("a2l", "a2lFile", A2LListener, debug = debug, line_map = prepro_result.line_map)
+        self.logger.info("Parsing pre-processed data ...".format())
         self.db = a2l_parser.parseFromString(prepro_result.a2l_data, dbname = str(self._dbfn), encoding = encoding)
         self.session = self.db.session
+        self.logger.info("Done [elapsed time {:.2f}s].".format(time.clock() - start_time))
         return self.session
 
     def export_a2l(self, file_name=sys.stdout, encoding="utf-8"):
