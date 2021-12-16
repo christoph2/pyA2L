@@ -36,13 +36,14 @@ ANTLR_VERSION = next(
 def findAntlr():
     """Try to find the ANTLR .jar-file."""
     if os.environ.get("APPVEYOR"):
-        classpath = r"c:\projects\pya2l\antlr-4.8-complete.jar"
+        classpath = r"c:\projects\pya2l\antlr-4.9.3-complete.jar"
     else:
         classpath = os.getenv("CLASSPATH")
         classpath = classpath if classpath is not None else ""
 
     if "antlr" not in classpath.lower():
-        raise OSError("Could not locate ANTLR4 jar in 'CLASSPATH'.")
+        classpath = "./antlr-4.9.3-complete.jar" # Brute-force hack for now (Github Actions)
+        #raise OSError("Could not locate ANTLR4 jar in 'CLASSPATH'.")
     else:
         for pt in classpath.split(os.pathsep):
             if "antlr" in pt.lower():
