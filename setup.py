@@ -42,13 +42,13 @@ def findAntlr():
         classpath = classpath if classpath is not None else ""
 
     if "antlr" not in classpath.lower():
-        classpath = "./antlr-4.9.3-complete.jar" # Brute-force hack for now (Github Actions)
-        #raise OSError("Could not locate ANTLR4 jar in 'CLASSPATH'.")
+        antlrJar = "./antlr-4.9.3-complete.jar" # Brute-force hack for now (Github Actions)
+#        raise OSError("Could not locate ANTLR4 jar in 'CLASSPATH'.")
     else:
         for pt in classpath.split(os.pathsep):
             if "antlr" in pt.lower():
                 antlrJar = pt
-
+                print(antlrJar)
                 break
 
     if ANTLR_VERSION not in antlrJar:
