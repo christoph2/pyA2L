@@ -4,7 +4,7 @@
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2020 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2021 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -629,8 +629,9 @@ class CompuMethod:
     """
 
     def __init__(self, session, compu_method: model.CompuMethod):
+        print("CompuMethod", session, compu_method)
         conversionType = compu_method.conversionType
-        if conversionType == "IDENTICAL":
+        if conversionType in ("IDENTICAL", "NO_COMPU_METHOD"):
             self.evaluator = Identical()
         elif conversionType == "FORM":
             formula = compu_method.formula["formula"]
