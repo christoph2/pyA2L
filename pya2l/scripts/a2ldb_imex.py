@@ -37,7 +37,7 @@ def main():
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-i", "--import", help = "A2L file to import", dest = "ifn", type = str, metavar = "A2L_file")
     group.add_argument("-e", "--export", help = "A2LDB file to export", dest = "efn", type = str, metavar = "DB_file")
-    parser.add_argument("-E", "--encoding", help = "Import file encoding, like ascii, latin-1, utf-8", dest = "encoding", type = str, default = None)
+    parser.add_argument("-E", "--encoding", help = "Import file encoding, like ascii, latin-1, utf-8, ...", dest = "encoding", type = str, default = None)
     #parser.add_argument("-k", dest = 'keepDirectory', action = "store_true", default = False,
     #    help = "keep directory; otherwise create db in current directory")
     parser.add_argument("-l", help = "Verbosity of log messages", choices = ["warn", "info", "error", "debug", "critical"], dest = "loglevel", type = str, default = "info")
