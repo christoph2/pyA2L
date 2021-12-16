@@ -30,7 +30,7 @@ __version__ = "0.10.2"
 
 import pkgutil
 import sys
-import time
+from time import perf_counter
 from pathlib import Path
 import warnings
 
@@ -104,7 +104,7 @@ class DB(object):
         from pya2l.preprocessor import Preprocessor
         from pya2l.aml.db import Importer
 
-        start_time = time.clock()
+        start_time = perf_counter()
         self.logger = Logger(self.__class__.__name__, loglevel)
         self.in_memory = in_memory
 
@@ -125,7 +125,7 @@ class DB(object):
         self.logger.info("Parsing pre-processed data ...".format())
         self.db = a2l_parser.parseFromString(prepro_result.a2l_data, dbname = str(self._dbfn), encoding = encoding)
         self.session = self.db.session
-        self.logger.info("Done [elapsed time {:.2f}s].".format(time.clock() - start_time))
+        self.logger.info("Done [elapsed time {:.2f}s].".format(perf_counter() - start_time))
         return self.session
 
     def export_a2l(self, file_name=sys.stdout, encoding="utf-8"):
