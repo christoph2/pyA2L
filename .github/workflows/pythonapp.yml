@@ -27,6 +27,7 @@ jobs:
           python-version: 3.8
       - name: Install dependencies
         run: |
+          env
           wget https://www.antlr.org/download/antlr-4.9.3-complete.jar
           export CLASSPATH=".:$(pwd)/antlr-4.9.3-complete.jar:$CLASSPATH"
           python -m pip install --upgrade pip
