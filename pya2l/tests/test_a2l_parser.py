@@ -6,7 +6,6 @@
 import os
 
 import pytest
-from setuptools import sandbox
 
 import pya2l.model as model
 from pya2l.a2l_listener import A2LListener, delist
@@ -14,15 +13,6 @@ from pya2l.parserlib import ParserWrapper
 
 # pylint: disable=C0111
 # pylint: disable=C0103
-
-
-@pytest.mark.first
-def test_code_generation():
-    """Generate lexers and parsers as a side-effect."""
-    sandbox.run_setup("setup.py", ["antlr"])
-    lexers = [os.path.join("pya2l", p) for p in ["a2lLexer.py", "amlLexer.py"]]
-    parsers = [os.path.join("pya2l", p) for p in ["a2lParser.py", "amlParser.py"]]
-    assert all([os.path.exists(p) for p in lexers + parsers])
 
 
 def test_delist_empty():
