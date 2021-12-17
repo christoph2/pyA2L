@@ -32,7 +32,7 @@ import weakref
 from sqlalchemy import exists, not_
 
 import pya2l.model as model
-from pya2l.utils import align_as, ffs
+from pya2l.utils import align_as, ffs, SingletonBase
 
 DB_CACHE_SIZE = 4096  # Completly arbitrary, could be configurable.
 
@@ -378,6 +378,11 @@ class ModPar(CachedBase):
         self.version = (
             self.modpar.version.versionIdentifier if self.modpar.version else None
         )
+
+    @staticmethod
+    def exists(session, name=None, module_name: str = None):     # TODO: Better move to base class...
+        module = get_module(session, module_name)
+        return not module.mod_par is None
 
     @staticmethod
     def _dissect_sysc(constants):
@@ -2404,6 +2409,77 @@ class RecordLayoutComponents:
     __repr__ = __str__
 
 
+
+class NoCompuMethod(SingletonBase):
+    """Sort of Null-Object for NO_COMPU_METHOD.
+    """
+
+    def __init__(self):
+        self._name = None
+        self._longIdentifier = None
+        self._conversionType = None
+        self._format = None
+        self._unit = None
+        self._coeffs = []
+        self._coeffs_linear = []
+        self._formula = None
+        self._tab = None
+        self._tab_verb = None
+        self._statusStringRef = None
+        self._refUnit = None
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def longIdentifier(self):
+        return self._longIdentifier
+
+    @property
+    def conversionType(self):
+        return self._conversionType
+
+    @property
+    def format(self):
+        return self._format
+
+    @property
+    def unit(self):
+        return self._unit
+
+    @property
+    def coeffs(self):
+        return self._coeffs
+
+    @property
+    def coeffs_linear(self):
+        return self._coeffs_linear
+
+    @property
+    def formula(self):
+        return self._formula
+
+    @property
+    def tab(self):
+        return self._tab
+
+    @property
+    def tab_verb(self):
+        return self._tab_verb
+
+    @property
+    def statusStringRef(self):
+        return self._statusStringRef
+
+    @property
+    def refUnit(self):
+        return self._refUnit
+
+    def __str__(self):
+        return "NoCompuMethod()"
+
+
 class CompuMethod(CachedBase):
     """"""
 
@@ -2526,6 +2602,13 @@ class CompuMethod(CachedBase):
                     self.tab_verb["default_value"] = (
                         cvt.default_value.display_string if cvt.default_value else None
                     )
+
+    @classmethod
+    def get(cls, session, name: str = None, module_name: str = None):
+        if name == "NO_COMPU_METHOD":
+            return NoCompuMethod()
+        else:
+            return super(cls, CompuMethod).get(session, name, module_name)
 
     def __str__(self):
         names = (
