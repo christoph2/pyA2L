@@ -1736,34 +1736,34 @@ class Measurement(CachedBase):
         )
         return """
 Measurement {{
-    name = {};
-    longIdentifier = {};
-    datatype  = {};
-    resolution = {};
-    accuracy = {};
-    lowerLimit = {};
-    upperLimit = {};
-    annotations = {};
-    arraySize = {};
-    bitMask = {};
-    bitOperation = {};
-    byteOrder = {};
-    discrete = {};
-    displayIdentifier = {};
-    ecuAddress = 0x{:08x};
+    name                = "{}";
+    longIdentifier      = "{}";
+    datatype            = {};
+    resolution          = {};
+    accuracy            = {};
+    lowerLimit          = {};
+    upperLimit          = {};
+    annotations         = {};
+    arraySize           = {};
+    bitMask             = {};
+    bitOperation        = {};
+    byteOrder           = {};
+    discrete            = {};
+    displayIdentifier   = "{}";
+    ecuAddress          = 0x{:08x};
     ecuAddressExtension = {};
-    errorMask = {};
-    format = {};
-    functionList = {};
-    layout = {};
-    matrixDim = {};
-    maxRefresh = {};
-    physUnit = {};
-    readWrite = {};
-    refMemorySegment = {};
-    symbolLink = {};
-    virtual = {};
-    compuMethod = {};
+    errorMask           = {};
+    format              = "{}";
+    functionList        = {};
+    layout              = {};
+    matrixDim           = {};
+    maxRefresh          = {};
+    physUnit            = "{}";
+    readWrite           = {};
+    refMemorySegment    = {};
+    symbolLink          = {};
+    virtual             = {};
+    compuMethod         = {};
 }}""".format(
             *names
         )
@@ -2814,7 +2814,7 @@ class Group(CachedBase):
 
     Attributes
     ----------
-    group:
+    session:
         Raw Sqlite3 database object.
 
     name: str
@@ -2932,7 +2932,250 @@ Group {{
     measurements    = {};
     functions       = {};
     subgroups       = {};
-";
+}}""".format(
+            *names
+        )
+
+    __repr__ = __str__
+
+
+class TypedefStructure(CachedBase):
+    """
+
+    Parameters
+    ----------
+    session: Sqlite3 session object
+
+
+    Attributes
+    ----------
+    session:
+        Raw Sqlite3 database object.
+
+    name: str
+
+    longIdentifier: str
+        comment, description.
+
+    size: int
+        s. :func:`_annotations`
+
+    link: str
+
+
+    symbol: str
+    """
+    __slots__ = (
+        "session",
+        "typedef",
+        "name",
+        "longIdentifier",
+        "size",
+        "link",
+        "symbol",
+    )
+
+    def __init__(self, session, name = None, module_name: str = None):
+        self.session = session
+        self.typedef = (
+            session.query(model.TypedefStructure).filter(model.TypedefStructure.name == name).first()
+        )
+        self.name = self.typedef.name
+        self.longIdentifier = self.typedef.longIdentifier
+        self.size = self.typedef.size
+        self.link = self.typedef.link
+        self.symbol= self.typedef.symbol
+        self._instances = session.query(model.Instance).filter(model.Instance.typeName == self.name).all()
+
+    @property
+    def instances(self):
+        return self._instances
+
+    def __str__(self):
+        names = (
+            self.name,
+            self.longIdentifier,
+            self.size,
+            self.link,
+            self.symbol,
+        )
+        return """
+TypedefStructure {{
+    name            = "{}";
+    longIdentifier  = "{}";
+    size            = {};
+    link            = "{}";
+    symbol          = "{}";
+}}""".format(
+            *names
+        )
+
+    __repr__ = __str__
+
+
+class Instance(CachedBase):
+    """
+
+    Parameters
+    ----------
+    session: Sqlite3 session object
+
+
+    Attributes
+    ----------
+    session:
+        Raw Sqlite3 database object.
+
+    name: str
+
+    longIdentifier: str
+        comment, description.
+
+    typeName: str
+        s. :func:`_annotations`
+
+    address: int
+
+
+    symbol: str
+    """
+    __slots__ = (
+        "session",
+        "instance",
+        "name",
+        "longIdentifier",
+        "typeName",
+        "address",
+        "_defined_by",
+    )
+
+    def __init__(self, session, name = None, module_name: str = None):
+        self.session = session
+        self.instance = (
+            session.query(model.Instance).filter(model.Instance.name == name).first()
+        )
+        self.name = self.instance.name
+        self.longIdentifier = self.instance.longIdentifier
+        self.typeName = self.instance.typeName
+        self.address = self.instance.address
+        self._defined_by = TypedefStructure.get(session, self.typeName, module_name)
+
+    @property
+    def defined_by(self):
+        return self._defined_by
+
+    def __str__(self):
+        names = (
+            self.name,
+            self.longIdentifier,
+            self.typeName,
+            self.address,
+            self.symbol,
+        )
+        return """
+Instance {{
+    name            = "{}";
+    longIdentifier  = "{}";
+    typeName        = {};
+    address         = {};
+}}""".format(
+            *names
+        )
+
+    __repr__ = __str__
+
+
+class TypedefMeasurement(CachedBase):
+    """
+    Parameters
+    ----------
+    session: Sqlite3 session object
+
+    name: str
+        name of one existing TYPEDEF_MEASUREMENT object.
+
+    Attributes
+    ----------
+    typedef:
+        Raw Sqlite3 database object.
+
+    name: str
+        name of the TypedefMeasurement (s. Parameters...)
+
+    longIdentifier: str
+        comment, description.
+
+    datatype: ['UBYTE' | 'SBYTE' | 'UWORD' | 'SWORD' | 'ULONG' | 'SLONG' | 'A_UINT64' | 'A_INT64' |
+        'FLOAT16_IEEE' | 'FLOAT32_IEEE' | 'FLOAT64_IEEE']
+        Type of the TypedefMeasurement.
+
+    resolution: int
+        smallest possible change in bits
+
+    accuracy: float
+        possible variation from exact value in %
+
+    lowerLimit: float
+        plausible range of table values, lower limit
+
+    upperLimit: float
+        plausible range of table values, upper limit
+    """
+
+    __slots__ = (
+        "typedef",
+        "name",
+        "longIdentifier",
+        "datatype",
+        "_conversionRef",
+        "resolution",
+        "accuracy",
+        "lowerLimit",
+        "upperLimit",
+        "compuMethod"
+    )
+
+    def __init__(self, session, name: str, module_name: str = None):
+        self.typedef = (
+            session.query(model.TypedefMeasurement)
+            .filter(model.TypedefMeasurement.name == name)
+            .first()
+        )
+        self.name = name
+        self.longIdentifier = self.typedef.longIdentifier
+        self.datatype = self.typedef.datatype
+        self._conversionRef = self.typedef.conversion
+        self.resolution = self.typedef.resolution
+        self.accuracy = self.typedef.accuracy
+        self.lowerLimit = self.typedef.lowerLimit
+        self.upperLimit = self.typedef.upperLimit
+        self.compuMethod = (
+            CompuMethod.get(session, self._conversionRef)
+            if self._conversionRef != "NO_COMPU_METHOD"
+            else "NO_COMPU_METHOD"
+        )
+
+    def __str__(self):
+        names = (
+            self.name,
+            self.longIdentifier,
+            self.datatype,
+            self.resolution,
+            self.accuracy,
+            self.lowerLimit,
+            self.upperLimit,
+            self.compuMethod,
+        )
+        return """
+Measurement {{
+    name            = "{}";
+    longIdentifier  = "{}";
+    datatype        = {};
+    resolution      = {};
+    accuracy        = {};
+    lowerLimit      = {};
+    upperLimit      = {};
+    compuMethod     = {};
 }}""".format(
             *names
         )
