@@ -2417,7 +2417,7 @@ class NoCompuMethod(SingletonBase):
     def __init__(self):
         self._name = None
         self._longIdentifier = None
-        self._conversionType = None
+        self._conversionType = "NO_COMPU_METHOD"
         self._format = None
         self._unit = None
         self._coeffs = []

@@ -629,7 +629,6 @@ class CompuMethod:
     """
 
     def __init__(self, session, compu_method: model.CompuMethod):
-        print("CompuMethod", session, compu_method)
         conversionType = compu_method.conversionType
         if conversionType in ("IDENTICAL", "NO_COMPU_METHOD"):
             self.evaluator = Identical()
