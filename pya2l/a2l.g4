@@ -236,16 +236,6 @@ stepSize:
     stepSize_ = numericValue
     ;
 
-structureComponent:
-    BEGIN 'STRUCTURE_COMPONENT'
-    name = identifierValue
-    deposit_ = identifierValue
-    offset = integerValue
-    link = linkType
-    symbol = stringValue
-    END 'STRUCTURE_COMPONENT'
-    ;
-
 symbolLink:
      'SYMBOL_LINK'
     symbolName = stringValue
@@ -322,7 +312,6 @@ module:
         v_modCommon += modCommon |
         v_modPar += modPar |
         v_recordLayout += recordLayout |
-        v_structureComponent += structureComponent |
         v_typedefMeasurement += typedefMeasurement |
         v_typedefStructure += typedefStructure |
         v_unit += unit |
@@ -1565,6 +1554,16 @@ typedefStructure:
         v_structureComponent += structureComponent
     )*
     END 'TYPEDEF_STRUCTURE'
+    ;
+
+structureComponent:
+    BEGIN 'STRUCTURE_COMPONENT'
+    name = identifierValue
+    deposit_ = identifierValue
+    offset = integerValue
+    link = linkType
+    symbol = stringValue
+    END 'STRUCTURE_COMPONENT'
     ;
 
 unit:

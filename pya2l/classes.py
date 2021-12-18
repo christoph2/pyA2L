@@ -1195,7 +1195,6 @@ class MODULE(Keyword):
         "MOD_COMMON",
         "MOD_PAR",
         "RECORD_LAYOUT",
-        "STRUCTURE_COMPONENT",
         "TYPEDEF_MEASUREMENT",
         "TYPEDEF_STRUCTURE",
         "UNIT",

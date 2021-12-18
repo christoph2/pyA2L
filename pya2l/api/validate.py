@@ -61,8 +61,9 @@ class Diagnostics(enum.IntEnum):
     MISSING_ALIGNMENT                   = 5
     MISSING_EPK                         = 6
     MISSING_ADDR_EPK                    = 7
-    DEPRECATED                          = 8
-    OVERLAPPING_MEMORY                  = 9
+    MISSING_MODULE                      = 8
+    DEPRECATED                          = 9
+    OVERLAPPING_MEMORY                  = 10
 
 
 MAX_C_IDENTIFIER_LEN    = 32    # ISO C90.
@@ -83,7 +84,7 @@ class Validator:
     session: Sqlite3 database object.
     """
 
-    def __init__(self, session):
+    def __init__(self, session, loglevel = "INFO"):
         self.logger = getLogger(self.__class__.__name__)
         #self.logger.setLevel("INFO")
         self._session = session
@@ -95,9 +96,17 @@ class Validator:
         """
         self.check_top_level_structure()
         self._traverse_db()
+        print(self.diagnostics)
 
     def check_top_level_structure(self):
-        pass
+        self.modules = self.session.query(model.Module).all()
+        if not self.modules:
+            self.emit_diagnostic( Level.WARNING, Category.MISSING, Diagnostics.MISSING_MODULE,
+                    "A2l file requires at least one /MODULE."
+            )
+        else:
+            for module in self.modules:
+                print(module)
 
     @property
     def session(self):
@@ -112,9 +121,7 @@ class Validator:
         'longIdentifier', 'measurement', 'mod_common', 'mod_par', 'name', 'project', 'record_layout', 'unit',
         'user_rights', 'variant_coding'
         """
-        modules = self.session.query(model.Module).all()
-        for module in modules:
-            print(module, end = "\n\n")
+        for module in self.modules:
             self._validate_mod_common(module)
             self._validate_mod_par(module)
 
@@ -133,6 +140,8 @@ class Validator:
             )
 
     def _validate_mod_par(self, module):
+        if not ModPar.exists(self.session, module.name):
+            return
         mod_par = ModPar(self.session, module.name)
         print(mod_par, end = "\n\n")
         if mod_par.epk is None:
@@ -196,3 +205,33 @@ class Validator:
     def diagnostics(self):
         return self._diagnostics
 
+"""
+
+class MODULE(Keyword):
+    multiple = True
+    block = True
+    children = [
+        "A2ML",
+        "AXIS_PTS",
+        "CHARACTERISTIC",
+        "COMPU_METHOD",
+        "COMPU_TAB",
+        "COMPU_VTAB",
+        "COMPU_VTAB_RANGE",
+        "FRAME",
+        "FUNCTION",
+        "GROUP",
+        "IF_DATA",
+        "INSTANCE",
+        "MEASUREMENT",
+        "MOD_COMMON",
+        "MOD_PAR",
+        "RECORD_LAYOUT",
+        "STRUCTURE_COMPONENT",
+        "TYPEDEF_MEASUREMENT",
+        "TYPEDEF_STRUCTURE",
+        "UNIT",
+        "USER_RIGHTS",
+        "VARIANT_CODING",
+    ]
+"""

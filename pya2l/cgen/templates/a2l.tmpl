@@ -1514,18 +1514,6 @@ project = session.query(model.Project).first()
                 /end RECORD_LAYOUT
             %endfor
             %endif
-              <% structure_component = entry2.structure_component %>
-                    %if structure_component:
-            %for entry3 in structure_component:
-                /begin STRUCTURE_COMPONENT
-                    ${entry3.name}  /* name */
-                    ${entry3.deposit}  /* deposit */
-                    ${entry3.offset}  /* offset */
-                    ${entry3.link}  /* link */
-                    "${entry3.symbol}"  /* symbol */
-                /end STRUCTURE_COMPONENT
-            %endfor
-            %endif
               <% typedef_measurement = entry2.typedef_measurement %>
                     %if typedef_measurement:
             %for entry3 in typedef_measurement:

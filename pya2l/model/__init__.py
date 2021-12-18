@@ -1504,75 +1504,6 @@ class HasStepSizes(object):
     def step_size(cls):
         return relationship("StepSize")
 
-class StructureComponentAssociation(Base):
-
-    __tablename__ = "structure_component_association"
-
-    position = StdLong()
-
-    discriminator = Column(types.String)
-    __mapper_args__ = {"polymorphic_on": discriminator}
-
-
-class StructureComponent(Base):
-    """"""
-
-    _association_id = Column(types.Integer, ForeignKey("structure_component_association.rid"))
-    association = relationship(
-        "StructureComponentAssociation",
-        backref="structure_component",
-        uselist = True
-    )
-    parent = association_proxy("association", "parent")
-
-    name = StdIdent()
-
-    deposit = StdIdent()
-
-    offset = StdULong()
-
-    link = StdString()
-
-    symbol = StdString()
-
-    __required_parameters__ = (
-        Parameter("name", Ident, False),
-        Parameter("deposit", Ident, False),
-        Parameter("offset", Ulong, False),
-        Parameter("link", Linktype, False),
-        Parameter("symbol", String, False),
-    )
-
-    __optional_elements__ = ( )
-
-class HasStructureComponents(object):
-
-    @declared_attr
-    def _structure_component_association_id(cls):
-        return Column(types.Integer, ForeignKey("structure_component_association.rid"))
-
-    @declared_attr
-    def structure_component_association(cls):
-        name = cls.__name__
-        discriminator = name.lower()
-
-        assoc_cls = type(
-            "%sStructureComponentAssociation" % name, (StructureComponentAssociation,),
-            dict(
-                __tablename__ = None,
-                __mapper_args__ = {"polymorphic_identity": discriminator},
-            ),
-        )
-
-        cls.structure_component = association_proxy(
-            "structure_component_association",
-            "structure_component",
-            creator = lambda structure_component: assoc_cls(structure_component = structure_component),
-        )
-        return relationship(
-            assoc_cls, backref = backref("parent", uselist = False, collection_class = ordering_list('position'))
-        )
-
 class SymbolLink(Base):
     """"""
 
@@ -1740,7 +1671,7 @@ class ProjectNo(Base):
     )
 
 
-class Module(Base, HasIfDatas, HasStructureComponents):
+class Module(Base, HasIfDatas):
     """"""
 
     __tablename__ = "module"
@@ -1771,7 +1702,6 @@ class Module(Base, HasIfDatas, HasStructureComponents):
         Element("ModCommon", "MOD_COMMON", False),
         Element("ModPar", "MOD_PAR", False),
         Element("RecordLayout", "RECORD_LAYOUT", True),
-        Element("StructureComponent", "STRUCTURE_COMPONENT", True),
         Element("TypedefMeasurement", "TYPEDEF_MEASUREMENT", True),
         Element("TypedefStructure", "TYPEDEF_STRUCTURE", True),
         Element("Unit", "UNIT", True),
@@ -5796,7 +5726,7 @@ class TypedefMeasurement(Base):
     )
 
 
-class TypedefStructure(Base, HasStructureComponents):
+class TypedefStructure(Base):
     """"""
 
     __tablename__ = "typedef_structure"
@@ -5822,10 +5752,47 @@ class TypedefStructure(Base, HasStructureComponents):
     __optional_elements__ = (
         Element("StructureComponent", "STRUCTURE_COMPONENT", True),
     )
+    structure_component = relationship(
+        "StructureComponent",
+        back_populates = "typedef_structure",
+        uselist = True
+    )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
     module = relationship(
         "Module",
         back_populates = "typedef_structure",
+        uselist = True
+    )
+
+
+class StructureComponent(Base):
+    """"""
+
+    __tablename__ = "structure_component"
+
+    name = StdIdent()
+
+    deposit = StdIdent()
+
+    offset = StdULong()
+
+    link = StdString()
+
+    symbol = StdString()
+
+    __required_parameters__ = (
+        Parameter("name", Ident, False),
+        Parameter("deposit", Ident, False),
+        Parameter("offset", Ulong, False),
+        Parameter("link", Linktype, False),
+        Parameter("symbol", String, False),
+    )
+
+    __optional_elements__ = ( )
+    _typedef_structure_rid = Column(types.Integer, ForeignKey("typedef_structure.rid"))
+    typedef_structure = relationship(
+        "TypedefStructure",
+        back_populates = "structure_component",
         uselist = True
     )
 
