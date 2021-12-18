@@ -27,10 +27,14 @@ __copyright__ = """
 """
 
 import collections
+from operator import itemgetter
 import weakref
 
-from sqlalchemy import exists, not_
+from sqlalchemy import exists, not_, and_
 
+from pya2l.functions import (
+    RatFunc, Identical, Linear, LookupTable, LookupTableWithRanges, Formula, InterpolatedTable
+)
 import pya2l.model as model
 from pya2l.utils import align_as, ffs, SingletonBase
 
@@ -114,6 +118,9 @@ ASAM_TYPE_RANGES = {
     "FLOAT64_IEEE":     (2.2250738585072014e-308, 1.7976931348623157e+308),
 }
 
+
+VarCriterion = collections.namedtuple("VarCriterion", "name longIdentifier values characteristic measurement")
+VarCharacteristic = collections.namedtuple("VarCharacteristic", "name criterions addresses")
 
 def asam_type_size(datatype: str):
     """"""
@@ -207,10 +214,10 @@ class CachedBase:
     _strong_ref = collections.deque(maxlen=DB_CACHE_SIZE)
 
     @classmethod
-    def get(cls, session, name: str = None, module_name: str = None):
-        entry = (cls.__name__, name)
+    def get(cls, session, name: str = None, module_name: str = None, *args):
+        entry = (cls.__name__, name, args)
         if entry not in cls._cache:
-            inst = cls(session, name, module_name)
+            inst = cls(session, name, module_name, *args)
             cls._cache[entry] = inst
             cls._strong_ref.append(inst)
         return cls._cache[entry]
@@ -487,6 +494,48 @@ ModPar {{
     __repr__ = __str__
 
 
+class NoModCommon(SingletonBase):
+    """Sort of Null-Object for non-existing MOD_COMMON.
+    """
+
+    def __init__(self):
+        self._comment = None
+        self._alignment = {k: None for k in ("BYTE", "WORD", "DWORD", "QWORD", "FLOAT16", "FLOAT32", "FLOAT64")}
+        self._byteOrder = None
+        self._dataSize = None
+        self._deposit = None
+        self._sRecLayout = None
+
+    @property
+    def comment(self):
+        return self._comment
+
+    @property
+    def alignment(self):
+        return self._alignment
+
+    @property
+    def byteOrder(self):
+        return self._byteOrder
+
+    @property
+    def dataSize(self):
+        return self._dataSize
+
+    @property
+    def deposit(self):
+        return self._deposit
+
+    @property
+    def sRecLayout(self):
+        return self._sRecLayout
+
+    def __str__(self):
+        return "NoModCommon()"
+
+    __repr__ = __str__
+
+
 class ModCommon(CachedBase):
     """
 
@@ -566,6 +615,14 @@ class ModCommon(CachedBase):
         self.sRecLayout = (
             self.modcommon.s_rec_layout.name if self.modcommon.s_rec_layout else None
         )
+
+    @classmethod
+    def get(cls, session, name: str = None, module_name: str = None):
+        module = get_module(session, module_name)
+        if module.mod_common is None:
+            return NoModCommon()
+        else:
+            return super(cls, ModCommon).get(session, name, module_name)
 
     def __str__(self):
         names = (
@@ -2603,6 +2660,83 @@ class CompuMethod(CachedBase):
                         cvt.default_value.display_string if cvt.default_value else None
                     )
 
+        conversionType = cm_type
+        if conversionType in ("IDENTICAL", "NO_COMPU_METHOD"):
+            self.evaluator = Identical()
+        elif conversionType == "FORM":
+            formula = self.formula["formula"]
+            formula_inv = self.formula["formula_inv"]
+            system_constants = []
+            constants_text = session.query(model.SystemConstant).all()
+            for cons in constants_text:
+                name = cons.name
+                text = cons.value
+                try:
+                    value = float(text)
+                except ValueError:
+                    value = text
+                system_constants.append(
+                    (
+                        name,
+                        value,
+                    )
+                )
+            self.evaluator = Formula(formula, formula_inv, system_constants)
+        elif conversionType == "LINEAR":
+            coeffs = self.coeffs_linear
+            if coeffs is None:
+                raise exceptions.StructuralError(
+                    "'LINEAR' requires coefficients (COEFFS_LINEAR)."
+                )
+            self.evaluator = Linear(coeffs)
+        elif conversionType == "RAT_FUNC":
+            coeffs = self.coeffs
+            if coeffs is None:
+                raise exceptions.StructuralError(
+                    "'RAT_FUNC' requires coefficients (COEFFS)."
+                )
+            self.evaluator = RatFunc(coeffs)
+        elif conversionType in ("TAB_INTP", "TAB_NOINTP"):
+            klass = InterpolatedTable if self.tab["interpolation"] else LookupTable
+            pairs = zip(self.tab["in_values"], self.tab["out_values"])
+            default = self.tab["default_value"]
+            self.evaluator = klass(pairs, default)
+        elif conversionType == "TAB_VERB":
+            default = self.tab_verb["default_value"]
+            if self.tab_verb["ranges"]:
+                triples = zip(
+                    self.tab_verb["lower_values"],
+                    self.tab_verb["upper_values"],
+                    self.tab_verb["text_values"]
+                )
+                self.evaluator = LookupTableWithRanges(triples, default)
+            else:
+                pairs = zip(
+                    self.tab_verb["in_values"],
+                    self.tab_verb["text_values"]
+                )
+                self.evaluator = LookupTable(pairs, default)
+        else:
+            raise ValueError("Unknown conversation type '{}'.".format(conversionType))
+
+    def int_to_physical(self, i):
+        """Evaluate computation method INT ==> PHYS
+
+        Parameters
+        ----------
+            x: int or float, scalar or array
+        """
+        return self.evaluator.int_to_physical(i)
+
+    def physical_to_int(self, p):
+        """Evaluate computation method PHYS ==> INT
+
+        Parameters
+        ----------
+            p: int or float, scalar or array
+        """
+        return self.evaluator.physical_to_int(p)
+
     @classmethod
     def get(cls, session, name: str = None, module_name: str = None):
         if name == "NO_COMPU_METHOD":
@@ -2958,10 +3092,8 @@ class TypedefStructure(CachedBase):
         comment, description.
 
     size: int
-        s. :func:`_annotations`
 
     link: str
-
 
     symbol: str
     """
@@ -2985,11 +3117,17 @@ class TypedefStructure(CachedBase):
         self.size = self.typedef.size
         self.link = self.typedef.link
         self.symbol= self.typedef.symbol
-        self._instances = session.query(model.Instance).filter(model.Instance.typeName == self.name).all()
+        instance_names = session.query(model.Instance.name).filter(model.Instance.typeName == self.name).all()
+        self._instances = [Instance.get(session, name[0]) for name in instance_names]
+        self._components = [StructureComponent.get(session, c.name, module_name, self.typedef) for c in self.typedef.structure_component]
 
     @property
     def instances(self):
         return self._instances
+
+    @property
+    def components(self):
+        return self._components
 
     def __str__(self):
         names = (
@@ -3004,11 +3142,79 @@ TypedefStructure {{
     name            = "{}";
     longIdentifier  = "{}";
     size            = {};
-    link            = "{}";
+    link            = {};
     symbol          = "{}";
 }}""".format(
             *names
         )
+
+    __repr__ = __str__
+
+
+class StructureComponent(CachedBase):
+    """
+
+    Parameters
+    ----------
+    session: Sqlite3 session object
+
+
+    Attributes
+    ----------
+    session:
+        Raw Sqlite3 database object.
+
+    name: str
+
+    deposit: str
+
+    offset: int
+
+    link: str
+
+    symbol: str
+    """
+    __slots__ = (
+        "session",
+        "component",
+        "name",
+        "deposit",
+        "offset",
+        "link",
+        "symbol",
+    )
+
+    def __init__(self, session, name = None, module_name: str = None, parent = None, *args):
+        self.session = session
+        self.component = (
+            session.query(model.StructureComponent). \
+                #filter(and_(model.StructureComponent.name == name, model.StructureComponent.typedef_structure.rid == parent.rid)).first()
+                filter(model.StructureComponent.name == name).first()
+        )
+        self.name = self.component.name
+        self.deposit = RecordLayout(
+            session, self.component.deposit, module_name
+        )
+        self.offset = self.component.offset
+        self.link = self.component.link
+        self.symbol = self.component.symbol
+
+    def __str__(self):
+        names = [
+            self.name,
+            self.deposit,
+            self.offset,
+            self.link,
+            self.symbol
+        ]
+        return """StructureComponent{{
+name    = "{}";
+deposit = {};
+offset  = {};
+link    = {};
+symbol  = {};
+
+}}""".format(*names)
 
     __repr__ = __str__
 
@@ -3058,11 +3264,13 @@ class Instance(CachedBase):
         self.longIdentifier = self.instance.longIdentifier
         self.typeName = self.instance.typeName
         self.address = self.instance.address
-        self._defined_by = TypedefStructure.get(session, self.typeName, module_name)
+        #self._defined_by = TypedefStructure.get(session, self.typeName, module_name)
 
+    """
     @property
     def defined_by(self):
         return self._defined_by
+    """
 
     def __str__(self):
         names = (
@@ -3070,14 +3278,13 @@ class Instance(CachedBase):
             self.longIdentifier,
             self.typeName,
             self.address,
-            self.symbol,
         )
         return """
 Instance {{
     name            = "{}";
     longIdentifier  = "{}";
     typeName        = {};
-    address         = {};
+    address         = 0x{:08x};
 }}""".format(
             *names
         )
@@ -3181,3 +3388,82 @@ Measurement {{
         )
 
     __repr__ = __str__
+
+import itertools
+
+class VariantCoding(CachedBase):
+    """
+    Parameters
+    ----------
+    session: Sqlite3 session object
+
+    name: str
+        name of one existing VARIANT_CODING  object.
+
+    Attributes
+    ----------
+    variantCoding:
+        Raw Sqlite3 database object.
+
+    name: str
+        name of the VariantCoding (s. Parameters...)
+
+    longIdentifier: str
+        comment, description.
+    """
+
+    __slots__ = (
+        "variantCoding",
+        "_naming",
+        "_separator",
+    )
+
+    def __init__(self, session, module_name: str = None):
+        self.variantCoding = (
+            session.query(model.VariantCoding).first()
+        )
+        self._naming = self.variantCoding.var_naming.tag if self.variantCoding.var_naming else "NUMERIC"
+        self._separator = self.variantCoding.var_separator.separator if self.variantCoding.var_separator else "."
+
+        self._criterions = {}
+        self._characteristics = {}
+        self._forbidden_combs = []
+
+        for criterion in self.variantCoding.var_criterion:
+            self._criterions[criterion.name] = VarCriterion(
+                criterion.name, criterion.longIdentifier, criterion.value,
+                criterion.var_measurement.name if criterion.var_measurement else None,
+                criterion.var_selection_characteristic.name if criterion.var_selection_characteristic else None
+            )
+        for characteristic in self.variantCoding.var_characteristic:
+            self._characteristics[characteristic.name] = VarCharacteristic(
+                characteristic.name,
+                characteristic.criterionName,
+                characteristic.var_address.address if characteristic.var_address else []
+            )
+        for comb in self.variantCoding.var_forbidden_comb:
+            self._forbidden_combs.append({p.criterionName: p.criterionValue for p in comb.pairs})
+        for name, chx in self.characteristics.items():
+            ag = itemgetter(*chx.criterions)
+            forbidden =[ag(fc) for fc in self.forbidden_combs]
+            print("\tV-C:", name, chx.criterions, chx.addresses)
+            crits = chx.criterions
+            lll = [self.criterions.get(n).values for n in crits]
+            combs = [c for c in itertools.product(*lll) if c not in forbidden]
+            print("COMBS", list(zip(combs, chx.addresses)))
+
+    @property
+    def criterions(self):
+        return self._criterions
+
+    @property
+    def characteristics(self):
+        return self._characteristics
+
+    @property
+    def forbidden_combs(self):
+        return self._forbidden_combs
+
+    def __str__(self):
+        return """VariantCoding{{
+}}"""

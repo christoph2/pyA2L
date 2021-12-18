@@ -5,8 +5,27 @@
 import pytest
 
 from pya2l.a2l_listener import A2LListener
-from pya2l.api.inspect import Group, Measurement, ModCommon, ModPar
+from pya2l import exceptions, model
+from pya2l.api.inspect import CompuMethod, Group, Measurement, ModCommon, ModPar, TypedefStructure
 from pya2l.parserlib import ParserWrapper
+
+
+try:
+    import numpy as np
+except ImportError:
+    has_numpy = False
+else:
+    has_numpy = True
+
+try:
+    from scipy.interpolate import RegularGridInterpolator
+except ImportError:
+    has_scipy = False
+else:
+    has_scipy = True
+
+
+RUN_MATH_TEST = has_numpy and has_scipy
 
 
 def test_measurement_basic():
@@ -857,3 +876,793 @@ def test_group():
     gr = Group.get(db.session, "CALIBRATION_COMPONENTS_L4")
     gr = Group.get(db.session, "SOFTWARE_COMPONENTS")
     print(gr)
+
+
+def test_typedef_structure_no_instances():
+    parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
+    DATA = """/begin MODULE testModule ""
+        /begin RECORD_LAYOUT _UWORD FNC_VALUES 1 UWORD ROW_DIR DIRECT /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _FLOAT64_IEEE FNC_VALUES 1 FLOAT64_IEEE ROW_DIR DIRECT /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _UBYTE FNC_VALUES 1 UBYTE ROW_DIR DIRECT /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _ULONG FNC_VALUES 1 ULONG ROW_DIR DIRECT /end RECORD_LAYOUT
+        /begin TYPEDEF_STRUCTURE EcuTask "TYPEDEF for class EcuTask" 0x58 SYMBOL_TYPE_LINK "EcuTask"
+            /begin STRUCTURE_COMPONENT taskId _UWORD 0x0 SYMBOL_TYPE_LINK "taskId" /end STRUCTURE_COMPONENT
+            /begin STRUCTURE_COMPONENT counter _UWORD 0x2 SYMBOL_TYPE_LINK "counter" /end STRUCTURE_COMPONENT
+            /begin STRUCTURE_COMPONENT channel1 _FLOAT64_IEEE 0x10 SYMBOL_TYPE_LINK "channel1" /end STRUCTURE_COMPONENT
+            /begin STRUCTURE_COMPONENT byte _UBYTE 0x38 SYMBOL_TYPE_LINK "byte" /end STRUCTURE_COMPONENT
+            /begin STRUCTURE_COMPONENT word _UWORD 0x3A SYMBOL_TYPE_LINK "word" /end STRUCTURE_COMPONENT
+            /begin STRUCTURE_COMPONENT dword _ULONG 0x3C SYMBOL_TYPE_LINK "dword" /end STRUCTURE_COMPONENT
+        /end TYPEDEF_STRUCTURE
+    /end MODULE"""
+    db = parser.parseFromString(DATA)
+    tdef = TypedefStructure.get(db.session, "EcuTask")
+    assert tdef.name            == "EcuTask"
+    assert tdef.longIdentifier  == "TYPEDEF for class EcuTask"
+    assert tdef.size            == 88
+    assert tdef.link            == "SYMBOL_TYPE_LINK"
+    assert tdef.symbol          == "EcuTask"
+    assert tdef.instances       == []
+    components = tdef.components
+    assert len(components) == 6
+    comp = components[0]
+    assert comp.name == "taskId"
+    assert comp.offset == 0
+    assert comp.link == "SYMBOL_TYPE_LINK"
+    assert comp.symbol == "taskId"
+    comp = components[1]
+    assert comp.name == "counter"
+    assert comp.offset == 2
+    assert comp.link == "SYMBOL_TYPE_LINK"
+    assert comp.symbol == "counter"
+    comp = components[2]
+    assert comp.name == "channel1"
+    assert comp.offset == 16
+    assert comp.link == "SYMBOL_TYPE_LINK"
+    assert comp.symbol == "channel1"
+    comp = components[3]
+    assert comp.name == "byte"
+    assert comp.offset == 0x38
+    assert comp.link == "SYMBOL_TYPE_LINK"
+    assert comp.symbol == "byte"
+    comp = components[4]
+    assert comp.name == "word"
+    assert comp.offset == 0x3a
+    assert comp.link == "SYMBOL_TYPE_LINK"
+    assert comp.symbol == "word"
+    comp = components[5]
+    assert comp.name == "dword"
+    assert comp.offset == 0x3c
+    assert comp.link == "SYMBOL_TYPE_LINK"
+    assert comp.symbol == "dword"
+
+
+@pytest.mark.skip
+def test_typedef_structure_with_instances():
+    parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
+    DATA = """/begin MODULE testModule ""
+        /begin RECORD_LAYOUT _UWORD FNC_VALUES 1 UWORD ROW_DIR DIRECT /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _FLOAT64_IEEE FNC_VALUES 1 FLOAT64_IEEE ROW_DIR DIRECT /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _UBYTE FNC_VALUES 1 UBYTE ROW_DIR DIRECT /end RECORD_LAYOUT
+        /begin RECORD_LAYOUT _ULONG FNC_VALUES 1 ULONG ROW_DIR DIRECT /end RECORD_LAYOUT
+        /begin TYPEDEF_STRUCTURE EcuTask "TYPEDEF for class EcuTask" 0x58 SYMBOL_TYPE_LINK "EcuTask"
+            /begin STRUCTURE_COMPONENT taskId _UWORD 0x0 SYMBOL_TYPE_LINK "taskId" /end STRUCTURE_COMPONENT
+            /begin STRUCTURE_COMPONENT counter _UWORD 0x2 SYMBOL_TYPE_LINK "counter" /end STRUCTURE_COMPONENT
+            /begin STRUCTURE_COMPONENT channel1 _FLOAT64_IEEE 0x10 SYMBOL_TYPE_LINK "channel1" /end STRUCTURE_COMPONENT
+            /begin STRUCTURE_COMPONENT byte _UBYTE 0x38 SYMBOL_TYPE_LINK "byte" /end STRUCTURE_COMPONENT
+            /begin STRUCTURE_COMPONENT word _UWORD 0x3A SYMBOL_TYPE_LINK "word" /end STRUCTURE_COMPONENT
+            /begin STRUCTURE_COMPONENT dword _ULONG 0x3C SYMBOL_TYPE_LINK "dword" /end STRUCTURE_COMPONENT
+        /end TYPEDEF_STRUCTURE
+        /begin INSTANCE ecuTask1 "ecupp task number 1" EcuTask 0x0 /end INSTANCE
+        /begin INSTANCE ecuTask2 "ecu task number 2" EcuTask 0x0 /end INSTANCE
+        /begin INSTANCE activeEcuTask "pointer to active ecu task" EcuTask 0x0 /end INSTANCE
+    /end MODULE"""
+    db = parser.parseFromString(DATA)
+    tdef = TypedefStructure.get(db.session, "EcuTask")
+    assert tdef.name            == "EcuTask"
+    assert tdef.longIdentifier  == "TYPEDEF for class EcuTask"
+    assert tdef.size            == 88
+    assert tdef.link            == "SYMBOL_TYPE_LINK"
+    assert tdef.symbol          == "EcuTask"
+    components = tdef.components
+    assert len(components) == 6
+    comp = components[0]
+    assert comp.name == "taskId"
+    assert comp.offset == 0
+    assert comp.link == "SYMBOL_TYPE_LINK"
+    assert comp.symbol == "taskId"
+    comp = components[1]
+    assert comp.name == "counter"
+    assert comp.offset == 2
+    assert comp.link == "SYMBOL_TYPE_LINK"
+    assert comp.symbol == "counter"
+    comp = components[2]
+    assert comp.name == "channel1"
+    assert comp.offset == 16
+    assert comp.link == "SYMBOL_TYPE_LINK"
+    assert comp.symbol == "channel1"
+    comp = components[3]
+    assert comp.name == "byte"
+    assert comp.offset == 0x38
+    assert comp.link == "SYMBOL_TYPE_LINK"
+    assert comp.symbol == "byte"
+    comp = components[4]
+    assert comp.name == "word"
+    assert comp.offset == 0x3a
+    assert comp.link == "SYMBOL_TYPE_LINK"
+    assert comp.symbol == "word"
+    comp = components[5]
+    assert comp.name == "dword"
+    assert comp.offset == 0x3c
+    assert comp.link == "SYMBOL_TYPE_LINK"
+    assert comp.symbol == "dword"
+    assert len(tdef.instances) == 3
+    instances = tdef.instances
+    inst = instances[0]
+    assert inst.name == "ecuTask1"
+    assert inst.longIdentifier == "ecupp task number 1"
+    assert inst.typeName == "EcuTask"
+    assert inst.address == 0x00000000
+    inst = instances[1]
+    assert inst.name == "ecuTask2"
+    assert inst.longIdentifier == "ecu task number 2"
+    assert inst.typeName == "EcuTask"
+    assert inst.address == 0x00000000
+    inst = instances[2]
+    assert inst.name == "activeEcuTask"
+    assert inst.longIdentifier == "pointer to active ecu task"
+    assert inst.typeName == "EcuTask"
+    assert inst.address == 0x00000000
+
+
+@pytest.mark.skip
+def test_compu_method_invalid():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.TAB_VERB.DEFAULT_VALUE
+          "Verbal conversion with default value"
+          FOO_BAR "%12.0" ""
+        /end COMPU_METHOD
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+
+
+def test_compu_method_tab_verb():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.TAB_VERB.DEFAULT_VALUE
+          "Verbal conversion with default value"
+          TAB_VERB "%12.0" ""
+          COMPU_TAB_REF CM.TAB_VERB.DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+        /begin COMPU_VTAB CM.TAB_VERB.DEFAULT_VALUE.REF
+          "List of text strings and relation to impl value"
+          TAB_VERB 3
+          1 "SawTooth"
+          2 "Square"
+          3 "Sinus"
+          DEFAULT_VALUE "unknown signal type"
+        /end COMPU_VTAB
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+    assert compu.int_to_physical(1) == "SawTooth"
+    assert compu.physical_to_int("Sinus") == 3
+    assert compu.int_to_physical(10) == "unknown signal type"
+
+
+def test_compu_method_tab_verb_no_default_value():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.TAB_VERB.DEFAULT_VALUE
+          "Verbal conversion with default value"
+          TAB_VERB "%12.0" ""
+          COMPU_TAB_REF CM.TAB_VERB.DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+        /begin COMPU_VTAB CM.TAB_VERB.DEFAULT_VALUE.REF
+          "List of text strings and relation to impl value"
+          TAB_VERB 3
+          1 "SawTooth"
+          2 "Square"
+          3 "Sinus"
+        /end COMPU_VTAB
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+    assert compu.int_to_physical(1) == "SawTooth"
+    assert compu.physical_to_int("Sinus") == 3
+    assert compu.int_to_physical(10) is None
+
+
+@pytest.mark.skip
+def test_compu_method_tab_verb_no_vtab():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.TAB_VERB.DEFAULT_VALUE
+          "Verbal conversion with default value"
+          TAB_VERB "%12.0" ""
+          COMPU_TAB_REF CM.TAB_VERB.DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    with pytest.raises(exceptions.StructuralError):
+        compu = CompuMethod(db.session, module.compu_method[0])
+
+
+def test_compu_method_tab_nointerp_default():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.TAB_NOINTP.DEFAULT_VALUE
+          ""
+          TAB_NOINTP "%8.4" "U/  min  "
+          COMPU_TAB_REF CM.TAB_NOINTP.DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+        /begin COMPU_TAB CM.TAB_NOINTP.DEFAULT_VALUE.REF
+           ""
+           TAB_NOINTP
+           12
+           -3 98
+           -1 99
+           0 100
+           2 102
+           4 104
+           5 105
+           6 106
+           7 107
+           8 108
+           9 109
+           10 110
+           13 111
+           DEFAULT_VALUE_NUMERIC 300.56 /* DEFAULT_VALUE_NUME RIC should be used here as the normal output is numeric */
+        /end COMPU_TAB
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+    assert compu.int_to_physical(-3) == 98
+    assert compu.int_to_physical(8) == 108
+    assert compu.physical_to_int(108) == 8
+    assert compu.int_to_physical(1) == 300.56
+
+
+def test_compu_method_tab_interp_default():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.TAB_INTP.DEFAULT_VALUE
+          ""
+          TAB_INTP "%8.4" "U/  min  "
+          COMPU_TAB_REF CM.TAB_INTP.DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+        /begin COMPU_TAB CM.TAB_INTP.DEFAULT_VALUE.REF
+           ""
+           TAB_INTP
+           12
+           -3 98
+           -1 99
+           0 100
+           2 102
+           4 104
+           5 105
+           6 106
+           7 107
+           8 108
+           9 109
+           10 110
+           13 111
+           DEFAULT_VALUE_NUMERIC 300.56 /* DEFAULT_VALUE_NUME RIC should be used here as the normal output is numeric */
+        /end COMPU_TAB
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+    xs = np.arange(-3, 14)
+    ys = np.array(
+        [
+            98.0,
+            98.5,
+            99.0,
+            100.0,
+            101.0,
+            102.0,
+            103.0,
+            104.0,
+            105.0,
+            106.0,
+            107.0,
+            108.0,
+            109.0,
+            110.0,
+            110.33333333333333,
+            110.66666666666667,
+            111.0,
+        ]
+    )
+    assert np.array_equal(compu.int_to_physical(xs), ys)
+    assert compu.int_to_physical(-3) == 98
+    assert compu.int_to_physical(8) == 108
+    assert compu.int_to_physical(14) == 300.56
+    assert compu.int_to_physical(-4) == 300.56
+
+
+def test_compu_method_tab_interp_no_default():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.TAB_INTP.NO_DEFAULT_VALUE
+          ""
+          TAB_INTP "%8.4" "U/  min  "
+          COMPU_TAB_REF CM.TAB_INTP.NO_DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+        /begin COMPU_TAB CM.TAB_INTP.NO_DEFAULT_VALUE.REF
+           ""
+           TAB_INTP
+           12
+           -3 98
+           -1 99
+           0 100
+           2 102
+           4 104
+           5 105
+           6 106
+           7 107
+           8 108
+           9 109
+           10 110
+           13 111
+        /end COMPU_TAB
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+    xs = np.arange(-3, 14)
+    ys = np.array(
+        [
+            98.0,
+            98.5,
+            99.0,
+            100.0,
+            101.0,
+            102.0,
+            103.0,
+            104.0,
+            105.0,
+            106.0,
+            107.0,
+            108.0,
+            109.0,
+            110.0,
+            110.33333333333333,
+            110.66666666666667,
+            111.0,
+        ]
+    )
+    assert np.array_equal(compu.int_to_physical(xs), ys)
+    assert compu.int_to_physical(-3) == 98
+    assert compu.int_to_physical(8) == 108
+    assert compu.int_to_physical(14) is None
+    assert compu.int_to_physical(-4) is None
+
+
+def test_compu_method_tab_nointerp_no_default():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.TAB_NOINTP.NO_DEFAULT_VALUE
+          ""
+          TAB_NOINTP "%8.4" "U/  min  "
+          COMPU_TAB_REF CM.TAB_NOINTP.NO_DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+        /begin COMPU_TAB CM.TAB_NOINTP.NO_DEFAULT_VALUE.REF
+           ""
+           TAB_NOINTP
+           12
+           -3 98
+           -1 99
+           0 100
+           2 102
+           4 104
+           5 105
+           6 106
+           7 107
+           8 108
+           9 109
+           10 110
+           13 111
+        /end COMPU_TAB
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+    assert compu.int_to_physical(-3) == 98
+    assert compu.int_to_physical(8) == 108
+    assert compu.physical_to_int(108) == 8
+    assert compu.int_to_physical(1) is None
+
+@pytest.mark.skip
+def test_compu_method_tab_nointerp_both_defaults():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.TAB_NOINTP.DEFAULT_VALUE
+          ""
+          TAB_NOINTP "%8.4" "U/  min  "
+          COMPU_TAB_REF CM.TAB_NOINTP.DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+        /begin COMPU_TAB CM.TAB_NOINTP.DEFAULT_VALUE.REF
+           ""
+           TAB_NOINTP
+           12
+           -3 98
+           -1 99
+           0 100
+           2 102
+           4 104
+           5 105
+           6 106
+           7 107
+           8 108
+           9 109
+           10 110
+           13 111
+           DEFAULT_VALUE "value out of range"
+           DEFAULT_VALUE_NUMERIC 300.56 /* DEFAULT_VALUE_NUME RIC should be used here as the normal output is numeric */
+        /end COMPU_TAB
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    with pytest.raises(exceptions.StructuralError):
+        compu = CompuMethod(db.session, module.compu_method[0])
+
+
+def test_compu_method_tab_verb_ranges():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.VTAB_RANGE.DEFAULT_VALUE
+           "verbal range with default value"
+           TAB_VERB
+           "%4.2"
+           ""
+           COMPU_TAB_REF CM.VTAB_RANGE.DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+        /begin COMPU_VTAB_RANGE CM.VTAB_RANGE.DEFAULT_VALUE.REF
+           ""
+           11
+           0 1 "Zero_to_one"
+           2 3 "two_to_three"
+           4 7 "four_to_seven"
+           14 17 "fourteen_to_seventeen"
+           18 99 "eigteen_to_ninetynine"
+           100 100 "hundred"
+           101 101 "hundredone"
+           102 102 "hundredtwo"
+           103 103 "hundredthree"
+           104 104 "hundredfour"
+           105 105 "hundredfive"
+           DEFAULT_VALUE "out of range value"
+        /end COMPU_VTAB_RANGE
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+    assert compu.int_to_physical(0) == "Zero_to_one"
+    assert compu.int_to_physical(6) == "four_to_seven"
+    assert compu.int_to_physical(45) == "eigteen_to_ninetynine"
+    assert compu.int_to_physical(100) == "hundred"
+    assert compu.int_to_physical(105) == "hundredfive"
+    assert compu.int_to_physical(-1) == "out of range value"
+    assert compu.int_to_physical(106) == "out of range value"
+    assert compu.int_to_physical(10) == "out of range value"
+
+
+def test_compu_method_tab_verb_ranges_no_default():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.VTAB_RANGE.NO_DEFAULT_VALUE
+           "verbal range without default value"
+           TAB_VERB
+           "%4.2"
+           ""
+           COMPU_TAB_REF CM.VTAB_RANGE.NO_DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+        /begin COMPU_VTAB_RANGE CM.VTAB_RANGE.NO_DEFAULT_VALUE.REF
+           ""
+           11
+           0 1 "Zero_to_one"
+           2 3 "two_to_three"
+           4 7 "four_to_seven"
+           14 17 "fourteen_to_seventeen"
+           18 99 "eigteen_to_ninetynine"
+           100 100 "hundred"
+           101 101 "hundredone"
+           102 102 "hundredtwo"
+           103 103 "hundredthree"
+           104 104 "hundredfour"
+           105 105 "hundredfive"
+        /end COMPU_VTAB_RANGE
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+    assert compu.int_to_physical(0) == "Zero_to_one"
+    assert compu.int_to_physical(6) == "four_to_seven"
+    assert compu.int_to_physical(45) == "eigteen_to_ninetynine"
+    assert compu.int_to_physical(100) == "hundred"
+    assert compu.int_to_physical(105) == "hundredfive"
+    assert compu.int_to_physical(-1) is None
+    assert compu.int_to_physical(106) is None
+    assert compu.int_to_physical(10) is None
+
+
+def test_compu_method_tab_verb_ranges_inv():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.VTAB_RANGE.DEFAULT_VALUE
+           "verbal range with default value"
+           TAB_VERB
+           "%4.2"
+           ""
+           COMPU_TAB_REF CM.VTAB_RANGE.DEFAULT_VALUE.REF
+        /end COMPU_METHOD
+        /begin COMPU_VTAB_RANGE CM.VTAB_RANGE.DEFAULT_VALUE.REF
+           ""
+           11
+           0 1 "Zero_to_one"
+           2 3 "two_to_three"
+           4 7 "four_to_seven"
+           14 17 "fourteen_to_seventeen"
+           18 99 "eigteen_to_ninetynine"
+           100 100 "hundred"
+           101 101 "hundredone"
+           102 102 "hundredtwo"
+           103 103 "hundredthree"
+           104 104 "hundredfour"
+           105 105 "hundredfive"
+           DEFAULT_VALUE "out of range value"
+        /end COMPU_VTAB_RANGE
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+    assert compu.physical_to_int("Zero_to_one") == 0
+    assert compu.physical_to_int("four_to_seven") == 4
+    assert compu.physical_to_int("eigteen_to_ninetynine") == 18
+    assert compu.physical_to_int("hundred") == 100
+    assert compu.physical_to_int("hundredfive") == 105
+    assert compu.physical_to_int("out of range value") is None
+
+
+def test_compu_method_identical():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.IDENTICAL
+          "conversion that delivers always phys = int"
+          IDENTICAL "%3.0" "hours"
+        /end COMPU_METHOD
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+    xs = np.arange(-10, 11)
+    assert np.array_equal(compu.int_to_physical(xs), xs)
+    assert np.array_equal(compu.physical_to_int(xs), xs)
+
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_compu_method_rat_func_identical():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.RAT_FUNC.IDENT
+          "rational function with parameter set for int = f(phys) = phys"
+          RAT_FUNC "%3.1" "m/s"
+          COEFFS 0 1 0 0 0 1
+        /end COMPU_METHOD
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+    xs = np.arange(-10, 11)
+    assert np.array_equal(compu.int_to_physical(xs), xs)
+    assert np.array_equal(compu.physical_to_int(xs), xs)
+
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_compu_method_rat_func_linear():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.RAT_FUNC.DIV_81_9175
+          "rational function with parameter set for impl = f(phys) = phys * 81.9175"
+          RAT_FUNC "%8.4" "grad C"
+          COEFFS 0 81.9175 0 0 0 1
+        /end COMPU_METHOD
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+    xs = np.arange(-10, 11)
+    ys = np.array(
+        [
+            -819.1750000000001,
+            -737.2575,
+            -655.34,
+            -573.4225,
+            -491.505,
+            -409.58750000000003,
+            -327.67,
+            -245.7525,
+            -163.835,
+            -81.9175,
+            0.0,
+            81.9175,
+            163.835,
+            245.7525,
+            327.67,
+            409.58750000000003,
+            491.505,
+            573.4225,
+            655.34,
+            737.2575,
+            819.1750000000001,
+        ]
+    )
+    assert np.array_equal(compu.int_to_physical(ys), xs)
+    assert np.array_equal(compu.physical_to_int(xs), ys)
+
+
+@pytest.mark.skip
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_compu_method_rat_func_no_coeffs():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.RAT_FUNC.DIV_81_9175
+          "rational function with parameter set for impl = f(phys) = phys * 81.9175"
+          RAT_FUNC "%8.4" "grad C"
+        /end COMPU_METHOD
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    with pytest.raises(exceptions.StructuralError):
+        compu = CompuMethod(db.session, module.compu_method[0])
+
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_compu_method_linear():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.LINEAR.MUL_2
+        "Linear function with parameter set for phys = f(int) = 2*int + 0"
+         LINEAR "%3.1" "m/s"
+         COEFFS_LINEAR 2 0
+        /end COMPU_METHOD
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+    xs = np.arange(-10, 11)
+    assert np.array_equal(compu.int_to_physical(xs), xs * 2.0)
+    assert np.array_equal(compu.physical_to_int(xs * 2.0), xs)
+
+
+@pytest.mark.skip
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_compu_method_linear_no_coeffs():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.LINEAR.MUL_2
+        "Linear function with parameter set for phys = f(int) = 2*int + 0"
+         LINEAR "%3.1" "m/s"
+        /end COMPU_METHOD
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    with pytest.raises(exceptions.StructuralError):
+        compu = CompuMethod(db.session, None)
+
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_compu_method_formula_with_inv():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.FORM.X_PLUS_4
+          ""
+          FORM
+          "%6.1"
+          "rpm"
+          /begin FORMULA
+            "X1+4"
+            FORMULA_INV "X1-4"
+          /end FORMULA
+        /end COMPU_METHOD
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+    assert compu.int_to_physical(6) == 10
+    assert compu.physical_to_int(4) == 0
+
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_compu_method_formula_without_inv():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin COMPU_METHOD CM.FORM.X_PLUS_4
+          ""
+          FORM
+          "%6.1"
+          "rpm"
+          /begin FORMULA
+            "X1+4"
+          /end FORMULA
+        /end COMPU_METHOD
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+    assert compu.int_to_physical(6) == 10
+
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_compu_method_formula_with_sysc():
+    parser = ParserWrapper("a2l", "module", A2LListener)
+    DATA = """
+    /begin MODULE testModule ""
+        /begin MOD_PAR ""
+             SYSTEM_CONSTANT "System_Constant_1" "42"
+             SYSTEM_CONSTANT "System_Constant_2" "Textual constant"
+        /end MOD_PAR
+
+        /begin COMPU_METHOD CM.FORM.X_PLUS_SYSC
+          ""
+          FORM
+          "%6.1"
+          "rpm"
+          /begin FORMULA
+            "X1 + sysc(System_Constant_1)"
+          /end FORMULA
+        /end COMPU_METHOD
+    /end MODULE
+    """
+    db = parser.parseFromString(DATA)
+    module = db.session.query(model.Module).first()
+    compu = CompuMethod(db.session, module.compu_method[0].name)
+    assert compu.int_to_physical(23) == 65
