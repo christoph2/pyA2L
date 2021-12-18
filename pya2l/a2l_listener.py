@@ -386,9 +386,7 @@ class A2LListener(BaseListener):
         v_unit = self.getList(ctx.v_unit)
         v_userRights = self.getList(ctx.v_userRights)
         v_variantCoding = delist(self.getList(ctx.v_variantCoding), True)
-
         v_typedefStructure = self.getList(ctx.v_typedefStructure)
-        v_structureComponent = self.getList(ctx.v_structureComponent)
         v_typedefMeasurement = self.getList(ctx.v_typedefMeasurement)
         v_instance = self.getList(ctx.v_instance)
         ctx.value = model.Module(
@@ -413,7 +411,6 @@ class A2LListener(BaseListener):
             variant_coding=v_variantCoding,
             typedef_measurement = v_typedefMeasurement,
             typedef_structure = v_typedefStructure,
-            structure_component = v_structureComponent,
             instance = v_instance
         )
         self.db.session.add(ctx.value)
