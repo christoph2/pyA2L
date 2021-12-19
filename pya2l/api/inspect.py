@@ -27,6 +27,8 @@ __copyright__ = """
 """
 
 import collections
+import copy
+import itertools
 from operator import itemgetter
 import weakref
 
@@ -121,6 +123,7 @@ ASAM_TYPE_RANGES = {
 
 VarCriterion = collections.namedtuple("VarCriterion", "name longIdentifier values characteristic measurement")
 VarCharacteristic = collections.namedtuple("VarCharacteristic", "name criterions addresses")
+VarCombination = collections.namedtuple("VarCombination", "comb var_name address")
 
 def asam_type_size(datatype: str):
     """"""
@@ -2675,11 +2678,7 @@ class CompuMethod(CachedBase):
                     value = float(text)
                 except ValueError:
                     value = text
-                system_constants.append(
-                    (
-                        name,
-                        value,
-                    )
+                system_constants.append((name, value, )
                 )
             self.evaluator = Formula(formula, formula_inv, system_constants)
         elif conversionType == "LINEAR":
@@ -3389,7 +3388,6 @@ Measurement {{
 
     __repr__ = __str__
 
-import itertools
 
 class VariantCoding(CachedBase):
     """
@@ -3428,6 +3426,7 @@ class VariantCoding(CachedBase):
         self._criterions = {}
         self._characteristics = {}
         self._forbidden_combs = []
+        self._combinations = {}
 
         for criterion in self.variantCoding.var_criterion:
             self._criterions[criterion.name] = VarCriterion(
@@ -3444,13 +3443,20 @@ class VariantCoding(CachedBase):
         for comb in self.variantCoding.var_forbidden_comb:
             self._forbidden_combs.append({p.criterionName: p.criterionValue for p in comb.pairs})
         for name, chx in self.characteristics.items():
+            combis = []
             ag = itemgetter(*chx.criterions)
-            forbidden =[ag(fc) for fc in self.forbidden_combs]
-            print("\tV-C:", name, chx.criterions, chx.addresses)
-            crits = chx.criterions
-            lll = [self.criterions.get(n).values for n in crits]
-            combs = [c for c in itertools.product(*lll) if c not in forbidden]
-            print("COMBS", list(zip(combs, chx.addresses)))
+            forbidden = [ag(fc) for fc in self.forbidden_combs]
+            addresses = copy.copy(chx.addresses)
+            criterions = [self.criterions.get(n).values for n in chx.criterions]
+            for idx, compo in enumerate(itertools.product(*criterions)):
+                if compo in forbidden:
+                    c_name = None
+                    address = None
+                else:
+                    address = addresses.pop(0)
+                    c_name = "{}{}{}".format(name, self._separator, idx)
+                combis.append(VarCombination(compo, c_name, address))
+            self._combinations[name] = combis
 
     @property
     def criterions(self):
@@ -3464,6 +3470,20 @@ class VariantCoding(CachedBase):
     def forbidden_combs(self):
         return self._forbidden_combs
 
+    @property
+    def combinations(self):
+        return self._combinations
+
     def __str__(self):
+        names = (
+            self.criterions,
+            self.characteristics,
+            self.forbidden_combs,
+            self.combinations,
+        )
         return """VariantCoding{{
-}}"""
+criterions      = {};
+characteristics = {};
+forbidden_combs = {};
+combinations    = {};
+}}""".format(*names)
