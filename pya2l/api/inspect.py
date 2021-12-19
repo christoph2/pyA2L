@@ -948,7 +948,7 @@ class Characteristic(CachedBase):
         self.number = (
             self.characteristic.number.number if self.characteristic.number else None
         )
-        self.physUnit = self.characteristic.phys_unit
+        self.physUnit = self.characteristic.phys_unit.unit if self.characteristic.phys_unit else None
         self.readOnly = self.characteristic.read_only
         self.refMemorySegment = self.characteristic.ref_memory_segment
         self.stepSize = self.characteristic.step_size
@@ -1298,11 +1298,7 @@ class AxisPts(CachedBase):
         self.deposit = self.axis.deposit.mode if self.axis.deposit else None
         self.maxDiff = self.axis.maxDiff
         self._conversionRef = self.axis.conversion
-        self.compuMethod = (
-            CompuMethod.get(session, self._conversionRef)
-            if self._conversionRef != "NO_COMPU_METHOD"
-            else "NO_COMPU_METHOD"
-        )
+        self.compuMethod = CompuMethod.get(session, self._conversionRef)
         self.maxAxisPoints = self.axis.maxAxisPoints
         self.lowerLimit = self.axis.lowerLimit
         self.upperLimit = self.axis.upperLimit
@@ -1329,7 +1325,7 @@ class AxisPts(CachedBase):
         )
         self.guardRails = self.axis.guard_rails
         self.monotony = self.axis.monotony
-        self.physUnit = self.axis.phys_unit
+        self.physUnit = self.axis.phys_unit.unit if self.axis.phys_unit else None
         self.readOnly = self.axis.read_only
         self.refMemorySegment = self.axis.ref_memory_segment
         self.stepSize = self.axis.step_size
@@ -1755,12 +1751,7 @@ class Measurement(CachedBase):
             if self.measurement.virtual
             else []
         )
-        self.compuMethod = (
-            CompuMethod.get(session, self._conversionRef)
-            if self._conversionRef != "NO_COMPU_METHOD"
-            else "NO_COMPU_METHOD"
-        )
-
+        self.compuMethod = CompuMethod.get(session, self._conversionRef)
         self.fnc_np_shape = fnc_np_shape(self.matrixDim)
 
     def __str__(self):
@@ -2535,6 +2526,12 @@ class NoCompuMethod(SingletonBase):
     @property
     def refUnit(self):
         return self._refUnit
+
+    def int_to_physical(self, i):
+        return i
+
+    def physical_to_int(self, p):
+        return p
 
     def __str__(self):
         return "NoCompuMethod()"
