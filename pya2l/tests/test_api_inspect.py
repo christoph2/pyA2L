@@ -6,7 +6,7 @@ import pytest
 
 from pya2l.a2l_listener import A2LListener
 from pya2l import exceptions, model
-from pya2l.api.inspect import CompuMethod, Group, Measurement, ModCommon, ModPar, TypedefStructure
+from pya2l.api.inspect import CompuMethod, NoCompuMethod, Group, Measurement, ModCommon, ModPar, TypedefStructure
 from pya2l.parserlib import ParserWrapper
 
 
@@ -71,7 +71,7 @@ def test_measurement_basic():
     assert meas.refMemorySegment is None
     assert meas.symbolLink is None
     assert meas.virtual == []
-    assert meas.compuMethod == "NO_COMPU_METHOD"
+    assert meas.compuMethod is NoCompuMethod()
 
 
 def test_measurement_full_featured():
@@ -202,7 +202,7 @@ def test_measurement_no_compu_method():
     """
     db = parser.parseFromString(DATA)
     meas = Measurement(db.session, "N")
-    assert meas.compuMethod == "NO_COMPU_METHOD"
+    assert meas.compuMethod is NoCompuMethod()
 
 
 def test_measurement_compu_method_identical():
