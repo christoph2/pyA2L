@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__copyright__="""
+__copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
    (C) 2009-2021 by Christoph Schueler <github.com/Christoph2,
@@ -30,7 +30,16 @@ import mmap
 import re
 import sqlite3
 
-from sqlalchemy import Column, ForeignKey, Index, MetaData, create_engine, event, orm, types
+from sqlalchemy import (
+    Column,
+    ForeignKey,
+    Index,
+    MetaData,
+    create_engine,
+    event,
+    orm,
+    types,
+)
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
@@ -40,12 +49,12 @@ from sqlalchemy.orm import backref, relationship
 from pya2l.model.mixins import AxisDescrMixIn, CompareByPositionMixIn
 from pya2l.utils import SingletonBase
 
-DB_EXTENSION    = "a2ldb"
+DB_EXTENSION = "a2ldb"
 
 CURRENT_SCHEMA_VERSION = 10
 
-CACHE_SIZE      = 4 # MB
-PAGE_SIZE       = mmap.PAGESIZE
+CACHE_SIZE = 4  # MB
+PAGE_SIZE = mmap.PAGESIZE
 
 
 class MULTIPLE(SingletonBase):
@@ -115,8 +124,10 @@ class Byteorder(SingletonBase):
 class Indexorder(SingletonBase):
     enum_values = ("INDEX_INCR", "INDEX_DECR")
 
+
 class Linktype(SingletonBase):
-    enum_values = ("SYMBOL_TYPE_LINK", )
+    enum_values = ("SYMBOL_TYPE_LINK",)
+
 
 class Parameter(object):
     """"""
@@ -198,14 +209,14 @@ def regexer(value, expr):
 def set_sqlite3_pragmas(dbapi_connection, connection_record):
     dbapi_connection.create_function("REGEXP", 2, regexer)
     cursor = dbapi_connection.cursor()
-    #cursor.execute("PRAGMA jornal_mode=WAL")
+    # cursor.execute("PRAGMA jornal_mode=WAL")
     cursor.execute("PRAGMA FOREIGN_KEYS=ON")
     cursor.execute("PRAGMA PAGE_SIZE={}".format(PAGE_SIZE))
     cursor.execute(
         "PRAGMA CACHE_SIZE={}".format(calculateCacheSize(CACHE_SIZE * 1024 * 1024))
     )
-    cursor.execute("PRAGMA SYNCHRONOUS=OFF") # FULL
-    cursor.execute("PRAGMA LOCKING_MODE=EXCLUSIVE") # NORMAL
+    cursor.execute("PRAGMA SYNCHRONOUS=OFF")  # FULL
+    cursor.execute("PRAGMA LOCKING_MODE=EXCLUSIVE")  # NORMAL
     cursor.execute("PRAGMA TEMP_STORE=MEMORY")  # FILE
     cursor.close()
 
@@ -213,7 +224,7 @@ def set_sqlite3_pragmas(dbapi_connection, connection_record):
 @as_declarative()
 class Base(object):
 
-    rid = Column("rid", types.Integer, primary_key = True)
+    rid = Column("rid", types.Integer, primary_key=True)
 
     @declared_attr
     def __tablename__(cls):
@@ -232,73 +243,73 @@ class Base(object):
         return "{}({})".format(self.__class__.__name__, ", ".join(result))
 
 
-def StdFloat(default = 0.0):
-    return Column(types.Float, default = default, nullable = False)
+def StdFloat(default=0.0):
+    return Column(types.Float, default=default, nullable=False)
 
 
-def StdShort(default = 0, primary_key = False, unique = False):
+def StdShort(default=0, primary_key=False, unique=False):
     return Column(
         types.Integer,
-        default = default,
-        nullable = False,
-        primary_key = primary_key,
-        unique = unique,
-        #CheckClause('BETWEEN (-32768, 32767)')
+        default=default,
+        nullable=False,
+        primary_key=primary_key,
+        unique=unique,
+        # CheckClause('BETWEEN (-32768, 32767)')
     )
 
 
-def StdUShort(default = 0, primary_key = False, unique = False):
+def StdUShort(default=0, primary_key=False, unique=False):
     return Column(
         types.Integer,
-        default = default,
-        nullable = False,
-        primary_key = primary_key,
-        unique = unique,
-        #CheckClause('BETWEEN (0, 65535)')
+        default=default,
+        nullable=False,
+        primary_key=primary_key,
+        unique=unique,
+        # CheckClause('BETWEEN (0, 65535)')
     )
 
 
-def StdLong(default = 0, primary_key = False, unique = False):
+def StdLong(default=0, primary_key=False, unique=False):
     return Column(
         types.Integer,
-        default = default,
-        nullable = False,
-        primary_key = primary_key,
-        unique = unique,
-        #CheckClause('BETWEEN (-2147483648, 2147483647)')
+        default=default,
+        nullable=False,
+        primary_key=primary_key,
+        unique=unique,
+        # CheckClause('BETWEEN (-2147483648, 2147483647)')
     )
 
 
-def StdULong(default = 0, primary_key = False, unique = False):
+def StdULong(default=0, primary_key=False, unique=False):
     return Column(
         types.Integer,
-        default = default,
-        nullable = False,
-        primary_key = primary_key,
-        unique = unique,
-        #CheckClause('BETWEEN (0, 4294967295)')
+        default=default,
+        nullable=False,
+        primary_key=primary_key,
+        unique=unique,
+        # CheckClause('BETWEEN (0, 4294967295)')
     )
 
 
-def StdString(default = 0, primary_key = False, unique = False, index = False):
+def StdString(default=0, primary_key=False, unique=False, index=False):
     return Column(
         types.VARCHAR(256),
-        default = default,
-        nullable = False,
-        primary_key = primary_key,
-        unique = unique,
-        index = index,
+        default=default,
+        nullable=False,
+        primary_key=primary_key,
+        unique=unique,
+        index=index,
     )
 
 
-def StdIdent(default = 0, primary_key = False, unique = False, index = False):
+def StdIdent(default=0, primary_key=False, unique=False, index=False):
     return Column(
         types.VARCHAR(1025),
-        default = default,
-        nullable = False,
-        primary_key = primary_key,
-        unique = unique,
-        index = index,
+        default=default,
+        nullable=False,
+        primary_key=primary_key,
+        unique=unique,
+        index=index,
     )
 
 
@@ -307,7 +318,7 @@ class DefCharacteristicIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "def_characteristic_identifiers"
 
     dci_rid = Column(types.Integer, ForeignKey("def_characteristic.rid"))
-    identifier = StdIdent(index = True)
+    identifier = StdIdent(index=True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -319,7 +330,7 @@ class OutMeasurementIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "out_measurement_identifiers"
 
     om_rid = Column(types.Integer, ForeignKey("out_measurement.rid"))
-    identifier = StdIdent(index = True)
+    identifier = StdIdent(index=True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -331,7 +342,7 @@ class InMeasurementIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "in_measurement_identifiers"
 
     im_rid = Column(types.Integer, ForeignKey("in_measurement.rid"))
-    identifier = StdIdent(index = True)
+    identifier = StdIdent(index=True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -343,7 +354,7 @@ class LocMeasurementIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "loc_measurement_identifiers"
 
     lm_rid = Column(types.Integer, ForeignKey("loc_measurement.rid"))
-    identifier = StdIdent(index = True)
+    identifier = StdIdent(index=True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -355,7 +366,7 @@ class RefMeasurementIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "ref_measurement_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("ref_measurement.rid"))
-    identifier = StdIdent(index = True)
+    identifier = StdIdent(index=True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -367,7 +378,7 @@ class FrameMeasurementIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "frame_measurement_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("frame_measurement.rid"))
-    identifier = StdIdent(index = True)
+    identifier = StdIdent(index=True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -379,7 +390,7 @@ class SubGroupIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "sub_group_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("sub_group.rid"))
-    identifier = StdIdent(index = True)
+    identifier = StdIdent(index=True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -391,7 +402,7 @@ class SubFunctionIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "sub_function_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("sub_function.rid"))
-    identifier = StdIdent(index = True)
+    identifier = StdIdent(index=True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -403,7 +414,7 @@ class RefGroupIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "ref_group_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("ref_group.rid"))
-    identifier = StdIdent(index = True)
+    identifier = StdIdent(index=True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -415,7 +426,7 @@ class MapListIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "map_list_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("map_list.rid"))
-    name = StdIdent(index = True)
+    name = StdIdent(index=True)
     position = StdLong()
 
     def __init__(self, name):
@@ -427,7 +438,7 @@ class VarCharacteristicIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "var_characteristic_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("var_characteristic.rid"))
-    criterionName = StdIdent(index = True)
+    criterionName = StdIdent(index=True)
     position = StdLong()
 
     def __init__(self, criterionName):
@@ -439,7 +450,7 @@ class VarCriterionIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "var_criterion_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("var_criterion.rid"))
-    value = StdIdent(index = True)
+    value = StdIdent(index=True)
     position = StdLong()
 
     def __init__(self, value):
@@ -451,7 +462,7 @@ class FunctionListIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "function_list_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("function_list.rid"))
-    name = StdIdent(index = True)
+    name = StdIdent(index=True)
     position = StdLong()
 
     def __init__(self, name):
@@ -463,7 +474,7 @@ class RefCharacteristicIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "ref_characteristic_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("ref_characteristic.rid"))
-    identifier = StdIdent(index = True)
+    identifier = StdIdent(index=True)
     position = StdLong()
 
     def __init__(self, identifier):
@@ -475,7 +486,7 @@ class DependentCharacteristicIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "dependent_characteristic_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("dependent_characteristic.rid"))
-    characteristic = StdIdent(index = True)
+    characteristic = StdIdent(index=True)
     position = StdLong()
 
     def __init__(self, characteristic):
@@ -487,7 +498,7 @@ class VirtualCharacteristicIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "virtual_characteristic_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("virtual_characteristic.rid"))
-    characteristic = StdIdent(index = True)
+    characteristic = StdIdent(index=True)
     position = StdLong()
 
     def __init__(self, characteristic):
@@ -525,7 +536,7 @@ class CompuVtabRangeTriple(Base, CompareByPositionMixIn):
 
     inValMin = StdFloat()
     inValMax = StdFloat()
-    outVal   = StdString()
+    outVal = StdString()
 
 
 class CalHandles(Base, CompareByPositionMixIn):
@@ -613,7 +624,7 @@ class VarForbiddedCombPair(Base, CompareByPositionMixIn):
 class MetaData(Base):
 
     schema_version = StdShort()
-    created = Column(types.DateTime, default = datetime.datetime.now)
+    created = Column(types.DateTime, default=datetime.datetime.now)
 
 
 class AlignmentByte(Base):
@@ -623,24 +634,18 @@ class AlignmentByte(Base):
 
     alignmentBorder = StdUShort()
 
-    __required_parameters__ = (
-        Parameter("alignmentBorder", Uint, False),
-    )
+    __required_parameters__ = (Parameter("alignmentBorder", Uint, False),)
 
 
 class HasAlignmentBytes(object):
-
     @declared_attr
     def alignment_byte_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("alignment_byte.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("alignment_byte.rid"), nullable=True)
 
     @declared_attr
     def alignment_byte(cls):
         return relationship("AlignmentByte")
+
 
 class AlignmentFloat16Ieee(Base):
     """"""
@@ -649,24 +654,20 @@ class AlignmentFloat16Ieee(Base):
 
     alignmentBorder = StdUShort()
 
-    __required_parameters__ = (
-        Parameter("alignmentBorder", Uint, False),
-    )
+    __required_parameters__ = (Parameter("alignmentBorder", Uint, False),)
 
 
 class HasAlignmentFloat16Ieees(object):
-
     @declared_attr
     def alignment_float16_ieee_id(cls):
         return Column(
-            types.Integer,
-            ForeignKey("alignment_float16_ieee.rid"),
-            nullable=True
+            types.Integer, ForeignKey("alignment_float16_ieee.rid"), nullable=True
         )
 
     @declared_attr
     def alignment_float16_ieee(cls):
         return relationship("AlignmentFloat16Ieee")
+
 
 class AlignmentFloat32Ieee(Base):
     """"""
@@ -675,24 +676,20 @@ class AlignmentFloat32Ieee(Base):
 
     alignmentBorder = StdUShort()
 
-    __required_parameters__ = (
-        Parameter("alignmentBorder", Uint, False),
-    )
+    __required_parameters__ = (Parameter("alignmentBorder", Uint, False),)
 
 
 class HasAlignmentFloat32Ieees(object):
-
     @declared_attr
     def alignment_float32_ieee_id(cls):
         return Column(
-            types.Integer,
-            ForeignKey("alignment_float32_ieee.rid"),
-            nullable=True
+            types.Integer, ForeignKey("alignment_float32_ieee.rid"), nullable=True
         )
 
     @declared_attr
     def alignment_float32_ieee(cls):
         return relationship("AlignmentFloat32Ieee")
+
 
 class AlignmentFloat64Ieee(Base):
     """"""
@@ -701,24 +698,20 @@ class AlignmentFloat64Ieee(Base):
 
     alignmentBorder = StdUShort()
 
-    __required_parameters__ = (
-        Parameter("alignmentBorder", Uint, False),
-    )
+    __required_parameters__ = (Parameter("alignmentBorder", Uint, False),)
 
 
 class HasAlignmentFloat64Ieees(object):
-
     @declared_attr
     def alignment_float64_ieee_id(cls):
         return Column(
-            types.Integer,
-            ForeignKey("alignment_float64_ieee.rid"),
-            nullable=True
+            types.Integer, ForeignKey("alignment_float64_ieee.rid"), nullable=True
         )
 
     @declared_attr
     def alignment_float64_ieee(cls):
         return relationship("AlignmentFloat64Ieee")
+
 
 class AlignmentInt64(Base):
     """"""
@@ -727,24 +720,18 @@ class AlignmentInt64(Base):
 
     alignmentBorder = StdUShort()
 
-    __required_parameters__ = (
-        Parameter("alignmentBorder", Uint, False),
-    )
+    __required_parameters__ = (Parameter("alignmentBorder", Uint, False),)
 
 
 class HasAlignmentInt64s(object):
-
     @declared_attr
     def alignment_int64_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("alignment_int64.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("alignment_int64.rid"), nullable=True)
 
     @declared_attr
     def alignment_int64(cls):
         return relationship("AlignmentInt64")
+
 
 class AlignmentLong(Base):
     """"""
@@ -753,24 +740,18 @@ class AlignmentLong(Base):
 
     alignmentBorder = StdUShort()
 
-    __required_parameters__ = (
-        Parameter("alignmentBorder", Uint, False),
-    )
+    __required_parameters__ = (Parameter("alignmentBorder", Uint, False),)
 
 
 class HasAlignmentLongs(object):
-
     @declared_attr
     def alignment_long_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("alignment_long.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("alignment_long.rid"), nullable=True)
 
     @declared_attr
     def alignment_long(cls):
         return relationship("AlignmentLong")
+
 
 class AlignmentWord(Base):
     """"""
@@ -779,24 +760,18 @@ class AlignmentWord(Base):
 
     alignmentBorder = StdUShort()
 
-    __required_parameters__ = (
-        Parameter("alignmentBorder", Uint, False),
-    )
+    __required_parameters__ = (Parameter("alignmentBorder", Uint, False),)
 
 
 class HasAlignmentWords(object):
-
     @declared_attr
     def alignment_word_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("alignment_word.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("alignment_word.rid"), nullable=True)
 
     @declared_attr
     def alignment_word(cls):
         return relationship("AlignmentWord")
+
 
 class AnnotationAssociation(Base):
 
@@ -813,13 +788,11 @@ class Annotation(Base):
 
     _association_id = Column(types.Integer, ForeignKey("annotation_association.rid"))
     association = relationship(
-        "AnnotationAssociation",
-        backref="annotation",
-        uselist = True
+        "AnnotationAssociation", backref="annotation", uselist=True
     )
     parent = association_proxy("association", "parent")
 
-    __required_parameters__ = ( )
+    __required_parameters__ = ()
 
     __optional_elements__ = (
         Element("AnnotationLabel", "ANNOTATION_LABEL", False),
@@ -827,19 +800,13 @@ class Annotation(Base):
         Element("AnnotationText", "ANNOTATION_TEXT", False),
     )
     annotation_label = relationship(
-        "AnnotationLabel",
-        back_populates = "annotation",
-        uselist = False
+        "AnnotationLabel", back_populates="annotation", uselist=False
     )
     annotation_origin = relationship(
-        "AnnotationOrigin",
-        back_populates = "annotation",
-        uselist = False
+        "AnnotationOrigin", back_populates="annotation", uselist=False
     )
     annotation_text = relationship(
-        "AnnotationText",
-        back_populates = "annotation",
-        uselist = False
+        "AnnotationText", back_populates="annotation", uselist=False
     )
 
 
@@ -850,16 +817,12 @@ class AnnotationLabel(Base):
 
     label = StdString()
 
-    __required_parameters__ = (
-        Parameter("label", String, False),
-    )
+    __required_parameters__ = (Parameter("label", String, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _annotation_rid = Column(types.Integer, ForeignKey("annotation.rid"))
     annotation = relationship(
-        "Annotation",
-        back_populates = "annotation_label",
-        uselist = False
+        "Annotation", back_populates="annotation_label", uselist=False
     )
 
 
@@ -870,16 +833,12 @@ class AnnotationOrigin(Base):
 
     origin = StdString()
 
-    __required_parameters__ = (
-        Parameter("origin", String, False),
-    )
+    __required_parameters__ = (Parameter("origin", String, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _annotation_rid = Column(types.Integer, ForeignKey("annotation.rid"))
     annotation = relationship(
-        "Annotation",
-        back_populates = "annotation_origin",
-        uselist = False
+        "Annotation", back_populates="annotation_origin", uselist=False
     )
 
 
@@ -889,23 +848,21 @@ class AnnotationText(Base):
     __tablename__ = "annotation_text"
     _text = relationship(
         "AnnotationTextValues",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     text = association_proxy("_text", "text")
 
-    __required_parameters__ = ( )
+    __required_parameters__ = ()
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _annotation_rid = Column(types.Integer, ForeignKey("annotation.rid"))
     annotation = relationship(
-        "Annotation",
-        back_populates = "annotation_text",
-        uselist = False
+        "Annotation", back_populates="annotation_text", uselist=False
     )
 
-class HasAnnotations(object):
 
+class HasAnnotations(object):
     @declared_attr
     def _annotation_association_id(cls):
         return Column(types.Integer, ForeignKey("annotation_association.rid"))
@@ -916,21 +873,26 @@ class HasAnnotations(object):
         discriminator = name.lower()
 
         assoc_cls = type(
-            "%sAnnotationAssociation" % name, (AnnotationAssociation,),
+            "%sAnnotationAssociation" % name,
+            (AnnotationAssociation,),
             dict(
-                __tablename__ = None,
-                __mapper_args__ = {"polymorphic_identity": discriminator},
+                __tablename__=None,
+                __mapper_args__={"polymorphic_identity": discriminator},
             ),
         )
 
         cls.annotation = association_proxy(
             "annotation_association",
             "annotation",
-            creator = lambda annotation: assoc_cls(annotation = annotation),
+            creator=lambda annotation: assoc_cls(annotation=annotation),
         )
         return relationship(
-            assoc_cls, backref = backref("parent", uselist = False, collection_class = ordering_list('position'))
+            assoc_cls,
+            backref=backref(
+                "parent", uselist=False, collection_class=ordering_list("position")
+            ),
         )
+
 
 class BitMask(Base):
     """"""
@@ -939,24 +901,18 @@ class BitMask(Base):
 
     mask = StdULong()
 
-    __required_parameters__ = (
-        Parameter("mask", Ulong, False),
-    )
+    __required_parameters__ = (Parameter("mask", Ulong, False),)
 
 
 class HasBitMasks(object):
-
     @declared_attr
     def bit_mask_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("bit_mask.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("bit_mask.rid"), nullable=True)
 
     @declared_attr
     def bit_mask(cls):
         return relationship("BitMask")
+
 
 class ByteOrder(Base):
     """"""
@@ -965,24 +921,18 @@ class ByteOrder(Base):
 
     byteOrder = StdString()
 
-    __required_parameters__ = (
-        Parameter("byteOrder", Byteorder, False),
-    )
+    __required_parameters__ = (Parameter("byteOrder", Byteorder, False),)
 
 
 class HasByteOrders(object):
-
     @declared_attr
     def byte_order_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("byte_order.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("byte_order.rid"), nullable=True)
 
     @declared_attr
     def byte_order(cls):
         return relationship("ByteOrder")
+
 
 class CalibrationAccess(Base):
     """"""
@@ -991,24 +941,20 @@ class CalibrationAccess(Base):
 
     type = StdString()
 
-    __required_parameters__ = (
-        Parameter("type", Enum, False),
-    )
+    __required_parameters__ = (Parameter("type", Enum, False),)
 
 
 class HasCalibrationAccess(object):
-
     @declared_attr
     def calibration_access_id(cls):
         return Column(
-            types.Integer,
-            ForeignKey("calibration_access.rid"),
-            nullable=True
+            types.Integer, ForeignKey("calibration_access.rid"), nullable=True
         )
 
     @declared_attr
     def calibration_access(cls):
         return relationship("CalibrationAccess")
+
 
 class DefaultValue(Base):
     """"""
@@ -1017,24 +963,18 @@ class DefaultValue(Base):
 
     display_string = StdString()
 
-    __required_parameters__ = (
-        Parameter("display_string", String, False),
-    )
+    __required_parameters__ = (Parameter("display_string", String, False),)
 
 
 class HasDefaultValues(object):
-
     @declared_attr
     def default_value_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("default_value.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("default_value.rid"), nullable=True)
 
     @declared_attr
     def default_value(cls):
         return relationship("DefaultValue")
+
 
 class Deposit(Base):
     """"""
@@ -1043,34 +983,27 @@ class Deposit(Base):
 
     mode = StdString()
 
-    __required_parameters__ = (
-        Parameter("mode", Enum, False),
-    )
+    __required_parameters__ = (Parameter("mode", Enum, False),)
 
 
 class HasDeposits(object):
-
     @declared_attr
     def deposit_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("deposit.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("deposit.rid"), nullable=True)
 
     @declared_attr
     def deposit(cls):
         return relationship("Deposit")
+
 
 class Discrete(object):
     pass
 
 
 class HasDiscretes(object):
-
     @declared_attr
     def discrete(cls):
-        return Column(types.Boolean, default = False)
+        return Column(types.Boolean, default=False)
 
 
 class DisplayIdentifier(Base):
@@ -1080,24 +1013,20 @@ class DisplayIdentifier(Base):
 
     display_name = StdIdent()
 
-    __required_parameters__ = (
-        Parameter("display_name", Ident, False),
-    )
+    __required_parameters__ = (Parameter("display_name", Ident, False),)
 
 
 class HasDisplayIdentifiers(object):
-
     @declared_attr
     def display_identifier_id(cls):
         return Column(
-            types.Integer,
-            ForeignKey("display_identifier.rid"),
-            nullable=True
+            types.Integer, ForeignKey("display_identifier.rid"), nullable=True
         )
 
     @declared_attr
     def display_identifier(cls):
         return relationship("DisplayIdentifier")
+
 
 class EcuAddressExtension(Base):
     """"""
@@ -1106,24 +1035,20 @@ class EcuAddressExtension(Base):
 
     extension = StdShort()
 
-    __required_parameters__ = (
-        Parameter("extension", Int, False),
-    )
+    __required_parameters__ = (Parameter("extension", Int, False),)
 
 
 class HasEcuAddressExtensions(object):
-
     @declared_attr
     def ecu_address_extension_id(cls):
         return Column(
-            types.Integer,
-            ForeignKey("ecu_address_extension.rid"),
-            nullable=True
+            types.Integer, ForeignKey("ecu_address_extension.rid"), nullable=True
         )
 
     @declared_attr
     def ecu_address_extension(cls):
         return relationship("EcuAddressExtension")
+
 
 class ExtendedLimits(Base):
     """"""
@@ -1140,18 +1065,14 @@ class ExtendedLimits(Base):
 
 
 class HasExtendedLimits(object):
-
     @declared_attr
     def extended_limits_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("extended_limits.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("extended_limits.rid"), nullable=True)
 
     @declared_attr
     def extended_limits(cls):
         return relationship("ExtendedLimits")
+
 
 class Format(Base):
     """"""
@@ -1160,24 +1081,18 @@ class Format(Base):
 
     formatString = StdString()
 
-    __required_parameters__ = (
-        Parameter("formatString", String, False),
-    )
+    __required_parameters__ = (Parameter("formatString", String, False),)
 
 
 class HasFormats(object):
-
     @declared_attr
     def format_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("format.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("format.rid"), nullable=True)
 
     @declared_attr
     def format(cls):
         return relationship("Format")
+
 
 class FunctionList(Base):
     """"""
@@ -1186,37 +1101,32 @@ class FunctionList(Base):
 
     _name = relationship(
         "FunctionListValues",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     name = association_proxy("_name", "name")
 
-    __required_parameters__ = ( )
+    __required_parameters__ = ()
 
 
 class HasFunctionLists(object):
-
     @declared_attr
     def function_list_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("function_list.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("function_list.rid"), nullable=True)
 
     @declared_attr
     def function_list(cls):
         return relationship("FunctionList")
+
 
 class GuardRails(object):
     pass
 
 
 class HasGuardRails(object):
-
     @declared_attr
     def guard_rails(cls):
-        return Column(types.Boolean, default = False)
+        return Column(types.Boolean, default=False)
 
 
 class IfDataAssociation(Base):
@@ -1233,23 +1143,17 @@ class IfData(Base):
     """"""
 
     _association_id = Column(types.Integer, ForeignKey("if_data_association.rid"))
-    association = relationship(
-        "IfDataAssociation",
-        backref="if_data",
-        uselist = True
-    )
+    association = relationship("IfDataAssociation", backref="if_data", uselist=True)
     parent = association_proxy("association", "parent")
 
     name = StdIdent()
 
-    __required_parameters__ = (
-        Parameter("name", Ident, False),
-    )
+    __required_parameters__ = (Parameter("name", Ident, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
+
 
 class HasIfDatas(object):
-
     @declared_attr
     def _if_data_association_id(cls):
         return Column(types.Integer, ForeignKey("if_data_association.rid"))
@@ -1260,21 +1164,26 @@ class HasIfDatas(object):
         discriminator = name.lower()
 
         assoc_cls = type(
-            "%sIfDataAssociation" % name, (IfDataAssociation,),
+            "%sIfDataAssociation" % name,
+            (IfDataAssociation,),
             dict(
-                __tablename__ = None,
-                __mapper_args__ = {"polymorphic_identity": discriminator},
+                __tablename__=None,
+                __mapper_args__={"polymorphic_identity": discriminator},
             ),
         )
 
         cls.if_data = association_proxy(
             "if_data_association",
             "if_data",
-            creator = lambda if_data: assoc_cls(if_data = if_data),
+            creator=lambda if_data: assoc_cls(if_data=if_data),
         )
         return relationship(
-            assoc_cls, backref = backref("parent", uselist = False, collection_class = ordering_list('position'))
+            assoc_cls,
+            backref=backref(
+                "parent", uselist=False, collection_class=ordering_list("position")
+            ),
         )
+
 
 class MatrixDim(Base):
     """"""
@@ -1293,18 +1202,14 @@ class MatrixDim(Base):
 
 
 class HasMatrixDims(object):
-
     @declared_attr
     def matrix_dim_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("matrix_dim.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("matrix_dim.rid"), nullable=True)
 
     @declared_attr
     def matrix_dim(cls):
         return relationship("MatrixDim")
+
 
 class MaxRefresh(Base):
     """"""
@@ -1321,18 +1226,14 @@ class MaxRefresh(Base):
 
 
 class HasMaxRefreshs(object):
-
     @declared_attr
     def max_refresh_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("max_refresh.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("max_refresh.rid"), nullable=True)
 
     @declared_attr
     def max_refresh(cls):
         return relationship("MaxRefresh")
+
 
 class Monotony(Base):
     """"""
@@ -1341,24 +1242,18 @@ class Monotony(Base):
 
     monotony = StdString()
 
-    __required_parameters__ = (
-        Parameter("monotony", Enum, False),
-    )
+    __required_parameters__ = (Parameter("monotony", Enum, False),)
 
 
 class HasMonotonys(object):
-
     @declared_attr
     def monotony_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("monotony.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("monotony.rid"), nullable=True)
 
     @declared_attr
     def monotony(cls):
         return relationship("Monotony")
+
 
 class PhysUnit(Base):
     """"""
@@ -1367,34 +1262,27 @@ class PhysUnit(Base):
 
     unit = StdString()
 
-    __required_parameters__ = (
-        Parameter("unit", String, False),
-    )
+    __required_parameters__ = (Parameter("unit", String, False),)
 
 
 class HasPhysUnits(object):
-
     @declared_attr
     def phys_unit_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("phys_unit.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("phys_unit.rid"), nullable=True)
 
     @declared_attr
     def phys_unit(cls):
         return relationship("PhysUnit")
+
 
 class ReadOnly(object):
     pass
 
 
 class HasReadOnlys(object):
-
     @declared_attr
     def read_only(cls):
-        return Column(types.Boolean, default = False)
+        return Column(types.Boolean, default=False)
 
 
 class RefCharacteristic(Base):
@@ -1404,27 +1292,25 @@ class RefCharacteristic(Base):
 
     _identifier = relationship(
         "RefCharacteristicIdentifiers",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     identifier = association_proxy("_identifier", "identifier")
 
-    __required_parameters__ = ( )
+    __required_parameters__ = ()
 
 
 class HasRefCharacteristics(object):
-
     @declared_attr
     def ref_characteristic_id(cls):
         return Column(
-            types.Integer,
-            ForeignKey("ref_characteristic.rid"),
-            nullable=True
+            types.Integer, ForeignKey("ref_characteristic.rid"), nullable=True
         )
 
     @declared_attr
     def ref_characteristic(cls):
         return relationship("RefCharacteristic")
+
 
 class RefMemorySegment(Base):
     """"""
@@ -1433,24 +1319,20 @@ class RefMemorySegment(Base):
 
     name = StdIdent()
 
-    __required_parameters__ = (
-        Parameter("name", Ident, False),
-    )
+    __required_parameters__ = (Parameter("name", Ident, False),)
 
 
 class HasRefMemorySegments(object):
-
     @declared_attr
     def ref_memory_segment_id(cls):
         return Column(
-            types.Integer,
-            ForeignKey("ref_memory_segment.rid"),
-            nullable=True
+            types.Integer, ForeignKey("ref_memory_segment.rid"), nullable=True
         )
 
     @declared_attr
     def ref_memory_segment(cls):
         return relationship("RefMemorySegment")
+
 
 class RefUnit(Base):
     """"""
@@ -1459,24 +1341,18 @@ class RefUnit(Base):
 
     unit = StdIdent()
 
-    __required_parameters__ = (
-        Parameter("unit", Ident, False),
-    )
+    __required_parameters__ = (Parameter("unit", Ident, False),)
 
 
 class HasRefUnits(object):
-
     @declared_attr
     def ref_unit_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("ref_unit.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("ref_unit.rid"), nullable=True)
 
     @declared_attr
     def ref_unit(cls):
         return relationship("RefUnit")
+
 
 class StepSize(Base):
     """"""
@@ -1485,24 +1361,18 @@ class StepSize(Base):
 
     stepSize = StdFloat()
 
-    __required_parameters__ = (
-        Parameter("stepSize", Float, False),
-    )
+    __required_parameters__ = (Parameter("stepSize", Float, False),)
 
 
 class HasStepSizes(object):
-
     @declared_attr
     def step_size_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("step_size.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("step_size.rid"), nullable=True)
 
     @declared_attr
     def step_size(cls):
         return relationship("StepSize")
+
 
 class SymbolLink(Base):
     """"""
@@ -1519,18 +1389,14 @@ class SymbolLink(Base):
 
 
 class HasSymbolLinks(object):
-
     @declared_attr
     def symbol_link_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("symbol_link.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("symbol_link.rid"), nullable=True)
 
     @declared_attr
     def symbol_link(cls):
         return relationship("SymbolLink")
+
 
 class Version(Base):
     """"""
@@ -1539,20 +1405,13 @@ class Version(Base):
 
     versionIdentifier = StdString()
 
-    __required_parameters__ = (
-        Parameter("versionIdentifier", String, False),
-    )
+    __required_parameters__ = (Parameter("versionIdentifier", String, False),)
 
 
 class HasVersions(object):
-
     @declared_attr
     def version_id(cls):
-        return Column(
-            types.Integer,
-            ForeignKey("version.rid"),
-            nullable=True
-        )
+        return Column(types.Integer, ForeignKey("version.rid"), nullable=True)
 
     @declared_attr
     def version(cls):
@@ -1573,7 +1432,7 @@ class Asap2Version(Base):
         Parameter("upgradeNo", Uint, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
 
 
 class A2mlVersion(Base):
@@ -1590,7 +1449,7 @@ class A2mlVersion(Base):
         Parameter("upgradeNo", Uint, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
 
 
 class Project(Base):
@@ -1611,16 +1470,8 @@ class Project(Base):
         Element("Header", "HEADER", False),
         Element("Module", "MODULE", True),
     )
-    header = relationship(
-        "Header",
-        back_populates = "project",
-        uselist = False
-    )
-    module = relationship(
-        "Module",
-        back_populates = "project",
-        uselist = True
-    )
+    header = relationship("Header", back_populates="project", uselist=False)
+    module = relationship("Module", back_populates="project", uselist=True)
 
 
 class Header(Base, HasVersions):
@@ -1630,25 +1481,15 @@ class Header(Base, HasVersions):
 
     comment = StdString()
 
-    __required_parameters__ = (
-        Parameter("comment", String, False),
-    )
+    __required_parameters__ = (Parameter("comment", String, False),)
 
     __optional_elements__ = (
         Element("ProjectNo", "PROJECT_NO", False),
         Element("Version", "VERSION", False),
     )
-    project_no = relationship(
-        "ProjectNo",
-        back_populates = "header",
-        uselist = False
-    )
+    project_no = relationship("ProjectNo", back_populates="header", uselist=False)
     _project_rid = Column(types.Integer, ForeignKey("project.rid"))
-    project = relationship(
-        "Project",
-        back_populates = "header",
-        uselist = False
-    )
+    project = relationship("Project", back_populates="header", uselist=False)
 
 
 class ProjectNo(Base):
@@ -1658,17 +1499,11 @@ class ProjectNo(Base):
 
     projectNumber = StdIdent()
 
-    __required_parameters__ = (
-        Parameter("projectNumber", Ident, False),
-    )
+    __required_parameters__ = (Parameter("projectNumber", Ident, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _header_rid = Column(types.Integer, ForeignKey("header.rid"))
-    header = relationship(
-        "Header",
-        back_populates = "project_no",
-        uselist = False
-    )
+    header = relationship("Header", back_populates="project_no", uselist=False)
 
 
 class Module(Base, HasIfDatas):
@@ -1708,112 +1543,38 @@ class Module(Base, HasIfDatas):
         Element("UserRights", "USER_RIGHTS", True),
         Element("VariantCoding", "VARIANT_CODING", False),
     )
-    a2ml = relationship(
-        "A2ml",
-        back_populates = "module",
-        uselist = False
-    )
-    axis_pts = relationship(
-        "AxisPts",
-        back_populates = "module",
-        uselist = True
-    )
+    a2ml = relationship("A2ml", back_populates="module", uselist=False)
+    axis_pts = relationship("AxisPts", back_populates="module", uselist=True)
     characteristic = relationship(
-        "Characteristic",
-        back_populates = "module",
-        uselist = True
+        "Characteristic", back_populates="module", uselist=True
     )
-    compu_method = relationship(
-        "CompuMethod",
-        back_populates = "module",
-        uselist = True
-    )
-    compu_tab = relationship(
-        "CompuTab",
-        back_populates = "module",
-        uselist = True
-    )
-    compu_vtab = relationship(
-        "CompuVtab",
-        back_populates = "module",
-        uselist = True
-    )
+    compu_method = relationship("CompuMethod", back_populates="module", uselist=True)
+    compu_tab = relationship("CompuTab", back_populates="module", uselist=True)
+    compu_vtab = relationship("CompuVtab", back_populates="module", uselist=True)
     compu_vtab_range = relationship(
-        "CompuVtabRange",
-        back_populates = "module",
-        uselist = True
+        "CompuVtabRange", back_populates="module", uselist=True
     )
-    frame = relationship(
-        "Frame",
-        back_populates = "module",
-        uselist = False
-    )
-    function = relationship(
-        "Function",
-        back_populates = "module",
-        uselist = True
-    )
-    group = relationship(
-        "Group",
-        back_populates = "module",
-        uselist = True
-    )
-    instance = relationship(
-        "Instance",
-        back_populates = "module",
-        uselist = True
-    )
-    measurement = relationship(
-        "Measurement",
-        back_populates = "module",
-        uselist = True
-    )
-    mod_common = relationship(
-        "ModCommon",
-        back_populates = "module",
-        uselist = False
-    )
-    mod_par = relationship(
-        "ModPar",
-        back_populates = "module",
-        uselist = False
-    )
-    record_layout = relationship(
-        "RecordLayout",
-        back_populates = "module",
-        uselist = True
-    )
+    frame = relationship("Frame", back_populates="module", uselist=False)
+    function = relationship("Function", back_populates="module", uselist=True)
+    group = relationship("Group", back_populates="module", uselist=True)
+    instance = relationship("Instance", back_populates="module", uselist=True)
+    measurement = relationship("Measurement", back_populates="module", uselist=True)
+    mod_common = relationship("ModCommon", back_populates="module", uselist=False)
+    mod_par = relationship("ModPar", back_populates="module", uselist=False)
+    record_layout = relationship("RecordLayout", back_populates="module", uselist=True)
     typedef_measurement = relationship(
-        "TypedefMeasurement",
-        back_populates = "module",
-        uselist = True
+        "TypedefMeasurement", back_populates="module", uselist=True
     )
     typedef_structure = relationship(
-        "TypedefStructure",
-        back_populates = "module",
-        uselist = True
+        "TypedefStructure", back_populates="module", uselist=True
     )
-    unit = relationship(
-        "Unit",
-        back_populates = "module",
-        uselist = True
-    )
-    user_rights = relationship(
-        "UserRights",
-        back_populates = "module",
-        uselist = True
-    )
+    unit = relationship("Unit", back_populates="module", uselist=True)
+    user_rights = relationship("UserRights", back_populates="module", uselist=True)
     variant_coding = relationship(
-        "VariantCoding",
-        back_populates = "module",
-        uselist = False
+        "VariantCoding", back_populates="module", uselist=False
     )
     _project_rid = Column(types.Integer, ForeignKey("project.rid"))
-    project = relationship(
-        "Project",
-        back_populates = "module",
-        uselist = True
-    )
+    project = relationship("Project", back_populates="module", uselist=True)
 
 
 class A2ml(Base):
@@ -1821,23 +1582,38 @@ class A2ml(Base):
 
     __tablename__ = "a2ml"
 
-    __required_parameters__ = ( )
+    __required_parameters__ = ()
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "a2ml",
-        uselist = False
-    )
+    module = relationship("Module", back_populates="a2ml", uselist=False)
 
 
-class AxisPts(Base, HasAnnotations, HasByteOrders, HasCalibrationAccess, HasDeposits, HasDisplayIdentifiers, HasEcuAddressExtensions, HasExtendedLimits, HasFormats, HasFunctionLists, HasGuardRails, HasIfDatas, HasMonotonys, HasPhysUnits, HasReadOnlys, HasRefMemorySegments, HasStepSizes, HasSymbolLinks):
+class AxisPts(
+    Base,
+    HasAnnotations,
+    HasByteOrders,
+    HasCalibrationAccess,
+    HasDeposits,
+    HasDisplayIdentifiers,
+    HasEcuAddressExtensions,
+    HasExtendedLimits,
+    HasFormats,
+    HasFunctionLists,
+    HasGuardRails,
+    HasIfDatas,
+    HasMonotonys,
+    HasPhysUnits,
+    HasReadOnlys,
+    HasRefMemorySegments,
+    HasStepSizes,
+    HasSymbolLinks,
+):
     """"""
 
     __tablename__ = "axis_pts"
 
-    name = StdIdent(index = True)
+    name = StdIdent(index=True)
 
     longIdentifier = StdString()
 
@@ -1890,19 +1666,36 @@ class AxisPts(Base, HasAnnotations, HasByteOrders, HasCalibrationAccess, HasDepo
         Element("SymbolLink", "SYMBOL_LINK", False),
     )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "axis_pts",
-        uselist = True
-    )
+    module = relationship("Module", back_populates="axis_pts", uselist=True)
 
 
-class Characteristic(Base, HasAnnotations, HasBitMasks, HasByteOrders, HasCalibrationAccess, HasDiscretes, HasDisplayIdentifiers, HasEcuAddressExtensions, HasExtendedLimits, HasFormats, HasFunctionLists, HasGuardRails, HasIfDatas, HasMatrixDims, HasMaxRefreshs, HasPhysUnits, HasReadOnlys, HasRefMemorySegments, HasStepSizes, HasSymbolLinks):
+class Characteristic(
+    Base,
+    HasAnnotations,
+    HasBitMasks,
+    HasByteOrders,
+    HasCalibrationAccess,
+    HasDiscretes,
+    HasDisplayIdentifiers,
+    HasEcuAddressExtensions,
+    HasExtendedLimits,
+    HasFormats,
+    HasFunctionLists,
+    HasGuardRails,
+    HasIfDatas,
+    HasMatrixDims,
+    HasMaxRefreshs,
+    HasPhysUnits,
+    HasReadOnlys,
+    HasRefMemorySegments,
+    HasStepSizes,
+    HasSymbolLinks,
+):
     """"""
 
     __tablename__ = "characteristic"
 
-    name = StdIdent(index = True)
+    name = StdIdent(index=True)
 
     longIdentifier = StdString()
 
@@ -1960,44 +1753,36 @@ class Characteristic(Base, HasAnnotations, HasBitMasks, HasByteOrders, HasCalibr
         Element("VirtualCharacteristic", "VIRTUAL_CHARACTERISTIC", False),
     )
     axis_descr = relationship(
-        "AxisDescr",
-        back_populates = "characteristic",
-        uselist = True
+        "AxisDescr", back_populates="characteristic", uselist=True
     )
     comparison_quantity = relationship(
-        "ComparisonQuantity",
-        back_populates = "characteristic",
-        uselist = False
+        "ComparisonQuantity", back_populates="characteristic", uselist=False
     )
     dependent_characteristic = relationship(
-        "DependentCharacteristic",
-        back_populates = "characteristic",
-        uselist = False
+        "DependentCharacteristic", back_populates="characteristic", uselist=False
     )
-    map_list = relationship(
-        "MapList",
-        back_populates = "characteristic",
-        uselist = False
-    )
-    number = relationship(
-        "Number",
-        back_populates = "characteristic",
-        uselist = False
-    )
+    map_list = relationship("MapList", back_populates="characteristic", uselist=False)
+    number = relationship("Number", back_populates="characteristic", uselist=False)
     virtual_characteristic = relationship(
-        "VirtualCharacteristic",
-        back_populates = "characteristic",
-        uselist = False
+        "VirtualCharacteristic", back_populates="characteristic", uselist=False
     )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "characteristic",
-        uselist = True
-    )
+    module = relationship("Module", back_populates="characteristic", uselist=True)
 
 
-class AxisDescr(Base, AxisDescrMixIn, HasAnnotations, HasByteOrders, HasDeposits, HasExtendedLimits, HasFormats, HasMonotonys, HasPhysUnits, HasReadOnlys, HasStepSizes):
+class AxisDescr(
+    Base,
+    AxisDescrMixIn,
+    HasAnnotations,
+    HasByteOrders,
+    HasDeposits,
+    HasExtendedLimits,
+    HasFormats,
+    HasMonotonys,
+    HasPhysUnits,
+    HasReadOnlys,
+    HasStepSizes,
+):
     """"""
 
     __tablename__ = "axis_descr"
@@ -2041,40 +1826,24 @@ class AxisDescr(Base, AxisDescrMixIn, HasAnnotations, HasByteOrders, HasDeposits
         Element("StepSize", "STEP_SIZE", False),
     )
     axis_pts_ref = relationship(
-        "AxisPtsRef",
-        back_populates = "axis_descr",
-        uselist = False
+        "AxisPtsRef", back_populates="axis_descr", uselist=False
     )
     curve_axis_ref = relationship(
-        "CurveAxisRef",
-        back_populates = "axis_descr",
-        uselist = False
+        "CurveAxisRef", back_populates="axis_descr", uselist=False
     )
     fix_axis_par = relationship(
-        "FixAxisPar",
-        back_populates = "axis_descr",
-        uselist = False
+        "FixAxisPar", back_populates="axis_descr", uselist=False
     )
     fix_axis_par_dist = relationship(
-        "FixAxisParDist",
-        back_populates = "axis_descr",
-        uselist = False
+        "FixAxisParDist", back_populates="axis_descr", uselist=False
     )
     fix_axis_par_list = relationship(
-        "FixAxisParList",
-        back_populates = "axis_descr",
-        uselist = False
+        "FixAxisParList", back_populates="axis_descr", uselist=False
     )
-    max_grad = relationship(
-        "MaxGrad",
-        back_populates = "axis_descr",
-        uselist = False
-    )
+    max_grad = relationship("MaxGrad", back_populates="axis_descr", uselist=False)
     _characteristic_rid = Column(types.Integer, ForeignKey("characteristic.rid"))
     characteristic = relationship(
-        "Characteristic",
-        back_populates = "axis_descr",
-        uselist = True
+        "Characteristic", back_populates="axis_descr", uselist=True
     )
 
 
@@ -2085,17 +1854,11 @@ class AxisPtsRef(Base):
 
     axisPoints = StdIdent()
 
-    __required_parameters__ = (
-        Parameter("axisPoints", Ident, False),
-    )
+    __required_parameters__ = (Parameter("axisPoints", Ident, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _axis_descr_rid = Column(types.Integer, ForeignKey("axis_descr.rid"))
-    axis_descr = relationship(
-        "AxisDescr",
-        back_populates = "axis_pts_ref",
-        uselist = False
-    )
+    axis_descr = relationship("AxisDescr", back_populates="axis_pts_ref", uselist=False)
 
 
 class CurveAxisRef(Base):
@@ -2105,16 +1868,12 @@ class CurveAxisRef(Base):
 
     curveAxis = StdIdent()
 
-    __required_parameters__ = (
-        Parameter("curveAxis", Ident, False),
-    )
+    __required_parameters__ = (Parameter("curveAxis", Ident, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _axis_descr_rid = Column(types.Integer, ForeignKey("axis_descr.rid"))
     axis_descr = relationship(
-        "AxisDescr",
-        back_populates = "curve_axis_ref",
-        uselist = False
+        "AxisDescr", back_populates="curve_axis_ref", uselist=False
     )
 
 
@@ -2135,13 +1894,9 @@ class FixAxisPar(Base):
         Parameter("numberapo", Uint, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _axis_descr_rid = Column(types.Integer, ForeignKey("axis_descr.rid"))
-    axis_descr = relationship(
-        "AxisDescr",
-        back_populates = "fix_axis_par",
-        uselist = False
-    )
+    axis_descr = relationship("AxisDescr", back_populates="fix_axis_par", uselist=False)
 
 
 class FixAxisParDist(Base):
@@ -2161,12 +1916,10 @@ class FixAxisParDist(Base):
         Parameter("numberapo", Uint, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _axis_descr_rid = Column(types.Integer, ForeignKey("axis_descr.rid"))
     axis_descr = relationship(
-        "AxisDescr",
-        back_populates = "fix_axis_par_dist",
-        uselist = False
+        "AxisDescr", back_populates="fix_axis_par_dist", uselist=False
     )
 
 
@@ -2176,19 +1929,17 @@ class FixAxisParList(Base):
     __tablename__ = "fix_axis_par_list"
     _axisPts_Value = relationship(
         "FixAxisParListValues",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     axisPts_Value = association_proxy("_axisPts_Value", "axisPts_Value")
 
-    __required_parameters__ = ( )
+    __required_parameters__ = ()
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _axis_descr_rid = Column(types.Integer, ForeignKey("axis_descr.rid"))
     axis_descr = relationship(
-        "AxisDescr",
-        back_populates = "fix_axis_par_list",
-        uselist = False
+        "AxisDescr", back_populates="fix_axis_par_list", uselist=False
     )
 
 
@@ -2199,17 +1950,11 @@ class MaxGrad(Base):
 
     maxGradient = StdFloat()
 
-    __required_parameters__ = (
-        Parameter("maxGradient", Float, False),
-    )
+    __required_parameters__ = (Parameter("maxGradient", Float, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _axis_descr_rid = Column(types.Integer, ForeignKey("axis_descr.rid"))
-    axis_descr = relationship(
-        "AxisDescr",
-        back_populates = "max_grad",
-        uselist = False
-    )
+    axis_descr = relationship("AxisDescr", back_populates="max_grad", uselist=False)
 
 
 class ComparisonQuantity(Base):
@@ -2219,16 +1964,12 @@ class ComparisonQuantity(Base):
 
     name = StdIdent()
 
-    __required_parameters__ = (
-        Parameter("name", Ident, False),
-    )
+    __required_parameters__ = (Parameter("name", Ident, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _characteristic_rid = Column(types.Integer, ForeignKey("characteristic.rid"))
     characteristic = relationship(
-        "Characteristic",
-        back_populates = "comparison_quantity",
-        uselist = False
+        "Characteristic", back_populates="comparison_quantity", uselist=False
     )
 
 
@@ -2241,8 +1982,8 @@ class DependentCharacteristic(Base):
 
     _characteristic_id = relationship(
         "DependentCharacteristicIdentifiers",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     characteristic_id = association_proxy("_characteristic_id", "characteristic")
 
@@ -2251,12 +1992,10 @@ class DependentCharacteristic(Base):
         Parameter("characteristic", Ident, True),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _characteristic_rid = Column(types.Integer, ForeignKey("characteristic.rid"))
     characteristic = relationship(
-        "Characteristic",
-        back_populates = "dependent_characteristic",
-        uselist = False
+        "Characteristic", back_populates="dependent_characteristic", uselist=False
     )
 
 
@@ -2267,21 +2006,17 @@ class MapList(Base):
 
     _name = relationship(
         "MapListIdentifiers",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     name = association_proxy("_name", "name")
 
-    __required_parameters__ = (
-        Parameter("name", Ident, True),
-    )
+    __required_parameters__ = (Parameter("name", Ident, True),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _characteristic_rid = Column(types.Integer, ForeignKey("characteristic.rid"))
     characteristic = relationship(
-        "Characteristic",
-        back_populates = "map_list",
-        uselist = False
+        "Characteristic", back_populates="map_list", uselist=False
     )
 
 
@@ -2292,16 +2027,12 @@ class Number(Base):
 
     number = StdUShort()
 
-    __required_parameters__ = (
-        Parameter("number", Uint, False),
-    )
+    __required_parameters__ = (Parameter("number", Uint, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _characteristic_rid = Column(types.Integer, ForeignKey("characteristic.rid"))
     characteristic = relationship(
-        "Characteristic",
-        back_populates = "number",
-        uselist = False
+        "Characteristic", back_populates="number", uselist=False
     )
 
 
@@ -2314,8 +2045,8 @@ class VirtualCharacteristic(Base):
 
     _characteristic_id = relationship(
         "VirtualCharacteristicIdentifiers",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     characteristic_id = association_proxy("_characteristic_id", "characteristic")
 
@@ -2324,12 +2055,10 @@ class VirtualCharacteristic(Base):
         Parameter("characteristic", Ident, True),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _characteristic_rid = Column(types.Integer, ForeignKey("characteristic.rid"))
     characteristic = relationship(
-        "Characteristic",
-        back_populates = "virtual_characteristic",
-        uselist = False
+        "Characteristic", back_populates="virtual_characteristic", uselist=False
     )
 
 
@@ -2338,7 +2067,7 @@ class CompuMethod(Base, HasRefUnits):
 
     __tablename__ = "compu_method"
 
-    name = StdIdent(index = True)
+    name = StdIdent(index=True)
 
     longIdentifier = StdString()
 
@@ -2364,37 +2093,19 @@ class CompuMethod(Base, HasRefUnits):
         Element("RefUnit", "REF_UNIT", False),
         Element("StatusStringRef", "STATUS_STRING_REF", False),
     )
-    coeffs = relationship(
-        "Coeffs",
-        back_populates = "compu_method",
-        uselist = False
-    )
+    coeffs = relationship("Coeffs", back_populates="compu_method", uselist=False)
     coeffs_linear = relationship(
-        "CoeffsLinear",
-        back_populates = "compu_method",
-        uselist = False
+        "CoeffsLinear", back_populates="compu_method", uselist=False
     )
     compu_tab_ref = relationship(
-        "CompuTabRef",
-        back_populates = "compu_method",
-        uselist = False
+        "CompuTabRef", back_populates="compu_method", uselist=False
     )
-    formula = relationship(
-        "Formula",
-        back_populates = "compu_method",
-        uselist = False
-    )
+    formula = relationship("Formula", back_populates="compu_method", uselist=False)
     status_string_ref = relationship(
-        "StatusStringRef",
-        back_populates = "compu_method",
-        uselist = False
+        "StatusStringRef", back_populates="compu_method", uselist=False
     )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "compu_method",
-        uselist = True
-    )
+    module = relationship("Module", back_populates="compu_method", uselist=True)
 
 
 class Coeffs(Base):
@@ -2423,13 +2134,9 @@ class Coeffs(Base):
         Parameter("f", Float, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _compu_method_rid = Column(types.Integer, ForeignKey("compu_method.rid"))
-    compu_method = relationship(
-        "CompuMethod",
-        back_populates = "coeffs",
-        uselist = False
-    )
+    compu_method = relationship("CompuMethod", back_populates="coeffs", uselist=False)
 
 
 class CoeffsLinear(Base):
@@ -2446,12 +2153,10 @@ class CoeffsLinear(Base):
         Parameter("b", Float, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _compu_method_rid = Column(types.Integer, ForeignKey("compu_method.rid"))
     compu_method = relationship(
-        "CompuMethod",
-        back_populates = "coeffs_linear",
-        uselist = False
+        "CompuMethod", back_populates="coeffs_linear", uselist=False
     )
 
 
@@ -2462,16 +2167,12 @@ class CompuTabRef(Base):
 
     conversionTable = StdIdent()
 
-    __required_parameters__ = (
-        Parameter("conversionTable", Ident, False),
-    )
+    __required_parameters__ = (Parameter("conversionTable", Ident, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _compu_method_rid = Column(types.Integer, ForeignKey("compu_method.rid"))
     compu_method = relationship(
-        "CompuMethod",
-        back_populates = "compu_tab_ref",
-        uselist = False
+        "CompuMethod", back_populates="compu_tab_ref", uselist=False
     )
 
 
@@ -2482,24 +2183,12 @@ class Formula(Base):
 
     f_x = StdString()
 
-    __required_parameters__ = (
-        Parameter("f_x", String, False),
-    )
+    __required_parameters__ = (Parameter("f_x", String, False),)
 
-    __optional_elements__ = (
-        Element("FormulaInv", "FORMULA_INV", False),
-    )
-    formula_inv = relationship(
-        "FormulaInv",
-        back_populates = "formula",
-        uselist = False
-    )
+    __optional_elements__ = (Element("FormulaInv", "FORMULA_INV", False),)
+    formula_inv = relationship("FormulaInv", back_populates="formula", uselist=False)
     _compu_method_rid = Column(types.Integer, ForeignKey("compu_method.rid"))
-    compu_method = relationship(
-        "CompuMethod",
-        back_populates = "formula",
-        uselist = False
-    )
+    compu_method = relationship("CompuMethod", back_populates="formula", uselist=False)
 
 
 class FormulaInv(Base):
@@ -2509,17 +2198,11 @@ class FormulaInv(Base):
 
     g_x = StdString()
 
-    __required_parameters__ = (
-        Parameter("g_x", String, False),
-    )
+    __required_parameters__ = (Parameter("g_x", String, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _formula_rid = Column(types.Integer, ForeignKey("formula.rid"))
-    formula = relationship(
-        "Formula",
-        back_populates = "formula_inv",
-        uselist = False
-    )
+    formula = relationship("Formula", back_populates="formula_inv", uselist=False)
 
 
 class StatusStringRef(Base):
@@ -2529,16 +2212,12 @@ class StatusStringRef(Base):
 
     conversionTable = StdIdent()
 
-    __required_parameters__ = (
-        Parameter("conversionTable", Ident, False),
-    )
+    __required_parameters__ = (Parameter("conversionTable", Ident, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _compu_method_rid = Column(types.Integer, ForeignKey("compu_method.rid"))
     compu_method = relationship(
-        "CompuMethod",
-        back_populates = "status_string_ref",
-        uselist = False
+        "CompuMethod", back_populates="status_string_ref", uselist=False
     )
 
 
@@ -2547,7 +2226,7 @@ class CompuTab(Base, HasDefaultValues):
 
     __tablename__ = "compu_tab"
 
-    name = StdIdent(index = True)
+    name = StdIdent(index=True)
 
     longIdentifier = StdString()
 
@@ -2562,9 +2241,7 @@ class CompuTab(Base, HasDefaultValues):
         Parameter("numberValuePairs", Uint, False),
     )
     pairs = relationship(
-        "CompuTabPair",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        "CompuTabPair", backref="parent", collection_class=ordering_list("position")
     )
 
     __optional_elements__ = (
@@ -2572,16 +2249,10 @@ class CompuTab(Base, HasDefaultValues):
         Element("DefaultValueNumeric", "DEFAULT_VALUE_NUMERIC", False),
     )
     default_value_numeric = relationship(
-        "DefaultValueNumeric",
-        back_populates = "compu_tab",
-        uselist = False
+        "DefaultValueNumeric", back_populates="compu_tab", uselist=False
     )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "compu_tab",
-        uselist = True
-    )
+    module = relationship("Module", back_populates="compu_tab", uselist=True)
 
 
 class DefaultValueNumeric(Base):
@@ -2591,16 +2262,12 @@ class DefaultValueNumeric(Base):
 
     display_value = StdFloat()
 
-    __required_parameters__ = (
-        Parameter("display_value", Float, False),
-    )
+    __required_parameters__ = (Parameter("display_value", Float, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _compu_tab_rid = Column(types.Integer, ForeignKey("compu_tab.rid"))
     compu_tab = relationship(
-        "CompuTab",
-        back_populates = "default_value_numeric",
-        uselist = False
+        "CompuTab", back_populates="default_value_numeric", uselist=False
     )
 
 
@@ -2609,7 +2276,7 @@ class CompuVtab(Base, HasDefaultValues):
 
     __tablename__ = "compu_vtab"
 
-    name = StdIdent(index = True)
+    name = StdIdent(index=True)
 
     longIdentifier = StdString()
 
@@ -2624,20 +2291,12 @@ class CompuVtab(Base, HasDefaultValues):
         Parameter("numberValuePairs", Uint, False),
     )
     pairs = relationship(
-        "CompuVtabPair",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        "CompuVtabPair", backref="parent", collection_class=ordering_list("position")
     )
 
-    __optional_elements__ = (
-        Element("DefaultValue", "DEFAULT_VALUE", False),
-    )
+    __optional_elements__ = (Element("DefaultValue", "DEFAULT_VALUE", False),)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "compu_vtab",
-        uselist = True
-    )
+    module = relationship("Module", back_populates="compu_vtab", uselist=True)
 
 
 class CompuVtabRange(Base, HasDefaultValues):
@@ -2645,7 +2304,7 @@ class CompuVtabRange(Base, HasDefaultValues):
 
     __tablename__ = "compu_vtab_range"
 
-    name = StdIdent(index = True)
+    name = StdIdent(index=True)
 
     longIdentifier = StdString()
 
@@ -2658,19 +2317,13 @@ class CompuVtabRange(Base, HasDefaultValues):
     )
     triples = relationship(
         "CompuVtabRangeTriple",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
 
-    __optional_elements__ = (
-        Element("DefaultValue", "DEFAULT_VALUE", False),
-    )
+    __optional_elements__ = (Element("DefaultValue", "DEFAULT_VALUE", False),)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "compu_vtab_range",
-        uselist = True
-    )
+    module = relationship("Module", back_populates="compu_vtab_range", uselist=True)
 
 
 class Frame(Base, HasIfDatas):
@@ -2678,7 +2331,7 @@ class Frame(Base, HasIfDatas):
 
     __tablename__ = "frame"
 
-    name = StdIdent(index = True)
+    name = StdIdent(index=True)
 
     longIdentifier = StdString()
 
@@ -2698,16 +2351,10 @@ class Frame(Base, HasIfDatas):
         Element("IfData", "IF_DATA", True),
     )
     frame_measurement = relationship(
-        "FrameMeasurement",
-        back_populates = "frame",
-        uselist = False
+        "FrameMeasurement", back_populates="frame", uselist=False
     )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "frame",
-        uselist = False
-    )
+    module = relationship("Module", back_populates="frame", uselist=False)
 
 
 class FrameMeasurement(Base):
@@ -2717,22 +2364,16 @@ class FrameMeasurement(Base):
 
     _identifier = relationship(
         "FrameMeasurementIdentifiers",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     identifier = association_proxy("_identifier", "identifier")
 
-    __required_parameters__ = (
-        Parameter("identifier", Ident, True),
-    )
+    __required_parameters__ = (Parameter("identifier", Ident, True),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _frame_rid = Column(types.Integer, ForeignKey("frame.rid"))
-    frame = relationship(
-        "Frame",
-        back_populates = "frame_measurement",
-        uselist = False
-    )
+    frame = relationship("Frame", back_populates="frame_measurement", uselist=False)
 
 
 class Function(Base, HasAnnotations, HasIfDatas, HasRefCharacteristics):
@@ -2740,7 +2381,7 @@ class Function(Base, HasAnnotations, HasIfDatas, HasRefCharacteristics):
 
     __tablename__ = "function"
 
-    name = StdIdent(index = True)
+    name = StdIdent(index=True)
 
     longIdentifier = StdString()
 
@@ -2761,41 +2402,23 @@ class Function(Base, HasAnnotations, HasIfDatas, HasRefCharacteristics):
         Element("SubFunction", "SUB_FUNCTION", False),
     )
     def_characteristic = relationship(
-        "DefCharacteristic",
-        back_populates = "function",
-        uselist = False
+        "DefCharacteristic", back_populates="function", uselist=False
     )
     function_version = relationship(
-        "FunctionVersion",
-        back_populates = "function",
-        uselist = False
+        "FunctionVersion", back_populates="function", uselist=False
     )
     in_measurement = relationship(
-        "InMeasurement",
-        back_populates = "function",
-        uselist = False
+        "InMeasurement", back_populates="function", uselist=False
     )
     loc_measurement = relationship(
-        "LocMeasurement",
-        back_populates = "function",
-        uselist = False
+        "LocMeasurement", back_populates="function", uselist=False
     )
     out_measurement = relationship(
-        "OutMeasurement",
-        back_populates = "function",
-        uselist = False
+        "OutMeasurement", back_populates="function", uselist=False
     )
-    sub_function = relationship(
-        "SubFunction",
-        back_populates = "function",
-        uselist = False
-    )
+    sub_function = relationship("SubFunction", back_populates="function", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "function",
-        uselist = True
-    )
+    module = relationship("Module", back_populates="function", uselist=True)
 
 
 class DefCharacteristic(Base):
@@ -2805,21 +2428,17 @@ class DefCharacteristic(Base):
 
     _identifier = relationship(
         "DefCharacteristicIdentifiers",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     identifier = association_proxy("_identifier", "identifier")
 
-    __required_parameters__ = (
-        Parameter("identifier", Ident, True),
-    )
+    __required_parameters__ = (Parameter("identifier", Ident, True),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _function_rid = Column(types.Integer, ForeignKey("function.rid"))
     function = relationship(
-        "Function",
-        back_populates = "def_characteristic",
-        uselist = False
+        "Function", back_populates="def_characteristic", uselist=False
     )
 
 
@@ -2830,16 +2449,12 @@ class FunctionVersion(Base):
 
     versionIdentifier = StdString()
 
-    __required_parameters__ = (
-        Parameter("versionIdentifier", String, False),
-    )
+    __required_parameters__ = (Parameter("versionIdentifier", String, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _function_rid = Column(types.Integer, ForeignKey("function.rid"))
     function = relationship(
-        "Function",
-        back_populates = "function_version",
-        uselist = False
+        "Function", back_populates="function_version", uselist=False
     )
 
 
@@ -2850,22 +2465,16 @@ class InMeasurement(Base):
 
     _identifier = relationship(
         "InMeasurementIdentifiers",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     identifier = association_proxy("_identifier", "identifier")
 
-    __required_parameters__ = (
-        Parameter("identifier", Ident, True),
-    )
+    __required_parameters__ = (Parameter("identifier", Ident, True),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _function_rid = Column(types.Integer, ForeignKey("function.rid"))
-    function = relationship(
-        "Function",
-        back_populates = "in_measurement",
-        uselist = False
-    )
+    function = relationship("Function", back_populates="in_measurement", uselist=False)
 
 
 class LocMeasurement(Base):
@@ -2875,22 +2484,16 @@ class LocMeasurement(Base):
 
     _identifier = relationship(
         "LocMeasurementIdentifiers",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     identifier = association_proxy("_identifier", "identifier")
 
-    __required_parameters__ = (
-        Parameter("identifier", Ident, True),
-    )
+    __required_parameters__ = (Parameter("identifier", Ident, True),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _function_rid = Column(types.Integer, ForeignKey("function.rid"))
-    function = relationship(
-        "Function",
-        back_populates = "loc_measurement",
-        uselist = False
-    )
+    function = relationship("Function", back_populates="loc_measurement", uselist=False)
 
 
 class OutMeasurement(Base):
@@ -2900,22 +2503,16 @@ class OutMeasurement(Base):
 
     _identifier = relationship(
         "OutMeasurementIdentifiers",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     identifier = association_proxy("_identifier", "identifier")
 
-    __required_parameters__ = (
-        Parameter("identifier", Ident, True),
-    )
+    __required_parameters__ = (Parameter("identifier", Ident, True),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _function_rid = Column(types.Integer, ForeignKey("function.rid"))
-    function = relationship(
-        "Function",
-        back_populates = "out_measurement",
-        uselist = False
-    )
+    function = relationship("Function", back_populates="out_measurement", uselist=False)
 
 
 class SubFunction(Base):
@@ -2925,22 +2522,16 @@ class SubFunction(Base):
 
     _identifier = relationship(
         "SubFunctionIdentifiers",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     identifier = association_proxy("_identifier", "identifier")
 
-    __required_parameters__ = (
-        Parameter("identifier", Ident, True),
-    )
+    __required_parameters__ = (Parameter("identifier", Ident, True),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _function_rid = Column(types.Integer, ForeignKey("function.rid"))
-    function = relationship(
-        "Function",
-        back_populates = "sub_function",
-        uselist = False
-    )
+    function = relationship("Function", back_populates="sub_function", uselist=False)
 
 
 class Group(Base, HasAnnotations, HasFunctionLists, HasIfDatas, HasRefCharacteristics):
@@ -2948,7 +2539,7 @@ class Group(Base, HasAnnotations, HasFunctionLists, HasIfDatas, HasRefCharacteri
 
     __tablename__ = "group"
 
-    groupName = StdIdent(index = True)
+    groupName = StdIdent(index=True)
 
     groupLongIdentifier = StdString()
 
@@ -2967,26 +2558,12 @@ class Group(Base, HasAnnotations, HasFunctionLists, HasIfDatas, HasRefCharacteri
         Element("SubGroup", "SUB_GROUP", False),
     )
     ref_measurement = relationship(
-        "RefMeasurement",
-        back_populates = "group",
-        uselist = False
+        "RefMeasurement", back_populates="group", uselist=False
     )
-    root = relationship(
-        "Root",
-        back_populates = "group",
-        uselist = False
-    )
-    sub_group = relationship(
-        "SubGroup",
-        back_populates = "group",
-        uselist = False
-    )
+    root = relationship("Root", back_populates="group", uselist=False)
+    sub_group = relationship("SubGroup", back_populates="group", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "group",
-        uselist = True
-    )
+    module = relationship("Module", back_populates="group", uselist=True)
 
 
 class RefMeasurement(Base):
@@ -2996,22 +2573,16 @@ class RefMeasurement(Base):
 
     _identifier = relationship(
         "RefMeasurementIdentifiers",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     identifier = association_proxy("_identifier", "identifier")
 
-    __required_parameters__ = (
-        Parameter("identifier", Ident, True),
-    )
+    __required_parameters__ = (Parameter("identifier", Ident, True),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _group_rid = Column(types.Integer, ForeignKey("group.rid"))
-    group = relationship(
-        "Group",
-        back_populates = "ref_measurement",
-        uselist = False
-    )
+    group = relationship("Group", back_populates="ref_measurement", uselist=False)
 
 
 class Root(Base):
@@ -3019,15 +2590,11 @@ class Root(Base):
 
     __tablename__ = "root"
 
-    __required_parameters__ = ( )
+    __required_parameters__ = ()
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _group_rid = Column(types.Integer, ForeignKey("group.rid"))
-    group = relationship(
-        "Group",
-        back_populates = "root",
-        uselist = False
-    )
+    group = relationship("Group", back_populates="root", uselist=False)
 
 
 class SubGroup(Base):
@@ -3037,22 +2604,16 @@ class SubGroup(Base):
 
     _identifier = relationship(
         "SubGroupIdentifiers",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     identifier = association_proxy("_identifier", "identifier")
 
-    __required_parameters__ = (
-        Parameter("identifier", Ident, True),
-    )
+    __required_parameters__ = (Parameter("identifier", Ident, True),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _group_rid = Column(types.Integer, ForeignKey("group.rid"))
-    group = relationship(
-        "Group",
-        back_populates = "sub_group",
-        uselist = False
-    )
+    group = relationship("Group", back_populates="sub_group", uselist=False)
 
 
 class Instance(Base, HasIfDatas):
@@ -3075,23 +2636,33 @@ class Instance(Base, HasIfDatas):
         Parameter("address", Ulong, False),
     )
 
-    __optional_elements__ = (
-        Element("IfData", "IF_DATA", True),
-    )
+    __optional_elements__ = (Element("IfData", "IF_DATA", True),)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "instance",
-        uselist = True
-    )
+    module = relationship("Module", back_populates="instance", uselist=True)
 
 
-class Measurement(Base, HasAnnotations, HasBitMasks, HasByteOrders, HasDiscretes, HasDisplayIdentifiers, HasEcuAddressExtensions, HasFormats, HasFunctionLists, HasIfDatas, HasMatrixDims, HasMaxRefreshs, HasPhysUnits, HasRefMemorySegments, HasSymbolLinks):
+class Measurement(
+    Base,
+    HasAnnotations,
+    HasBitMasks,
+    HasByteOrders,
+    HasDiscretes,
+    HasDisplayIdentifiers,
+    HasEcuAddressExtensions,
+    HasFormats,
+    HasFunctionLists,
+    HasIfDatas,
+    HasMatrixDims,
+    HasMaxRefreshs,
+    HasPhysUnits,
+    HasRefMemorySegments,
+    HasSymbolLinks,
+):
     """"""
 
     __tablename__ = "measurement"
 
-    name = StdIdent(index = True)
+    name = StdIdent(index=True)
 
     longIdentifier = StdString()
 
@@ -3141,47 +2712,19 @@ class Measurement(Base, HasAnnotations, HasBitMasks, HasByteOrders, HasDiscretes
         Element("SymbolLink", "SYMBOL_LINK", False),
         Element("Virtual", "VIRTUAL", False),
     )
-    array_size = relationship(
-        "ArraySize",
-        back_populates = "measurement",
-        uselist = False
-    )
+    array_size = relationship("ArraySize", back_populates="measurement", uselist=False)
     bit_operation = relationship(
-        "BitOperation",
-        back_populates = "measurement",
-        uselist = False
+        "BitOperation", back_populates="measurement", uselist=False
     )
     ecu_address = relationship(
-        "EcuAddress",
-        back_populates = "measurement",
-        uselist = False
+        "EcuAddress", back_populates="measurement", uselist=False
     )
-    error_mask = relationship(
-        "ErrorMask",
-        back_populates = "measurement",
-        uselist = False
-    )
-    layout = relationship(
-        "Layout",
-        back_populates = "measurement",
-        uselist = False
-    )
-    read_write = relationship(
-        "ReadWrite",
-        back_populates = "measurement",
-        uselist = False
-    )
-    virtual = relationship(
-        "Virtual",
-        back_populates = "measurement",
-        uselist = False
-    )
+    error_mask = relationship("ErrorMask", back_populates="measurement", uselist=False)
+    layout = relationship("Layout", back_populates="measurement", uselist=False)
+    read_write = relationship("ReadWrite", back_populates="measurement", uselist=False)
+    virtual = relationship("Virtual", back_populates="measurement", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "measurement",
-        uselist = True
-    )
+    module = relationship("Module", back_populates="measurement", uselist=True)
 
 
 class ArraySize(Base):
@@ -3191,16 +2734,12 @@ class ArraySize(Base):
 
     number = StdUShort()
 
-    __required_parameters__ = (
-        Parameter("number", Uint, False),
-    )
+    __required_parameters__ = (Parameter("number", Uint, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _measurement_rid = Column(types.Integer, ForeignKey("measurement.rid"))
     measurement = relationship(
-        "Measurement",
-        back_populates = "array_size",
-        uselist = False
+        "Measurement", back_populates="array_size", uselist=False
     )
 
 
@@ -3209,7 +2748,7 @@ class BitOperation(Base):
 
     __tablename__ = "bit_operation"
 
-    __required_parameters__ = ( )
+    __required_parameters__ = ()
 
     __optional_elements__ = (
         Element("LeftShift", "LEFT_SHIFT", False),
@@ -3217,25 +2756,17 @@ class BitOperation(Base):
         Element("SignExtend", "SIGN_EXTEND", False),
     )
     left_shift = relationship(
-        "LeftShift",
-        back_populates = "bit_operation",
-        uselist = False
+        "LeftShift", back_populates="bit_operation", uselist=False
     )
     right_shift = relationship(
-        "RightShift",
-        back_populates = "bit_operation",
-        uselist = False
+        "RightShift", back_populates="bit_operation", uselist=False
     )
     sign_extend = relationship(
-        "SignExtend",
-        back_populates = "bit_operation",
-        uselist = False
+        "SignExtend", back_populates="bit_operation", uselist=False
     )
     _measurement_rid = Column(types.Integer, ForeignKey("measurement.rid"))
     measurement = relationship(
-        "Measurement",
-        back_populates = "bit_operation",
-        uselist = False
+        "Measurement", back_populates="bit_operation", uselist=False
     )
 
 
@@ -3246,16 +2777,12 @@ class LeftShift(Base):
 
     bitcount = StdULong()
 
-    __required_parameters__ = (
-        Parameter("bitcount", Ulong, False),
-    )
+    __required_parameters__ = (Parameter("bitcount", Ulong, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _bit_operation_rid = Column(types.Integer, ForeignKey("bit_operation.rid"))
     bit_operation = relationship(
-        "BitOperation",
-        back_populates = "left_shift",
-        uselist = False
+        "BitOperation", back_populates="left_shift", uselist=False
     )
 
 
@@ -3266,16 +2793,12 @@ class RightShift(Base):
 
     bitcount = StdULong()
 
-    __required_parameters__ = (
-        Parameter("bitcount", Ulong, False),
-    )
+    __required_parameters__ = (Parameter("bitcount", Ulong, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _bit_operation_rid = Column(types.Integer, ForeignKey("bit_operation.rid"))
     bit_operation = relationship(
-        "BitOperation",
-        back_populates = "right_shift",
-        uselist = False
+        "BitOperation", back_populates="right_shift", uselist=False
     )
 
 
@@ -3284,14 +2807,12 @@ class SignExtend(Base):
 
     __tablename__ = "sign_extend"
 
-    __required_parameters__ = ( )
+    __required_parameters__ = ()
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _bit_operation_rid = Column(types.Integer, ForeignKey("bit_operation.rid"))
     bit_operation = relationship(
-        "BitOperation",
-        back_populates = "sign_extend",
-        uselist = False
+        "BitOperation", back_populates="sign_extend", uselist=False
     )
 
 
@@ -3302,16 +2823,12 @@ class EcuAddress(Base):
 
     address = StdULong()
 
-    __required_parameters__ = (
-        Parameter("address", Ulong, False),
-    )
+    __required_parameters__ = (Parameter("address", Ulong, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _measurement_rid = Column(types.Integer, ForeignKey("measurement.rid"))
     measurement = relationship(
-        "Measurement",
-        back_populates = "ecu_address",
-        uselist = False
+        "Measurement", back_populates="ecu_address", uselist=False
     )
 
 
@@ -3322,16 +2839,12 @@ class ErrorMask(Base):
 
     mask = StdULong()
 
-    __required_parameters__ = (
-        Parameter("mask", Ulong, False),
-    )
+    __required_parameters__ = (Parameter("mask", Ulong, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _measurement_rid = Column(types.Integer, ForeignKey("measurement.rid"))
     measurement = relationship(
-        "Measurement",
-        back_populates = "error_mask",
-        uselist = False
+        "Measurement", back_populates="error_mask", uselist=False
     )
 
 
@@ -3342,17 +2855,11 @@ class Layout(Base):
 
     indexMode = StdString()
 
-    __required_parameters__ = (
-        Parameter("indexMode", Enum, False),
-    )
+    __required_parameters__ = (Parameter("indexMode", Enum, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _measurement_rid = Column(types.Integer, ForeignKey("measurement.rid"))
-    measurement = relationship(
-        "Measurement",
-        back_populates = "layout",
-        uselist = False
-    )
+    measurement = relationship("Measurement", back_populates="layout", uselist=False)
 
 
 class ReadWrite(Base):
@@ -3360,14 +2867,12 @@ class ReadWrite(Base):
 
     __tablename__ = "read_write"
 
-    __required_parameters__ = ( )
+    __required_parameters__ = ()
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _measurement_rid = Column(types.Integer, ForeignKey("measurement.rid"))
     measurement = relationship(
-        "Measurement",
-        back_populates = "read_write",
-        uselist = False
+        "Measurement", back_populates="read_write", uselist=False
     )
 
 
@@ -3377,32 +2882,37 @@ class Virtual(Base):
     __tablename__ = "virtual"
     _measuringChannel = relationship(
         "VirtualMeasuringChannels",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     measuringChannel = association_proxy("_measuringChannel", "measuringChannel")
 
-    __required_parameters__ = ( )
+    __required_parameters__ = ()
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _measurement_rid = Column(types.Integer, ForeignKey("measurement.rid"))
-    measurement = relationship(
-        "Measurement",
-        back_populates = "virtual",
-        uselist = False
-    )
+    measurement = relationship("Measurement", back_populates="virtual", uselist=False)
 
 
-class ModCommon(Base, HasAlignmentBytes, HasAlignmentFloat16Ieees, HasAlignmentFloat32Ieees, HasAlignmentFloat64Ieees, HasAlignmentInt64s, HasAlignmentLongs, HasAlignmentWords, HasByteOrders, HasDeposits):
+class ModCommon(
+    Base,
+    HasAlignmentBytes,
+    HasAlignmentFloat16Ieees,
+    HasAlignmentFloat32Ieees,
+    HasAlignmentFloat64Ieees,
+    HasAlignmentInt64s,
+    HasAlignmentLongs,
+    HasAlignmentWords,
+    HasByteOrders,
+    HasDeposits,
+):
     """"""
 
     __tablename__ = "mod_common"
 
     comment = StdString()
 
-    __required_parameters__ = (
-        Parameter("comment", String, False),
-    )
+    __required_parameters__ = (Parameter("comment", String, False),)
 
     __optional_elements__ = (
         Element("AlignmentByte", "ALIGNMENT_BYTE", False),
@@ -3417,22 +2927,12 @@ class ModCommon(Base, HasAlignmentBytes, HasAlignmentFloat16Ieees, HasAlignmentF
         Element("Deposit", "DEPOSIT", False),
         Element("SRecLayout", "S_REC_LAYOUT", False),
     )
-    data_size = relationship(
-        "DataSize",
-        back_populates = "mod_common",
-        uselist = False
-    )
+    data_size = relationship("DataSize", back_populates="mod_common", uselist=False)
     s_rec_layout = relationship(
-        "SRecLayout",
-        back_populates = "mod_common",
-        uselist = False
+        "SRecLayout", back_populates="mod_common", uselist=False
     )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "mod_common",
-        uselist = False
-    )
+    module = relationship("Module", back_populates="mod_common", uselist=False)
 
 
 class DataSize(Base):
@@ -3442,17 +2942,11 @@ class DataSize(Base):
 
     size = StdUShort()
 
-    __required_parameters__ = (
-        Parameter("size", Uint, False),
-    )
+    __required_parameters__ = (Parameter("size", Uint, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _mod_common_rid = Column(types.Integer, ForeignKey("mod_common.rid"))
-    mod_common = relationship(
-        "ModCommon",
-        back_populates = "data_size",
-        uselist = False
-    )
+    mod_common = relationship("ModCommon", back_populates="data_size", uselist=False)
 
 
 class SRecLayout(Base):
@@ -3462,17 +2956,11 @@ class SRecLayout(Base):
 
     name = StdIdent()
 
-    __required_parameters__ = (
-        Parameter("name", Ident, False),
-    )
+    __required_parameters__ = (Parameter("name", Ident, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _mod_common_rid = Column(types.Integer, ForeignKey("mod_common.rid"))
-    mod_common = relationship(
-        "ModCommon",
-        back_populates = "s_rec_layout",
-        uselist = False
-    )
+    mod_common = relationship("ModCommon", back_populates="s_rec_layout", uselist=False)
 
 
 class ModPar(Base, HasVersions):
@@ -3482,9 +2970,7 @@ class ModPar(Base, HasVersions):
 
     comment = StdString()
 
-    __required_parameters__ = (
-        Parameter("comment", String, False),
-    )
+    __required_parameters__ = (Parameter("comment", String, False),)
 
     __optional_elements__ = (
         Element("AddrEpk", "ADDR_EPK", True),
@@ -3504,87 +2990,33 @@ class ModPar(Base, HasVersions):
         Element("User", "USER", False),
         Element("Version", "VERSION", False),
     )
-    addr_epk = relationship(
-        "AddrEpk",
-        back_populates = "mod_par",
-        uselist = True
-    )
+    addr_epk = relationship("AddrEpk", back_populates="mod_par", uselist=True)
     calibration_method = relationship(
-        "CalibrationMethod",
-        back_populates = "mod_par",
-        uselist = True
+        "CalibrationMethod", back_populates="mod_par", uselist=True
     )
-    cpu_type = relationship(
-        "CpuType",
-        back_populates = "mod_par",
-        uselist = False
-    )
-    customer = relationship(
-        "Customer",
-        back_populates = "mod_par",
-        uselist = False
-    )
-    customer_no = relationship(
-        "CustomerNo",
-        back_populates = "mod_par",
-        uselist = False
-    )
-    ecu = relationship(
-        "Ecu",
-        back_populates = "mod_par",
-        uselist = False
-    )
+    cpu_type = relationship("CpuType", back_populates="mod_par", uselist=False)
+    customer = relationship("Customer", back_populates="mod_par", uselist=False)
+    customer_no = relationship("CustomerNo", back_populates="mod_par", uselist=False)
+    ecu = relationship("Ecu", back_populates="mod_par", uselist=False)
     ecu_calibration_offset = relationship(
-        "EcuCalibrationOffset",
-        back_populates = "mod_par",
-        uselist = False
+        "EcuCalibrationOffset", back_populates="mod_par", uselist=False
     )
-    epk = relationship(
-        "Epk",
-        back_populates = "mod_par",
-        uselist = False
-    )
-    memory_layout = relationship(
-        "MemoryLayout",
-        back_populates = "mod_par",
-        uselist = True
-    )
+    epk = relationship("Epk", back_populates="mod_par", uselist=False)
+    memory_layout = relationship("MemoryLayout", back_populates="mod_par", uselist=True)
     memory_segment = relationship(
-        "MemorySegment",
-        back_populates = "mod_par",
-        uselist = True
+        "MemorySegment", back_populates="mod_par", uselist=True
     )
     no_of_interfaces = relationship(
-        "NoOfInterfaces",
-        back_populates = "mod_par",
-        uselist = False
+        "NoOfInterfaces", back_populates="mod_par", uselist=False
     )
-    phone_no = relationship(
-        "PhoneNo",
-        back_populates = "mod_par",
-        uselist = False
-    )
-    supplier = relationship(
-        "Supplier",
-        back_populates = "mod_par",
-        uselist = False
-    )
+    phone_no = relationship("PhoneNo", back_populates="mod_par", uselist=False)
+    supplier = relationship("Supplier", back_populates="mod_par", uselist=False)
     system_constant = relationship(
-        "SystemConstant",
-        back_populates = "mod_par",
-        uselist = True
+        "SystemConstant", back_populates="mod_par", uselist=True
     )
-    user = relationship(
-        "User",
-        back_populates = "mod_par",
-        uselist = False
-    )
+    user = relationship("User", back_populates="mod_par", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "mod_par",
-        uselist = False
-    )
+    module = relationship("Module", back_populates="mod_par", uselist=False)
 
 
 class AddrEpk(Base):
@@ -3594,17 +3026,11 @@ class AddrEpk(Base):
 
     address = StdULong()
 
-    __required_parameters__ = (
-        Parameter("address", Ulong, False),
-    )
+    __required_parameters__ = (Parameter("address", Ulong, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _mod_par_rid = Column(types.Integer, ForeignKey("mod_par.rid"))
-    mod_par = relationship(
-        "ModPar",
-        back_populates = "addr_epk",
-        uselist = True
-    )
+    mod_par = relationship("ModPar", back_populates="addr_epk", uselist=True)
 
 
 class CalibrationMethod(Base):
@@ -3621,44 +3047,34 @@ class CalibrationMethod(Base):
         Parameter("version", Ulong, False),
     )
 
-    __optional_elements__ = (
-        Element("CalibrationHandle", "CALIBRATION_HANDLE", True),
-    )
+    __optional_elements__ = (Element("CalibrationHandle", "CALIBRATION_HANDLE", True),)
     calibration_handle = relationship(
-        "CalibrationHandle",
-        back_populates = "calibration_method",
-        uselist = True
+        "CalibrationHandle", back_populates="calibration_method", uselist=True
     )
     _mod_par_rid = Column(types.Integer, ForeignKey("mod_par.rid"))
-    mod_par = relationship(
-        "ModPar",
-        back_populates = "calibration_method",
-        uselist = True
-    )
+    mod_par = relationship("ModPar", back_populates="calibration_method", uselist=True)
 
 
 class CalibrationHandle(Base):
     """"""
 
     __tablename__ = "calibration_handle"
-    _handle = relationship("CalHandles", backref = "parent")
+    _handle = relationship("CalHandles", backref="parent")
     handle = association_proxy("_handle", "handle")
 
-    __required_parameters__ = ( )
+    __required_parameters__ = ()
 
     __optional_elements__ = (
         Element("CalibrationHandleText", "CALIBRATION_HANDLE_TEXT", False),
     )
     calibration_handle_text = relationship(
-        "CalibrationHandleText",
-        back_populates = "calibration_handle",
-        uselist = False
+        "CalibrationHandleText", back_populates="calibration_handle", uselist=False
     )
-    _calibration_method_rid = Column(types.Integer, ForeignKey("calibration_method.rid"))
+    _calibration_method_rid = Column(
+        types.Integer, ForeignKey("calibration_method.rid")
+    )
     calibration_method = relationship(
-        "CalibrationMethod",
-        back_populates = "calibration_handle",
-        uselist = True
+        "CalibrationMethod", back_populates="calibration_handle", uselist=True
     )
 
 
@@ -3669,16 +3085,14 @@ class CalibrationHandleText(Base):
 
     text = StdString()
 
-    __required_parameters__ = (
-        Parameter("text", String, False),
-    )
+    __required_parameters__ = (Parameter("text", String, False),)
 
-    __optional_elements__ = ( )
-    _calibration_handle_rid = Column(types.Integer, ForeignKey("calibration_handle.rid"))
+    __optional_elements__ = ()
+    _calibration_handle_rid = Column(
+        types.Integer, ForeignKey("calibration_handle.rid")
+    )
     calibration_handle = relationship(
-        "CalibrationHandle",
-        back_populates = "calibration_handle_text",
-        uselist = False
+        "CalibrationHandle", back_populates="calibration_handle_text", uselist=False
     )
 
 
@@ -3689,17 +3103,11 @@ class CpuType(Base):
 
     cPU = StdString()
 
-    __required_parameters__ = (
-        Parameter("cPU", String, False),
-    )
+    __required_parameters__ = (Parameter("cPU", String, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _mod_par_rid = Column(types.Integer, ForeignKey("mod_par.rid"))
-    mod_par = relationship(
-        "ModPar",
-        back_populates = "cpu_type",
-        uselist = False
-    )
+    mod_par = relationship("ModPar", back_populates="cpu_type", uselist=False)
 
 
 class Customer(Base):
@@ -3709,17 +3117,11 @@ class Customer(Base):
 
     customer = StdString()
 
-    __required_parameters__ = (
-        Parameter("customer", String, False),
-    )
+    __required_parameters__ = (Parameter("customer", String, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _mod_par_rid = Column(types.Integer, ForeignKey("mod_par.rid"))
-    mod_par = relationship(
-        "ModPar",
-        back_populates = "customer",
-        uselist = False
-    )
+    mod_par = relationship("ModPar", back_populates="customer", uselist=False)
 
 
 class CustomerNo(Base):
@@ -3729,17 +3131,11 @@ class CustomerNo(Base):
 
     number = StdString()
 
-    __required_parameters__ = (
-        Parameter("number", String, False),
-    )
+    __required_parameters__ = (Parameter("number", String, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _mod_par_rid = Column(types.Integer, ForeignKey("mod_par.rid"))
-    mod_par = relationship(
-        "ModPar",
-        back_populates = "customer_no",
-        uselist = False
-    )
+    mod_par = relationship("ModPar", back_populates="customer_no", uselist=False)
 
 
 class Ecu(Base):
@@ -3749,17 +3145,11 @@ class Ecu(Base):
 
     controlUnit = StdString()
 
-    __required_parameters__ = (
-        Parameter("controlUnit", String, False),
-    )
+    __required_parameters__ = (Parameter("controlUnit", String, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _mod_par_rid = Column(types.Integer, ForeignKey("mod_par.rid"))
-    mod_par = relationship(
-        "ModPar",
-        back_populates = "ecu",
-        uselist = False
-    )
+    mod_par = relationship("ModPar", back_populates="ecu", uselist=False)
 
 
 class EcuCalibrationOffset(Base):
@@ -3769,16 +3159,12 @@ class EcuCalibrationOffset(Base):
 
     offset = StdLong()
 
-    __required_parameters__ = (
-        Parameter("offset", Long, False),
-    )
+    __required_parameters__ = (Parameter("offset", Long, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _mod_par_rid = Column(types.Integer, ForeignKey("mod_par.rid"))
     mod_par = relationship(
-        "ModPar",
-        back_populates = "ecu_calibration_offset",
-        uselist = False
+        "ModPar", back_populates="ecu_calibration_offset", uselist=False
     )
 
 
@@ -3789,17 +3175,11 @@ class Epk(Base):
 
     identifier = StdString()
 
-    __required_parameters__ = (
-        Parameter("identifier", String, False),
-    )
+    __required_parameters__ = (Parameter("identifier", String, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _mod_par_rid = Column(types.Integer, ForeignKey("mod_par.rid"))
-    mod_par = relationship(
-        "ModPar",
-        back_populates = "epk",
-        uselist = False
-    )
+    mod_par = relationship("ModPar", back_populates="epk", uselist=False)
 
 
 class MemoryLayout(Base, HasIfDatas):
@@ -3834,15 +3214,9 @@ class MemoryLayout(Base, HasIfDatas):
         Parameter("offset_4", Long, False),
     )
 
-    __optional_elements__ = (
-        Element("IfData", "IF_DATA", True),
-    )
+    __optional_elements__ = (Element("IfData", "IF_DATA", True),)
     _mod_par_rid = Column(types.Integer, ForeignKey("mod_par.rid"))
-    mod_par = relationship(
-        "ModPar",
-        back_populates = "memory_layout",
-        uselist = True
-    )
+    mod_par = relationship("ModPar", back_populates="memory_layout", uselist=True)
 
 
 class MemorySegment(Base, HasIfDatas):
@@ -3889,15 +3263,9 @@ class MemorySegment(Base, HasIfDatas):
         Parameter("offset_4", Long, False),
     )
 
-    __optional_elements__ = (
-        Element("IfData", "IF_DATA", True),
-    )
+    __optional_elements__ = (Element("IfData", "IF_DATA", True),)
     _mod_par_rid = Column(types.Integer, ForeignKey("mod_par.rid"))
-    mod_par = relationship(
-        "ModPar",
-        back_populates = "memory_segment",
-        uselist = True
-    )
+    mod_par = relationship("ModPar", back_populates="memory_segment", uselist=True)
 
 
 class NoOfInterfaces(Base):
@@ -3907,17 +3275,11 @@ class NoOfInterfaces(Base):
 
     num = StdUShort()
 
-    __required_parameters__ = (
-        Parameter("num", Uint, False),
-    )
+    __required_parameters__ = (Parameter("num", Uint, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _mod_par_rid = Column(types.Integer, ForeignKey("mod_par.rid"))
-    mod_par = relationship(
-        "ModPar",
-        back_populates = "no_of_interfaces",
-        uselist = False
-    )
+    mod_par = relationship("ModPar", back_populates="no_of_interfaces", uselist=False)
 
 
 class PhoneNo(Base):
@@ -3927,17 +3289,11 @@ class PhoneNo(Base):
 
     telnum = StdString()
 
-    __required_parameters__ = (
-        Parameter("telnum", String, False),
-    )
+    __required_parameters__ = (Parameter("telnum", String, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _mod_par_rid = Column(types.Integer, ForeignKey("mod_par.rid"))
-    mod_par = relationship(
-        "ModPar",
-        back_populates = "phone_no",
-        uselist = False
-    )
+    mod_par = relationship("ModPar", back_populates="phone_no", uselist=False)
 
 
 class Supplier(Base):
@@ -3947,17 +3303,11 @@ class Supplier(Base):
 
     manufacturer = StdString()
 
-    __required_parameters__ = (
-        Parameter("manufacturer", String, False),
-    )
+    __required_parameters__ = (Parameter("manufacturer", String, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _mod_par_rid = Column(types.Integer, ForeignKey("mod_par.rid"))
-    mod_par = relationship(
-        "ModPar",
-        back_populates = "supplier",
-        uselist = False
-    )
+    mod_par = relationship("ModPar", back_populates="supplier", uselist=False)
 
 
 class SystemConstant(Base):
@@ -3965,7 +3315,7 @@ class SystemConstant(Base):
 
     __tablename__ = "system_constant"
 
-    name = StdString(index = True)
+    name = StdString(index=True)
 
     value = StdString()
 
@@ -3974,13 +3324,9 @@ class SystemConstant(Base):
         Parameter("value", String, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _mod_par_rid = Column(types.Integer, ForeignKey("mod_par.rid"))
-    mod_par = relationship(
-        "ModPar",
-        back_populates = "system_constant",
-        uselist = True
-    )
+    mod_par = relationship("ModPar", back_populates="system_constant", uselist=True)
 
 
 class User(Base):
@@ -3990,29 +3336,30 @@ class User(Base):
 
     userName = StdString()
 
-    __required_parameters__ = (
-        Parameter("userName", String, False),
-    )
+    __required_parameters__ = (Parameter("userName", String, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _mod_par_rid = Column(types.Integer, ForeignKey("mod_par.rid"))
-    mod_par = relationship(
-        "ModPar",
-        back_populates = "user",
-        uselist = False
-    )
+    mod_par = relationship("ModPar", back_populates="user", uselist=False)
 
 
-class RecordLayout(Base, HasAlignmentBytes, HasAlignmentFloat16Ieees, HasAlignmentFloat32Ieees, HasAlignmentFloat64Ieees, HasAlignmentInt64s, HasAlignmentLongs, HasAlignmentWords):
+class RecordLayout(
+    Base,
+    HasAlignmentBytes,
+    HasAlignmentFloat16Ieees,
+    HasAlignmentFloat32Ieees,
+    HasAlignmentFloat64Ieees,
+    HasAlignmentInt64s,
+    HasAlignmentLongs,
+    HasAlignmentWords,
+):
     """"""
 
     __tablename__ = "record_layout"
 
-    name = StdIdent(index = True)
+    name = StdIdent(index=True)
 
-    __required_parameters__ = (
-        Parameter("name", Ident, False),
-    )
+    __required_parameters__ = (Parameter("name", Ident, False),)
 
     __optional_elements__ = (
         Element("AlignmentByte", "ALIGNMENT_BYTE", False),
@@ -4078,287 +3425,109 @@ class RecordLayout(Base, HasAlignmentBytes, HasAlignmentFloat16Ieees, HasAlignme
         Element("SrcAddr4", "SRC_ADDR_4", False),
         Element("SrcAddr5", "SRC_ADDR_5", False),
     )
-    axis_pts_x = relationship(
-        "AxisPtsX",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    axis_pts_y = relationship(
-        "AxisPtsY",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    axis_pts_z = relationship(
-        "AxisPtsZ",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    axis_pts_4 = relationship(
-        "AxisPts4",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    axis_pts_5 = relationship(
-        "AxisPts5",
-        back_populates = "record_layout",
-        uselist = False
-    )
+    axis_pts_x = relationship("AxisPtsX", back_populates="record_layout", uselist=False)
+    axis_pts_y = relationship("AxisPtsY", back_populates="record_layout", uselist=False)
+    axis_pts_z = relationship("AxisPtsZ", back_populates="record_layout", uselist=False)
+    axis_pts_4 = relationship("AxisPts4", back_populates="record_layout", uselist=False)
+    axis_pts_5 = relationship("AxisPts5", back_populates="record_layout", uselist=False)
     axis_rescale_x = relationship(
-        "AxisRescaleX",
-        back_populates = "record_layout",
-        uselist = False
+        "AxisRescaleX", back_populates="record_layout", uselist=False
     )
     axis_rescale_y = relationship(
-        "AxisRescaleY",
-        back_populates = "record_layout",
-        uselist = False
+        "AxisRescaleY", back_populates="record_layout", uselist=False
     )
     axis_rescale_z = relationship(
-        "AxisRescaleZ",
-        back_populates = "record_layout",
-        uselist = False
+        "AxisRescaleZ", back_populates="record_layout", uselist=False
     )
     axis_rescale_4 = relationship(
-        "AxisRescale4",
-        back_populates = "record_layout",
-        uselist = False
+        "AxisRescale4", back_populates="record_layout", uselist=False
     )
     axis_rescale_5 = relationship(
-        "AxisRescale5",
-        back_populates = "record_layout",
-        uselist = False
+        "AxisRescale5", back_populates="record_layout", uselist=False
     )
-    dist_op_x = relationship(
-        "DistOpX",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    dist_op_y = relationship(
-        "DistOpY",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    dist_op_z = relationship(
-        "DistOpZ",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    dist_op_4 = relationship(
-        "DistOp4",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    dist_op_5 = relationship(
-        "DistOp5",
-        back_populates = "record_layout",
-        uselist = False
-    )
+    dist_op_x = relationship("DistOpX", back_populates="record_layout", uselist=False)
+    dist_op_y = relationship("DistOpY", back_populates="record_layout", uselist=False)
+    dist_op_z = relationship("DistOpZ", back_populates="record_layout", uselist=False)
+    dist_op_4 = relationship("DistOp4", back_populates="record_layout", uselist=False)
+    dist_op_5 = relationship("DistOp5", back_populates="record_layout", uselist=False)
     fix_no_axis_pts_x = relationship(
-        "FixNoAxisPtsX",
-        back_populates = "record_layout",
-        uselist = False
+        "FixNoAxisPtsX", back_populates="record_layout", uselist=False
     )
     fix_no_axis_pts_y = relationship(
-        "FixNoAxisPtsY",
-        back_populates = "record_layout",
-        uselist = False
+        "FixNoAxisPtsY", back_populates="record_layout", uselist=False
     )
     fix_no_axis_pts_z = relationship(
-        "FixNoAxisPtsZ",
-        back_populates = "record_layout",
-        uselist = False
+        "FixNoAxisPtsZ", back_populates="record_layout", uselist=False
     )
     fix_no_axis_pts_4 = relationship(
-        "FixNoAxisPts4",
-        back_populates = "record_layout",
-        uselist = False
+        "FixNoAxisPts4", back_populates="record_layout", uselist=False
     )
     fix_no_axis_pts_5 = relationship(
-        "FixNoAxisPts5",
-        back_populates = "record_layout",
-        uselist = False
+        "FixNoAxisPts5", back_populates="record_layout", uselist=False
     )
     fnc_values = relationship(
-        "FncValues",
-        back_populates = "record_layout",
-        uselist = False
+        "FncValues", back_populates="record_layout", uselist=False
     )
     identification = relationship(
-        "Identification",
-        back_populates = "record_layout",
-        uselist = False
+        "Identification", back_populates="record_layout", uselist=False
     )
     no_axis_pts_x = relationship(
-        "NoAxisPtsX",
-        back_populates = "record_layout",
-        uselist = False
+        "NoAxisPtsX", back_populates="record_layout", uselist=False
     )
     no_axis_pts_y = relationship(
-        "NoAxisPtsY",
-        back_populates = "record_layout",
-        uselist = False
+        "NoAxisPtsY", back_populates="record_layout", uselist=False
     )
     no_axis_pts_z = relationship(
-        "NoAxisPtsZ",
-        back_populates = "record_layout",
-        uselist = False
+        "NoAxisPtsZ", back_populates="record_layout", uselist=False
     )
     no_axis_pts_4 = relationship(
-        "NoAxisPts4",
-        back_populates = "record_layout",
-        uselist = False
+        "NoAxisPts4", back_populates="record_layout", uselist=False
     )
     no_axis_pts_5 = relationship(
-        "NoAxisPts5",
-        back_populates = "record_layout",
-        uselist = False
+        "NoAxisPts5", back_populates="record_layout", uselist=False
     )
     static_record_layout = relationship(
-        "StaticRecordLayout",
-        back_populates = "record_layout",
-        uselist = False
+        "StaticRecordLayout", back_populates="record_layout", uselist=False
     )
     no_rescale_x = relationship(
-        "NoRescaleX",
-        back_populates = "record_layout",
-        uselist = False
+        "NoRescaleX", back_populates="record_layout", uselist=False
     )
     no_rescale_y = relationship(
-        "NoRescaleY",
-        back_populates = "record_layout",
-        uselist = False
+        "NoRescaleY", back_populates="record_layout", uselist=False
     )
     no_rescale_z = relationship(
-        "NoRescaleZ",
-        back_populates = "record_layout",
-        uselist = False
+        "NoRescaleZ", back_populates="record_layout", uselist=False
     )
     no_rescale_4 = relationship(
-        "NoRescale4",
-        back_populates = "record_layout",
-        uselist = False
+        "NoRescale4", back_populates="record_layout", uselist=False
     )
     no_rescale_5 = relationship(
-        "NoRescale5",
-        back_populates = "record_layout",
-        uselist = False
+        "NoRescale5", back_populates="record_layout", uselist=False
     )
-    offset_x = relationship(
-        "OffsetX",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    offset_y = relationship(
-        "OffsetY",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    offset_z = relationship(
-        "OffsetZ",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    offset_4 = relationship(
-        "Offset4",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    offset_5 = relationship(
-        "Offset5",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    reserved = relationship(
-        "Reserved",
-        back_populates = "record_layout",
-        uselist = True
-    )
-    rip_addr_w = relationship(
-        "RipAddrW",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    rip_addr_x = relationship(
-        "RipAddrX",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    rip_addr_y = relationship(
-        "RipAddrY",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    rip_addr_z = relationship(
-        "RipAddrZ",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    rip_addr_4 = relationship(
-        "RipAddr4",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    rip_addr_5 = relationship(
-        "RipAddr5",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    shift_op_x = relationship(
-        "ShiftOpX",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    shift_op_y = relationship(
-        "ShiftOpY",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    shift_op_z = relationship(
-        "ShiftOpZ",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    shift_op_4 = relationship(
-        "ShiftOp4",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    shift_op_5 = relationship(
-        "ShiftOp5",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    src_addr_x = relationship(
-        "SrcAddrX",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    src_addr_y = relationship(
-        "SrcAddrY",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    src_addr_z = relationship(
-        "SrcAddrZ",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    src_addr_4 = relationship(
-        "SrcAddr4",
-        back_populates = "record_layout",
-        uselist = False
-    )
-    src_addr_5 = relationship(
-        "SrcAddr5",
-        back_populates = "record_layout",
-        uselist = False
-    )
+    offset_x = relationship("OffsetX", back_populates="record_layout", uselist=False)
+    offset_y = relationship("OffsetY", back_populates="record_layout", uselist=False)
+    offset_z = relationship("OffsetZ", back_populates="record_layout", uselist=False)
+    offset_4 = relationship("Offset4", back_populates="record_layout", uselist=False)
+    offset_5 = relationship("Offset5", back_populates="record_layout", uselist=False)
+    reserved = relationship("Reserved", back_populates="record_layout", uselist=True)
+    rip_addr_w = relationship("RipAddrW", back_populates="record_layout", uselist=False)
+    rip_addr_x = relationship("RipAddrX", back_populates="record_layout", uselist=False)
+    rip_addr_y = relationship("RipAddrY", back_populates="record_layout", uselist=False)
+    rip_addr_z = relationship("RipAddrZ", back_populates="record_layout", uselist=False)
+    rip_addr_4 = relationship("RipAddr4", back_populates="record_layout", uselist=False)
+    rip_addr_5 = relationship("RipAddr5", back_populates="record_layout", uselist=False)
+    shift_op_x = relationship("ShiftOpX", back_populates="record_layout", uselist=False)
+    shift_op_y = relationship("ShiftOpY", back_populates="record_layout", uselist=False)
+    shift_op_z = relationship("ShiftOpZ", back_populates="record_layout", uselist=False)
+    shift_op_4 = relationship("ShiftOp4", back_populates="record_layout", uselist=False)
+    shift_op_5 = relationship("ShiftOp5", back_populates="record_layout", uselist=False)
+    src_addr_x = relationship("SrcAddrX", back_populates="record_layout", uselist=False)
+    src_addr_y = relationship("SrcAddrY", back_populates="record_layout", uselist=False)
+    src_addr_z = relationship("SrcAddrZ", back_populates="record_layout", uselist=False)
+    src_addr_4 = relationship("SrcAddr4", back_populates="record_layout", uselist=False)
+    src_addr_5 = relationship("SrcAddr5", back_populates="record_layout", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "record_layout",
-        uselist = True
-    )
+    module = relationship("Module", back_populates="record_layout", uselist=True)
 
 
 class AxisPtsX(Base):
@@ -4381,12 +3550,10 @@ class AxisPtsX(Base):
         Parameter("addressing", Addrtype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "axis_pts_x",
-        uselist = False
+        "RecordLayout", back_populates="axis_pts_x", uselist=False
     )
 
 
@@ -4410,12 +3577,10 @@ class AxisPtsY(Base):
         Parameter("addressing", Addrtype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "axis_pts_y",
-        uselist = False
+        "RecordLayout", back_populates="axis_pts_y", uselist=False
     )
 
 
@@ -4439,12 +3604,10 @@ class AxisPtsZ(Base):
         Parameter("addressing", Addrtype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "axis_pts_z",
-        uselist = False
+        "RecordLayout", back_populates="axis_pts_z", uselist=False
     )
 
 
@@ -4468,12 +3631,10 @@ class AxisPts4(Base):
         Parameter("addressing", Addrtype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "axis_pts_4",
-        uselist = False
+        "RecordLayout", back_populates="axis_pts_4", uselist=False
     )
 
 
@@ -4497,12 +3658,10 @@ class AxisPts5(Base):
         Parameter("addressing", Addrtype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "axis_pts_5",
-        uselist = False
+        "RecordLayout", back_populates="axis_pts_5", uselist=False
     )
 
 
@@ -4529,12 +3688,10 @@ class AxisRescaleX(Base):
         Parameter("addressing", Addrtype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "axis_rescale_x",
-        uselist = False
+        "RecordLayout", back_populates="axis_rescale_x", uselist=False
     )
 
 
@@ -4561,12 +3718,10 @@ class AxisRescaleY(Base):
         Parameter("addressing", Addrtype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "axis_rescale_y",
-        uselist = False
+        "RecordLayout", back_populates="axis_rescale_y", uselist=False
     )
 
 
@@ -4593,12 +3748,10 @@ class AxisRescaleZ(Base):
         Parameter("addressing", Addrtype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "axis_rescale_z",
-        uselist = False
+        "RecordLayout", back_populates="axis_rescale_z", uselist=False
     )
 
 
@@ -4625,12 +3778,10 @@ class AxisRescale4(Base):
         Parameter("addressing", Addrtype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "axis_rescale_4",
-        uselist = False
+        "RecordLayout", back_populates="axis_rescale_4", uselist=False
     )
 
 
@@ -4657,12 +3808,10 @@ class AxisRescale5(Base):
         Parameter("addressing", Addrtype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "axis_rescale_5",
-        uselist = False
+        "RecordLayout", back_populates="axis_rescale_5", uselist=False
     )
 
 
@@ -4680,12 +3829,10 @@ class DistOpX(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "dist_op_x",
-        uselist = False
+        "RecordLayout", back_populates="dist_op_x", uselist=False
     )
 
 
@@ -4703,12 +3850,10 @@ class DistOpY(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "dist_op_y",
-        uselist = False
+        "RecordLayout", back_populates="dist_op_y", uselist=False
     )
 
 
@@ -4726,12 +3871,10 @@ class DistOpZ(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "dist_op_z",
-        uselist = False
+        "RecordLayout", back_populates="dist_op_z", uselist=False
     )
 
 
@@ -4749,12 +3892,10 @@ class DistOp4(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "dist_op_4",
-        uselist = False
+        "RecordLayout", back_populates="dist_op_4", uselist=False
     )
 
 
@@ -4772,12 +3913,10 @@ class DistOp5(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "dist_op_5",
-        uselist = False
+        "RecordLayout", back_populates="dist_op_5", uselist=False
     )
 
 
@@ -4788,16 +3927,12 @@ class FixNoAxisPtsX(Base):
 
     numberOfAxisPoints = StdUShort()
 
-    __required_parameters__ = (
-        Parameter("numberOfAxisPoints", Uint, False),
-    )
+    __required_parameters__ = (Parameter("numberOfAxisPoints", Uint, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "fix_no_axis_pts_x",
-        uselist = False
+        "RecordLayout", back_populates="fix_no_axis_pts_x", uselist=False
     )
 
 
@@ -4808,16 +3943,12 @@ class FixNoAxisPtsY(Base):
 
     numberOfAxisPoints = StdUShort()
 
-    __required_parameters__ = (
-        Parameter("numberOfAxisPoints", Uint, False),
-    )
+    __required_parameters__ = (Parameter("numberOfAxisPoints", Uint, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "fix_no_axis_pts_y",
-        uselist = False
+        "RecordLayout", back_populates="fix_no_axis_pts_y", uselist=False
     )
 
 
@@ -4828,16 +3959,12 @@ class FixNoAxisPtsZ(Base):
 
     numberOfAxisPoints = StdUShort()
 
-    __required_parameters__ = (
-        Parameter("numberOfAxisPoints", Uint, False),
-    )
+    __required_parameters__ = (Parameter("numberOfAxisPoints", Uint, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "fix_no_axis_pts_z",
-        uselist = False
+        "RecordLayout", back_populates="fix_no_axis_pts_z", uselist=False
     )
 
 
@@ -4848,16 +3975,12 @@ class FixNoAxisPts4(Base):
 
     numberOfAxisPoints = StdUShort()
 
-    __required_parameters__ = (
-        Parameter("numberOfAxisPoints", Uint, False),
-    )
+    __required_parameters__ = (Parameter("numberOfAxisPoints", Uint, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "fix_no_axis_pts_4",
-        uselist = False
+        "RecordLayout", back_populates="fix_no_axis_pts_4", uselist=False
     )
 
 
@@ -4868,16 +3991,12 @@ class FixNoAxisPts5(Base):
 
     numberOfAxisPoints = StdUShort()
 
-    __required_parameters__ = (
-        Parameter("numberOfAxisPoints", Uint, False),
-    )
+    __required_parameters__ = (Parameter("numberOfAxisPoints", Uint, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "fix_no_axis_pts_5",
-        uselist = False
+        "RecordLayout", back_populates="fix_no_axis_pts_5", uselist=False
     )
 
 
@@ -4901,12 +4020,10 @@ class FncValues(Base):
         Parameter("addresstype", Addrtype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "fnc_values",
-        uselist = False
+        "RecordLayout", back_populates="fnc_values", uselist=False
     )
 
 
@@ -4924,12 +4041,10 @@ class Identification(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "identification",
-        uselist = False
+        "RecordLayout", back_populates="identification", uselist=False
     )
 
 
@@ -4947,12 +4062,10 @@ class NoAxisPtsX(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "no_axis_pts_x",
-        uselist = False
+        "RecordLayout", back_populates="no_axis_pts_x", uselist=False
     )
 
 
@@ -4970,12 +4083,10 @@ class NoAxisPtsY(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "no_axis_pts_y",
-        uselist = False
+        "RecordLayout", back_populates="no_axis_pts_y", uselist=False
     )
 
 
@@ -4993,12 +4104,10 @@ class NoAxisPtsZ(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "no_axis_pts_z",
-        uselist = False
+        "RecordLayout", back_populates="no_axis_pts_z", uselist=False
     )
 
 
@@ -5016,12 +4125,10 @@ class NoAxisPts4(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "no_axis_pts_4",
-        uselist = False
+        "RecordLayout", back_populates="no_axis_pts_4", uselist=False
     )
 
 
@@ -5039,12 +4146,10 @@ class NoAxisPts5(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "no_axis_pts_5",
-        uselist = False
+        "RecordLayout", back_populates="no_axis_pts_5", uselist=False
     )
 
 
@@ -5053,14 +4158,12 @@ class StaticRecordLayout(Base):
 
     __tablename__ = "static_record_layout"
 
-    __required_parameters__ = ( )
+    __required_parameters__ = ()
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "static_record_layout",
-        uselist = False
+        "RecordLayout", back_populates="static_record_layout", uselist=False
     )
 
 
@@ -5078,12 +4181,10 @@ class NoRescaleX(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "no_rescale_x",
-        uselist = False
+        "RecordLayout", back_populates="no_rescale_x", uselist=False
     )
 
 
@@ -5101,12 +4202,10 @@ class NoRescaleY(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "no_rescale_y",
-        uselist = False
+        "RecordLayout", back_populates="no_rescale_y", uselist=False
     )
 
 
@@ -5124,12 +4223,10 @@ class NoRescaleZ(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "no_rescale_z",
-        uselist = False
+        "RecordLayout", back_populates="no_rescale_z", uselist=False
     )
 
 
@@ -5147,12 +4244,10 @@ class NoRescale4(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "no_rescale_4",
-        uselist = False
+        "RecordLayout", back_populates="no_rescale_4", uselist=False
     )
 
 
@@ -5170,12 +4265,10 @@ class NoRescale5(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "no_rescale_5",
-        uselist = False
+        "RecordLayout", back_populates="no_rescale_5", uselist=False
     )
 
 
@@ -5193,12 +4286,10 @@ class OffsetX(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "offset_x",
-        uselist = False
+        "RecordLayout", back_populates="offset_x", uselist=False
     )
 
 
@@ -5216,12 +4307,10 @@ class OffsetY(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "offset_y",
-        uselist = False
+        "RecordLayout", back_populates="offset_y", uselist=False
     )
 
 
@@ -5239,12 +4328,10 @@ class OffsetZ(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "offset_z",
-        uselist = False
+        "RecordLayout", back_populates="offset_z", uselist=False
     )
 
 
@@ -5262,12 +4349,10 @@ class Offset4(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "offset_4",
-        uselist = False
+        "RecordLayout", back_populates="offset_4", uselist=False
     )
 
 
@@ -5285,12 +4370,10 @@ class Offset5(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "offset_5",
-        uselist = False
+        "RecordLayout", back_populates="offset_5", uselist=False
     )
 
 
@@ -5308,12 +4391,10 @@ class Reserved(Base):
         Parameter("dataSize", Datasize, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "reserved",
-        uselist = True
+        "RecordLayout", back_populates="reserved", uselist=True
     )
 
 
@@ -5331,12 +4412,10 @@ class RipAddrW(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "rip_addr_w",
-        uselist = False
+        "RecordLayout", back_populates="rip_addr_w", uselist=False
     )
 
 
@@ -5354,12 +4433,10 @@ class RipAddrX(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "rip_addr_x",
-        uselist = False
+        "RecordLayout", back_populates="rip_addr_x", uselist=False
     )
 
 
@@ -5377,12 +4454,10 @@ class RipAddrY(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "rip_addr_y",
-        uselist = False
+        "RecordLayout", back_populates="rip_addr_y", uselist=False
     )
 
 
@@ -5400,12 +4475,10 @@ class RipAddrZ(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "rip_addr_z",
-        uselist = False
+        "RecordLayout", back_populates="rip_addr_z", uselist=False
     )
 
 
@@ -5423,12 +4496,10 @@ class RipAddr4(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "rip_addr_4",
-        uselist = False
+        "RecordLayout", back_populates="rip_addr_4", uselist=False
     )
 
 
@@ -5446,12 +4517,10 @@ class RipAddr5(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "rip_addr_5",
-        uselist = False
+        "RecordLayout", back_populates="rip_addr_5", uselist=False
     )
 
 
@@ -5469,12 +4538,10 @@ class ShiftOpX(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "shift_op_x",
-        uselist = False
+        "RecordLayout", back_populates="shift_op_x", uselist=False
     )
 
 
@@ -5492,12 +4559,10 @@ class ShiftOpY(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "shift_op_y",
-        uselist = False
+        "RecordLayout", back_populates="shift_op_y", uselist=False
     )
 
 
@@ -5515,12 +4580,10 @@ class ShiftOpZ(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "shift_op_z",
-        uselist = False
+        "RecordLayout", back_populates="shift_op_z", uselist=False
     )
 
 
@@ -5538,12 +4601,10 @@ class ShiftOp4(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "shift_op_4",
-        uselist = False
+        "RecordLayout", back_populates="shift_op_4", uselist=False
     )
 
 
@@ -5561,12 +4622,10 @@ class ShiftOp5(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "shift_op_5",
-        uselist = False
+        "RecordLayout", back_populates="shift_op_5", uselist=False
     )
 
 
@@ -5584,12 +4643,10 @@ class SrcAddrX(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "src_addr_x",
-        uselist = False
+        "RecordLayout", back_populates="src_addr_x", uselist=False
     )
 
 
@@ -5607,12 +4664,10 @@ class SrcAddrY(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "src_addr_y",
-        uselist = False
+        "RecordLayout", back_populates="src_addr_y", uselist=False
     )
 
 
@@ -5630,12 +4685,10 @@ class SrcAddrZ(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "src_addr_z",
-        uselist = False
+        "RecordLayout", back_populates="src_addr_z", uselist=False
     )
 
 
@@ -5653,12 +4706,10 @@ class SrcAddr4(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "src_addr_4",
-        uselist = False
+        "RecordLayout", back_populates="src_addr_4", uselist=False
     )
 
 
@@ -5676,12 +4727,10 @@ class SrcAddr5(Base):
         Parameter("datatype", Datatype, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
     record_layout = relationship(
-        "RecordLayout",
-        back_populates = "src_addr_5",
-        uselist = False
+        "RecordLayout", back_populates="src_addr_5", uselist=False
     )
 
 
@@ -5717,13 +4766,9 @@ class TypedefMeasurement(Base):
         Parameter("upperLimit", Float, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "typedef_measurement",
-        uselist = True
-    )
+    module = relationship("Module", back_populates="typedef_measurement", uselist=True)
 
 
 class TypedefStructure(Base):
@@ -5753,16 +4798,10 @@ class TypedefStructure(Base):
         Element("StructureComponent", "STRUCTURE_COMPONENT", True),
     )
     structure_component = relationship(
-        "StructureComponent",
-        back_populates = "typedef_structure",
-        uselist = True
+        "StructureComponent", back_populates="typedef_structure", uselist=True
     )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "typedef_structure",
-        uselist = True
-    )
+    module = relationship("Module", back_populates="typedef_structure", uselist=True)
 
 
 class StructureComponent(Base):
@@ -5788,12 +4827,10 @@ class StructureComponent(Base):
         Parameter("symbol", String, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _typedef_structure_rid = Column(types.Integer, ForeignKey("typedef_structure.rid"))
     typedef_structure = relationship(
-        "TypedefStructure",
-        back_populates = "structure_component",
-        uselist = True
+        "TypedefStructure", back_populates="structure_component", uselist=True
     )
 
 
@@ -5822,22 +4859,12 @@ class Unit(Base, HasRefUnits):
         Element("RefUnit", "REF_UNIT", False),
         Element("UnitConversion", "UNIT_CONVERSION", False),
     )
-    si_exponents = relationship(
-        "SiExponents",
-        back_populates = "unit",
-        uselist = False
-    )
+    si_exponents = relationship("SiExponents", back_populates="unit", uselist=False)
     unit_conversion = relationship(
-        "UnitConversion",
-        back_populates = "unit",
-        uselist = False
+        "UnitConversion", back_populates="unit", uselist=False
     )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "unit",
-        uselist = True
-    )
+    module = relationship("Module", back_populates="unit", uselist=True)
 
 
 class SiExponents(Base):
@@ -5869,13 +4896,9 @@ class SiExponents(Base):
         Parameter("luminousIntensity", Int, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _unit_rid = Column(types.Integer, ForeignKey("unit.rid"))
-    unit = relationship(
-        "Unit",
-        back_populates = "si_exponents",
-        uselist = False
-    )
+    unit = relationship("Unit", back_populates="si_exponents", uselist=False)
 
 
 class UnitConversion(Base):
@@ -5892,13 +4915,9 @@ class UnitConversion(Base):
         Parameter("offset", Float, False),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _unit_rid = Column(types.Integer, ForeignKey("unit.rid"))
-    unit = relationship(
-        "Unit",
-        back_populates = "unit_conversion",
-        uselist = False
-    )
+    unit = relationship("Unit", back_populates="unit_conversion", uselist=False)
 
 
 class UserRights(Base, HasReadOnlys):
@@ -5908,25 +4927,15 @@ class UserRights(Base, HasReadOnlys):
 
     userLevelId = StdIdent()
 
-    __required_parameters__ = (
-        Parameter("userLevelId", Ident, False),
-    )
+    __required_parameters__ = (Parameter("userLevelId", Ident, False),)
 
     __optional_elements__ = (
         Element("ReadOnly", "READ_ONLY", False),
         Element("RefGroup", "REF_GROUP", True),
     )
-    ref_group = relationship(
-        "RefGroup",
-        back_populates = "user_rights",
-        uselist = True
-    )
+    ref_group = relationship("RefGroup", back_populates="user_rights", uselist=True)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "user_rights",
-        uselist = True
-    )
+    module = relationship("Module", back_populates="user_rights", uselist=True)
 
 
 class RefGroup(Base):
@@ -5936,22 +4945,16 @@ class RefGroup(Base):
 
     _identifier = relationship(
         "RefGroupIdentifiers",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     identifier = association_proxy("_identifier", "identifier")
 
-    __required_parameters__ = (
-        Parameter("identifier", Ident, True),
-    )
+    __required_parameters__ = (Parameter("identifier", Ident, True),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _user_rights_rid = Column(types.Integer, ForeignKey("user_rights.rid"))
-    user_rights = relationship(
-        "UserRights",
-        back_populates = "ref_group",
-        uselist = True
-    )
+    user_rights = relationship("UserRights", back_populates="ref_group", uselist=True)
 
 
 class VariantCoding(Base):
@@ -5959,7 +4962,7 @@ class VariantCoding(Base):
 
     __tablename__ = "variant_coding"
 
-    __required_parameters__ = ( )
+    __required_parameters__ = ()
 
     __optional_elements__ = (
         Element("VarCharacteristic", "VAR_CHARACTERISTIC", True),
@@ -5969,36 +4972,22 @@ class VariantCoding(Base):
         Element("VarSeparator", "VAR_SEPARATOR", False),
     )
     var_characteristic = relationship(
-        "VarCharacteristic",
-        back_populates = "variant_coding",
-        uselist = True
+        "VarCharacteristic", back_populates="variant_coding", uselist=True
     )
     var_criterion = relationship(
-        "VarCriterion",
-        back_populates = "variant_coding",
-        uselist = True
+        "VarCriterion", back_populates="variant_coding", uselist=True
     )
     var_forbidden_comb = relationship(
-        "VarForbiddenComb",
-        back_populates = "variant_coding",
-        uselist = True
+        "VarForbiddenComb", back_populates="variant_coding", uselist=True
     )
     var_naming = relationship(
-        "VarNaming",
-        back_populates = "variant_coding",
-        uselist = False
+        "VarNaming", back_populates="variant_coding", uselist=False
     )
     var_separator = relationship(
-        "VarSeparator",
-        back_populates = "variant_coding",
-        uselist = False
+        "VarSeparator", back_populates="variant_coding", uselist=False
     )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship(
-        "Module",
-        back_populates = "variant_coding",
-        uselist = False
-    )
+    module = relationship("Module", back_populates="variant_coding", uselist=False)
 
 
 class VarCharacteristic(Base):
@@ -6006,12 +4995,12 @@ class VarCharacteristic(Base):
 
     __tablename__ = "var_characteristic"
 
-    name = StdIdent(index = True)
+    name = StdIdent(index=True)
 
     _criterionName = relationship(
         "VarCharacteristicIdentifiers",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     criterionName = association_proxy("_criterionName", "criterionName")
 
@@ -6020,19 +5009,13 @@ class VarCharacteristic(Base):
         Parameter("criterionName", Ident, True),
     )
 
-    __optional_elements__ = (
-        Element("VarAddress", "VAR_ADDRESS", False),
-    )
+    __optional_elements__ = (Element("VarAddress", "VAR_ADDRESS", False),)
     var_address = relationship(
-        "VarAddress",
-        back_populates = "var_characteristic",
-        uselist = False
+        "VarAddress", back_populates="var_characteristic", uselist=False
     )
     _variant_coding_rid = Column(types.Integer, ForeignKey("variant_coding.rid"))
     variant_coding = relationship(
-        "VariantCoding",
-        back_populates = "var_characteristic",
-        uselist = True
+        "VariantCoding", back_populates="var_characteristic", uselist=True
     )
 
 
@@ -6042,22 +5025,18 @@ class VarAddress(Base):
     __tablename__ = "var_address"
 
     _address = relationship(
-        "VarAddressValues",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        "VarAddressValues", backref="parent", collection_class=ordering_list("position")
     )
     address = association_proxy("_address", "address")
 
-    __required_parameters__ = (
-        Parameter("address", Ulong, True),
-    )
+    __required_parameters__ = (Parameter("address", Ulong, True),)
 
-    __optional_elements__ = ( )
-    _var_characteristic_rid = Column(types.Integer, ForeignKey("var_characteristic.rid"))
+    __optional_elements__ = ()
+    _var_characteristic_rid = Column(
+        types.Integer, ForeignKey("var_characteristic.rid")
+    )
     var_characteristic = relationship(
-        "VarCharacteristic",
-        back_populates = "var_address",
-        uselist = False
+        "VarCharacteristic", back_populates="var_address", uselist=False
     )
 
 
@@ -6066,14 +5045,14 @@ class VarCriterion(Base):
 
     __tablename__ = "var_criterion"
 
-    name = StdIdent(index = True)
+    name = StdIdent(index=True)
 
     longIdentifier = StdString()
 
     _value = relationship(
         "VarCriterionIdentifiers",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
     value = association_proxy("_value", "value")
 
@@ -6088,20 +5067,14 @@ class VarCriterion(Base):
         Element("VarSelectionCharacteristic", "VAR_SELECTION_CHARACTERISTIC", False),
     )
     var_measurement = relationship(
-        "VarMeasurement",
-        back_populates = "var_criterion",
-        uselist = False
+        "VarMeasurement", back_populates="var_criterion", uselist=False
     )
     var_selection_characteristic = relationship(
-        "VarSelectionCharacteristic",
-        back_populates = "var_criterion",
-        uselist = False
+        "VarSelectionCharacteristic", back_populates="var_criterion", uselist=False
     )
     _variant_coding_rid = Column(types.Integer, ForeignKey("variant_coding.rid"))
     variant_coding = relationship(
-        "VariantCoding",
-        back_populates = "var_criterion",
-        uselist = True
+        "VariantCoding", back_populates="var_criterion", uselist=True
     )
 
 
@@ -6110,18 +5083,14 @@ class VarMeasurement(Base):
 
     __tablename__ = "var_measurement"
 
-    name = StdIdent(index = True)
+    name = StdIdent(index=True)
 
-    __required_parameters__ = (
-        Parameter("name", Ident, False),
-    )
+    __required_parameters__ = (Parameter("name", Ident, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _var_criterion_rid = Column(types.Integer, ForeignKey("var_criterion.rid"))
     var_criterion = relationship(
-        "VarCriterion",
-        back_populates = "var_measurement",
-        uselist = False
+        "VarCriterion", back_populates="var_measurement", uselist=False
     )
 
 
@@ -6132,16 +5101,12 @@ class VarSelectionCharacteristic(Base):
 
     name = StdIdent()
 
-    __required_parameters__ = (
-        Parameter("name", Ident, False),
-    )
+    __required_parameters__ = (Parameter("name", Ident, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _var_criterion_rid = Column(types.Integer, ForeignKey("var_criterion.rid"))
     var_criterion = relationship(
-        "VarCriterion",
-        back_populates = "var_selection_characteristic",
-        uselist = False
+        "VarCriterion", back_populates="var_selection_characteristic", uselist=False
     )
 
 
@@ -6150,19 +5115,17 @@ class VarForbiddenComb(Base):
 
     __tablename__ = "var_forbidden_comb"
 
-    __required_parameters__ = ( )
+    __required_parameters__ = ()
     pairs = relationship(
         "VarForbiddedCombPair",
-        backref = "parent",
-        collection_class = ordering_list('position')
+        backref="parent",
+        collection_class=ordering_list("position"),
     )
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _variant_coding_rid = Column(types.Integer, ForeignKey("variant_coding.rid"))
     variant_coding = relationship(
-        "VariantCoding",
-        back_populates = "var_forbidden_comb",
-        uselist = True
+        "VariantCoding", back_populates="var_forbidden_comb", uselist=True
     )
 
 
@@ -6173,16 +5136,12 @@ class VarNaming(Base):
 
     tag = StdString()
 
-    __required_parameters__ = (
-        Parameter("tag", Enum, False),
-    )
+    __required_parameters__ = (Parameter("tag", Enum, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _variant_coding_rid = Column(types.Integer, ForeignKey("variant_coding.rid"))
     variant_coding = relationship(
-        "VariantCoding",
-        back_populates = "var_naming",
-        uselist = False
+        "VariantCoding", back_populates="var_naming", uselist=False
     )
 
 
@@ -6193,17 +5152,14 @@ class VarSeparator(Base):
 
     separator = StdString()
 
-    __required_parameters__ = (
-        Parameter("separator", String, False),
-    )
+    __required_parameters__ = (Parameter("separator", String, False),)
 
-    __optional_elements__ = ( )
+    __optional_elements__ = ()
     _variant_coding_rid = Column(types.Integer, ForeignKey("variant_coding.rid"))
     variant_coding = relationship(
-        "VariantCoding",
-        back_populates = "var_separator",
-        uselist = False
+        "VariantCoding", back_populates="var_separator", uselist=False
     )
+
 
 #
 # Tables for AML meta parser.
@@ -6222,185 +5178,198 @@ class AMLEnumeration(AMLBaseType):
     """ """
 
     base_type_id = Column(
-        types.Integer,
-        ForeignKey("amlbasetype.rid"),
-        primary_key = True
+        types.Integer, ForeignKey("amlbasetype.rid"), primary_key=True
     )
-    __mapper_args__ = {
-        "polymorphic_identity": "AMLEnumeration"
-    }
+    __mapper_args__ = {"polymorphic_identity": "AMLEnumeration"}
     name = Column(types.String(256))
-    enumerators = relationship("AMLEnumerator", backref = "aml_enumeration", uselist = True)
+    enumerators = relationship("AMLEnumerator", backref="aml_enumeration", uselist=True)
 
 
 class AMLEnumerator(Base):
     """ """
 
-    enumeration_id  = Column(types.Integer,
-        ForeignKey("amlenumeration.base_type_id", onupdate = "CASCADE", ondelete = "CASCADE"),
-        nullable = True,
-        primary_key = True,
+    enumeration_id = Column(
+        types.Integer,
+        ForeignKey(
+            "amlenumeration.base_type_id", onupdate="CASCADE", ondelete="CASCADE"
+        ),
+        nullable=True,
+        primary_key=True,
     )
 
-    tag  = Column(types.String(256))
-    constant  = Column(types.String(256))
+    tag = Column(types.String(256))
+    constant = Column(types.String(256))
 
 
 class AMLTaggedUnion(AMLBaseType):
     """ """
 
     base_type_id = Column(
-        types.Integer,
-        ForeignKey("amlbasetype.rid"),
-        primary_key = True
+        types.Integer, ForeignKey("amlbasetype.rid"), primary_key=True
     )
-    __mapper_args__ = {
-        "polymorphic_identity": "AMLTaggedUnion"
-    }
+    __mapper_args__ = {"polymorphic_identity": "AMLTaggedUnion"}
     name = Column(types.String(256))
-    members = relationship("AMLTaggedUnionMember", backref = "aml_tagged_union", uselist = True)
+    members = relationship(
+        "AMLTaggedUnionMember", backref="aml_tagged_union", uselist=True
+    )
 
 
 class AMLTaggedUnionMember(Base):
     """ """
 
-    tagged_union_id = Column(types.Integer,
-        ForeignKey("amltaggedunion.base_type_id", onupdate = "CASCADE", ondelete = "CASCADE"),
-        nullable = True,
-        primary_key = True
+    tagged_union_id = Column(
+        types.Integer,
+        ForeignKey(
+            "amltaggedunion.base_type_id", onupdate="CASCADE", ondelete="CASCADE"
+        ),
+        nullable=True,
+        primary_key=True,
     )
-    block_definition_id = Column(types.Integer,
-        ForeignKey("amlblockdefinition.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True
+    block_definition_id = Column(
+        types.Integer,
+        ForeignKey("amlblockdefinition.rid", onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=True,
     )
-    member_id = Column(types.Integer,
-        ForeignKey("amlmember.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True
+    member_id = Column(
+        types.Integer,
+        ForeignKey("amlmember.rid", onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=True,
     )
     tag = Column(types.String(256))
-    member = relationship("AMLMember", backref = "aml_tagged_union_member", uselist = False)
-    block_definition = relationship("AMLBlockDefinition", backref = "aml_tagged_union_member", uselist = False)
+    member = relationship("AMLMember", backref="aml_tagged_union_member", uselist=False)
+    block_definition = relationship(
+        "AMLBlockDefinition", backref="aml_tagged_union_member", uselist=False
+    )
 
 
 class AMLMember(Base):
     """ """
 
-    type_name_id = Column(types.Integer,
-        ForeignKey("amltypename.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True, primary_key = False
+    type_name_id = Column(
+        types.Integer,
+        ForeignKey("amltypename.rid", onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=True,
+        primary_key=False,
     )
-    type_name = relationship("AMLTypeName", backref = "aml_member", uselist = False)
+    type_name = relationship("AMLTypeName", backref="aml_member", uselist=False)
     array_specifier = Column(types.String(256))
 
 
 class AMLTypeName(Base):
     """ """
 
-    base_type_id = Column(types.Integer,
-        ForeignKey("amlbasetype.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True, primary_key = False
+    base_type_id = Column(
+        types.Integer,
+        ForeignKey("amlbasetype.rid", onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=True,
+        primary_key=False,
     )
 
     tag = Column(types.String(256))
     name = Column(types.String(256))
-    type = relationship("AMLBaseType", uselist = False)
+    type = relationship("AMLBaseType", uselist=False)
 
 
 class AMLReferrer(AMLBaseType):
     """ """
 
     base_type_id = Column(
-        types.Integer,
-        ForeignKey("amlbasetype.rid"),
-        primary_key = True
+        types.Integer, ForeignKey("amlbasetype.rid"), primary_key=True
     )
     category = Column(types.String(256))
     identifier = Column(types.String(256))
-    __mapper_args__ = {
-        "polymorphic_identity": "AMLReferrer"
-    }
+    __mapper_args__ = {"polymorphic_identity": "AMLReferrer"}
 
 
 class AMLPredefinedType(AMLBaseType):
     """ """
 
     base_type_id = Column(
-        types.Integer,
-        ForeignKey("amlbasetype.rid"),
-        primary_key = True
+        types.Integer, ForeignKey("amlbasetype.rid"), primary_key=True
     )
 
     typeid = StdLong()
-    __mapper_args__ = {
-        "polymorphic_identity": "AMLPredefinedType"
-    }
+    __mapper_args__ = {"polymorphic_identity": "AMLPredefinedType"}
 
 
 class AMLStructType(AMLBaseType):
     """ """
 
     base_type_id = Column(
-        types.Integer,
-        ForeignKey("amlbasetype.rid"),
-        primary_key = True
+        types.Integer, ForeignKey("amlbasetype.rid"), primary_key=True
     )
 
     name = Column(types.String(256))
-    members = relationship("AMLStructMember", backref = "aml_struct_type", uselist = True)
-    __mapper_args__ = {
-        "polymorphic_identity": "AMLStructType"
-    }
+    members = relationship("AMLStructMember", backref="aml_struct_type", uselist=True)
+    __mapper_args__ = {"polymorphic_identity": "AMLStructType"}
 
 
 class AMLStructMember(Base):
     """ """
 
-    struct_type_id = Column(types.Integer,
-        ForeignKey("amlstructtype.base_type_id", onupdate = "CASCADE", ondelete = "CASCADE"),
-        nullable = True,
-        primary_key = True
+    struct_type_id = Column(
+        types.Integer,
+        ForeignKey(
+            "amlstructtype.base_type_id", onupdate="CASCADE", ondelete="CASCADE"
+        ),
+        nullable=True,
+        primary_key=True,
     )
 
     multiple = Column(types.Boolean)
-    member_id = Column(types.Integer,
-        ForeignKey("amlmember.rid", onupdate = "CASCADE", ondelete = "CASCADE"),
-        nullable = True,
-        primary_key = True
+    member_id = Column(
+        types.Integer,
+        ForeignKey("amlmember.rid", onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=True,
+        primary_key=True,
     )
-    member = relationship("AMLMember", backref = "aml_struct_member_type", uselist = False)
+    member = relationship("AMLMember", backref="aml_struct_member_type", uselist=False)
 
 
 class AMLTaggedStructType(AMLBaseType):
     """ """
 
     base_type_id = Column(
-        types.Integer,
-        ForeignKey("amlbasetype.rid"),
-        primary_key = True
+        types.Integer, ForeignKey("amlbasetype.rid"), primary_key=True
     )
 
     name = Column(types.String(256))
-    members = relationship("AMLTaggedStructMember", backref = "aml_tagged_struct_type", uselist = True)
-    __mapper_args__ = {
-        "polymorphic_identity": "AMLTaggedStructType"
-    }
+    members = relationship(
+        "AMLTaggedStructMember", backref="aml_tagged_struct_type", uselist=True
+    )
+    __mapper_args__ = {"polymorphic_identity": "AMLTaggedStructType"}
 
 
 class AMLTaggedStructMember(Base):
     """ """
 
-    tagged_struct_type_id = Column(types.Integer,
-        ForeignKey("amltaggedstructtype.base_type_id", onupdate = "CASCADE", ondelete = "CASCADE"),
-        nullable = True,
-        primary_key = True
+    tagged_struct_type_id = Column(
+        types.Integer,
+        ForeignKey(
+            "amltaggedstructtype.base_type_id", onupdate="CASCADE", ondelete="CASCADE"
+        ),
+        nullable=True,
+        primary_key=True,
     )
 
     multiple = Column(types.Boolean)
-    block_definition_id = Column(types.Integer,
-        ForeignKey("amlblockdefinition.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True
+    block_definition_id = Column(
+        types.Integer,
+        ForeignKey("amlblockdefinition.rid", onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=True,
     )
-    block_definition = relationship("AMLBlockDefinition", backref = "aml_tagged_struct_member", uselist = False)
-    tagged_struct_definition_id = Column(types.Integer,
-        ForeignKey("amltaggedstructdefinition.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True
+    block_definition = relationship(
+        "AMLBlockDefinition", backref="aml_tagged_struct_member", uselist=False
     )
-    taggedstruct_definition = relationship("AMLTaggedStructDefinition",
-        backref = "aml_tagged_struct_member", uselist = False
+    tagged_struct_definition_id = Column(
+        types.Integer,
+        ForeignKey(
+            "amltaggedstructdefinition.rid", onupdate="CASCADE", ondelete="CASCADE"
+        ),
+        nullable=True,
+    )
+    taggedstruct_definition = relationship(
+        "AMLTaggedStructDefinition", backref="aml_tagged_struct_member", uselist=False
     )
 
 
@@ -6409,78 +5378,98 @@ class AMLTaggedStructDefinition(Base):
 
     tag = Column(types.String(256))
     multiple = Column(types.Boolean)
-    member_id = Column(types.Integer,
-        ForeignKey("amlmember.rid", onupdate = "CASCADE", ondelete = "CASCADE"),
-        nullable = True,
-        primary_key = False
+    member_id = Column(
+        types.Integer,
+        ForeignKey("amlmember.rid", onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=True,
+        primary_key=False,
     )
-    member = relationship("AMLMember", backref = "aml_tagged_struct_definition", uselist = False)
+    member = relationship(
+        "AMLMember", backref="aml_tagged_struct_definition", uselist=False
+    )
 
 
 class AMLBlockDefinition(Base):
     """ """
 
     tag = Column(types.String(256))
-    type_name_id = Column(types.Integer,
-        ForeignKey("amltypename.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True
+    type_name_id = Column(
+        types.Integer,
+        ForeignKey("amltypename.rid", onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=True,
     )
-    member_id = Column(types.Integer,
-        ForeignKey("amlmember.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True
+    member_id = Column(
+        types.Integer,
+        ForeignKey("amlmember.rid", onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=True,
     )
-    type_name = relationship("AMLTypeName", backref = "aml_block_definition", uselist = False)
-    member = relationship("AMLMember", backref = "aml_block_definition", uselist = False)
+    type_name = relationship(
+        "AMLTypeName", backref="aml_block_definition", uselist=False
+    )
+    member = relationship("AMLMember", backref="aml_block_definition", uselist=False)
 
 
 class AMLDeclaration(Base):
     """ """
 
-    block_definition_id = Column(types.Integer,
-        ForeignKey("amlblockdefinition.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True
+    block_definition_id = Column(
+        types.Integer,
+        ForeignKey("amlblockdefinition.rid", onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=True,
     )
 
-    type_definition_id = Column(types.Integer,
-        ForeignKey("amltypedefinition.rid", onupdate = "CASCADE", ondelete = "CASCADE"), nullable = True
+    type_definition_id = Column(
+        types.Integer,
+        ForeignKey("amltypedefinition.rid", onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=True,
     )
 
-    block_definition = relationship("AMLBlockDefinition", backref = "aml_declaration", uselist = False)
-    type_definition = relationship("AMLTypeDefinition", backref = "aml_declaration", uselist = False)
+    block_definition = relationship(
+        "AMLBlockDefinition", backref="aml_declaration", uselist=False
+    )
+    type_definition = relationship(
+        "AMLTypeDefinition", backref="aml_declaration", uselist=False
+    )
 
 
 class AMLTypeDefinition(Base):
     """ """
 
-    type_name_id = Column(types.Integer,
-        ForeignKey("amltypename.rid", onupdate = "CASCADE", ondelete = "CASCADE"),
-        nullable = True,
-        primary_key = False
+    type_name_id = Column(
+        types.Integer,
+        ForeignKey("amltypename.rid", onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=True,
+        primary_key=False,
     )
 
-    type_name = relationship("AMLTypeName", backref = "aml_type_definition", uselist = False)
+    type_name = relationship(
+        "AMLTypeName", backref="aml_type_definition", uselist=False
+    )
 
 
 class A2LDatabase(object):
-    def __init__(self, filename, debug = False, logLevel = "INFO"):
+    def __init__(self, filename, debug=False, logLevel="INFO"):
         if filename == ":memory:":
             self.dbname = ""
         else:
             if not filename.lower().endswith(DB_EXTENSION):
-               self.dbname = "{}.{}".format(filename, DB_EXTENSION)
+                self.dbname = "{}.{}".format(filename, DB_EXTENSION)
             else:
-               self.dbname = filename
+                self.dbname = filename
         self._engine = create_engine(
             "sqlite:///{}".format(self.dbname),
-            echo = debug,
+            echo=debug,
             connect_args={
-                "detect_types": sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES
+                "detect_types": sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
             },
-            native_datetime = True
+            native_datetime=True,
         )
 
-        self._session = orm.Session(self._engine, autoflush = False, autocommit = False)
+        self._session = orm.Session(self._engine, autoflush=False, autocommit=False)
         self._metadata = Base.metadata
-        #loadInitialData(Node)
+        # loadInitialData(Node)
         Base.metadata.create_all(self.engine)
-        meta = MetaData(schema_version = CURRENT_SCHEMA_VERSION)
+        meta = MetaData(schema_version=CURRENT_SCHEMA_VERSION)
         self.session.add(meta)
         self.session.flush()
         self.session.commit()
@@ -6488,7 +5477,7 @@ class A2LDatabase(object):
 
     def __del__(self):
         pass
-        #if not self._closed:
+        # if not self._closed:
         #    self.close()
 
     def close(self):
@@ -6520,193 +5509,194 @@ class A2LDatabase(object):
 
 
 KEYWORD_MAP = {
-    "A2ML" : A2ml,
-    "A2ML_VERSION" : A2mlVersion,
-    "ADDR_EPK" : AddrEpk,
-    "ALIGNMENT_BYTE" : AlignmentByte,
-    "ALIGNMENT_FLOAT16_IEEE" : AlignmentFloat32Ieee,
-    "ALIGNMENT_FLOAT32_IEEE" : AlignmentFloat32Ieee,
-    "ALIGNMENT_FLOAT64_IEEE" : AlignmentFloat64Ieee,
-    "ALIGNMENT_INT64" : AlignmentInt64,
-    "ALIGNMENT_LONG" : AlignmentLong,
-    "ALIGNMENT_WORD" : AlignmentWord,
-    "ANNOTATION" : Annotation,
-    "ANNOTATION_LABEL" : AnnotationLabel,
-    "ANNOTATION_ORIGIN" : AnnotationOrigin,
-    "ANNOTATION_TEXT" : AnnotationText,
-    "ARRAY_SIZE" : ArraySize,
-    "ASAP2_VERSION" : Asap2Version,
-    "AXIS_DESCR" : AxisDescr,
-    "AXIS_PTS" : AxisPts,
-    "AXIS_PTS_REF" : AxisPtsRef,
-    "AXIS_PTS_X" : AxisPtsX,
-    "AXIS_PTS_Y" : AxisPtsY,
-    "AXIS_PTS_Z" : AxisPtsZ,
-    "AXIS_PTS_4" : AxisPts4,
-    "AXIS_PTS_5" : AxisPts5,
-    "AXIS_RESCALE_X" : AxisRescaleX,
-    "AXIS_RESCALE_Y" : AxisRescaleY,
-    "AXIS_RESCALE_Z" : AxisRescaleZ,
-    "AXIS_RESCALE_4" : AxisRescale4,
-    "AXIS_RESCALE_5" : AxisRescale5,
-    "BIT_MASK" : BitMask,
-    "BIT_OPERATION" : BitOperation,
-    "BYTE_ORDER" : ByteOrder,
-    "CALIBRATION_ACCESS" : CalibrationAccess,
-    "CALIBRATION_HANDLE" : CalibrationHandle,
-    "CALIBRATION_HANDLE_TEXT" : CalibrationHandleText,
-    "CALIBRATION_METHOD" : CalibrationMethod,
-    "CHARACTERISTIC" : Characteristic,
-    "COEFFS" : Coeffs,
-    "COEFFS_LINEAR" : CoeffsLinear,
-    "COMPARISON_QUANTITY" : ComparisonQuantity,
-    "COMPU_METHOD" : CompuMethod,
-    "COMPU_TAB" : CompuTab,
-    "COMPU_TAB_REF" : CompuTabRef,
-    "COMPU_VTAB" : CompuVtab,
-    "COMPU_VTAB_RANGE" : CompuVtabRange,
-    "CPU_TYPE" : CpuType,
-    "CURVE_AXIS_REF" : CurveAxisRef,
-    "CUSTOMER" : Customer,
-    "CUSTOMER_NO" : CustomerNo,
-    "DATA_SIZE" : DataSize,
-    "DEF_CHARACTERISTIC" : DefCharacteristic,
-    "DEFAULT_VALUE" : DefaultValue,
-    "DEFAULT_VALUE_NUMERIC" : DefaultValueNumeric,
-    "DEPENDENT_CHARACTERISTIC" : DependentCharacteristic,
-    "DEPOSIT" : Deposit,
-    "DISCRETE" : Discrete,
-    "DISPLAY_IDENTIFIER" : DisplayIdentifier,
-    "DIST_OP_X" : DistOpX,
-    "DIST_OP_Y" : DistOpY,
-    "DIST_OP_Z" : DistOpZ,
-    "DIST_OP_4" : DistOp4,
-    "DIST_OP_5" : DistOp5,
-    "ECU" : Ecu,
-    "ECU_ADDRESS" : EcuAddress,
-    "ECU_ADDRESS_EXTENSION" : EcuAddressExtension,
-    "ECU_CALIBRATION_OFFSET" : EcuCalibrationOffset,
-    "EPK" : Epk,
-    "ERROR_MASK" : ErrorMask,
-    "EXTENDED_LIMITS" : ExtendedLimits,
-    "FIX_AXIS_PAR" : FixAxisPar,
-    "FIX_AXIS_PAR_DIST" : FixAxisParDist,
-    "FIX_AXIS_PAR_LIST" : FixAxisParList,
-    "FIX_NO_AXIS_PTS_X" : FixNoAxisPtsX,
-    "FIX_NO_AXIS_PTS_Y" : FixNoAxisPtsY,
-    "FIX_NO_AXIS_PTS_Z" : FixNoAxisPtsZ,
-    "FIX_NO_AXIS_PTS_4" : FixNoAxisPts4,
-    "FIX_NO_AXIS_PTS_5" : FixNoAxisPts5,
-    "FNC_VALUES" : FncValues,
-    "FORMAT" : Format,
-    "FORMULA" : Formula,
-    "FORMULA_INV" : FormulaInv,
-    "FRAME" : Frame,
-    "FRAME_MEASUREMENT" : FrameMeasurement,
-    "FUNCTION" : Function,
-    "FUNCTION_LIST" : FunctionList,
-    "FUNCTION_VERSION" : FunctionVersion,
-    "GROUP" : Group,
-    "GUARD_RAILS" : GuardRails,
-    "HEADER" : Header,
-    "IDENTIFICATION" : Identification,
-    "IF_DATA" : IfData,
-    "IN_MEASUREMENT" : InMeasurement,
+    "A2ML": A2ml,
+    "A2ML_VERSION": A2mlVersion,
+    "ADDR_EPK": AddrEpk,
+    "ALIGNMENT_BYTE": AlignmentByte,
+    "ALIGNMENT_FLOAT16_IEEE": AlignmentFloat32Ieee,
+    "ALIGNMENT_FLOAT32_IEEE": AlignmentFloat32Ieee,
+    "ALIGNMENT_FLOAT64_IEEE": AlignmentFloat64Ieee,
+    "ALIGNMENT_INT64": AlignmentInt64,
+    "ALIGNMENT_LONG": AlignmentLong,
+    "ALIGNMENT_WORD": AlignmentWord,
+    "ANNOTATION": Annotation,
+    "ANNOTATION_LABEL": AnnotationLabel,
+    "ANNOTATION_ORIGIN": AnnotationOrigin,
+    "ANNOTATION_TEXT": AnnotationText,
+    "ARRAY_SIZE": ArraySize,
+    "ASAP2_VERSION": Asap2Version,
+    "AXIS_DESCR": AxisDescr,
+    "AXIS_PTS": AxisPts,
+    "AXIS_PTS_REF": AxisPtsRef,
+    "AXIS_PTS_X": AxisPtsX,
+    "AXIS_PTS_Y": AxisPtsY,
+    "AXIS_PTS_Z": AxisPtsZ,
+    "AXIS_PTS_4": AxisPts4,
+    "AXIS_PTS_5": AxisPts5,
+    "AXIS_RESCALE_X": AxisRescaleX,
+    "AXIS_RESCALE_Y": AxisRescaleY,
+    "AXIS_RESCALE_Z": AxisRescaleZ,
+    "AXIS_RESCALE_4": AxisRescale4,
+    "AXIS_RESCALE_5": AxisRescale5,
+    "BIT_MASK": BitMask,
+    "BIT_OPERATION": BitOperation,
+    "BYTE_ORDER": ByteOrder,
+    "CALIBRATION_ACCESS": CalibrationAccess,
+    "CALIBRATION_HANDLE": CalibrationHandle,
+    "CALIBRATION_HANDLE_TEXT": CalibrationHandleText,
+    "CALIBRATION_METHOD": CalibrationMethod,
+    "CHARACTERISTIC": Characteristic,
+    "COEFFS": Coeffs,
+    "COEFFS_LINEAR": CoeffsLinear,
+    "COMPARISON_QUANTITY": ComparisonQuantity,
+    "COMPU_METHOD": CompuMethod,
+    "COMPU_TAB": CompuTab,
+    "COMPU_TAB_REF": CompuTabRef,
+    "COMPU_VTAB": CompuVtab,
+    "COMPU_VTAB_RANGE": CompuVtabRange,
+    "CPU_TYPE": CpuType,
+    "CURVE_AXIS_REF": CurveAxisRef,
+    "CUSTOMER": Customer,
+    "CUSTOMER_NO": CustomerNo,
+    "DATA_SIZE": DataSize,
+    "DEF_CHARACTERISTIC": DefCharacteristic,
+    "DEFAULT_VALUE": DefaultValue,
+    "DEFAULT_VALUE_NUMERIC": DefaultValueNumeric,
+    "DEPENDENT_CHARACTERISTIC": DependentCharacteristic,
+    "DEPOSIT": Deposit,
+    "DISCRETE": Discrete,
+    "DISPLAY_IDENTIFIER": DisplayIdentifier,
+    "DIST_OP_X": DistOpX,
+    "DIST_OP_Y": DistOpY,
+    "DIST_OP_Z": DistOpZ,
+    "DIST_OP_4": DistOp4,
+    "DIST_OP_5": DistOp5,
+    "ECU": Ecu,
+    "ECU_ADDRESS": EcuAddress,
+    "ECU_ADDRESS_EXTENSION": EcuAddressExtension,
+    "ECU_CALIBRATION_OFFSET": EcuCalibrationOffset,
+    "EPK": Epk,
+    "ERROR_MASK": ErrorMask,
+    "EXTENDED_LIMITS": ExtendedLimits,
+    "FIX_AXIS_PAR": FixAxisPar,
+    "FIX_AXIS_PAR_DIST": FixAxisParDist,
+    "FIX_AXIS_PAR_LIST": FixAxisParList,
+    "FIX_NO_AXIS_PTS_X": FixNoAxisPtsX,
+    "FIX_NO_AXIS_PTS_Y": FixNoAxisPtsY,
+    "FIX_NO_AXIS_PTS_Z": FixNoAxisPtsZ,
+    "FIX_NO_AXIS_PTS_4": FixNoAxisPts4,
+    "FIX_NO_AXIS_PTS_5": FixNoAxisPts5,
+    "FNC_VALUES": FncValues,
+    "FORMAT": Format,
+    "FORMULA": Formula,
+    "FORMULA_INV": FormulaInv,
+    "FRAME": Frame,
+    "FRAME_MEASUREMENT": FrameMeasurement,
+    "FUNCTION": Function,
+    "FUNCTION_LIST": FunctionList,
+    "FUNCTION_VERSION": FunctionVersion,
+    "GROUP": Group,
+    "GUARD_RAILS": GuardRails,
+    "HEADER": Header,
+    "IDENTIFICATION": Identification,
+    "IF_DATA": IfData,
+    "IN_MEASUREMENT": InMeasurement,
     "INSTANCE": Instance,
-    "LAYOUT" : Layout,
-    "LEFT_SHIFT" : LeftShift,
-    "LOC_MEASUREMENT" : LocMeasurement,
-    "MAP_LIST" : MapList,
-    "MATRIX_DIM" : MatrixDim,
-    "MAX_GRAD" : MaxGrad,
-    "MAX_REFRESH" : MaxRefresh,
-    "MEASUREMENT" : Measurement,
-    "MEMORY_LAYOUT" : MemoryLayout,
-    "MEMORY_SEGMENT" : MemorySegment,
-    "MOD_COMMON" : ModCommon,
-    "MOD_PAR" : ModPar,
-    "MODULE" : Module,
-    "MONOTONY" : Monotony,
-    "NO_AXIS_PTS_X" : NoAxisPtsX,
-    "NO_AXIS_PTS_Y" : NoAxisPtsY,
-    "NO_AXIS_PTS_Z" : NoAxisPtsZ,
-    "NO_AXIS_PTS_4" : NoAxisPts4,
-    "NO_AXIS_PTS_5" : NoAxisPts5,
-    "NO_OF_INTERFACES" : NoOfInterfaces,
-    "NO_RESCALE_X" : NoRescaleX,
-    "NO_RESCALE_Y" : NoRescaleY,
-    "NO_RESCALE_Z" : NoRescaleZ,
-    "NO_RESCALE_4" : NoRescale4,
-    "NO_RESCALE_5" : NoRescale5,
-    "NUMBER" : Number,
-    "OFFSET_X" : OffsetX,
-    "OFFSET_Y" : OffsetY,
-    "OFFSET_Z" : OffsetZ,
-    "OFFSET_4" : Offset4,
-    "OFFSET_5" : Offset5,
-    "OUT_MEASUREMENT" : OutMeasurement,
-    "PHONE_NO" : PhoneNo,
-    "PHYS_UNIT" : PhysUnit,
-    "PROJECT" : Project,
-    "PROJECT_NO" : ProjectNo,
-    "READ_ONLY" : ReadOnly,
-    "READ_WRITE" : ReadWrite,
-    "RECORD_LAYOUT" : RecordLayout,
-    "REF_CHARACTERISTIC" : RefCharacteristic,
-    "REF_GROUP" : RefGroup,
-    "REF_MEASUREMENT" : RefMeasurement,
-    "REF_MEMORY_SEGMENT" : RefMemorySegment,
-    "REF_UNIT" : RefUnit,
-    "RESERVED" : Reserved,
-    "RIGHT_SHIFT" : RightShift,
-    "RIP_ADDR_W" : RipAddrW,
-    "RIP_ADDR_X" : RipAddrX,
-    "RIP_ADDR_Y" : RipAddrY,
-    "RIP_ADDR_Z" : RipAddrZ,
-    "RIP_ADDR_4" : RipAddr4,
-    "RIP_ADDR_5" : RipAddr5,
-    "ROOT" : Root,
-    "SHIFT_OP_X" : ShiftOpX,
-    "SHIFT_OP_Y" : ShiftOpY,
-    "SHIFT_OP_Z" : ShiftOpZ,
-    "SHIFT_OP_4" : ShiftOp4,
-    "SHIFT_OP_5" : ShiftOp5,
-    "SIGN_EXTEND" : SignExtend,
-    "SI_EXPONENTS" : SiExponents,
-    "SRC_ADDR_X" : SrcAddrX,
-    "SRC_ADDR_Y" : SrcAddrY,
-    "SRC_ADDR_Z" : SrcAddrZ,
-    "SRC_ADDR_4" : SrcAddr4,
-    "SRC_ADDR_5" : SrcAddr5,
-    "STATIC_RECORD_LAYOUT" : StaticRecordLayout,
-    "STATUS_STRING_REF" : StatusStringRef,
-    "STEP_SIZE" : StepSize,
-    "SUB_FUNCTION" : SubFunction,
-    "SUB_GROUP" : SubGroup,
-    "SUPPLIER" : Supplier,
+    "LAYOUT": Layout,
+    "LEFT_SHIFT": LeftShift,
+    "LOC_MEASUREMENT": LocMeasurement,
+    "MAP_LIST": MapList,
+    "MATRIX_DIM": MatrixDim,
+    "MAX_GRAD": MaxGrad,
+    "MAX_REFRESH": MaxRefresh,
+    "MEASUREMENT": Measurement,
+    "MEMORY_LAYOUT": MemoryLayout,
+    "MEMORY_SEGMENT": MemorySegment,
+    "MOD_COMMON": ModCommon,
+    "MOD_PAR": ModPar,
+    "MODULE": Module,
+    "MONOTONY": Monotony,
+    "NO_AXIS_PTS_X": NoAxisPtsX,
+    "NO_AXIS_PTS_Y": NoAxisPtsY,
+    "NO_AXIS_PTS_Z": NoAxisPtsZ,
+    "NO_AXIS_PTS_4": NoAxisPts4,
+    "NO_AXIS_PTS_5": NoAxisPts5,
+    "NO_OF_INTERFACES": NoOfInterfaces,
+    "NO_RESCALE_X": NoRescaleX,
+    "NO_RESCALE_Y": NoRescaleY,
+    "NO_RESCALE_Z": NoRescaleZ,
+    "NO_RESCALE_4": NoRescale4,
+    "NO_RESCALE_5": NoRescale5,
+    "NUMBER": Number,
+    "OFFSET_X": OffsetX,
+    "OFFSET_Y": OffsetY,
+    "OFFSET_Z": OffsetZ,
+    "OFFSET_4": Offset4,
+    "OFFSET_5": Offset5,
+    "OUT_MEASUREMENT": OutMeasurement,
+    "PHONE_NO": PhoneNo,
+    "PHYS_UNIT": PhysUnit,
+    "PROJECT": Project,
+    "PROJECT_NO": ProjectNo,
+    "READ_ONLY": ReadOnly,
+    "READ_WRITE": ReadWrite,
+    "RECORD_LAYOUT": RecordLayout,
+    "REF_CHARACTERISTIC": RefCharacteristic,
+    "REF_GROUP": RefGroup,
+    "REF_MEASUREMENT": RefMeasurement,
+    "REF_MEMORY_SEGMENT": RefMemorySegment,
+    "REF_UNIT": RefUnit,
+    "RESERVED": Reserved,
+    "RIGHT_SHIFT": RightShift,
+    "RIP_ADDR_W": RipAddrW,
+    "RIP_ADDR_X": RipAddrX,
+    "RIP_ADDR_Y": RipAddrY,
+    "RIP_ADDR_Z": RipAddrZ,
+    "RIP_ADDR_4": RipAddr4,
+    "RIP_ADDR_5": RipAddr5,
+    "ROOT": Root,
+    "SHIFT_OP_X": ShiftOpX,
+    "SHIFT_OP_Y": ShiftOpY,
+    "SHIFT_OP_Z": ShiftOpZ,
+    "SHIFT_OP_4": ShiftOp4,
+    "SHIFT_OP_5": ShiftOp5,
+    "SIGN_EXTEND": SignExtend,
+    "SI_EXPONENTS": SiExponents,
+    "SRC_ADDR_X": SrcAddrX,
+    "SRC_ADDR_Y": SrcAddrY,
+    "SRC_ADDR_Z": SrcAddrZ,
+    "SRC_ADDR_4": SrcAddr4,
+    "SRC_ADDR_5": SrcAddr5,
+    "STATIC_RECORD_LAYOUT": StaticRecordLayout,
+    "STATUS_STRING_REF": StatusStringRef,
+    "STEP_SIZE": StepSize,
+    "SUB_FUNCTION": SubFunction,
+    "SUB_GROUP": SubGroup,
+    "SUPPLIER": Supplier,
     "STRUCTURE_COMPONENT": StructureComponent,
-    "SYMBOL_LINK" : SymbolLink,
-    "SYSTEM_CONSTANT" : SystemConstant,
-    "S_REC_LAYOUT" : SRecLayout,
+    "SYMBOL_LINK": SymbolLink,
+    "SYSTEM_CONSTANT": SystemConstant,
+    "S_REC_LAYOUT": SRecLayout,
     "TYPEDEF_MEASUREMENT": TypedefMeasurement,
     "TYPEDEF_STRUCTURE": TypedefStructure,
-    "UNIT" : Unit,
-    "UNIT_CONVERSION" : UnitConversion,
-    "USER" : User,
-    "USER_RIGHTS" : UserRights,
-    "VAR_ADDRESS" : VarAddress,
-    "VAR_CHARACTERISTIC" : VarCharacteristic,
-    "VAR_CRITERION" : VarCriterion,
-    "VAR_FORBIDDEN_COMB" : VarForbiddenComb,
-    "VAR_MEASUREMENT" : VarMeasurement,
-    "VAR_NAMING" : VarNaming,
-    "VAR_SELECTION_CHARACTERISTIC" : VarSelectionCharacteristic,
-    "VAR_SEPARATOR" : VarSeparator,
-    "VARIANT_CODING" : VariantCoding,
-    "VERSION" : Version,
-    "VIRTUAL" : Virtual,
-    "VIRTUAL_CHARACTERISTIC" : VirtualCharacteristic,
+    "UNIT": Unit,
+    "UNIT_CONVERSION": UnitConversion,
+    "USER": User,
+    "USER_RIGHTS": UserRights,
+    "VAR_ADDRESS": VarAddress,
+    "VAR_CHARACTERISTIC": VarCharacteristic,
+    "VAR_CRITERION": VarCriterion,
+    "VAR_FORBIDDEN_COMB": VarForbiddenComb,
+    "VAR_MEASUREMENT": VarMeasurement,
+    "VAR_NAMING": VarNaming,
+    "VAR_SELECTION_CHARACTERISTIC": VarSelectionCharacteristic,
+    "VAR_SEPARATOR": VarSeparator,
+    "VARIANT_CODING": VariantCoding,
+    "VERSION": Version,
+    "VIRTUAL": Virtual,
+    "VIRTUAL_CHARACTERISTIC": VirtualCharacteristic,
 }
+
 
 def instanceFactory(className, **kws):
     """Create an instance of a given class."""
@@ -6714,7 +5704,7 @@ def instanceFactory(className, **kws):
     inst = klass()
     inst.attrs = []
     for k, v in kws.items():
-        k = "{}{}".format(k[0].lower(), k[1 : ])
+        k = "{}{}".format(k[0].lower(), k[1:])
         setattr(inst, k, v.value)
         inst.attrs.append(k)
     inst.children = []

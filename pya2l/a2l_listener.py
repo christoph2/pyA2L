@@ -36,6 +36,7 @@ import antlr4
 import pya2l.model as model
 from pya2l.logger import Logger
 
+
 def delist(iterable, scalar=False):
     if len(iterable) == 0:
         if scalar:
@@ -52,7 +53,6 @@ def delist(iterable, scalar=False):
             return iterable[0]
         else:
             return [iterable[0]]
-
 
 
 class BaseListener(antlr4.ParseTreeListener):
@@ -260,13 +260,13 @@ class A2LListener(BaseListener):
     def exitIfData(self, ctx):
         ctx.value = model.IfData(name="")
         self.db.session.add(ctx.value)
-        #print("IfData:", ctx.start, ctx.stop)
+        # print("IfData:", ctx.start, ctx.stop)
 
     def exitMatrixDim(self, ctx):
         xDim = ctx.xDim.value
         yDim = ctx.yDim.value if ctx.yDim else None
         zDim = ctx.zDim.value if ctx.zDim else None
-        ctx.value = model.MatrixDim(xDim = xDim, yDim = yDim, zDim = zDim)
+        ctx.value = model.MatrixDim(xDim=xDim, yDim=yDim, zDim=zDim)
         self.db.session.add(ctx.value)
 
     def exitMaxRefresh(self, ctx):
@@ -409,9 +409,9 @@ class A2LListener(BaseListener):
             unit=v_unit,
             user_rights=v_userRights,
             variant_coding=v_variantCoding,
-            typedef_measurement = v_typedefMeasurement,
-            typedef_structure = v_typedefStructure,
-            instance = v_instance
+            typedef_measurement=v_typedefMeasurement,
+            typedef_structure=v_typedefStructure,
+            instance=v_instance,
         )
         self.db.session.add(ctx.value)
 
@@ -688,7 +688,6 @@ class A2LListener(BaseListener):
         v_formula = delist(self.getList(ctx.v_formula), True)
         v_refUnit = delist(self.getList(ctx.v_refUnit), True)
         v_statusStringRef = delist(self.getList(ctx.v_statusStringRef), True)
-
         ctx.value = model.CompuMethod(
             name=name,
             longIdentifier=longIdentifier,
@@ -1029,7 +1028,7 @@ class A2LListener(BaseListener):
             resolution=resolution,
             accuracy=accuracy,
             lowerLimit=lowerLimit,
-            upperLimit=upperLimit
+            upperLimit=upperLimit,
         )
         self.db.session.add(ctx.value)
 
@@ -1039,10 +1038,7 @@ class A2LListener(BaseListener):
         typeName = ctx.typeName.value
         address = ctx.address.value
         ctx.value = model.Instance(
-            name = name,
-            longIdentifier = longIdentifier,
-            typeName = typeName,
-            address = address
+            name=name, longIdentifier=longIdentifier, typeName=typeName, address=address
         )
         self.db.session.add(ctx.value)
 
@@ -1054,12 +1050,12 @@ class A2LListener(BaseListener):
         symbol = ctx.symbol.value
         v_structureComponent = self.getList(ctx.v_structureComponent)
         ctx.value = model.TypedefStructure(
-            name = name,
-            longIdentifier = longIdentifier,
-            size = size,
-            link = link,
-            symbol = symbol,
-            structure_component = v_structureComponent
+            name=name,
+            longIdentifier=longIdentifier,
+            size=size,
+            link=link,
+            symbol=symbol,
+            structure_component=v_structureComponent,
         )
         self.db.session.add(ctx.value)
 
@@ -1070,11 +1066,7 @@ class A2LListener(BaseListener):
         link = ctx.link.value
         symbol = ctx.symbol.value
         ctx.value = model.StructureComponent(
-            name = name,
-            deposit = deposit,
-            offset = offset,
-            link = link,
-            symbol = symbol
+            name=name, deposit=deposit, offset=offset, link=link, symbol=symbol
         )
         self.db.session.add(ctx.value)
 

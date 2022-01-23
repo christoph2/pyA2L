@@ -1,12 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-
 import pytest
 
+from pya2l import exceptions
+from pya2l import model
 from pya2l.a2l_listener import A2LListener
-from pya2l import exceptions, model
-from pya2l.api.inspect import CompuMethod, NoCompuMethod, Group, Measurement, ModCommon, ModPar, TypedefStructure
+from pya2l.api.inspect import CompuMethod
+from pya2l.api.inspect import Group
+from pya2l.api.inspect import Measurement
+from pya2l.api.inspect import ModCommon
+from pya2l.api.inspect import ModPar
+from pya2l.api.inspect import NoCompuMethod
+from pya2l.api.inspect import TypedefStructure
 from pya2l.parserlib import ParserWrapper
 
 
@@ -59,7 +64,7 @@ def test_measurement_basic():
     assert meas.discrete is False
     assert meas.displayIdentifier is None
     assert meas.ecuAddress is None
-    #assert meas.ecuAddressExtension is None
+    # assert meas.ecuAddressExtension is None
     assert meas.errorMask is None
     assert meas.format is None
     assert meas.functionList == []
@@ -737,6 +742,7 @@ def test_mod_common_full_featured():
         "FLOAT16": 2,
     }
 
+
 @pytest.mark.skip
 def test_group():
     parser = ParserWrapper("a2l", "module", A2LListener, debug=False)
@@ -896,12 +902,12 @@ def test_typedef_structure_no_instances():
     /end MODULE"""
     db = parser.parseFromString(DATA)
     tdef = TypedefStructure.get(db.session, "EcuTask")
-    assert tdef.name            == "EcuTask"
-    assert tdef.longIdentifier  == "TYPEDEF for class EcuTask"
-    assert tdef.size            == 88
-    assert tdef.link            == "SYMBOL_TYPE_LINK"
-    assert tdef.symbol          == "EcuTask"
-    assert tdef.instances       == []
+    assert tdef.name == "EcuTask"
+    assert tdef.longIdentifier == "TYPEDEF for class EcuTask"
+    assert tdef.size == 88
+    assert tdef.link == "SYMBOL_TYPE_LINK"
+    assert tdef.symbol == "EcuTask"
+    assert tdef.instances == []
     components = tdef.components
     assert len(components) == 6
     comp = components[0]
@@ -926,12 +932,12 @@ def test_typedef_structure_no_instances():
     assert comp.symbol == "byte"
     comp = components[4]
     assert comp.name == "word"
-    assert comp.offset == 0x3a
+    assert comp.offset == 0x3A
     assert comp.link == "SYMBOL_TYPE_LINK"
     assert comp.symbol == "word"
     comp = components[5]
     assert comp.name == "dword"
-    assert comp.offset == 0x3c
+    assert comp.offset == 0x3C
     assert comp.link == "SYMBOL_TYPE_LINK"
     assert comp.symbol == "dword"
 
@@ -958,11 +964,11 @@ def test_typedef_structure_with_instances():
     /end MODULE"""
     db = parser.parseFromString(DATA)
     tdef = TypedefStructure.get(db.session, "EcuTask")
-    assert tdef.name            == "EcuTask"
-    assert tdef.longIdentifier  == "TYPEDEF for class EcuTask"
-    assert tdef.size            == 88
-    assert tdef.link            == "SYMBOL_TYPE_LINK"
-    assert tdef.symbol          == "EcuTask"
+    assert tdef.name == "EcuTask"
+    assert tdef.longIdentifier == "TYPEDEF for class EcuTask"
+    assert tdef.size == 88
+    assert tdef.link == "SYMBOL_TYPE_LINK"
+    assert tdef.symbol == "EcuTask"
     components = tdef.components
     assert len(components) == 6
     comp = components[0]
@@ -987,12 +993,12 @@ def test_typedef_structure_with_instances():
     assert comp.symbol == "byte"
     comp = components[4]
     assert comp.name == "word"
-    assert comp.offset == 0x3a
+    assert comp.offset == 0x3A
     assert comp.link == "SYMBOL_TYPE_LINK"
     assert comp.symbol == "word"
     comp = components[5]
     assert comp.name == "dword"
-    assert comp.offset == 0x3c
+    assert comp.offset == 0x3C
     assert comp.link == "SYMBOL_TYPE_LINK"
     assert comp.symbol == "dword"
     assert len(tdef.instances) == 3
@@ -1295,6 +1301,7 @@ def test_compu_method_tab_nointerp_no_default():
     assert compu.int_to_physical(8) == 108
     assert compu.physical_to_int(108) == 8
     assert compu.int_to_physical(1) is None
+
 
 @pytest.mark.skip
 def test_compu_method_tab_nointerp_both_defaults():

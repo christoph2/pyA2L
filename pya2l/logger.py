@@ -39,10 +39,10 @@ class Logger(object):
 
     def __init__(self, name, level="WARN"):
         self.logger = logging.getLogger("{0}.{1}".format(self.LOGGER_BASE_NAME, name))
-        #self.logger.setLevel(level.upper())
+        # self.logger.setLevel(level.upper())
         self.setLevel(level)
         handler = logging.StreamHandler()
-        #handler.setLevel(level.upper())
+        # handler.setLevel(level.upper())
         formatter = logging.Formatter(self.FORMAT)
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)

@@ -38,11 +38,12 @@ from pya2l.aml import classes
 ## Listener.
 ##
 class AMLListener(antlr4.ParseTreeListener):
-
     def __init__(self):
         super().__init__()
         self.root_element = None
-        self._types = dict(StructType = {}, TaggedUnion = {}, TaggedStructType = {}, Enumeration = {})
+        self._types = dict(
+            StructType={}, TaggedUnion={}, TaggedStructType={}, Enumeration={}
+        )
 
     def get_type(self, tp, name):
         tp_ = self._types.get(tp)
@@ -53,15 +54,15 @@ class AMLListener(antlr4.ParseTreeListener):
 
     def exitType_name(self, ctx):
         if ctx.pr:
-            tp = ctx.pr.value   # Predefined type.
+            tp = ctx.pr.value  # Predefined type.
         elif ctx.st:
-            tp = ctx.st.value   # Struct.
+            tp = ctx.st.value  # Struct.
         elif ctx.ts:
-            tp = ctx.ts.value   # TaggedStruct.
+            tp = ctx.ts.value  # TaggedStruct.
         elif ctx.tu:
-            tp = ctx.tu.value   # TaggedUnion.
+            tp = ctx.tu.value  # TaggedUnion.
         elif ctx.en:
-            tp = ctx.en.value   # Enum.
+            tp = ctx.en.value  # Enum.
         else:
             pass
         try:

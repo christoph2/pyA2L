@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: latin-1 -*-
-
 """Load/store AML abstract syntax trees from/to A2LDBs."""
 
-__copyright__="""
+__copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
    (C) 2021 by Christoph Schueler <cpu12.gems@googlemail.com>
@@ -35,7 +34,6 @@ from pya2l import model
 
 
 class Importer:
-
     def __init__(self, session, ast):
         self.session = session
         self._ast = ast.value
@@ -46,8 +44,8 @@ class Importer:
         decls = []
         for elem in top_level:
             decl = model.AMLDeclaration(
-                block_definition = self.block_definition(elem.block_definition),
-                type_definition = self.type_definition(elem.type_definition)
+                block_definition=self.block_definition(elem.block_definition),
+                type_definition=self.type_definition(elem.type_definition),
             )
             decls.append(decl)
         self.session.add_all(decls)
@@ -56,14 +54,14 @@ class Importer:
 
     def type_definition(self, tree):
         if tree:
-            return model.AMLTypeDefinition(type_name = self.type_name(tree.type_name))
+            return model.AMLTypeDefinition(type_name=self.type_name(tree.type_name))
 
     def block_definition(self, tree):
         if tree:
             return model.AMLBlockDefinition(
-                tag = tree.tag,
-                member = self.member(tree.member),
-                type_name = self.type_name(tree.type_name)
+                tag=tree.tag,
+                member=self.member(tree.member),
+                type_name=self.type_name(tree.type_name),
             )
 
     def type_name(self, tree):
@@ -81,30 +79,27 @@ class Importer:
                 tp = self.enumeration(tree.type_)
             elif isinstance(tree.type_, classes.Referrer):
                 tp = self.referrer(tree.type_)
-            return model.AMLTypeName(tag = tree.tag, name = tree.name, type = tp)
+            return model.AMLTypeName(tag=tree.tag, name=tree.name, type=tp)
 
     def member(self, tree):
         if tree:
             return model.AMLMember(
-                type_name = self.type_name(tree.type_name),
-                array_specifier = str(tree.array_specifier)
+                type_name=self.type_name(tree.type_name),
+                array_specifier=str(tree.array_specifier),
             )
 
     def referrer(self, tree):
         if tree:
-            return model.AMLReferrer(category = tree.category, identifier = tree.identifier)
+            return model.AMLReferrer(category=tree.category, identifier=tree.identifier)
 
     def enumeration(self, tree):
         if tree:
-            enumeration = model.AMLEnumeration(name = tree.name)
+            enumeration = model.AMLEnumeration(name=tree.name)
             self.session.add(enumeration)
             self.session.flush()
             for idx, (k, v) in enumerate(tree.enumerators.items(), 1):
                 enu = model.AMLEnumerator(
-                    tag = k,
-                    constant = v,
-                    enumeration_id = enumeration.base_type_id,
-                    rid = idx
+                    tag=k, constant=v, enumeration_id=enumeration.base_type_id, rid=idx
                 )
                 self.session.add(enu)
                 enumeration.enumerators.append(enu)
@@ -113,19 +108,19 @@ class Importer:
 
     def predefined_type(self, tree):
         if tree:
-            return model.AMLPredefinedType(typeid = tree.type_)
+            return model.AMLPredefinedType(typeid=tree.type_)
 
     def struct_type(self, tree):
         if tree:
-            struct = model.AMLStructType(name = tree.name)
+            struct = model.AMLStructType(name=tree.name)
             self.session.add(struct)
             self.session.flush()
             for idx, mem in enumerate(tree.members, 1):
                 sm = model.AMLStructMember(
-                    member = self.member(mem.value),
-                    multiple = mem.multiple,
-                    struct_type_id = struct.base_type_id,
-                    rid = idx
+                    member=self.member(mem.value),
+                    multiple=mem.multiple,
+                    struct_type_id=struct.base_type_id,
+                    rid=idx,
                 )
                 self.session.add(sm)
                 struct.members.append(sm)
@@ -134,16 +129,18 @@ class Importer:
 
     def tagged_struct_type(self, tree):
         if tree:
-            tstruct = model.AMLTaggedStructType(name = tree.name)
+            tstruct = model.AMLTaggedStructType(name=tree.name)
             self.session.add(tstruct)
             self.session.flush()
             for idx, tmem in enumerate(tree.members, 1):
                 sm = model.AMLTaggedStructMember(
-                    block_definition = self.block_definition(tmem.block_definition),
-                    taggedstruct_definition = self.taggedstruct_definition(tmem.taggedstruct_definition),
-                    multiple = tmem.multiple,
-                    tagged_struct_type_id = tstruct.base_type_id,
-                    rid = idx
+                    block_definition=self.block_definition(tmem.block_definition),
+                    taggedstruct_definition=self.taggedstruct_definition(
+                        tmem.taggedstruct_definition
+                    ),
+                    multiple=tmem.multiple,
+                    tagged_struct_type_id=tstruct.base_type_id,
+                    rid=idx,
                 )
                 self.session.add(sm)
                 tstruct.members.append(sm)
@@ -153,21 +150,19 @@ class Importer:
     def taggedstruct_definition(self, tree):
         if tree:
             return model.AMLTaggedStructDefinition(
-                tag = tree.tag,
-                multiple = tree.multiple,
-                member = self.member(tree.member)
+                tag=tree.tag, multiple=tree.multiple, member=self.member(tree.member)
             )
 
     def tagged_union(self, tree):
         if tree:
-            tunion = model.AMLTaggedUnion(name = tree.name)
+            tunion = model.AMLTaggedUnion(name=tree.name)
             for idx, mem in enumerate(tree.members, 1):
                 tum = model.AMLTaggedUnionMember(
-                    member = self.member(mem.member),
-                    block_definition = self.block_definition(mem.block_definition),
-                    tag = mem.tag,
-                    tagged_union_id = tunion.base_type_id,
-                    rid = idx
+                    member=self.member(mem.member),
+                    block_definition=self.block_definition(mem.block_definition),
+                    tag=mem.tag,
+                    tagged_union_id=tunion.base_type_id,
+                    rid=idx,
                 )
                 self.session.add(tum)
                 tunion.members.append(tum)

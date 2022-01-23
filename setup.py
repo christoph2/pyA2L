@@ -1,15 +1,15 @@
 #!/bin/env/python
 # pylint: disable=C0111
-import distutils.cmd
-import distutils.log
 import os
 import subprocess
-from distutils.core import setup
 from itertools import chain
 from pathlib import Path
 
+import distutils.cmd
+import distutils.log
 import setuptools.command.build_py
 import setuptools.command.develop
+from distutils.core import setup
 from pkg_resources import parse_requirements
 from setuptools import find_packages
 
@@ -32,6 +32,7 @@ ANTLR_VERSION = next(
     if req.project_name == "antlr4-python3-runtime"
 )
 
+
 def findAntlr():
     """Try to find the ANTLR .jar-file."""
     if os.environ.get("APPVEYOR"):
@@ -42,7 +43,9 @@ def findAntlr():
 
     if "antlr" not in classpath.lower():
         if os.environ.get("GITHUB_ACTIONS"):
-            antlrJar = "./antlr-{}-complete.jar".format(ANTLR_VERSION) # Patch for Github Actions.
+            antlrJar = "./antlr-{}-complete.jar".format(
+                ANTLR_VERSION
+            )  # Patch for Github Actions.
         else:
             raise OSError("Could not locate ANTLR4 jar in 'CLASSPATH'.")
     else:
@@ -180,9 +183,9 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
     ],
-    entry_points = {
-        'console_scripts': [
-            'a2ldb-imex = pya2l.scripts.a2ldb_imex:main',
+    entry_points={
+        "console_scripts": [
+            "a2ldb-imex = pya2l.scripts.a2ldb_imex:main",
         ],
-    }
+    },
 )

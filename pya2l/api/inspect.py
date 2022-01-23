@@ -4,7 +4,7 @@
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2020-2021 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2020-2022 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -34,8 +34,15 @@ import weakref
 
 from sqlalchemy import exists, not_, and_
 
+from pya2l import exceptions
 from pya2l.functions import (
-    RatFunc, Identical, Linear, LookupTable, LookupTableWithRanges, Formula, InterpolatedTable
+    RatFunc,
+    Identical,
+    Linear,
+    LookupTable,
+    LookupTableWithRanges,
+    Formula,
+    InterpolatedTable,
 )
 import pya2l.model as model
 from pya2l.utils import align_as, ffs, SingletonBase
@@ -104,26 +111,31 @@ ASAM_ALIGNMENT_TYPES = {
 }
 
 ASAM_TYPE_RANGES = {
-    "BYTE":             (0, 255),
-    "UBYTE":            (0, 255),
-    "SBYTE":            (-128, 127),
-    "WORD":             (0, 65535),
-    "UWORD":            (0, 65535),
-    "SWORD":            (-32768, 32767),
-    "LONG":             (0, 4294967295),
-    "ULONG":            (0, 4294967295),
-    "SLONG":            (-2147483648, 2147483647),
-    "A_UINT64":         (0, 18446744073709551615),
-    "A_INT64":          (-9223372036854775808, 9223372036854775807),
-    "FLOAT16_IEEE":     (-65504, 65504),
-    "FLOAT32_IEEE":     (1.175494351e-38, 3.402823466e+38),
-    "FLOAT64_IEEE":     (2.2250738585072014e-308, 1.7976931348623157e+308),
+    "BYTE": (0, 255),
+    "UBYTE": (0, 255),
+    "SBYTE": (-128, 127),
+    "WORD": (0, 65535),
+    "UWORD": (0, 65535),
+    "SWORD": (-32768, 32767),
+    "LONG": (0, 4294967295),
+    "ULONG": (0, 4294967295),
+    "SLONG": (-2147483648, 2147483647),
+    "A_UINT64": (0, 18446744073709551615),
+    "A_INT64": (-9223372036854775808, 9223372036854775807),
+    "FLOAT16_IEEE": (-65504, 65504),
+    "FLOAT32_IEEE": (1.175494351e-38, 3.402823466e38),
+    "FLOAT64_IEEE": (2.2250738585072014e-308, 1.7976931348623157e308),
 }
 
 
-VarCriterion = collections.namedtuple("VarCriterion", "name longIdentifier values characteristic measurement")
-VarCharacteristic = collections.namedtuple("VarCharacteristic", "name criterions addresses")
+VarCriterion = collections.namedtuple(
+    "VarCriterion", "name longIdentifier values characteristic measurement"
+)
+VarCharacteristic = collections.namedtuple(
+    "VarCharacteristic", "name criterions addresses"
+)
 VarCombination = collections.namedtuple("VarCombination", "comb var_name address")
+
 
 def asam_type_size(datatype: str):
     """"""
@@ -390,7 +402,9 @@ class ModPar(CachedBase):
         )
 
     @staticmethod
-    def exists(session, name=None, module_name: str = None):     # TODO: Better move to base class...
+    def exists(
+        session, name=None, module_name: str = None
+    ):  # TODO: Better move to base class...
         module = get_module(session, module_name)
         return not module.mod_par is None
 
@@ -498,12 +512,14 @@ ModPar {{
 
 
 class NoModCommon(SingletonBase):
-    """Sort of Null-Object for non-existing MOD_COMMON.
-    """
+    """Sort of Null-Object for non-existing MOD_COMMON."""
 
     def __init__(self):
         self._comment = None
-        self._alignment = {k: None for k in ("BYTE", "WORD", "DWORD", "QWORD", "FLOAT16", "FLOAT32", "FLOAT64")}
+        self._alignment = {
+            k: None
+            for k in ("BYTE", "WORD", "DWORD", "QWORD", "FLOAT16", "FLOAT32", "FLOAT64")
+        }
         self._byteOrder = None
         self._dataSize = None
         self._deposit = None
@@ -882,9 +898,7 @@ class Characteristic(CachedBase):
         self.longIdentifier = self.characteristic.longIdentifier
         self.type = self.characteristic.type
         self.address = self.characteristic.address
-        self.deposit = RecordLayout(
-            session, self.characteristic.deposit, module_name
-        )
+        self.deposit = RecordLayout(session, self.characteristic.deposit, module_name)
         self.maxDiff = self.characteristic.maxDiff
         self._conversionRef = self.characteristic.conversion
         self.compuMethod = (
@@ -948,7 +962,11 @@ class Characteristic(CachedBase):
         self.number = (
             self.characteristic.number.number if self.characteristic.number else None
         )
-        self.physUnit = self.characteristic.phys_unit.unit if self.characteristic.phys_unit else None
+        self.physUnit = (
+            self.characteristic.phys_unit.unit
+            if self.characteristic.phys_unit
+            else None
+        )
         self.readOnly = self.characteristic.read_only
         self.refMemorySegment = self.characteristic.ref_memory_segment
         self.stepSize = self.characteristic.step_size
@@ -1698,7 +1716,9 @@ class Measurement(CachedBase):
         self.bitMask = (
             self.measurement.bit_mask.mask if self.measurement.bit_mask else None
         )
-        self.bitOperation = self._dissect_bit_operation(self, self.measurement.bit_operation)
+        self.bitOperation = self._dissect_bit_operation(
+            self, self.measurement.bit_operation
+        )
         self.byteOrder = (
             self.measurement.byte_order.byteOrder
             if self.measurement.byte_order
@@ -2396,11 +2416,12 @@ class RecordLayoutComponents:
             return AXES[axis]
         elif isinstance(axis, str):
             if not axis in AXES:
-                raise ValueError("Parameter axis must be [{}].".format(' | '.join(AXES)))
+                raise ValueError(
+                    "Parameter axis must be [{}].".format(" | ".join(AXES))
+                )
             return axis
         else:
             raise TypeError("Parameter axis must be of type int or str.")
-
 
     @property
     def fncValues(self):
@@ -2460,10 +2481,8 @@ class RecordLayoutComponents:
     __repr__ = __str__
 
 
-
 class NoCompuMethod(SingletonBase):
-    """Sort of Null-Object for NO_COMPU_METHOD.
-    """
+    """Sort of Null-Object for NO_COMPU_METHOD."""
 
     def __init__(self):
         self._name = None
@@ -2675,7 +2694,11 @@ class CompuMethod(CachedBase):
                     value = float(text)
                 except ValueError:
                     value = text
-                system_constants.append((name, value, )
+                system_constants.append(
+                    (
+                        name,
+                        value,
+                    )
                 )
             self.evaluator = Formula(formula, formula_inv, system_constants)
         elif conversionType == "LINEAR":
@@ -2703,14 +2726,11 @@ class CompuMethod(CachedBase):
                 triples = zip(
                     self.tab_verb["lower_values"],
                     self.tab_verb["upper_values"],
-                    self.tab_verb["text_values"]
+                    self.tab_verb["text_values"],
                 )
                 self.evaluator = LookupTableWithRanges(triples, default)
             else:
-                pairs = zip(
-                    self.tab_verb["in_values"],
-                    self.tab_verb["text_values"]
-                )
+                pairs = zip(self.tab_verb["in_values"], self.tab_verb["text_values"])
                 self.evaluator = LookupTable(pairs, default)
         else:
             raise ValueError("Unknown conversation type '{}'.".format(conversionType))
@@ -2805,6 +2825,7 @@ class Function(CachedBase):
     longIdentifier: str
         comment, description.
     """
+
     __slots__ = (
         "session",
         "function",
@@ -2818,7 +2839,8 @@ class Function(CachedBase):
         "_refCharacteristics",
         "_subFunctions",
     )
-    def __init__(self, session, name = None, module_name: str = None):
+
+    def __init__(self, session, name=None, module_name: str = None):
         self.session = session
         self.function = (
             session.query(model.Function).filter(model.Function.name == name).first()
@@ -2826,7 +2848,11 @@ class Function(CachedBase):
         self.name = self.function.name
         self.longIdentifier = self.function.longIdentifier
         self.annotations = _annotations(session, self.function.annotation)
-        self.functionVersion = self.function.function_version.versionIdentifier if self.function.function_version else None
+        self.functionVersion = (
+            self.function.function_version.versionIdentifier
+            if self.function.function_version
+            else None
+        )
         self._inMeasurements = None
         self._locMeasurements = None
         self._outMeasurements = None
@@ -2837,41 +2863,83 @@ class Function(CachedBase):
     @property
     def inMeasurements(self):
         if self._inMeasurements is None:
-            self._inMeasurements = [Measurement.get(self.session, m) for m in self.function.in_measurement.identifier] if self.function.in_measurement else []
+            self._inMeasurements = (
+                [
+                    Measurement.get(self.session, m)
+                    for m in self.function.in_measurement.identifier
+                ]
+                if self.function.in_measurement
+                else []
+            )
         return self._inMeasurements
 
     @property
     def locMeasurements(self):
         if self._locMeasurements is None:
-            self._locMeasurements = [Measurement.get(self.session, m) for m in self.function.loc_measurement.identifier] if self.function.loc_measurement else []
+            self._locMeasurements = (
+                [
+                    Measurement.get(self.session, m)
+                    for m in self.function.loc_measurement.identifier
+                ]
+                if self.function.loc_measurement
+                else []
+            )
         return self._locMeasurements
 
     @property
     def outMeasurements(self):
         if self._outMeasurements is None:
-            self._outMeasurements = [Measurement.get(self.session, m) for m in self.function.out_measurement.identifier] if self.function.out_measurement else []
+            self._outMeasurements = (
+                [
+                    Measurement.get(self.session, m)
+                    for m in self.function.out_measurement.identifier
+                ]
+                if self.function.out_measurement
+                else []
+            )
         return self._outMeasurements
 
     @property
     def defCharacteristics(self):
         if self._defCharacteristics is None:
-            self._defCharacteristics = [get_characteristic_or_axispts(self.session, r) for r in self.function.def_characteristic.identifier] if self.function.def_characteristic else []
+            self._defCharacteristics = (
+                [
+                    get_characteristic_or_axispts(self.session, r)
+                    for r in self.function.def_characteristic.identifier
+                ]
+                if self.function.def_characteristic
+                else []
+            )
         return self._defCharacteristics
 
     @property
     def refCharacteristics(self):
         if self._refCharacteristics is None:
-            self._refCharacteristics = [get_characteristic_or_axispts(self.session, r) for r in self.function.ref_characteristic.identifier] if self.function.ref_characteristic else []
+            self._refCharacteristics = (
+                [
+                    get_characteristic_or_axispts(self.session, r)
+                    for r in self.function.ref_characteristic.identifier
+                ]
+                if self.function.ref_characteristic
+                else []
+            )
         return self._refCharacteristics
 
     @property
     def subFunctions(self):
         if self._subFunctions is None:
-            self._subFunctions = [Function.get(self.session, g) for g in self.function.sub_function.identifier] if self.function.sub_function else []
+            self._subFunctions = (
+                [
+                    Function.get(self.session, g)
+                    for g in self.function.sub_function.identifier
+                ]
+                if self.function.sub_function
+                else []
+            )
         return self._subFunctions
 
     @classmethod
-    def get_root_functions(klass, session, ordered = False):
+    def get_root_functions(klass, session, ordered=False):
         """Fetch all toplevel Functions, i.e. Functions not referenced by other constructs.
 
         Parameters
@@ -2883,18 +2951,28 @@ class Function(CachedBase):
 
         """
         excluded_funcs = set()
-        sfs = [f.sub_function for f in session.query(model.Function).all() if f.sub_function]
+        sfs = [
+            f.sub_function
+            for f in session.query(model.Function).all()
+            if f.sub_function
+        ]
         for s in sfs:
             names = s.identifier
             if names:
                 excluded_funcs.update(names)
-        sgs = [g.function_list for g in session.query(model.Group).all() if g.function_list]
+        sgs = [
+            g.function_list for g in session.query(model.Group).all() if g.function_list
+        ]
         for s in sgs:
             names = s.name
             if names:
                 excluded_funcs.update(names)
-        func_names = [f[0] for f in session.query(model.Function.name).\
-            filter(not_(model.Function.name.in_(excluded_funcs))).all()]
+        func_names = [
+            f[0]
+            for f in session.query(model.Function.name)
+            .filter(not_(model.Function.name.in_(excluded_funcs)))
+            .all()
+        ]
         if ordered:
             funcs = sorted(func_names)
         result = []
@@ -2983,7 +3061,7 @@ class Group(CachedBase):
         "_subgroups",
     )
 
-    def __init__(self, session, name = None, module_name: str = None):
+    def __init__(self, session, name=None, module_name: str = None):
         self.session = session
         self.group = (
             session.query(model.Group).filter(model.Group.groupName == name).first()
@@ -3000,29 +3078,51 @@ class Group(CachedBase):
     @property
     def characteristics(self):
         if self._characteristics is None:
-            self._characteristics = [get_characteristic_or_axispts(self.session, r) for r in self.group.ref_characteristic.identifier] if self.group.ref_characteristic else []
+            self._characteristics = (
+                [
+                    get_characteristic_or_axispts(self.session, r)
+                    for r in self.group.ref_characteristic.identifier
+                ]
+                if self.group.ref_characteristic
+                else []
+            )
         return self._characteristics
 
     @property
     def measurements(self):
         if self._measurements is None:
-           self. _measurements = [Measurement.get(self.session, m) for m in self.group.ref_measurement.identifier] if self.group.ref_measurement else []
-        return self. _measurements
+            self._measurements = (
+                [
+                    Measurement.get(self.session, m)
+                    for m in self.group.ref_measurement.identifier
+                ]
+                if self.group.ref_measurement
+                else []
+            )
+        return self._measurements
 
     @property
     def functions(self):
         if self._functions is None:
-            self._functions = [Function.get(self.session, f) for f in self.group.function_list.name] if self.group.function_list else []
+            self._functions = (
+                [Function.get(self.session, f) for f in self.group.function_list.name]
+                if self.group.function_list
+                else []
+            )
         return self._functions
 
     @property
     def subgroups(self):
         if self._subgroups is None:
-            self._subgroups = [Group.get(self.session, g) for g in self.group.sub_group.identifier] if self.group.sub_group else []
+            self._subgroups = (
+                [Group.get(self.session, g) for g in self.group.sub_group.identifier]
+                if self.group.sub_group
+                else []
+            )
         return self._subgroups
 
     @classmethod
-    def get_root_groups(klass, session, ordered = False):
+    def get_root_groups(klass, session, ordered=False):
         """Fetch all groups marked as root/toplevel.
 
         Parameters
@@ -3093,6 +3193,7 @@ class TypedefStructure(CachedBase):
 
     symbol: str
     """
+
     __slots__ = (
         "session",
         "typedef",
@@ -3103,19 +3204,28 @@ class TypedefStructure(CachedBase):
         "symbol",
     )
 
-    def __init__(self, session, name = None, module_name: str = None):
+    def __init__(self, session, name=None, module_name: str = None):
         self.session = session
         self.typedef = (
-            session.query(model.TypedefStructure).filter(model.TypedefStructure.name == name).first()
+            session.query(model.TypedefStructure)
+            .filter(model.TypedefStructure.name == name)
+            .first()
         )
         self.name = self.typedef.name
         self.longIdentifier = self.typedef.longIdentifier
         self.size = self.typedef.size
         self.link = self.typedef.link
-        self.symbol= self.typedef.symbol
-        instance_names = session.query(model.Instance.name).filter(model.Instance.typeName == self.name).all()
+        self.symbol = self.typedef.symbol
+        instance_names = (
+            session.query(model.Instance.name)
+            .filter(model.Instance.typeName == self.name)
+            .all()
+        )
         self._instances = [Instance.get(session, name[0]) for name in instance_names]
-        self._components = [StructureComponent.get(session, c.name, module_name, self.typedef) for c in self.typedef.structure_component]
+        self._components = [
+            StructureComponent.get(session, c.name, module_name, self.typedef)
+            for c in self.typedef.structure_component
+        ]
 
     @property
     def instances(self):
@@ -3170,6 +3280,7 @@ class StructureComponent(CachedBase):
 
     symbol: str
     """
+
     __slots__ = (
         "session",
         "component",
@@ -3180,29 +3291,23 @@ class StructureComponent(CachedBase):
         "symbol",
     )
 
-    def __init__(self, session, name = None, module_name: str = None, parent = None, *args):
+    def __init__(self, session, name=None, module_name: str = None, parent=None, *args):
         self.session = session
         self.component = (
-            session.query(model.StructureComponent). \
-                #filter(and_(model.StructureComponent.name == name, model.StructureComponent.typedef_structure.rid == parent.rid)).first()
-                filter(model.StructureComponent.name == name).first()
+            session.query(model.StructureComponent)
+            .filter(  # filter(and_(model.StructureComponent.name == name, model.StructureComponent.typedef_structure.rid == parent.rid)).first()
+                model.StructureComponent.name == name
+            )
+            .first()
         )
         self.name = self.component.name
-        self.deposit = RecordLayout(
-            session, self.component.deposit, module_name
-        )
+        self.deposit = RecordLayout(session, self.component.deposit, module_name)
         self.offset = self.component.offset
         self.link = self.component.link
         self.symbol = self.component.symbol
 
     def __str__(self):
-        names = [
-            self.name,
-            self.deposit,
-            self.offset,
-            self.link,
-            self.symbol
-        ]
+        names = [self.name, self.deposit, self.offset, self.link, self.symbol]
         return """StructureComponent{{
 name    = "{}";
 deposit = {};
@@ -3210,7 +3315,9 @@ offset  = {};
 link    = {};
 symbol  = {};
 
-}}""".format(*names)
+}}""".format(
+            *names
+        )
 
     __repr__ = __str__
 
@@ -3241,6 +3348,7 @@ class Instance(CachedBase):
 
     symbol: str
     """
+
     __slots__ = (
         "session",
         "instance",
@@ -3251,7 +3359,7 @@ class Instance(CachedBase):
         "_defined_by",
     )
 
-    def __init__(self, session, name = None, module_name: str = None):
+    def __init__(self, session, name=None, module_name: str = None):
         self.session = session
         self.instance = (
             session.query(model.Instance).filter(model.Instance.name == name).first()
@@ -3260,7 +3368,7 @@ class Instance(CachedBase):
         self.longIdentifier = self.instance.longIdentifier
         self.typeName = self.instance.typeName
         self.address = self.instance.address
-        #self._defined_by = TypedefStructure.get(session, self.typeName, module_name)
+        # self._defined_by = TypedefStructure.get(session, self.typeName, module_name)
 
     """
     @property
@@ -3335,7 +3443,7 @@ class TypedefMeasurement(CachedBase):
         "accuracy",
         "lowerLimit",
         "upperLimit",
-        "compuMethod"
+        "compuMethod",
     )
 
     def __init__(self, session, name: str, module_name: str = None):
@@ -3414,11 +3522,17 @@ class VariantCoding(CachedBase):
     )
 
     def __init__(self, session, module_name: str = None):
-        self.variantCoding = (
-            session.query(model.VariantCoding).first()
+        self.variantCoding = session.query(model.VariantCoding).first()
+        self._naming = (
+            self.variantCoding.var_naming.tag
+            if self.variantCoding.var_naming
+            else "NUMERIC"
         )
-        self._naming = self.variantCoding.var_naming.tag if self.variantCoding.var_naming else "NUMERIC"
-        self._separator = self.variantCoding.var_separator.separator if self.variantCoding.var_separator else "."
+        self._separator = (
+            self.variantCoding.var_separator.separator
+            if self.variantCoding.var_separator
+            else "."
+        )
 
         self._criterions = {}
         self._characteristics = {}
@@ -3427,18 +3541,26 @@ class VariantCoding(CachedBase):
 
         for criterion in self.variantCoding.var_criterion:
             self._criterions[criterion.name] = VarCriterion(
-                criterion.name, criterion.longIdentifier, criterion.value,
+                criterion.name,
+                criterion.longIdentifier,
+                criterion.value,
                 criterion.var_measurement.name if criterion.var_measurement else None,
-                criterion.var_selection_characteristic.name if criterion.var_selection_characteristic else None
+                criterion.var_selection_characteristic.name
+                if criterion.var_selection_characteristic
+                else None,
             )
         for characteristic in self.variantCoding.var_characteristic:
             self._characteristics[characteristic.name] = VarCharacteristic(
                 characteristic.name,
                 characteristic.criterionName,
-                characteristic.var_address.address if characteristic.var_address else []
+                characteristic.var_address.address
+                if characteristic.var_address
+                else [],
             )
         for comb in self.variantCoding.var_forbidden_comb:
-            self._forbidden_combs.append({p.criterionName: p.criterionValue for p in comb.pairs})
+            self._forbidden_combs.append(
+                {p.criterionName: p.criterionValue for p in comb.pairs}
+            )
         for name, chx in self.characteristics.items():
             combis = []
             ag = itemgetter(*chx.criterions)
@@ -3483,4 +3605,6 @@ criterions      = {};
 characteristics = {};
 forbidden_combs = {};
 combinations    = {};
-}}""".format(*names)
+}}""".format(
+            *names
+        )

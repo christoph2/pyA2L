@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__copyright__="""
+__copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
    (C) 2021 by Christoph Schueler <cpu12.gems@googlemail.com>
@@ -43,39 +43,40 @@ Message = namedtuple("Message", "type category diag_code text")
 
 class Level(enum.IntEnum):
     INFORMATION = 1
-    WARNING     = 2
-    ERROR       = 3
+    WARNING = 2
+    ERROR = 3
 
 
 class Category(enum.IntEnum):
-    DUPLICATE   = 1
-    MISSING     = 2
-    OBSOLETE    = 3
+    DUPLICATE = 1
+    MISSING = 2
+    OBSOLETE = 3
 
 
 class Diagnostics(enum.IntEnum):
-    MULTIPLE_DEFINITIONS_IN_NAMESPACE   = 1
-    DEFINITION_IN_MULTIPLE_NAMESPACES   = 2
-    INVALID_C_IDENTIFIER                = 3
-    MISSING_BYTE_ORDER                  = 4
-    MISSING_ALIGNMENT                   = 5
-    MISSING_EPK                         = 6
-    MISSING_ADDR_EPK                    = 7
-    MISSING_MODULE                      = 8
-    DEPRECATED                          = 9
-    OVERLAPPING_MEMORY                  = 10
+    MULTIPLE_DEFINITIONS_IN_NAMESPACE = 1
+    DEFINITION_IN_MULTIPLE_NAMESPACES = 2
+    INVALID_C_IDENTIFIER = 3
+    MISSING_BYTE_ORDER = 4
+    MISSING_ALIGNMENT = 5
+    MISSING_EPK = 6
+    MISSING_ADDR_EPK = 7
+    MISSING_MODULE = 8
+    DEPRECATED = 9
+    OVERLAPPING_MEMORY = 10
 
 
-MAX_C_IDENTIFIER_LEN    = 32    # ISO C90.
+MAX_C_IDENTIFIER_LEN = 32  # ISO C90.
 
 
 # any(len(e) > MAX_C_IDENTIFIER_LEN for e in 'CM.VTAB_RANGE.DEFAULT_VALUE.REF'.split("."))
 # Some part of '{}' are longer than 32 chars (ISO C90 limit).
 
+
 def names(objs):
-    """
-    """
+    """ """
     return [o.name for o in objs]
+
 
 class Validator:
     """
@@ -84,16 +85,15 @@ class Validator:
     session: Sqlite3 database object.
     """
 
-    def __init__(self, session, loglevel = "INFO"):
+    def __init__(self, session, loglevel="INFO"):
         self.logger = getLogger(self.__class__.__name__)
-        #self.logger.setLevel("INFO")
+        # self.logger.setLevel("INFO")
         self._session = session
         self._diagnostics = []
         self._identifier = {}
 
     def __call__(self):
-        """Run validation.
-        """
+        """Run validation."""
         self.check_top_level_structure()
         self._traverse_db()
         print(self.diagnostics)
@@ -101,8 +101,11 @@ class Validator:
     def check_top_level_structure(self):
         self.modules = self.session.query(model.Module).all()
         if not self.modules:
-            self.emit_diagnostic( Level.WARNING, Category.MISSING, Diagnostics.MISSING_MODULE,
-                    "A2l file requires at least one /MODULE."
+            self.emit_diagnostic(
+                Level.WARNING,
+                Category.MISSING,
+                Diagnostics.MISSING_MODULE,
+                "A2l file requires at least one /MODULE.",
             )
         else:
             for module in self.modules:
@@ -129,37 +132,51 @@ class Validator:
         mod_common = mod_common = ModCommon(self.session, module.name)
         if mod_common.byteOrder is None:
             self.emit_diagnostic(
-                Level.WARNING, Category.MISSING, Diagnostics.MISSING_BYTE_ORDER,
-                "{}::ModCommon: Missing BYTE_ORDER.".format(module.name)
+                Level.WARNING,
+                Category.MISSING,
+                Diagnostics.MISSING_BYTE_ORDER,
+                "{}::ModCommon: Missing BYTE_ORDER.".format(module.name),
             )
         missing_alignments = [e for e in mod_common.alignment.items() if e[1] is None]
         if missing_alignments:
             self.emit_diagnostic(
-                Level.WARNING, Category.MISSING, Diagnostics.MISSING_ALIGNMENT,
-                "{}::ModCommon: Missing ALIGNMENT(s): {}.".format(module.name, [e[0] for e in missing_alignments])
+                Level.WARNING,
+                Category.MISSING,
+                Diagnostics.MISSING_ALIGNMENT,
+                "{}::ModCommon: Missing ALIGNMENT(s): {}.".format(
+                    module.name, [e[0] for e in missing_alignments]
+                ),
             )
 
     def _validate_mod_par(self, module):
         if not ModPar.exists(self.session, module.name):
             return
         mod_par = ModPar(self.session, module.name)
-        print(mod_par, end = "\n\n")
+        print(mod_par, end="\n\n")
         if mod_par.epk is None:
             self.emit_diagnostic(
-                Level.WARNING, Category.MISSING, Diagnostics.MISSING_EPK,
-                "{}::ModPar: Missing EPK.".format(module.name)
+                Level.WARNING,
+                Category.MISSING,
+                Diagnostics.MISSING_EPK,
+                "{}::ModPar: Missing EPK.".format(module.name),
             )
         elif not mod_par.adrEpk:
             self.emit_diagnostic(
-                Level.WARNING, Category.MISSING, Diagnostics.MISSING_ADDR_EPK,
-                "{}::ModPar: Missing ADDR_EPK.".format(module.name)
+                Level.WARNING,
+                Category.MISSING,
+                Diagnostics.MISSING_ADDR_EPK,
+                "{}::ModPar: Missing ADDR_EPK.".format(module.name),
             )
         if mod_par.memoryLayouts:
             self.emit_diagnostic(
-                Level.WARNING, Category.MISSING, Diagnostics.DEPRECATED,
-                "{}::ModPar: MEMORY_LAYOUTs are deprecated, use MEMORY_SEGMENTs instead.".format(module.name)
+                Level.WARNING,
+                Category.MISSING,
+                Diagnostics.DEPRECATED,
+                "{}::ModPar: MEMORY_LAYOUTs are deprecated, use MEMORY_SEGMENTs instead.".format(
+                    module.name
+                ),
             )
-        #memorySegments
+        # memorySegments
 
     '''
     def duplicate_ids(self, objs):
@@ -197,13 +214,17 @@ class Validator:
             print("VTAB:", names(module.compu_vtab), end = "\n\n")
             print("VTAB-RANGE:", names(module.compu_vtab_range), end = "\n\n")
     '''
-    def emit_diagnostic(self, level: Level, category: Category, diag: Diagnostics, message: str = None):
+
+    def emit_diagnostic(
+        self, level: Level, category: Category, diag: Diagnostics, message: str = None
+    ):
         self.logger.warn("{} - {}".format(level.name, message))
         self._diagnostics.append(Message(level, category, diag, message))
 
     @property
     def diagnostics(self):
         return self._diagnostics
+
 
 """
 

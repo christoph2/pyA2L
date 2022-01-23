@@ -40,23 +40,32 @@ from pya2l import model
 class MyErrorListener(ErrorListener):
     """ """
 
-    def __init__(self, line_map = None):
+    def __init__(self, line_map=None):
         super().__init__()
         self.line_map = line_map
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         if self.line_map:
             file_name, line = self.line_map.lookup(line)
-            print(file_name + "::" +  "line " + str(line) + ":" + str(column) + " " + msg, file = sys.stderr)
+            print(
+                file_name + "::" + "line " + str(line) + ":" + str(column) + " " + msg,
+                file=sys.stderr,
+            )
         else:
-            print("line " + str(line) + ":" + str(column) + " " + msg, file = sys.stderr)
+            print("line " + str(line) + ":" + str(column) + " " + msg, file=sys.stderr)
 
 
 class ParserWrapper:
     """"""
 
     def __init__(
-        self, grammarName, startSymbol, listener=None, useDatabase=True, debug=False, line_map=None
+        self,
+        grammarName,
+        startSymbol,
+        listener=None,
+        useDatabase=True,
+        debug=False,
+        line_map=None,
     ):
         self.debug = debug
         self.grammarName = grammarName
@@ -117,7 +126,7 @@ class ParserWrapper:
 
     @staticmethod
     def stringStream(fname, encoding="latin-1"):
-        return antlr4.InputStream(open(fname, encoding = encoding).read())
+        return antlr4.InputStream(open(fname, encoding=encoding).read())
 
     def _getNumberOfSyntaxErrors(self):
         return self._syntaxErrors

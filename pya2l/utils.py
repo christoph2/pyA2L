@@ -36,6 +36,7 @@ from unicodedata import normalize
 
 from chardet.universaldetector import UniversalDetector
 
+
 def slicer(iterable, sliceLength, converter=None):
     if converter is None:
         converter = type(iterable)
@@ -227,9 +228,11 @@ def padding(offset: int, boundary: int):
     """
     return -offset & (boundary - 1)
 
+
 def ffs(v: int) -> int:
     """Find first set bit (pure Python)."""
     return (v & (-v)).bit_length() - 1
+
 
 def detect_encoding(file_name: str = None, text: str = None) -> str:
     """Detect encoding of a text file.
@@ -244,7 +247,7 @@ def detect_encoding(file_name: str = None, text: str = None) -> str:
     """
     if not (file_name or text):
         raise ValueError("Please specify either `file_name` or `text`.")
-    if (file_name and text):
+    if file_name and text:
         raise ValueError("`file_name` and `text` are mutual exclusive.")
     detector = UniversalDetector()
     if file_name:
@@ -257,7 +260,6 @@ def detect_encoding(file_name: str = None, text: str = None) -> str:
         detector.feed(line)
         if detector.done:
             break
-    result = detector.result['encoding'] if detector.done else "ascii"
+    result = detector.result["encoding"] if detector.done else "ascii"
     detector.close()
     return result
-

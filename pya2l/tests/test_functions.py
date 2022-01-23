@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """These test-cases are based on the examples from ASAM MCD-2MC Version 1.6 specification.
 """
-
 import math
 
 import pytest
 
-from pya2l import exceptions, functions, model
+from pya2l import exceptions
+from pya2l import functions
+from pya2l import model
 from pya2l.a2l_listener import A2LListener
-from pya2l.parserlib import ParserWrapper
 from pya2l.api import inspect
+from pya2l.parserlib import ParserWrapper
 
 try:
     import numpy as np
@@ -158,7 +158,7 @@ def test_normalization_ident():
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_identity():
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 0
     coeffs["b"] = 1
     coeffs["c"] = 0
@@ -199,7 +199,7 @@ def test_ratfunc_linear():
         ],
         dtype="float",
     )
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 0
     coeffs["b"] = 4
     coeffs["c"] = 8
@@ -214,7 +214,7 @@ def test_ratfunc_linear():
 def test_ratfunc_linear_scalar():
     x = -10
     y = -6.4
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 0
     coeffs["b"] = 4
     coeffs["c"] = 8
@@ -254,7 +254,7 @@ def test_ratfunc_linear_inv():
         ],
         dtype="float",
     )
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 0
     coeffs["b"] = 4
     coeffs["c"] = 8
@@ -269,7 +269,7 @@ def test_ratfunc_linear_inv():
 def test_ratfunc_linear_inv_scalar():
     x = -10
     y = -6.4
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 0
     coeffs["b"] = 4
     coeffs["c"] = 8
@@ -284,7 +284,7 @@ def test_ratfunc_linear_inv_scalar():
 def test_ratfunc_constant():
     xs = np.arange(-10, 11)
     ys = np.full((21,), 10.0)
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 0
     coeffs["b"] = 0
     coeffs["c"] = 20
@@ -299,7 +299,7 @@ def test_ratfunc_constant():
 def test_ratfunc_constant_scalar():
     x = -10
     y = 10.0
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 0
     coeffs["b"] = 0
     coeffs["c"] = 20
@@ -314,7 +314,7 @@ def test_ratfunc_constant_scalar():
 def test_ratfunc_constant_inv():
     xs = np.arange(-10, 11)
     ys = np.full((21,), 10.0)
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 0
     coeffs["b"] = 0
     coeffs["c"] = 20
@@ -330,7 +330,7 @@ def test_ratfunc_constant_inv():
 def test_ratfunc_constant_inv_scalar():
     x = -10
     y = 10.0
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 0
     coeffs["b"] = 0
     coeffs["c"] = 20
@@ -370,7 +370,7 @@ def test_ratfunc_quadratic():
             2.267716535433071,
         ]
     )
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 5
     coeffs["b"] = 7
     coeffs["c"] = 6
@@ -385,7 +385,7 @@ def test_ratfunc_quadratic():
 def test_ratfunc_quadratic_scalar():
     x = -10
     y = 1.231638418079096
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 5
     coeffs["b"] = 7
     coeffs["c"] = 6
@@ -399,7 +399,7 @@ def test_ratfunc_quadratic_scalar():
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_quadratic_inv():
     xs = np.arange(-10, 11)
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 5
     coeffs["b"] = 7
     coeffs["c"] = 6
@@ -414,7 +414,7 @@ def test_ratfunc_quadratic_inv():
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_quadratic_inv_scalar():
     x = -10
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 5
     coeffs["b"] = 7
     coeffs["c"] = 6
@@ -480,7 +480,7 @@ def test_linear():
             37,
         ]
     )
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 4
     coeffs["b"] = -3
     rf = functions.Linear(coeffs)
@@ -491,7 +491,7 @@ def test_linear():
 def test_linear_scalar():
     x = -10
     y = -43
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 4
     coeffs["b"] = -3
     rf = functions.Linear(coeffs)
@@ -526,7 +526,7 @@ def test_linear_inv():
             37,
         ]
     )
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 4
     coeffs["b"] = -3
     rf = functions.Linear(coeffs)
@@ -537,7 +537,7 @@ def test_linear_inv():
 def test_linear_inv_scalar():
     x = -10
     y = -43
-    coeffs = dict()
+    coeffs = {}
     coeffs["a"] = 4
     coeffs["b"] = -3
     rf = functions.Linear(coeffs)

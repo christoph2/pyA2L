@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: latin-1 -*-
-
 """These test-cases are based on the examples from ASAM MCD-2MC Version 1.6 specification.
 """
 import os
@@ -8,7 +7,8 @@ import os
 import pytest
 
 import pya2l.model as model
-from pya2l.a2l_listener import A2LListener, delist
+from pya2l.a2l_listener import A2LListener
+from pya2l.a2l_listener import delist
 from pya2l.parserlib import ParserWrapper
 
 # pylint: disable=C0111
@@ -275,7 +275,9 @@ def test_array_size():
     """
     db = parser.parseFromString(DATA)
     meas = (
-        db.session.query(model.Measurement).filter(model.Measurement.name == "N").first()
+        db.session.query(model.Measurement)
+        .filter(model.Measurement.name == "N")
+        .first()
     )
     assert meas.name == "N"
     assert meas.longIdentifier == "Engine speed"

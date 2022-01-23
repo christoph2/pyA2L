@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """Classes and factories regarding AML abstract syntax tree."""
 
 __copyright__ = """
@@ -37,25 +36,24 @@ import json
 ## Model Classes.
 ##
 class Element:
-
     def __init__(self):
         pass
 
 
 class Referrer:
-
     def __init__(self, category, identifier):
         self.category = category
         self.identifier = identifier
 
     def __str__(self):
-        return "Referrer(category = '{}', identifier = '{}')".format(self.category, self.identifier)
+        return "Referrer(category = '{}', identifier = '{}')".format(
+            self.category, self.identifier
+        )
 
     __repr__ = __str__
 
 
 class Sequence:
-
     def __init__(self, elements: list):
         self._current_pos = 0
         self.elements = elements
@@ -93,9 +91,7 @@ def map_predefined_type(name):
 
 
 class BaseType:
-    """
-
-    """
+    """ """
 
     _is_block = False
 
@@ -111,12 +107,16 @@ class BaseType:
         return self._is_block
 
     def to_json(self):
-        return json.dumps(self, default = lambda o: self._try(o), sort_keys=True, indent = 4,
-            separators=(',',':')).replace('\n', '')
+        return json.dumps(
+            self,
+            default=lambda o: self._try(o),
+            sort_keys=True,
+            indent=4,
+            separators=(",", ":"),
+        ).replace("\n", "")
 
 
 class Enumeration(BaseType):
-
     def __init__(self, name, enumerators):
         self.name = name
         self.enumerators = {e.tag: e.constant for e in enumerators}
@@ -124,8 +124,7 @@ class Enumeration(BaseType):
 
     def __repr__(self):
         return "Enumeration(name = '{}', enumerators = {})".format(
-            self.name,
-            self.enumerators
+            self.name, self.enumerators
         )
 
     def __contains__(self, name):
@@ -139,7 +138,9 @@ class Enumeration(BaseType):
         Descending orderered ``enum``s are not supported yet.
         """
         last_idx = 0
-        for tag, value in sorted(self.enumerators.items(), key = lambda e: e[1] if not e[1] is None else 0):
+        for tag, value in sorted(
+            self.enumerators.items(), key=lambda e: e[1] if not e[1] is None else 0
+        ):
             if value is None:
                 self.enumerators[tag] = last_idx
                 last_idx += 1
@@ -172,9 +173,7 @@ class TaggedUnion(BaseType):
 
     def __repr__(self):
         return "TaggedUnion(name = '{}', tags = {}, members = {})".format(
-            self.name,
-            sorted(list(self.tags)),
-            self.members
+            self.name, sorted(list(self.tags)), self.members
         )
 
 
@@ -245,9 +244,7 @@ class TaggedStructType(BaseType):
 
     def __repr__(self):
         return "TaggedStructType(name = '{}', tags = {}, members = {})".format(
-            self.name,
-            list(sorted(self.tags.keys())),
-            self.members
+            self.name, list(sorted(self.tags.keys())), self.members
         )
 
 
@@ -258,10 +255,8 @@ class TaggedStructDefinition(BaseType):
         self.multiple = multiple
 
     def __repr__(self):
-        return (
-            "TaggedStructDefinition(tag = {}, member = {}, multiple = {})".format(
-                self.tag, self.member, self.multiple
-            )
+        return "TaggedStructDefinition(tag = {}, member = {}, multiple = {})".format(
+            self.tag, self.member, self.multiple
         )
 
 
@@ -330,10 +325,11 @@ class TypeDefinition(BaseType):
     def __repr__(self):
         return "TypeDefinition(type_name = {})".format(self.type_name)
 
+
 ##
 ## Factories.
 ##
-def createEnumeration(name, enumerators, is_referrer = False):
+def createEnumeration(name, enumerators, is_referrer=False):
     if is_referrer:
         return Referrer("Enumeration", name)
     else:
@@ -344,7 +340,7 @@ def createEnumerator(tag, constant):
     return Enumerator(tag, constant)
 
 
-def createTaggedUnion(name, members, is_referrer = False):
+def createTaggedUnion(name, members, is_referrer=False):
     if is_referrer:
         return Referrer("TaggedUnion", name)
     else:
@@ -367,14 +363,14 @@ def createPredefinedType(name):
     return PredefinedType(map_predefined_type(name))
 
 
-def createStructType(name, members, is_referrer = False):
+def createStructType(name, members, is_referrer=False):
     if is_referrer:
         return Referrer("StructType", name)
     else:
         return StructType(name, members)
 
 
-def createTaggedStructType(name, members, is_referrer = False):
+def createTaggedStructType(name, members, is_referrer=False):
     if is_referrer:
         return Referrer("TaggedStructType", name)
     else:
@@ -403,4 +399,3 @@ def createBlockDefinition(tag, type_name, member, multiple):
 
 def createTypeDefinition(type_name):
     return TypeDefinition(type_name)
-

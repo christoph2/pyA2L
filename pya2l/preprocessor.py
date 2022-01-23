@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """Do preprocessing of files:
 
     - Removal of comments.
@@ -45,18 +44,32 @@ import string
 
 from pya2l.logger import Logger
 
-CPP_COMMENT = re.compile(r'(?://)(?P<cmt>.*)$', re.DOTALL | re.UNICODE | re.VERBOSE)
-MULTILINE_START = re.compile(r'(?:/\*)(?P<cmt>.*?)', re.DOTALL | re.UNICODE | re.VERBOSE)
-MULTILINE_END = re.compile(r'(?:\*/)(?P<text>.*)', re.DOTALL | re.UNICODE | re.VERBOSE)
-INCLUDE = re.compile(r'^\s*/include\s+"(?P<phile>[^"]*)"', re.DOTALL | re.UNICODE | re.VERBOSE)
+CPP_COMMENT = re.compile(r"(?://)(?P<cmt>.*)$", re.DOTALL | re.UNICODE | re.VERBOSE)
+MULTILINE_START = re.compile(
+    r"(?:/\*)(?P<cmt>.*?)", re.DOTALL | re.UNICODE | re.VERBOSE
+)
+MULTILINE_END = re.compile(r"(?:\*/)(?P<text>.*)", re.DOTALL | re.UNICODE | re.VERBOSE)
+INCLUDE = re.compile(
+    r'^\s*/include\s+"(?P<phile>[^"]*)"', re.DOTALL | re.UNICODE | re.VERBOSE
+)
 
-AML_START = re.compile(r'^\s*/begin\s+A[23]ML(?P<section>.*?)', re.VERBOSE | re.DOTALL | re.MULTILINE)
-AML_END = re.compile(r'^\s*/end\s+A[23]ML', re.VERBOSE | re.DOTALL | re.MULTILINE)
+AML_START = re.compile(
+    r"^\s*/begin\s+A[23]ML(?P<section>.*?)", re.VERBOSE | re.DOTALL | re.MULTILINE
+)
+AML_END = re.compile(r"^\s*/end\s+A[23]ML", re.VERBOSE | re.DOTALL | re.MULTILINE)
 
-IF_DATA_START = re.compile(r'/begin(?P<s0>\s+)IF_DATA(?P<s1>\s+)(?P<section>\S*)(?P<tail>.*)$', re.VERBOSE | re.DOTALL | re.MULTILINE)
-IF_DATA_END = re.compile(r'^(?P<section>.*?)/end(?P<s0>\s+)IF_DATA(?P<tail>.*)', re.VERBOSE | re.DOTALL | re.MULTILINE)
+IF_DATA_START = re.compile(
+    r"/begin(?P<s0>\s+)IF_DATA(?P<s1>\s+)(?P<section>\S*)(?P<tail>.*)$",
+    re.VERBOSE | re.DOTALL | re.MULTILINE,
+)
+IF_DATA_END = re.compile(
+    r"^(?P<section>.*?)/end(?P<s0>\s+)IF_DATA(?P<tail>.*)",
+    re.VERBOSE | re.DOTALL | re.MULTILINE,
+)
 
-PreprocessorResult = namedtuple("PreprocessorResult", "a2l_data aml_section if_data_sections line_map")
+PreprocessorResult = namedtuple(
+    "PreprocessorResult", "a2l_data aml_section if_data_sections line_map"
+)
 IfDataSection = namedtuple("IfDataSection", "start_line end_line data")
 
 
@@ -64,6 +77,7 @@ class LineMap:
     """Preprocessor creates a single file from included files.
     `LineMap` is a means to associate to original file names and line numbers.
     """
+
     def __init__(self, line_map):
         self.line_map = line_map
         offsets = dict.fromkeys(line_map, 1)
@@ -72,7 +86,7 @@ class LineMap:
         for k, v in line_map.items():
             for ent in v:
                 items[ent] = k
-        items = sorted(items.items(), key = lambda v: v[0][0])
+        items = sorted(items.items(), key=lambda v: v[0][0])
         for idx in range(len(items)):
             tp, name = items[idx]
             start, end = tp
@@ -129,22 +143,28 @@ def blank_out(text, span):
     """
     start, end = span
     if end == -1:
-        result = text[ : start]
+        result = text[:start]
     else:
-        result = text[ : start] + text[end : ]
+        result = text[:start] + text[end:]
     return result.rstrip()
 
 
 class Preprocessor:
     """"""
 
-    def __init__(self, loglevel = "INFO"):
+    def __init__(self, loglevel="INFO"):
         self.logger = Logger(self.__class__.__name__, loglevel)
         include_paths = getenv("ASAP_INCLUDE", "").split(pathsep)
-        self.logger.debug("Pre-processor include directories (considering envvar ASAP_INCLUDE): {}".format(include_paths))
-        self.include_paths = [Path(p) for p in include_paths] if include_paths != [''] else []
+        self.logger.debug(
+            "Pre-processor include directories (considering envvar ASAP_INCLUDE): {}".format(
+                include_paths
+            )
+        )
+        self.include_paths = (
+            [Path(p) for p in include_paths] if include_paths != [""] else []
+        )
 
-    def process(self, file_name, encoding = "latin-1"):
+    def process(self, file_name, encoding="latin-1"):
         """
         Parameters
         ----------
@@ -157,18 +177,25 @@ class Preprocessor:
         self.local_file_numbers = []
         self.aml_section = None
         self.if_datas = []
-        data = self._process_file(file_name, join_lines = True, encoding = encoding)
-        return PreprocessorResult(self._process_aml(data), self.aml_section, self.if_data_sections, LineMap(self.line_map))
+        data = self._process_file(file_name, join_lines=True, encoding=encoding)
+        return PreprocessorResult(
+            self._process_aml(data),
+            self.aml_section,
+            self.if_data_sections,
+            LineMap(self.line_map),
+        )
 
-    def _process_file(self, file_name, join_lines = True, encoding = "latin-1"):
+    def _process_file(self, file_name, join_lines=True, encoding="latin-1"):
         result = []
         start_line_number = self.absolute_file_number + 1
         multiline = False
         pth_obj = Path(file_name)
-        f_obj = pth_obj.open("rt", encoding = encoding)
+        f_obj = pth_obj.open("rt", encoding=encoding)
         abs_file_name = str(pth_obj.absolute())
         if abs_file_name in self.line_map:
-            raise RuntimeError("Circular dependency to include file '{}'.".format(abs_file_name))
+            raise RuntimeError(
+                "Circular dependency to include file '{}'.".format(abs_file_name)
+            )
         self.logger.info("Pre-processing '{}'[{}]".format(file_name, encoding))
         for num, line in enumerate(f_obj, 1):
             self.absolute_file_number += 1
@@ -198,7 +225,7 @@ class Preprocessor:
             elif cpp_match:
                 use_cpp_match = True
             if use_cpp_match:
-                rl = line[ : cpp_match.start()]
+                rl = line[: cpp_match.start()]
                 incl = INCLUDE.match(line)
                 if not incl:
                     result.append(rl)
@@ -206,9 +233,21 @@ class Preprocessor:
                 end_match = MULTILINE_END.search(line)
                 multiline = False if end_match else True
                 if end_match:
-                    rl = blank_out(line, (c_match.start(), end_match.end(), ))
+                    rl = blank_out(
+                        line,
+                        (
+                            c_match.start(),
+                            end_match.end(),
+                        ),
+                    )
                 else:
-                    rl = blank_out(line, (c_match.start(), -1, ))
+                    rl = blank_out(
+                        line,
+                        (
+                            c_match.start(),
+                            -1,
+                        ),
+                    )
                 incl = INCLUDE.match(line)
                 if not incl:
                     result.append(rl)
@@ -220,24 +259,35 @@ class Preprocessor:
                 include_file_name = incl.group("phile")
                 where = self.locate_file(include_file_name, pth_obj.parent)
                 if not where:
-                    raise FileNotFoundError("No such file or directory: '{}'".format(include_file_name))
+                    raise FileNotFoundError(
+                        "No such file or directory: '{}'".format(include_file_name)
+                    )
                 else:
                     mapped_file_name = self.shorten_path(abs_file_name)
-                    self.line_map[mapped_file_name].append((start_line_number, self.absolute_file_number, ))
+                    self.line_map[mapped_file_name].append(
+                        (
+                            start_line_number,
+                            self.absolute_file_number,
+                        )
+                    )
                     self.logger.info("Including file '{}'".format(where))
-                    res = self._process_file(where, join_lines = False, encoding = encoding)
+                    res = self._process_file(where, join_lines=False, encoding=encoding)
                     result.extend(res)
                     start_line_number = self.absolute_file_number + 1
         mapped_file_name = self.shorten_path(abs_file_name)
-        self.line_map[mapped_file_name].append((start_line_number, self.absolute_file_number, ))
+        self.line_map[mapped_file_name].append(
+            (
+                start_line_number,
+                self.absolute_file_number,
+            )
+        )
         if join_lines:
             return "\n".join(result)
         else:
             return result
 
     def _process_aml(self, data):
-        """Extract A2ML and IF_DATA sections.
-        """
+        """Extract A2ML and IF_DATA sections."""
         result = []
         sections = []
         aml_section = []
@@ -247,6 +297,7 @@ class Preprocessor:
         if_data_start = if_data_end = None
         line = ""
         line_num = 0
+
         def cut_out_ifdata():
             nonlocal if_data_section
             nonlocal in_if_data
@@ -260,23 +311,29 @@ class Preprocessor:
                 match = IF_DATA_START.search(line, offset)
                 if match:
                     in_if_data = True
-                    s1, e1 =  match.span()
+                    s1, e1 = match.span()
                     if_data_start = (line_num, s1)
                     sl = False
                     gd = match.groupdict()
-                    head = "{}/begin{}IF_DATA{}{}".format(line[ : s1], gd["s0"], gd["s1"], gd["section"])
-                    match_end = IF_DATA_END.search(line[s1 : ])
+                    head = "{}/begin{}IF_DATA{}{}".format(
+                        line[:s1], gd["s0"], gd["s1"], gd["section"]
+                    )
+                    match_end = IF_DATA_END.search(line[s1:])
                     if match_end:
                         sl = True
                         s2, e2 = match_end.span()
                         offset = s1 + e2 - len(match_end.group("tail"))
-                        section = "{}/end{}IF_DATA".format(match_end.group("section"), match_end.group("s0"))
+                        section = "{}/end{}IF_DATA".format(
+                            match_end.group("section"), match_end.group("s0")
+                        )
                         sections.append(
-                            IfDataSection(if_data_start, (line_num, offset), "{}".format(section))
+                            IfDataSection(
+                                if_data_start, (line_num, offset), "{}".format(section)
+                            )
                         )
                         end = "/end{}IF_DATA".format(match_end.group("s0"))
                         tail = end + match_end.group("tail")
-                        filler = ' ' * (len(line) - (len(head) + len(tail)))
+                        filler = " " * (len(line) - (len(head) + len(tail)))
                         line = head + filler + tail
                         in_if_data = False
                     if not sl:
@@ -285,6 +342,7 @@ class Preprocessor:
                 else:
                     break
             result.append(line)
+
         for line_num, line in enumerate(data.splitlines(), 1):
             if not in_aml:
                 match = AML_START.match(line)
@@ -299,13 +357,21 @@ class Preprocessor:
                         if match:
                             s, e = match.span()
                             if_data_end = (line_num, e - len(match.group("tail")))
-                            if_data_section.append("{}/end{}IF_DATA".format(match.group("section"), match.group("s0")))
-                            section = IfDataSection(if_data_start, if_data_end, '\n'.join(if_data_section))
+                            if_data_section.append(
+                                "{}/end{}IF_DATA".format(
+                                    match.group("section"), match.group("s0")
+                                )
+                            )
+                            section = IfDataSection(
+                                if_data_start, if_data_end, "\n".join(if_data_section)
+                            )
                             sections.append(section)
                             in_if_data = False
                             if_data_section = []
-                            line = "{}/end{}IF_DATA".format(" " * len(match.group("section")), match.group("s0"))
-                            #cut_out_ifdata()
+                            line = "{}/end{}IF_DATA".format(
+                                " " * len(match.group("section")), match.group("s0")
+                            )
+                            # cut_out_ifdata()
                             result.append(line)
                         else:
                             if_data_section.append(line.strip())
@@ -355,6 +421,6 @@ class Preprocessor:
         - Directories from environment variable `ASAP_INCLUDE`.
         """
         for pth in [Path.cwd(), additional_path] + self.include_paths:
-            tfn = (pth / file_name)
+            tfn = pth / file_name
             if tfn.exists():
                 return tfn

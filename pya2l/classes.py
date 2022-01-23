@@ -113,14 +113,15 @@ class Indexorder(SingletonBase):
 
 
 class Linktype(SingletonBase):
-    enumValues = ("SYMBOL_TYPE_LINK", )
+    enumValues = ("SYMBOL_TYPE_LINK",)
+
 
 CompuPair = namedtuple("CompuPair", "inVal outVal")
 CompuTriplet = namedtuple("CompuTriplet", "valMin valMax outVal")
 
 
 class KeywordType(type):
-    classDict = dict()
+    classDict = {}
     classes = set()
 
     def __new__(klass, name, bases, namespace):
@@ -1704,33 +1705,33 @@ class STRUCTURE_COMPONENT(Keyword):
 
 
 class TYPEDEF_MEASUREMENT(Keyword):
-        multiple = True
-        block = True
-        attrs = [
-            (Ident, "Name"),
-            (String, "LongIdentifier"),
-            (Datatype, "Datatype"),
-            (Ident, "Conversion"),
-            (Uint, "Resolution"),
-            (Float, "Accuracy"),
-            (Float, "LowerLimit"),
-            (Float, "UpperLimit"),
-        ]
+    multiple = True
+    block = True
+    attrs = [
+        (Ident, "Name"),
+        (String, "LongIdentifier"),
+        (Datatype, "Datatype"),
+        (Ident, "Conversion"),
+        (Uint, "Resolution"),
+        (Float, "Accuracy"),
+        (Float, "LowerLimit"),
+        (Float, "UpperLimit"),
+    ]
 
 
 class TYPEDEF_STRUCTURE(Keyword):
-        multiple = True
-        block = True
-        attrs = [
-            (Ident, "Name"),
-            (String, "LongIdentifier"),
-            (Ulong, "Size"),
-            (Linktype, "Link"),
-            (String, "Symbol"),
-        ]
-        children = [
-            "STRUCTURE_COMPONENT",
-        ]
+    multiple = True
+    block = True
+    attrs = [
+        (Ident, "Name"),
+        (String, "LongIdentifier"),
+        (Ulong, "Size"),
+        (Linktype, "Link"),
+        (String, "Symbol"),
+    ]
+    children = [
+        "STRUCTURE_COMPONENT",
+    ]
 
 
 class UNIT(Keyword):

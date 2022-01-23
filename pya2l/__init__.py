@@ -59,7 +59,7 @@ class DB(object):
         in_memory=False,
         remove_existing=False,
         encoding=None,
-        loglevel = "INFO"
+        loglevel="INFO",
     ):
         """Import `.a2l` file to `.a2ldb` database.
 
@@ -117,15 +117,21 @@ class DB(object):
                     pass
             elif self._dbfn.exists():
                 raise OSError("file '{}' already exists.".format(self._dbfn))
-        prepro = Preprocessor(loglevel = loglevel)
+        prepro = Preprocessor(loglevel=loglevel)
 
-        encoding = encoding or detect_encoding(file_name = self._a2lfn)
-        prepro_result = prepro.process(self._a2lfn, encoding = encoding)
-        a2l_parser = ParserWrapper("a2l", "a2lFile", A2LListener, debug = debug, line_map = prepro_result.line_map)
+        encoding = encoding or detect_encoding(file_name=self._a2lfn)
+        prepro_result = prepro.process(self._a2lfn, encoding=encoding)
+        a2l_parser = ParserWrapper(
+            "a2l", "a2lFile", A2LListener, debug=debug, line_map=prepro_result.line_map
+        )
         self.logger.info("Parsing pre-processed data ...".format())
-        self.db = a2l_parser.parseFromString(prepro_result.a2l_data, dbname = str(self._dbfn), encoding = encoding)
+        self.db = a2l_parser.parseFromString(
+            prepro_result.a2l_data, dbname=str(self._dbfn), encoding=encoding
+        )
         self.session = self.db.session
-        self.logger.info("Done [elapsed time {:.2f}s].".format(perf_counter() - start_time))
+        self.logger.info(
+            "Done [elapsed time {:.2f}s].".format(perf_counter() - start_time)
+        )
         return self.session
 
     def export_a2l(self, file_name=sys.stdout, encoding="utf-8"):
@@ -200,5 +206,6 @@ class DB(object):
         if not file_path.suffix:
             self._a2lfn = (file_path.parent / file_path.stem).with_suffix(".a2l")
         else:
-            self._a2lfn = (file_path.parent / file_path.stem).with_suffix(file_path.suffix)
-
+            self._a2lfn = (file_path.parent / file_path.stem).with_suffix(
+                file_path.suffix
+            )
