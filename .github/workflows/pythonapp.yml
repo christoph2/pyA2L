@@ -37,7 +37,7 @@ jobs:
           python -m pip install black flake8 pre-commit-hooks reorder_python_imports
           pip install -r requirements.txt
           python setup.py develop
-      - uses: pre-commit/action@v2.0.3
+      #- uses: pre-commit/action@v2.0.3
       - name: Test with pytest
         run: |
           export CLASSPATH=".:$(pwd)/antlr-4.9.3-complete.jar:$CLASSPATH"
