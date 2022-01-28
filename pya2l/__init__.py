@@ -122,7 +122,7 @@ class DB(object):
         encoding = encoding or detect_encoding(file_name=self._a2lfn)
         prepro_result = prepro.process(self._a2lfn, encoding=encoding)
         a2l_parser = ParserWrapper(
-            "a2l", "a2lFile", A2LListener, debug=debug, line_map=prepro_result.line_map
+            "a2l", "a2lFile", A2LListener, debug=debug, prepro_result=prepro_result
         )
         self.logger.info("Parsing pre-processed data ...".format())
         self.db = a2l_parser.parseFromString(

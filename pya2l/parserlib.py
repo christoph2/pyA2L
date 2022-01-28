@@ -65,12 +65,13 @@ class ParserWrapper:
         listener=None,
         useDatabase=True,
         debug=False,
-        line_map=None,
+        prepro_result=None,
     ):
         self.debug = debug
         self.grammarName = grammarName
         self.startSymbol = startSymbol
-        self.line_map = line_map
+        self.line_map = prepro_result.line_map
+        self.prepro_result = prepro_result
         self.lexerModule, self.lexerClass = self._load("Lexer")
         self.parserModule, self.parserClass = self._load("Parser")
         self.listener = listener
@@ -103,7 +104,7 @@ class ParserWrapper:
         if self.listener:
             if self.useDatabase:
                 self.listener.db = self.db
-            listener = self.listener()
+            listener = self.listener(self.prepro_result)
             walker = antlr4.ParseTreeWalker()
             result = walker.walk(listener, tree)
         if self.useDatabase:

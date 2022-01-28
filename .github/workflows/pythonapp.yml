@@ -34,7 +34,6 @@ jobs:
           wget https://www.antlr.org/download/antlr-4.9.3-complete.jar
           export CLASSPATH=".:$(pwd)/antlr-4.9.3-complete.jar:$CLASSPATH"
           python -m pip install --upgrade pip
-          #python -m pip install black flake8 pre-commit-hooks reorder_python_imports
           pip install -r requirements.txt
           python setup.py develop
       #- uses: pre-commit/action@v2.0.3

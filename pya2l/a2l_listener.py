@@ -60,8 +60,9 @@ class BaseListener(antlr4.ParseTreeListener):
 
     value = []
 
-    def __init__(self, *args, **kws):
+    def __init__(self, prepro_result, *args, **kws):
         super(BaseListener, self).__init__(*args, **kws)
+        self.prepro_result = prepro_result
         self.logger = Logger(__name__)
 
     def getList(self, attr):
