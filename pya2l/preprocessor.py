@@ -70,7 +70,17 @@ IF_DATA_END = re.compile(
 PreprocessorResult = namedtuple(
     "PreprocessorResult", "a2l_data aml_section if_data_sections line_map"
 )
-IfDataSection = namedtuple("IfDataSection", "start_line end_line data")
+
+
+class IfDataSection(dict):
+    """ """
+
+    IDL = len("IF_DATA")
+
+    def __init__(self, if_data_start: tuple, if_data_end: tuple, data: str):
+        s0, e0 = if_data_start
+        s1, e1 = if_data_end
+        self[(s0 - 1, e0), (s1 - 1, e1 - IfDataSection.IDL)] = data
 
 
 class LineMap:
