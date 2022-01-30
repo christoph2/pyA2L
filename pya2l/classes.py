@@ -4,7 +4,7 @@
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2021 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2022 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -977,10 +977,7 @@ class IF_DATA(Keyword):
     multiple = True
     block = True
     attrs = [
-        (
-            Ident,
-            "Name",
-        )  # The prefix "ASAP1B_" is reserved for ASAM and can be not used for proprietary Interfaces.
+        (Ident, "name"),
     ]
     """
         Data record to describe interface specific data. The parameters associated with this

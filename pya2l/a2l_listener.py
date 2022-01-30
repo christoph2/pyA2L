@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2021 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2022 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -64,6 +64,9 @@ class BaseListener(antlr4.ParseTreeListener):
         super(BaseListener, self).__init__(*args, **kws)
         self.prepro_result = prepro_result
         self.logger = Logger(__name__)
+        aml_section = self.prepro_result.aml_section
+        if aml_section:
+            self.db.session.add(model.AMLSection(text=aml_section))
 
     def getList(self, attr):
         return [x.value for x in attr] if attr else []
@@ -259,9 +262,16 @@ class A2LListener(BaseListener):
         # self.db.session.add(ctx.value)
 
     def exitIfData(self, ctx):
-        ctx.value = model.IfData(name="")
+        sl, sc = ctx.start.line, ctx.start.column
+        el, ec = ctx.stop.line, ctx.stop.column
+        ids = self.prepro_result.if_data_sections.get(
+            (
+                (sl, sc),
+                (el, ec),
+            )
+        )
+        ctx.value = model.IfData(sl=sl, sc=sc, el=el, ec=ec, raw=ids, parsed="")
         self.db.session.add(ctx.value)
-        # print("IfData:", ctx.start, ctx.stop)
 
     def exitMatrixDim(self, ctx):
         xDim = ctx.xDim.value

@@ -4,7 +4,7 @@
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2021 by Christoph Schueler <github.com/Christoph2,
+   (C) 2009-2022 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -1145,10 +1145,14 @@ class IfData(Base):
     _association_id = Column(types.Integer, ForeignKey("if_data_association.rid"))
     association = relationship("IfDataAssociation", backref="if_data", uselist=True)
     parent = association_proxy("association", "parent")
+    sl = StdULong()
+    sc = StdULong()
+    el = StdULong()
+    ec = StdULong()
+    raw = StdString()
+    parsed = StdString()
 
-    name = StdIdent()
-
-    __required_parameters__ = (Parameter("name", Ident, False),)
+    __required_parameters__ = ()
 
     __optional_elements__ = ()
 
@@ -5444,6 +5448,16 @@ class AMLTypeDefinition(Base):
 
     type_name = relationship(
         "AMLTypeName", backref="aml_type_definition", uselist=False
+    )
+
+
+class AMLSection(Base):
+    """ """
+
+    text = Column(
+        types.TEXT,
+        default=None,
+        nullable=True,
     )
 
 

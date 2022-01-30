@@ -10,7 +10,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2021 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2022 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -72,15 +72,14 @@ PreprocessorResult = namedtuple(
 )
 
 
-class IfDataSection(dict):
+class IfDataSections(dict):
     """ """
 
     IDL = len("IF_DATA")
 
-    def __init__(self, if_data_start: tuple, if_data_end: tuple, data: str):
-        s0, e0 = if_data_start
-        s1, e1 = if_data_end
-        self[(s0 - 1, e0), (s1 - 1, e1 - IfDataSection.IDL)] = data
+    def __init__(self, sections: list):
+        for (sl, sc), (el, ec), data in sections:
+            self[(sl - 1, sc), (el - 1, ec - IfDataSections.IDL)] = data
 
 
 class LineMap:
@@ -337,8 +336,10 @@ class Preprocessor:
                             match_end.group("section"), match_end.group("s0")
                         )
                         sections.append(
-                            IfDataSection(
-                                if_data_start, (line_num, offset), "{}".format(section)
+                            (
+                                if_data_start,
+                                (line_num, offset),
+                                "{}".format(section),
                             )
                         )
                         end = "/end{}IF_DATA".format(match_end.group("s0"))
@@ -372,8 +373,10 @@ class Preprocessor:
                                     match.group("section"), match.group("s0")
                                 )
                             )
-                            section = IfDataSection(
-                                if_data_start, if_data_end, "\n".join(if_data_section)
+                            section = (
+                                if_data_start,
+                                if_data_end,
+                                "\n".join(if_data_section),
                             )
                             sections.append(section)
                             in_if_data = False
@@ -396,7 +399,7 @@ class Preprocessor:
                     aml_section.append(line)
                 result.append("")
         self.aml_section = "\n".join(aml_section)
-        self.if_data_sections = sections
+        self.if_data_sections = IfDataSections(sections)
         return "\n".join(result)
 
     def shorten_path(pth, file_name):
