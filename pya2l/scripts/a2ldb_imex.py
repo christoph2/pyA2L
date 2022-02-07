@@ -4,7 +4,7 @@
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2021 by Christoph Schueler <github.com/Christoph2,
+   (C) 2022 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -34,7 +34,6 @@ from pya2l import DB
 
 def main():
     parser = argparse.ArgumentParser(description="Import/export from/to a2l(db) files.")
-    #    parser.add_argument("a2ldb_file", help = "File to import/export.")
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "-i",
@@ -60,8 +59,14 @@ def main():
         type=str,
         default=None,
     )
-    # parser.add_argument("-k", dest = 'keepDirectory', action = "store_true", default = False,
-    #    help = "keep directory; otherwise create db in current directory")
+    parser.add_argument(
+        "-L",
+        "--local-directory",
+        help="If option is used, create DB in current working directory, else use import path.",
+        action="store_true",
+        default=False,
+        dest="local",
+    )
     parser.add_argument(
         "-l",
         help="Verbosity of log messages",
@@ -86,7 +91,9 @@ def main():
         db.export_a2l(sys.stdout)
     else:
         ifn = Path(args.ifn)
-        session = db.import_a2l(ifn, encoding=args.encoding, loglevel=args.loglevel)
+        session = db.import_a2l(
+            ifn, encoding=args.encoding, loglevel=args.loglevel, local=args.local
+        )
 
 
 if __name__ == "__main__":

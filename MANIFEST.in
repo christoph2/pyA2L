@@ -1,3 +1,4 @@
+include CONTRIBUTORS
 include pya2l/amlLexer.py
 include pya2l/amlParser.py
 include pya2l/a2lLexer.py

@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2021 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2022 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -58,6 +58,7 @@ class DB(object):
         debug=False,
         in_memory=False,
         remove_existing=False,
+        local=False,
         encoding=None,
         loglevel="INFO",
     ):
@@ -77,6 +78,9 @@ class DB(object):
 
         remove_existing: bool
             ** DANGER ZONE **: Remove existing database.
+
+        local: bool
+            If `True` create A2LDB in current working directory else in A2L source directory.
 
         encoding: str
             File encoding like "latin-1" or "utf-8" or None to auto-detect.
@@ -108,7 +112,7 @@ class DB(object):
         self.logger = Logger(self.__class__.__name__, loglevel)
         self.in_memory = in_memory
 
-        self._set_path_components(file_name)
+        self._set_path_components(file_name, local)
         if not in_memory:
             if remove_existing:
                 try:
@@ -152,12 +156,14 @@ class DB(object):
         # with io.open("{}.render".format(file_name), "w", encoding = encoding, newline = "\r\n") as outf:
         #    outf.write(res)
 
-    def open_create(self, file_name):
+    def open_create(self, file_name, local=False, encoding=None, loglevel="INFO"):
         """Open or create an A2LDB."""
         self.in_memory = False
         self._set_path_components(file_name)
         if not self._dbfn.exists():
-            return self.import_a2l(self._a2lfn)
+            return self.import_a2l(
+                self._a2lfn, local=local, encoding=encoding, loglevel=loglevel
+            )
         else:
             return self.open_existing(self._dbfn)
 
@@ -194,7 +200,7 @@ class DB(object):
                     "Database seems to be corrupted. No meta-data found."
                 )
 
-    def _set_path_components(self, file_name):
+    def _set_path_components(self, file_name, local=False):
         """"""
         if hasattr(self, "_dbfn"):
             return
@@ -202,7 +208,10 @@ class DB(object):
         if self.in_memory:
             self._dbfn = ":memory:"
         else:
-            self._dbfn = (file_path.parent / file_path.stem).with_suffix(".a2ldb")
+            if local:
+                self._dbfn = Path(file_path.stem).with_suffix(".a2ldb")
+            else:
+                self._dbfn = (file_path.parent / file_path.stem).with_suffix(".a2ldb")
         if not file_path.suffix:
             self._a2lfn = (file_path.parent / file_path.stem).with_suffix(".a2l")
         else:
