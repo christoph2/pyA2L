@@ -39,9 +39,7 @@ class AxisDescrMixIn(MixInBase):
     def check(self):
         if self.attribute == "CURVE_AXIS":
             if self.conversion != "NO_COMPU_METHOD":
-                self.logger.error(
-                    "CURVE_AXIS have no input conversion, use 'NO_COMPU_METHOD' for argument 'conversion'."
-                )
+                self.logger.error("CURVE_AXIS have no input conversion, use 'NO_COMPU_METHOD' for argument 'conversion'.")
                 return False
         #            meas =
         return True

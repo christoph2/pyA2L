@@ -1,4 +1,5 @@
-from pya2l import DB, model
+from pya2l import DB
+from pya2l import model
 
 db = DB()
 session = db.open_existing("ASAP2_Demo_V161")

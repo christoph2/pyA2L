@@ -26,11 +26,7 @@ ROOT_DIRPATH = Path(__file__).parent
 BASE_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.txt")
 SETUP_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.setup.txt")
 TEST_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.test.txt")
-ANTLR_VERSION = next(
-    req.specs[0][1]
-    for req in BASE_REQUIREMENTS
-    if req.project_name == "antlr4-python3-runtime"
-)
+ANTLR_VERSION = next(req.specs[0][1] for req in BASE_REQUIREMENTS if req.project_name == "antlr4-python3-runtime")
 
 
 def findAntlr():
@@ -43,9 +39,7 @@ def findAntlr():
 
     if "antlr" not in classpath.lower():
         if os.environ.get("GITHUB_ACTIONS"):
-            antlrJar = "./antlr-{}-complete.jar".format(
-                ANTLR_VERSION
-            )  # Patch for Github Actions.
+            antlrJar = "./antlr-{}-complete.jar".format(ANTLR_VERSION)  # Patch for Github Actions.
         else:
             raise OSError("Could not locate ANTLR4 jar in 'CLASSPATH'.")
     else:
@@ -56,9 +50,7 @@ def findAntlr():
                 break
 
     if ANTLR_VERSION not in antlrJar:
-        raise ValueError(
-            "pyA2L requires Antlr {0} -- found '{1}'".format(ANTLR_VERSION, antlrJar)
-        )
+        raise ValueError("pyA2L requires Antlr {0} -- found '{1}'".format(ANTLR_VERSION, antlrJar))
 
     if not os.path.exists(antlrJar):
         raise FileNotFoundError("ANTLR4 not found: {0}".format(antlrJar))

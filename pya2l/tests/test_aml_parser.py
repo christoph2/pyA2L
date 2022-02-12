@@ -293,9 +293,7 @@ def test_type_definition():
 
 @pytest.mark.skip
 def test_basic_tagged_struct():
-    parser = ParserWrapper(
-        "aml", "taggedstruct_type_name", AMLListener, useDatabase=False
-    )
+    parser = ParserWrapper("aml", "taggedstruct_type_name", AMLListener, useDatabase=False)
     DATA = """taggedstruct test {
         "SLAVE" ;
         "MASTER" struct {
@@ -346,9 +344,7 @@ def test_basic_tagged_struct():
 
 @pytest.mark.skip
 def test_basic_tagged_union():
-    parser = ParserWrapper(
-        "aml", "taggedunion_type_name", AMLListener, useDatabase=False
-    )
+    parser = ParserWrapper("aml", "taggedunion_type_name", AMLListener, useDatabase=False)
     DATA = """
     taggedunion Daq_Event {
         "FIXED_EVENT_LIST" taggedstruct {
@@ -837,9 +833,7 @@ def test_taggedstruct_referrers():
 
 @pytest.mark.skip
 def test_taggedunion_referrers():
-    parser = ParserWrapper(
-        "aml", "taggedstruct_type_name", AMLListener, useDatabase=False
-    )
+    parser = ParserWrapper("aml", "taggedstruct_type_name", AMLListener, useDatabase=False)
     DATA = """
     taggedstruct Common_Parameters {
         block "PROTOCOL_LAYER" struct Protocol_Layer;

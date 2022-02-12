@@ -39,18 +39,21 @@ from mako.template import Template
 
 # from csstuff import strings
 
-indentText = lambda text, leftmargin=0: "\n".join(
-    [
-        "%s%s"
-        % (
-            (" " * leftmargin),
-            line,
-        )
-        if line
-        else ""
-        for line in text.splitlines()
-    ]
-)
+
+def indentText(text: str, leftmargin: int = 0):
+    return "\n".join(
+        [
+            "%s%s"
+            % (
+                (" " * leftmargin),
+                line,
+            )
+            if line
+            else ""
+            for line in text.splitlines()
+        ]
+    )
+
 
 # TODO: rename to 'renderTemplate'!
 
@@ -70,10 +73,10 @@ def doTemplate(
             filename=tmpl, output_encoding=encoding, format_exceptions=formatExceptions
         )  # , imports ='re' # TODO: imports parameter.
         tobj.render_context(ctx)
-    except:
+    except Exception:
         print(exceptions.text_error_template().render())
         return None
-    ##return strings.reformat(buf.getvalue(), leftMargin, rightMargin)
+    # return strings.reformat(buf.getvalue(), leftMargin, rightMargin)
     return buf.getvalue()
 
 
@@ -88,11 +91,9 @@ def doTemplateFromText(
     buf = StringIO()
     ctx = Context(buf, **namespace)
     try:
-        tobj = Template(
-            text=tmpl, output_encoding=encoding, format_exceptions=formatExceptions
-        )  # , imports ='re'
+        tobj = Template(text=tmpl, output_encoding=encoding, format_exceptions=formatExceptions)  # , imports ='re'
         tobj.render_context(ctx)
-    except:
+    except Exception:
         print(exceptions.text_error_template().render())
         return None
     return indentText(buf.getvalue(), leftMargin)  # , rightMargin)

@@ -174,7 +174,7 @@ class IfDataParser:
         self.enter("block")
         elem = self.current_element
         tag = elem.tag
-        multiple = elem.multiple
+        # multiple = elem.multiple
         self.match(self.lexer.BEGIN)
         self.match(self.lexer.IDENT, elem.tag)
         tp = elem.type_name.type_
@@ -207,14 +207,13 @@ class IfDataParser:
         result = []
         self.enter("tagged_union")
         tag = self.current_token.text
-        name = self.current_element.name
+        # name = self.current_element.name
         definition = self.current_element.tags.get(tag)
-        # print("tagged_union", tag, name)
         if definition:
             tp = definition.type_name
             tn = tp.type_.__class__.__name__
             self.consume()
-            token = self.current_token
+            # token = self.current_token
             self.push_element(tp.type_)
             if tn == "StructType":
                 result.append(self.struct())
@@ -235,7 +234,6 @@ class IfDataParser:
     def predefined_type(self):
         self.enter("predefined_type")
         arr = self.current_element.array_specifier
-        tag = self.current_token.text
         tp = self.current_element.type_
         if arr:
             if tp in (AMLPredefinedTypes.PDT_CHAR, AMLPredefinedTypes.PDT_UCHAR):
@@ -257,7 +255,7 @@ class IfDataParser:
         self.enter("enum")
         enumerator = self.current_token.text
         self.match(self.lexer.IDENT)
-        ok = enumerator in self.current_element.enumerators
+        # ok = enumerator in self.current_element.enumerators
         self.leave("enum")
         # return {"type": "enum", "value": enumerator}
         return enumerator
@@ -265,14 +263,14 @@ class IfDataParser:
     def struct(self):
         self.enter("struct")
         members = self.current_element.members
-        name = self.current_element.name
+        # name = self.current_element.name
         # print("struct: ", name)
         result = []
-        for mem in members:  ##!!!
+        for mem in members:
             value = mem.value
-            multiple = mem.multiple
+            # multiple = mem.multiple
             entry = value.type_name.type_
-            idi = entry.identifier if hasattr(entry, "identifier") else "n/a"
+            # idi = entry.identifier if hasattr(entry, "identifier") else "n/a"
             # print("str-mem:", name, idi, multiple)
             if isinstance(entry, Referrer):
                 entry = self.syntax.get_type(entry.category, entry.identifier)
@@ -303,7 +301,7 @@ class IfDataParser:
     def tagged_struct(self):
         self.enter("tagged_struct")
         tag = self.block_or_tag()
-        name = self.current_element.name
+        # name = self.current_element.name
         # print("tagged_struct:", tag, name)
         tags = self.current_element.tags.keys()
         counter = {k: False for k in tags}
@@ -316,7 +314,7 @@ class IfDataParser:
                     self.push_element(definition.block_definition)
                     result.append(self.block())
                     self.pop_element()
-                    if ((self.current_token.type != self.lexer.IDENT) or (not self.current_token.text in tags)) and (
+                    if ((self.current_token.type != self.lexer.IDENT) or (self.current_token.text not in tags)) and (
                         self.current_token.type != self.lexer.BEGIN
                     ):
                         break
@@ -326,7 +324,7 @@ class IfDataParser:
                         self.push_element(definition.taggedstruct_definition)
                         result.append(self.tagged_struct_member())
                         self.pop_element()
-                        if ((self.current_token.type != self.lexer.IDENT) or (not self.current_token.text in tags)) and (
+                        if ((self.current_token.type != self.lexer.IDENT) or (self.current_token.text not in tags)) and (
                             self.current_token.type != self.lexer.BEGIN
                         ):
                             # result = self.rewrite_tagged_struct_members(result)
@@ -344,7 +342,7 @@ class IfDataParser:
 
     def tagged_struct_member(self):
         tp = self.current_element.member.type_name.type_
-        multiple = self.current_element.multiple
+        # multiple = self.current_element.multiple
         tag = self.current_element.tag
         # print("tagged_struct_member:", tag, multiple)
         self.push_element(tp)

@@ -35,6 +35,8 @@ import json
 ##
 ## Model Classes.
 ##
+
+
 class Element:
     def __init__(self):
         pass
@@ -46,9 +48,7 @@ class Referrer:
         self.identifier = identifier
 
     def __str__(self):
-        return "Referrer(category = '{}', identifier = '{}')".format(
-            self.category, self.identifier
-        )
+        return "Referrer(category = '{}', identifier = '{}')".format(self.category, self.identifier)
 
     __repr__ = __str__
 
@@ -99,7 +99,7 @@ class BaseType:
     def _try(o):
         try:
             return o.__dict__
-        except:
+        except Exception:
             return str(o)
 
     @property
@@ -123,9 +123,7 @@ class Enumeration(BaseType):
         self._renumber_constants()
 
     def __repr__(self):
-        return "Enumeration(name = '{}', enumerators = {})".format(
-            self.name, self.enumerators
-        )
+        return "Enumeration(name = '{}', enumerators = {})".format(self.name, self.enumerators)
 
     def __contains__(self, name):
         return name in self.enumerators
@@ -138,9 +136,7 @@ class Enumeration(BaseType):
         Descending orderered ``enum``s are not supported yet.
         """
         last_idx = 0
-        for tag, value in sorted(
-            self.enumerators.items(), key=lambda e: e[1] if not e[1] is None else 0
-        ):
+        for tag, value in sorted(self.enumerators.items(), key=lambda e: e[1] if not e[1] is None else 0):
             if value is None:
                 self.enumerators[tag] = last_idx
                 last_idx += 1
@@ -172,9 +168,7 @@ class TaggedUnion(BaseType):
             self.tags[key] = value
 
     def __repr__(self):
-        return "TaggedUnion(name = '{}', tags = {}, members = {})".format(
-            self.name, sorted(list(self.tags)), self.members
-        )
+        return "TaggedUnion(name = '{}', tags = {}, members = {})".format(self.name, sorted(list(self.tags)), self.members)
 
 
 class TaggedUnionMember(BaseType):
@@ -197,9 +191,7 @@ class Member(BaseType):
             self.type_name.type_.array_specifier = array_specifier
 
     def __repr__(self):
-        return "Member(type_name = {}{})".format(
-            self.type_name, self.array_specifier or ""
-        )
+        return "Member(type_name = {}{})".format(self.type_name, self.array_specifier or "")
 
 
 class TypeName(BaseType):
@@ -209,9 +201,7 @@ class TypeName(BaseType):
         self.type_ = type_
 
     def __repr__(self):
-        return "TypeName(tag = {}, name = {}, type = {})".format(
-            self.tag, self.name, self.type_
-        )
+        return "TypeName(tag = {}, name = {}, type = {})".format(self.tag, self.name, self.type_)
 
 
 class PredefinedType(BaseType):
@@ -255,9 +245,7 @@ class TaggedStructDefinition(BaseType):
         self.multiple = multiple
 
     def __repr__(self):
-        return "TaggedStructDefinition(tag = {}, member = {}, multiple = {})".format(
-            self.tag, self.member, self.multiple
-        )
+        return "TaggedStructDefinition(tag = {}, member = {}, multiple = {})".format(self.tag, self.member, self.multiple)
 
 
 class StructMember(BaseType):
@@ -266,9 +254,7 @@ class StructMember(BaseType):
         self.multiple = multiple
 
     def __repr__(self):
-        return "StructMember(value = {}, multiple = {})".format(
-            self.value, self.multiple
-        )
+        return "StructMember(value = {}, multiple = {})".format(self.value, self.multiple)
 
 
 class TaggedStructMember(BaseType):
@@ -289,9 +275,7 @@ class Declaration(BaseType):
         self.type_definition = type_definition
 
     def __repr__(self):
-        return "Declaration(block_definition = {}, type_definition = {})".format(
-            self.block_definition, self.type_definition
-        )
+        return "Declaration(block_definition = {}, type_definition = {})".format(self.block_definition, self.type_definition)
 
 
 class BlockDefinition(BaseType):

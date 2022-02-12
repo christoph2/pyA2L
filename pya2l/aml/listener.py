@@ -79,7 +79,7 @@ class AMLListener(antlr4.ParseTreeListener):
             pass
         try:
             name = tp.name
-        except:
+        except Exception:
             name = None
         tag = ctx.t.value if ctx.t else None
         ctx.value = classes.createTypeName(tag, name, tp)
@@ -96,7 +96,7 @@ class AMLListener(antlr4.ParseTreeListener):
             name = ctx.t1.value
         else:
             name = None
-        members = [l.value for l in ctx.l]
+        members = [member.value for member in ctx.l]
         value = classes.createStructType(name, members, is_referrer)
         ctx.value = value
 
@@ -118,7 +118,7 @@ class AMLListener(antlr4.ParseTreeListener):
             name = ctx.t1.value
         else:
             name = None
-        members = [l.value for l in ctx.l]
+        members = [member.value for member in ctx.l]
         ctx.value = classes.createTaggedStructType(name, members, is_referrer)
 
     def exitTaggedstruct_member(self, ctx):
@@ -191,7 +191,7 @@ class AMLListener(antlr4.ParseTreeListener):
             is_referrer = True
         else:
             name = None
-        members = [l.value for l in ctx.l]
+        members = [member.value for member in ctx.l]
         ctx.value = classes.createTaggedUnion(name, members, is_referrer)
 
     def exitBlock_definition(self, ctx):

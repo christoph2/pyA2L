@@ -56,15 +56,9 @@ CSE = {
     10: CSE_Type(10, "1 day", Referer.TIME, ""),
     100: CSE_Type(100, "Angular degrees", Referer.ANGLE, ""),
     101: CSE_Type(101, "Revolutions 360 degrees", Referer.ANGLE, ""),
-    102: CSE_Type(
-        102, "Cycle 720 degrees", Referer.ANGLE, "e.g. in case of IC engines"
-    ),
-    103: CSE_Type(
-        103, "Cylinder segment", Referer.COMBUSTION, "e.g. in case of IC engines"
-    ),
-    998: CSE_Type(
-        998, "When frame available", Referer.EVENT, "Source defined in keyword Frame"
-    ),
+    102: CSE_Type(102, "Cycle 720 degrees", Referer.ANGLE, "e.g. in case of IC engines"),
+    103: CSE_Type(103, "Cylinder segment", Referer.COMBUSTION, "e.g. in case of IC engines"),
+    998: CSE_Type(998, "When frame available", Referer.EVENT, "Source defined in keyword Frame"),
     999: CSE_Type(
         999,
         "Always if there is new value",

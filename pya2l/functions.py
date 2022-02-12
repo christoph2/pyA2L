@@ -58,9 +58,7 @@ SYSC = re.compile(r"sysc\s*\((?P<param>.*?)\s*\)")
 
 def fix_axis_par(offset: int, shift: int, num_apo: int) -> list:
     """"""
-    return np.array(
-        [offset + (i * (2 ** shift)) for i in range(num_apo)], dtype="float64"
-    )
+    return np.array([offset + (i * (2 ** shift)) for i in range(num_apo)], dtype="float64")
 
 
 def fix_axis_par_dist(offset: int, distance: int, num_apo: int) -> list:
@@ -104,9 +102,7 @@ class Interpolate1D:
             fill_value = None
             bounds_error = True
 
-        self.interp = interpolate.interp1d(
-            x=xs, y=ys, kind="linear", bounds_error=bounds_error, fill_value=fill_value
-        )
+        self.interp = interpolate.interp1d(x=xs, y=ys, kind="linear", bounds_error=bounds_error, fill_value=fill_value)
 
     def __call__(self, x):
         """Interpolate a single value.
@@ -179,9 +175,7 @@ def axis_rescale(no_rescale_x: int, no_axis_pts: int, axis, virtual):
             if kdv >= virtual[idx + 1]:
                 break
             k += 1
-            x = axis[idx] + (((k - 1) * d) - virtual[idx]) * (
-                axis[idx + 1] - axis[idx]
-            ) / (virtual[idx + 1] - virtual[idx])
+            x = axis[idx] + (((k - 1) * d) - virtual[idx]) * (axis[idx + 1] - axis[idx]) / (virtual[idx + 1] - virtual[idx])
             xs.append(x)
     xs.append(axis[no_rescale_x - 1])
     return np.array(xs)
@@ -207,9 +201,7 @@ class NormalizationAxes:
         self.ip_x = Interpolate1D(pairs=zip(self.xn[:, 0], self.xn[:, 1]))
         self.ip_y = Interpolate1D(pairs=zip(self.yn[:, 0], self.yn[:, 1]))
         x_size, y_size = self.zm.shape
-        self.ip_m = RegularGridInterpolator(
-            (np.arange(x_size), np.arange(y_size)), self.zm, method="linear"
-        )
+        self.ip_m = RegularGridInterpolator((np.arange(x_size), np.arange(y_size)), self.zm, method="linear")
 
     def __call__(self, x, y):
         """
@@ -423,14 +415,12 @@ class LookupTableWithRanges:
         self.minimum = min(self.min_values)
         self.maximum = max(self.max_values)
         self.display_values = [item[2] for item in self.mapping]
-        self.dict_inv = dict(
-            zip(self.display_values, self.min_values)
-        )  # min_value, according to spec.
+        self.dict_inv = dict(zip(self.display_values, self.min_values))  # min_value, according to spec.
         self.default = default
         if dtype == int:
-            self.in_range = lambda x, l, r: l <= x <= r
+            self.in_range = lambda x, left, right: left <= x <= right
         else:
-            self.in_range = lambda x, l, r: l <= x < r
+            self.in_range = lambda x, left, right: left <= x < right
 
     def _lookup(self, x):
         """"""
@@ -483,9 +473,7 @@ class FormulaBase:
         else:
             self.system_constants = {}
         self.formula = self._replace_special_symbols(formula)
-        self.inverse_formula = (
-            self._replace_special_symbols(inverse_formula) if inverse_formula else None
-        )
+        self.inverse_formula = self._replace_special_symbols(inverse_formula) if inverse_formula else None
 
     def sysc(self, key):
         return self.system_constants[key]
@@ -558,19 +546,13 @@ if has_numexpr:
 
         def int_to_physical(self, *args):
             """"""
-            return numexpr.evaluate(
-                self.formula, local_dict=self._build_namespace(*args)
-            )
+            return numexpr.evaluate(self.formula, local_dict=self._build_namespace(*args))
 
         def physical_to_int(self, *args):
             """"""
             if self.inverse_formula is None:
-                raise NotImplementedError(
-                    "Formula: physical_to_int() requires inverse_formula."
-                )
-            return numexpr.evaluate(
-                self.inverse_formula, local_dict=self._build_namespace(*args)
-            )
+                raise NotImplementedError("Formula: physical_to_int() requires inverse_formula.")
+            return numexpr.evaluate(self.inverse_formula, local_dict=self._build_namespace(*args))
 
 else:
 
@@ -608,9 +590,7 @@ else:
         }
 
         def _replace_special_symbols(self, text):
-            return (
-                text.replace("&&", " and ").replace("||", " or ").replace("!", "not ")
-            )
+            return text.replace("&&", " and ").replace("||", " or ").replace("!", "not ")
 
         def int_to_physical(self, *args):
             """"""
@@ -619,7 +599,5 @@ else:
         def physical_to_int(self, *args):
             """"""
             if self.inverse_formula is None:
-                raise NotImplementedError(
-                    "Formula: physical_to_int() requires inverse_formula."
-                )
+                raise NotImplementedError("Formula: physical_to_int() requires inverse_formula.")
             return eval(self.inverse_formula, dict(), self._build_namespace(*args))

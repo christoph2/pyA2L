@@ -50,7 +50,7 @@ class Importer:
             decls.append(decl)
         self.session.add_all(decls)
         self.session.flush()
-        res = self.session.query(model.AMLDeclaration).all()
+        self.session.query(model.AMLDeclaration).all()
 
     def type_definition(self, tree):
         if tree:
@@ -98,9 +98,7 @@ class Importer:
             self.session.add(enumeration)
             self.session.flush()
             for idx, (k, v) in enumerate(tree.enumerators.items(), 1):
-                enu = model.AMLEnumerator(
-                    tag=k, constant=v, enumeration_id=enumeration.base_type_id, rid=idx
-                )
+                enu = model.AMLEnumerator(tag=k, constant=v, enumeration_id=enumeration.base_type_id, rid=idx)
                 self.session.add(enu)
                 enumeration.enumerators.append(enu)
             self.session.flush()
@@ -135,9 +133,7 @@ class Importer:
             for idx, tmem in enumerate(tree.members, 1):
                 sm = model.AMLTaggedStructMember(
                     block_definition=self.block_definition(tmem.block_definition),
-                    taggedstruct_definition=self.taggedstruct_definition(
-                        tmem.taggedstruct_definition
-                    ),
+                    taggedstruct_definition=self.taggedstruct_definition(tmem.taggedstruct_definition),
                     multiple=tmem.multiple,
                     tagged_struct_type_id=tstruct.base_type_id,
                     rid=idx,
@@ -149,9 +145,7 @@ class Importer:
 
     def taggedstruct_definition(self, tree):
         if tree:
-            return model.AMLTaggedStructDefinition(
-                tag=tree.tag, multiple=tree.multiple, member=self.member(tree.member)
-            )
+            return model.AMLTaggedStructDefinition(tag=tree.tag, multiple=tree.multiple, member=self.member(tree.member))
 
     def tagged_union(self, tree):
         if tree:

@@ -30,7 +30,7 @@ import mmap
 import re
 import sqlite3
 
-from sqlalchemy import Column, ForeignKey, Index, MetaData, create_engine, event, orm, types
+from sqlalchemy import Column, ForeignKey, Index, create_engine, event, orm, types
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import as_declarative, declared_attr

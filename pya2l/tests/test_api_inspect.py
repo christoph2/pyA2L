@@ -1025,7 +1025,7 @@ def test_compu_method_invalid():
     """
     db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
-    compu = CompuMethod(db.session, module.compu_method[0].name)
+    CompuMethod(db.session, module.compu_method[0].name)
 
 
 def test_compu_method_tab_verb():
@@ -1096,7 +1096,7 @@ def test_compu_method_tab_verb_no_vtab():
     db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     with pytest.raises(exceptions.StructuralError):
-        compu = CompuMethod(db.session, module.compu_method[0])
+        CompuMethod(db.session, module.compu_method[0])
 
 
 def test_compu_method_tab_nointerp_default():
@@ -1329,7 +1329,7 @@ def test_compu_method_tab_nointerp_both_defaults():
     db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     with pytest.raises(exceptions.StructuralError):
-        compu = CompuMethod(db.session, module.compu_method[0])
+        CompuMethod(db.session, module.compu_method[0])
 
 
 def test_compu_method_tab_verb_ranges():
@@ -1553,7 +1553,7 @@ def test_compu_method_rat_func_no_coeffs():
     db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     with pytest.raises(exceptions.StructuralError):
-        compu = CompuMethod(db.session, module.compu_method[0])
+        CompuMethod(db.session, module.compu_method[0])
 
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
@@ -1591,7 +1591,7 @@ def test_compu_method_linear_no_coeffs():
     db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     with pytest.raises(exceptions.StructuralError):
-        compu = CompuMethod(db.session, None)
+        CompuMethod(db.session, module)
 
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")

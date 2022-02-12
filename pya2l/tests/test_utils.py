@@ -1,4 +1,5 @@
-from pya2l.utils import align_as, padding
+from pya2l.utils import align_as
+from pya2l.utils import padding
 
 
 def test_alignment_1():

@@ -41,10 +41,7 @@ def slicer(iterable, sliceLength, converter=None):
     if converter is None:
         converter = type(iterable)
     length = len(iterable)
-    return [
-        converter(*(iterable[item : item + sliceLength]))
-        for item in range(0, length, sliceLength)
-    ]
+    return [converter(*(iterable[item : item + sliceLength])) for item in range(0, length, sliceLength)]
 
 
 if sys.version_info.major == 3:
@@ -128,9 +125,7 @@ class StructureWithEnums(ctypes.Structure):
             if attr in self._map:
                 attrType = self._map[attr]
             value = getattr(self, attr)
-            result.append(
-                "    {0} [{1}] = {2!r};".format(attr, attrType.__name__, value)
-            )
+            result.append("    {0} [{1}] = {2!r};".format(attr, attrType.__name__, value))
         result.append("};")
         return "\n".join(result)
 
@@ -145,11 +140,7 @@ class Tristate(object):
             raise ValueError("Tristate value must be True, False, or None")
 
     def __eq__(self, other):
-        return (
-            self.value is other.value
-            if isinstance(other, Tristate)
-            else self.value is other
-        )
+        return self.value is other.value if isinstance(other, Tristate) else self.value is other
 
     def __ne__(self, other):
         return not self == other
@@ -177,9 +168,7 @@ class CommandError(Exception):
 
 
 def runCommand(cmd):
-    proc = subprocess.Popen(
-        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
+    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     result = proc.communicate()
     proc.wait()
     if proc.returncode:

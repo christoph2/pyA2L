@@ -86,7 +86,7 @@ class TestAcceptance(unittest.TestCase):
         self.parser = aml.ParserWrapper("aml", "amlFile")
 
     def testBasicAcceptance(self):
-        tree = self.parser.parseFromString(AML)
+        self.parser.parseFromString(AML)
         self.assertEqual(self.parser.numberOfSyntaxErrors, 0)
 
 

@@ -45,17 +45,11 @@ import string
 from pya2l.logger import Logger
 
 CPP_COMMENT = re.compile(r"(?://)(?P<cmt>.*)$", re.DOTALL | re.UNICODE | re.VERBOSE)
-MULTILINE_START = re.compile(
-    r"(?:/\*)(?P<cmt>.*?)", re.DOTALL | re.UNICODE | re.VERBOSE
-)
+MULTILINE_START = re.compile(r"(?:/\*)(?P<cmt>.*?)", re.DOTALL | re.UNICODE | re.VERBOSE)
 MULTILINE_END = re.compile(r"(?:\*/)(?P<text>.*)", re.DOTALL | re.UNICODE | re.VERBOSE)
-INCLUDE = re.compile(
-    r'^\s*/include\s+"(?P<phile>[^"]*)"', re.DOTALL | re.UNICODE | re.VERBOSE
-)
+INCLUDE = re.compile(r'^\s*/include\s+"(?P<phile>[^"]*)"', re.DOTALL | re.UNICODE | re.VERBOSE)
 
-AML_START = re.compile(
-    r"^\s*/begin\s+A[23]ML(?P<section>.*?)", re.VERBOSE | re.DOTALL | re.MULTILINE
-)
+AML_START = re.compile(r"^\s*/begin\s+A[23]ML(?P<section>.*?)", re.VERBOSE | re.DOTALL | re.MULTILINE)
 AML_END = re.compile(r"^\s*/end\s+A[23]ML", re.VERBOSE | re.DOTALL | re.MULTILINE)
 
 IF_DATA_START = re.compile(
@@ -67,9 +61,7 @@ IF_DATA_END = re.compile(
     re.VERBOSE | re.DOTALL | re.MULTILINE,
 )
 
-PreprocessorResult = namedtuple(
-    "PreprocessorResult", "a2l_data aml_section if_data_sections line_map"
-)
+PreprocessorResult = namedtuple("PreprocessorResult", "a2l_data aml_section if_data_sections line_map")
 
 
 class IfDataSections(dict):
@@ -164,14 +156,8 @@ class Preprocessor:
     def __init__(self, loglevel="INFO"):
         self.logger = Logger(self.__class__.__name__, loglevel)
         include_paths = getenv("ASAP_INCLUDE", "").split(pathsep)
-        self.logger.debug(
-            "Pre-processor include directories (considering envvar ASAP_INCLUDE): {}".format(
-                include_paths
-            )
-        )
-        self.include_paths = (
-            [Path(p) for p in include_paths] if include_paths != [""] else []
-        )
+        self.logger.debug("Pre-processor include directories (considering envvar ASAP_INCLUDE): {}".format(include_paths))
+        self.include_paths = [Path(p) for p in include_paths] if include_paths != [""] else []
 
     def process(self, file_name, encoding="latin-1"):
         """
@@ -202,9 +188,7 @@ class Preprocessor:
         f_obj = pth_obj.open("rt", encoding=encoding)
         abs_file_name = str(pth_obj.absolute())
         if abs_file_name in self.line_map:
-            raise RuntimeError(
-                "Circular dependency to include file '{}'.".format(abs_file_name)
-            )
+            raise RuntimeError("Circular dependency to include file '{}'.".format(abs_file_name))
         self.logger.info("Pre-processing '{}'[{}]".format(file_name, encoding))
         for num, line in enumerate(f_obj, 1):
             self.absolute_file_number += 1
@@ -268,9 +252,7 @@ class Preprocessor:
                 include_file_name = incl.group("phile")
                 where = self.locate_file(include_file_name, pth_obj.parent)
                 if not where:
-                    raise FileNotFoundError(
-                        "No such file or directory: '{}'".format(include_file_name)
-                    )
+                    raise FileNotFoundError("No such file or directory: '{}'".format(include_file_name))
                 else:
                     mapped_file_name = self.shorten_path(abs_file_name)
                     self.line_map[mapped_file_name].append(
@@ -324,17 +306,13 @@ class Preprocessor:
                     if_data_start = (line_num, s1)
                     sl = False
                     gd = match.groupdict()
-                    head = "{}/begin{}IF_DATA{}{}".format(
-                        line[:s1], gd["s0"], gd["s1"], gd["section"]
-                    )
+                    head = "{}/begin{}IF_DATA{}{}".format(line[:s1], gd["s0"], gd["s1"], gd["section"])
                     match_end = IF_DATA_END.search(line[s1:])
                     if match_end:
                         sl = True
                         s2, e2 = match_end.span()
                         offset = s1 + e2 - len(match_end.group("tail"))
-                        section = "{}/end{}IF_DATA".format(
-                            match_end.group("section"), match_end.group("s0")
-                        )
+                        section = "{}/end{}IF_DATA".format(match_end.group("section"), match_end.group("s0"))
                         sections.append(
                             (
                                 if_data_start,
@@ -368,11 +346,7 @@ class Preprocessor:
                         if match:
                             s, e = match.span()
                             if_data_end = (line_num, e - len(match.group("tail")))
-                            if_data_section.append(
-                                "{}/end{}IF_DATA".format(
-                                    match.group("section"), match.group("s0")
-                                )
-                            )
+                            if_data_section.append("{}/end{}IF_DATA".format(match.group("section"), match.group("s0")))
                             section = (
                                 if_data_start,
                                 if_data_end,
@@ -381,9 +355,7 @@ class Preprocessor:
                             sections.append(section)
                             in_if_data = False
                             if_data_section = []
-                            line = "{}/end{}IF_DATA".format(
-                                " " * len(match.group("section")), match.group("s0")
-                            )
+                            line = "{}/end{}IF_DATA".format(" " * len(match.group("section")), match.group("s0"))
                             # cut_out_ifdata()
                             result.append(line)
                         else:

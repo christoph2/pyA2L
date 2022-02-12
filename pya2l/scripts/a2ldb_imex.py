@@ -86,14 +86,11 @@ def main():
 
     if args.efn:
         efn = Path(args.efn)
-        session = db
-        session = db.open_existing(efn)
+        db.open_existing(efn)
         db.export_a2l(sys.stdout)
     else:
         ifn = Path(args.ifn)
-        session = db.import_a2l(
-            ifn, encoding=args.encoding, loglevel=args.loglevel, local=args.local
-        )
+        db.import_a2l(ifn, encoding=args.encoding, loglevel=args.loglevel, local=args.local)
 
 
 if __name__ == "__main__":

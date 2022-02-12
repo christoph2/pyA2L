@@ -4197,7 +4197,7 @@ def test_multi_dimensional_array():
     /end CHARACTERISTIC
     """
     db, _ = parser.parseFromString(DATA)
-    chx = db.session.query(model.Characteristic).first()
+    db.session.query(model.Characteristic).first()
 
 
 def test_asap2_version():

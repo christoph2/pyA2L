@@ -143,9 +143,7 @@ class Validator:
                 Level.WARNING,
                 Category.MISSING,
                 Diagnostics.MISSING_ALIGNMENT,
-                "{}::ModCommon: Missing ALIGNMENT(s): {}.".format(
-                    module.name, [e[0] for e in missing_alignments]
-                ),
+                "{}::ModCommon: Missing ALIGNMENT(s): {}.".format(module.name, [e[0] for e in missing_alignments]),
             )
 
     def _validate_mod_par(self, module):
@@ -172,9 +170,7 @@ class Validator:
                 Level.WARNING,
                 Category.MISSING,
                 Diagnostics.DEPRECATED,
-                "{}::ModPar: MEMORY_LAYOUTs are deprecated, use MEMORY_SEGMENTs instead.".format(
-                    module.name
-                ),
+                "{}::ModPar: MEMORY_LAYOUTs are deprecated, use MEMORY_SEGMENTs instead.".format(module.name),
             )
         # memorySegments
 
@@ -215,9 +211,7 @@ class Validator:
             print("VTAB-RANGE:", names(module.compu_vtab_range), end = "\n\n")
     '''
 
-    def emit_diagnostic(
-        self, level: Level, category: Category, diag: Diagnostics, message: str = None
-    ):
+    def emit_diagnostic(self, level: Level, category: Category, diag: Diagnostics, message: str = None):
         self.logger.warn("{} - {}".format(level.name, message))
         self._diagnostics.append(Message(level, category, diag, message))
 

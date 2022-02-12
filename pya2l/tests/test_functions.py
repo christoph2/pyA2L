@@ -151,9 +151,7 @@ def test_normalization_ident():
     na = functions.NormalizationAxes(X_IDENT, Y_IDENT, Z_MAP)
     for row_idx, row in enumerate(Z_MAP):
         for col_idx, value in enumerate(row):
-            assert value == na(
-                col_idx, row_idx
-            )  # Interpolator should just pick every element from Z_MAP.
+            assert value == na(col_idx, row_idx)  # Interpolator should just pick every element from Z_MAP.
 
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
@@ -312,7 +310,6 @@ def test_ratfunc_constant_scalar():
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_constant_inv():
-    xs = np.arange(-10, 11)
     ys = np.full((21,), 10.0)
     coeffs = {}
     coeffs["a"] = 0
@@ -328,7 +325,6 @@ def test_ratfunc_constant_inv():
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_constant_inv_scalar():
-    x = -10
     y = 10.0
     coeffs = {}
     coeffs["a"] = 0
