@@ -29,6 +29,7 @@ __version__ = "0.1.0"
 
 
 from decimal import Decimal as D
+import pickle
 import re
 
 import antlr4
@@ -66,6 +67,8 @@ class BaseListener(antlr4.ParseTreeListener):
         self.logger = Logger(__name__)
         aml_section = self.prepro_result.aml_section
         if aml_section:
+            # parser =
+            # parsed = parser.result.listener_result
             self.db.session.add(model.AMLSection(text=aml_section))
 
     def getList(self, attr):
@@ -114,9 +117,7 @@ class BaseListener(antlr4.ParseTreeListener):
         ctx.value = value
 
     def _formatMessage(self, msg, location):
-        return "[{0}:{1}] {2}".format(
-            location.start.line, location.start.column + 1, msg
-        )
+        return "[{0}:{1}] {2}".format(location.start.line, location.start.column + 1, msg)
 
     def _log(self, method, msg, location=None):
         if location:
@@ -135,6 +136,9 @@ class BaseListener(antlr4.ParseTreeListener):
 
     def debug(self, msg, location=None):
         self._log(self.logger.debug, msg, location)
+
+    def result(self):
+        return ()
 
 
 class A2LListener(BaseListener):
@@ -336,11 +340,7 @@ class A2LListener(BaseListener):
         upgradeNo = ctx.upgradeNo.value
 
         if versionNo > 1 or (versionNo == 1 and upgradeNo < 60):
-            self.error(
-                "ASAP2 Version '{}.{}' may not parsed correctly.".format(
-                    versionNo, upgradeNo
-                )
-            )
+            self.error("ASAP2 Version '{}.{}' may not parsed correctly.".format(versionNo, upgradeNo))
 
         ctx.value = model.Asap2Version(versionNo=versionNo, upgradeNo=upgradeNo)
         self.db.session.add(ctx.value)
@@ -356,18 +356,14 @@ class A2LListener(BaseListener):
         longIdentifier = ctx.longIdentifier.value
         v_header = delist(self.getList(ctx.v_header), True)
         v_module = self.getList(ctx.v_module)
-        ctx.value = model.Project(
-            name=name, longIdentifier=longIdentifier, header=v_header, module=v_module
-        )
+        ctx.value = model.Project(name=name, longIdentifier=longIdentifier, header=v_header, module=v_module)
         self.db.session.add(ctx.value)
 
     def exitHeader(self, ctx):
         comment = ctx.comment.value
         v_projectNo = delist(self.getList(ctx.v_projectNo), True)
         v_version = delist(self.getList(ctx.v_version), True)
-        ctx.value = model.Header(
-            comment=comment, project_no=v_projectNo, version=v_version
-        )
+        ctx.value = model.Header(comment=comment, project_no=v_projectNo, version=v_version)
         self.db.session.add(ctx.value)
 
     def exitProjectNo(self, ctx):
@@ -389,7 +385,7 @@ class A2LListener(BaseListener):
         v_frame = delist(self.getList(ctx.v_frame), True)
         v_function = self.getList(ctx.v_function)
         v_group = self.getList(ctx.v_group)
-        # v_ifData = self.getList(ctx.v_ifData)
+        v_ifData = self.getList(ctx.v_ifData)
         v_measurement = self.getList(ctx.v_measurement)
         v_modCommon = delist(self.getList(ctx.v_modCommon), True)
         v_modPar = delist(self.getList(ctx.v_modPar), True)
@@ -423,6 +419,7 @@ class A2LListener(BaseListener):
             typedef_measurement=v_typedefMeasurement,
             typedef_structure=v_typedefStructure,
             instance=v_instance,
+            if_data=v_ifData,
         )
         self.db.session.add(ctx.value)
 
@@ -508,9 +505,7 @@ class A2LListener(BaseListener):
         v_byteOrder = delist(self.getList(ctx.v_byteOrder), True)
         v_calibrationAccess = delist(self.getList(ctx.v_calibrationAccess), True)
         v_comparisonQuantity = delist(self.getList(ctx.v_comparisonQuantity), True)
-        v_dependentCharacteristic = delist(
-            self.getList(ctx.v_dependentCharacteristic), True
-        )
+        v_dependentCharacteristic = delist(self.getList(ctx.v_dependentCharacteristic), True)
         v_discrete = delist(self.getList(ctx.v_discrete), True)
         v_displayIdentifier = delist(self.getList(ctx.v_displayIdentifier), True)
         v_ecuAddressExtension = delist(self.getList(ctx.v_ecuAddressExtension), True)
@@ -528,9 +523,7 @@ class A2LListener(BaseListener):
         v_refMemorySegment = delist(self.getList(ctx.v_refMemorySegment), True)
         v_stepSize = delist(self.getList(ctx.v_stepSize), True)
         v_symbolLink = delist(self.getList(ctx.v_symbolLink), True)
-        v_virtualCharacteristic = delist(
-            self.getList(ctx.v_virtualCharacteristic), True
-        )
+        v_virtualCharacteristic = delist(self.getList(ctx.v_virtualCharacteristic), True)
 
         ctx.value = model.Characteristic(
             name=name,
@@ -640,9 +633,7 @@ class A2LListener(BaseListener):
         offset = ctx.offset.value
         distance = ctx.distance.value
         numberapo = ctx.numberapo.value
-        ctx.value = model.FixAxisParDist(
-            offset=offset, distance=distance, numberapo=numberapo
-        )
+        ctx.value = model.FixAxisParDist(offset=offset, distance=distance, numberapo=numberapo)
         self.db.session.add(ctx.value)
 
     def exitFixAxisParList(self, ctx):
@@ -663,9 +654,7 @@ class A2LListener(BaseListener):
     def exitDependentCharacteristic(self, ctx):
         formula_ = ctx.formula_.value
         characteristic_ = self.getList(ctx.characteristic_)
-        ctx.value = model.DependentCharacteristic(
-            formula=formula_, characteristic_id=characteristic_
-        )
+        ctx.value = model.DependentCharacteristic(formula=formula_, characteristic_id=characteristic_)
         self.db.session.add(ctx.value)
 
     def exitMapList(self, ctx):
@@ -681,9 +670,7 @@ class A2LListener(BaseListener):
     def exitVirtualCharacteristic(self, ctx):
         formula_ = ctx.formula_.value
         characteristic_ = self.getList(ctx.characteristic_)
-        ctx.value = model.VirtualCharacteristic(
-            formula=formula_, characteristic_id=characteristic_
-        )
+        ctx.value = model.VirtualCharacteristic(formula=formula_, characteristic_id=characteristic_)
         self.db.session.add(ctx.value)
 
     def exitCompuMethod(self, ctx):
@@ -813,9 +800,7 @@ class A2LListener(BaseListener):
     def exitCompuVtabRange(self, ctx):
         name = ctx.name.value
         longIdentifier = ctx.longIdentifier.value
-        numberValueTriples = (
-            ctx.numberValueTriples.value
-        )  # TODO: check length of following triples
+        numberValueTriples = ctx.numberValueTriples.value  # TODO: check length of following triples
 
         inValMin = self.getList(ctx.inValMin)
         inValMax = self.getList(ctx.inValMax)
@@ -830,9 +815,7 @@ class A2LListener(BaseListener):
             default_value=v_defaultValue,
         )
         for inValMin, inValMax, outVal in triples:
-            triple = model.CompuVtabRangeTriple(
-                inValMin=inValMin, inValMax=inValMax, outVal=outVal
-            )
+            triple = model.CompuVtabRangeTriple(inValMin=inValMin, inValMax=inValMax, outVal=outVal)
             self.db.session.add(triple)
             ctx.value.triples.append(triple)
         self.db.session.add(ctx.value)
@@ -1048,9 +1031,7 @@ class A2LListener(BaseListener):
         longIdentifier = ctx.longIdentifier.value
         typeName = ctx.typeName.value
         address = ctx.address.value
-        ctx.value = model.Instance(
-            name=name, longIdentifier=longIdentifier, typeName=typeName, address=address
-        )
+        ctx.value = model.Instance(name=name, longIdentifier=longIdentifier, typeName=typeName, address=address)
         self.db.session.add(ctx.value)
 
     def exitTypedefStructure(self, ctx):
@@ -1076,9 +1057,7 @@ class A2LListener(BaseListener):
         offset = ctx.offset.value
         link = ctx.link.value
         symbol = ctx.symbol.value
-        ctx.value = model.StructureComponent(
-            name=name, deposit=deposit, offset=offset, link=link, symbol=symbol
-        )
+        ctx.value = model.StructureComponent(name=name, deposit=deposit, offset=offset, link=link, symbol=symbol)
         self.db.session.add(ctx.value)
 
     def exitArraySize(self, ctx):
@@ -1090,9 +1069,7 @@ class A2LListener(BaseListener):
         v_leftShift = delist(self.getList(ctx.v_leftShift), True)
         v_rightShift = delist(self.getList(ctx.v_rightShift), True)
         v_signExtend = delist(self.getList(ctx.v_signExtend), True)
-        ctx.value = model.BitOperation(
-            left_shift=v_leftShift, right_shift=v_rightShift, sign_extend=v_signExtend
-        )
+        ctx.value = model.BitOperation(left_shift=v_leftShift, right_shift=v_rightShift, sign_extend=v_signExtend)
         self.db.session.add(ctx.value)
 
     def exitLeftShift(self, ctx):
@@ -1224,19 +1201,13 @@ class A2LListener(BaseListener):
         method = ctx.method.value
         version_ = ctx.version_.value
         v_calibrationHandle = self.getList(ctx.v_calibrationHandle)
-        ctx.value = model.CalibrationMethod(
-            method=method, version=version_, calibration_handle=v_calibrationHandle
-        )
+        ctx.value = model.CalibrationMethod(method=method, version=version_, calibration_handle=v_calibrationHandle)
         self.db.session.add(ctx.value)
 
     def exitCalibrationHandle(self, ctx):
         handle = self.getList(ctx.handle)
-        v_calibrationHandleText = delist(
-            self.getList(ctx.v_calibrationHandleText), True
-        )
-        ctx.value = model.CalibrationHandle(
-            handle=handle, calibration_handle_text=v_calibrationHandleText
-        )
+        v_calibrationHandleText = delist(self.getList(ctx.v_calibrationHandleText), True)
+        ctx.value = model.CalibrationHandle(handle=handle, calibration_handle_text=v_calibrationHandleText)
         self.db.session.add(ctx.value)
 
     def exitCalibrationHandleText(self, ctx):
@@ -1953,9 +1924,7 @@ class A2LListener(BaseListener):
         v_readOnly = delist(self.getList(ctx.v_readOnly), True)
         v_refGroup = self.getList(ctx.v_refGroup)
 
-        ctx.value = model.UserRights(
-            userLevelId=userLevelId, read_only=v_readOnly, ref_group=v_refGroup
-        )
+        ctx.value = model.UserRights(userLevelId=userLevelId, read_only=v_readOnly, ref_group=v_refGroup)
         self.db.session.add(ctx.value)
 
     def exitRefGroup(self, ctx):
@@ -1992,9 +1961,7 @@ class A2LListener(BaseListener):
 
         v_varAddress = delist(self.getList(ctx.v_varAddress), True)
 
-        ctx.value = model.VarCharacteristic(
-            name=name, criterionName=criterionName, var_address=v_varAddress
-        )
+        ctx.value = model.VarCharacteristic(name=name, criterionName=criterionName, var_address=v_varAddress)
         self.db.session.add(ctx.value)
 
     def exitVarAddress(self, ctx):
@@ -2008,9 +1975,7 @@ class A2LListener(BaseListener):
         value_ = self.getList(ctx.value_)
 
         v_varMeasurement = delist(self.getList(ctx.v_varMeasurement), True)
-        v_varSelectionCharacteristic = delist(
-            self.getList(ctx.v_varSelectionCharacteristic), True
-        )
+        v_varSelectionCharacteristic = delist(self.getList(ctx.v_varSelectionCharacteristic), True)
 
         ctx.value = model.VarCriterion(
             name=name,

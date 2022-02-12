@@ -47,7 +47,7 @@ def test_measurement_basic():
         8400.0 /* upper limit */
     /end MEASUREMENT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     meas = Measurement(db.session, "N")
     assert meas.name == "N"
     assert meas.longIdentifier == "Engine speed"
@@ -142,7 +142,7 @@ def test_measurement_full_featured():
     /end MODULE
     """
 
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     meas = Measurement(db.session, "N")
     assert meas.name == "N"
     assert meas.longIdentifier == "Engine speed"
@@ -205,7 +205,7 @@ def test_measurement_no_compu_method():
         /end MEASUREMENT
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     meas = Measurement(db.session, "N")
     assert meas.compuMethod is NoCompuMethod()
 
@@ -230,14 +230,12 @@ def test_measurement_compu_method_identical():
         /end MEASUREMENT
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     meas = Measurement(db.session, "N")
     assert meas.compuMethod.format == "%3.0"
     assert meas.compuMethod.conversionType == "IDENTICAL"
     assert meas.compuMethod.unit == "hours"
-    assert (
-        meas.compuMethod.longIdentifier == "conversion that delivers always phys = int"
-    )
+    assert meas.compuMethod.longIdentifier == "conversion that delivers always phys = int"
 
 
 def test_measurement_compu_method_form():
@@ -263,7 +261,7 @@ def test_measurement_compu_method_form():
         /end MEASUREMENT
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     meas = Measurement(db.session, "N")
     assert meas.compuMethod.format == "%6.1"
     assert meas.compuMethod.conversionType == "FORM"
@@ -294,16 +292,13 @@ def test_measurement_compu_method_linear():
         /end MEASUREMENT
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     meas = Measurement(db.session, "N")
 
     assert meas.compuMethod.format == "%3.1"
     assert meas.compuMethod.conversionType == "LINEAR"
     assert meas.compuMethod.unit == "m/s"
-    assert (
-        meas.compuMethod.longIdentifier
-        == "Linear function with parameter set for phys = f(int) = 2*int + 0"
-    )
+    assert meas.compuMethod.longIdentifier == "Linear function with parameter set for phys = f(int) = 2*int + 0"
     assert meas.compuMethod.coeffs_linear["a"] == 2.0
     assert meas.compuMethod.coeffs_linear["b"] == 0.0
 
@@ -329,16 +324,13 @@ def test_measurement_compu_method_rat_func():
         /end MEASUREMENT
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     meas = Measurement(db.session, "N")
 
     assert meas.compuMethod.format == "%8.4"
     assert meas.compuMethod.conversionType == "RAT_FUNC"
     assert meas.compuMethod.unit == "grad C"
-    assert (
-        meas.compuMethod.longIdentifier
-        == "rational function with parameter set for impl = f(phys) = phys * 81.9175"
-    )
+    assert meas.compuMethod.longIdentifier == "rational function with parameter set for impl = f(phys) = phys * 81.9175"
     assert meas.compuMethod.coeffs["a"] == 0.0
     assert meas.compuMethod.coeffs["b"] == 81.9175
     assert meas.compuMethod.coeffs["c"] == 0.0
@@ -386,7 +378,7 @@ def test_measurement_compu_method_tab_intp():
         /end MEASUREMENT
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     meas = Measurement(db.session, "N")
     assert meas.compuMethod.format == "%8.4"
     assert meas.compuMethod.conversionType == "TAB_INTP"
@@ -457,7 +449,7 @@ def test_measurement_compu_method_tab_verb():
         /end MEASUREMENT
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     meas = Measurement(db.session, "N")
     assert meas.compuMethod.format == "%12.0"
     assert meas.compuMethod.conversionType == "TAB_VERB"
@@ -516,7 +508,7 @@ def test_measurement_compu_method_tab_verb_range():
         /end MEASUREMENT
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     meas = Measurement.get(db.session, "N")
     assert meas.compuMethod.format == "%4.2"
     assert meas.compuMethod.conversionType == "TAB_VERB"
@@ -613,7 +605,7 @@ def test_mod_par_full_featured():
         /end MOD_PAR
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     mp = ModPar(db.session, "testModule")
     assert mp.comment == "Note: Provisional release for test purposes only!"
 
@@ -686,7 +678,7 @@ def test_mod_par_basic():
         /end MOD_PAR
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     mp = ModPar(db.session, "testModule")
     assert mp.comment == "Note: Provisional release for test purposes only!"
     assert mp.version is None
@@ -724,7 +716,7 @@ def test_mod_common_full_featured():
         /end MOD_COMMON
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     mc = ModCommon(db.session, "testModule")
     assert mc.comment == "Characteristic maps always deposited in same mode"
     # assert mc.sRecLayout.name == "S_ABL"
@@ -877,7 +869,7 @@ def test_group():
         /end GROUP
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     gr = Group.get(db.session, "CALIBRATION_COMPONENTS")
     gr = Group.get(db.session, "CALIBRATION_COMPONENTS_L4")
     gr = Group.get(db.session, "SOFTWARE_COMPONENTS")
@@ -900,7 +892,7 @@ def test_typedef_structure_no_instances():
             /begin STRUCTURE_COMPONENT dword _ULONG 0x3C SYMBOL_TYPE_LINK "dword" /end STRUCTURE_COMPONENT
         /end TYPEDEF_STRUCTURE
     /end MODULE"""
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     tdef = TypedefStructure.get(db.session, "EcuTask")
     assert tdef.name == "EcuTask"
     assert tdef.longIdentifier == "TYPEDEF for class EcuTask"
@@ -962,7 +954,7 @@ def test_typedef_structure_with_instances():
         /begin INSTANCE ecuTask2 "ecu task number 2" EcuTask 0x0 /end INSTANCE
         /begin INSTANCE activeEcuTask "pointer to active ecu task" EcuTask 0x0 /end INSTANCE
     /end MODULE"""
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     tdef = TypedefStructure.get(db.session, "EcuTask")
     assert tdef.name == "EcuTask"
     assert tdef.longIdentifier == "TYPEDEF for class EcuTask"
@@ -1031,7 +1023,7 @@ def test_compu_method_invalid():
         /end COMPU_METHOD
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
 
@@ -1055,7 +1047,7 @@ def test_compu_method_tab_verb():
         /end COMPU_VTAB
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
     assert compu.int_to_physical(1) == "SawTooth"
@@ -1081,7 +1073,7 @@ def test_compu_method_tab_verb_no_default_value():
         /end COMPU_VTAB
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
     assert compu.int_to_physical(1) == "SawTooth"
@@ -1101,7 +1093,7 @@ def test_compu_method_tab_verb_no_vtab():
         /end COMPU_METHOD
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     with pytest.raises(exceptions.StructuralError):
         compu = CompuMethod(db.session, module.compu_method[0])
@@ -1136,7 +1128,7 @@ def test_compu_method_tab_nointerp_default():
         /end COMPU_TAB
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
     assert compu.int_to_physical(-3) == 98
@@ -1174,7 +1166,7 @@ def test_compu_method_tab_interp_default():
         /end COMPU_TAB
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
     xs = np.arange(-3, 14)
@@ -1234,7 +1226,7 @@ def test_compu_method_tab_interp_no_default():
         /end COMPU_TAB
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
     xs = np.arange(-3, 14)
@@ -1294,7 +1286,7 @@ def test_compu_method_tab_nointerp_no_default():
         /end COMPU_TAB
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
     assert compu.int_to_physical(-3) == 98
@@ -1334,7 +1326,7 @@ def test_compu_method_tab_nointerp_both_defaults():
         /end COMPU_TAB
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     with pytest.raises(exceptions.StructuralError):
         compu = CompuMethod(db.session, module.compu_method[0])
@@ -1369,7 +1361,7 @@ def test_compu_method_tab_verb_ranges():
         /end COMPU_VTAB_RANGE
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
     assert compu.int_to_physical(0) == "Zero_to_one"
@@ -1410,7 +1402,7 @@ def test_compu_method_tab_verb_ranges_no_default():
         /end COMPU_VTAB_RANGE
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
     assert compu.int_to_physical(0) == "Zero_to_one"
@@ -1452,7 +1444,7 @@ def test_compu_method_tab_verb_ranges_inv():
         /end COMPU_VTAB_RANGE
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
     assert compu.physical_to_int("Zero_to_one") == 0
@@ -1473,7 +1465,7 @@ def test_compu_method_identical():
         /end COMPU_METHOD
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
     xs = np.arange(-10, 11)
@@ -1493,7 +1485,7 @@ def test_compu_method_rat_func_identical():
         /end COMPU_METHOD
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
     xs = np.arange(-10, 11)
@@ -1513,7 +1505,7 @@ def test_compu_method_rat_func_linear():
         /end COMPU_METHOD
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
     xs = np.arange(-10, 11)
@@ -1558,7 +1550,7 @@ def test_compu_method_rat_func_no_coeffs():
         /end COMPU_METHOD
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     with pytest.raises(exceptions.StructuralError):
         compu = CompuMethod(db.session, module.compu_method[0])
@@ -1576,7 +1568,7 @@ def test_compu_method_linear():
         /end COMPU_METHOD
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
     xs = np.arange(-10, 11)
@@ -1596,7 +1588,7 @@ def test_compu_method_linear_no_coeffs():
         /end COMPU_METHOD
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     with pytest.raises(exceptions.StructuralError):
         compu = CompuMethod(db.session, None)
@@ -1619,7 +1611,7 @@ def test_compu_method_formula_with_inv():
         /end COMPU_METHOD
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
     assert compu.int_to_physical(6) == 10
@@ -1642,7 +1634,7 @@ def test_compu_method_formula_without_inv():
         /end COMPU_METHOD
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
     assert compu.int_to_physical(6) == 10
@@ -1669,7 +1661,7 @@ def test_compu_method_formula_with_sysc():
         /end COMPU_METHOD
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     compu = CompuMethod(db.session, module.compu_method[0].name)
     assert compu.int_to_physical(23) == 65

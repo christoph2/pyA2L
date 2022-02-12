@@ -1,14 +1,89 @@
-[tool.poetry]
-name = "pya2ldb"
-version = "0.1.0"
-description = ""
-authors = ["Christoph Schueler <cpu12.gems@googlemail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.5"
+#python = "^3.5"
 
 [tool.poetry.dev-dependencies]
 
+[tool.pdm]
+includes = []
+
+[tool.pdm.dev-dependencies]
+dev = []
+
 [build-system]
-requires = ["poetry>=0.12", "pybind11"]
-build-backend = "poetry.masonry.api"
+requires = ["pdm-pep517"]
+build-backend = "pdm.pep517.api"
+
+
+[project]
+# PEP 621 project metadata
+# See https://www.python.org/dev/peps/pep-0621/
+name = "pya2ldb"
+authors = [
+    {name = "Christoph Schueler", email = "cpu12.gems@googlemail.com"},
+]
+requires-python = ">=3.5,<4.0"
+dependencies = []
+version = "0.12.51"
+description = ""
+
+[project.urls]
+
+
+[tool.pytest]
+addopts = "--verbose --tb=short --junitxml=result.xml -o junit_family=xunit2"
+testpaths = "pya2l/tests"
+
+[tool.flake8]
+ignore = ["D203", "E203", "E266", "E501", "W503", "F403", "F401", "BLK100"]
+exclude = '''
+/(
+    \.git
+    | __pycache__
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | \.eggs
+    | _build
+    | build
+    | __pypackages__
+    | docs
+    | dist
+    | experimental
+    | pya2l/a2lLexer.py
+    | pya2l/amlLexer.py
+    | pya2l/amlParser.py
+    | pya2l/a2llg.py
+    | pya2l/a2lParser.py
+)/
+'''
+max-complexity = 10
+count = true
+statistics = true
+show-source = true
+max-line-length = 132
+select = ["B","C","E","F","W","T4","B9"]
+
+[tool.black]
+line-length=132
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | __pypackages__
+    | build
+    | docs
+    | experimental
+    | __pycache__
+    | pya2l/a2lLexer.py
+    | pya2l/amlLexer.py
+    | pya2l/amlParser.py
+    | pya2l/a2llg.py
+    | pya2l/a2lParser.py
+    | dist
+)/
+'''

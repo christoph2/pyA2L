@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2021 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2022 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -27,23 +27,20 @@ __copyright__ = """
 __author__ = "Christoph Schueler"
 __version__ = "0.1.0"
 
-
 from decimal import Decimal as D
 
 import antlr4
 
 from pya2l.aml import classes
 
-##
-## Listener.
-##
-class AMLListener(antlr4.ParseTreeListener):
-    def __init__(self):
-        super().__init__()
-        self.root_element = None
-        self._types = dict(
-            StructType={}, TaggedUnion={}, TaggedStructType={}, Enumeration={}
-        )
+
+class ResultType:
+    """ """
+
+    def __init__(self, declarations, types, root_element):
+        self._declarations = declarations
+        self._types = types
+        self._root_element = root_element
 
     def get_type(self, tp, name):
         tp_ = self._types.get(tp)
@@ -51,6 +48,21 @@ class AMLListener(antlr4.ParseTreeListener):
             return tp_.get(name).type_
         else:
             return None
+
+    @property
+    def root_element(self):
+        return self._root_element
+
+
+##
+## Listener.
+##
+class AMLListener(antlr4.ParseTreeListener):
+    def __init__(self, prepro_result):
+        super().__init__()
+        self.root_element = None
+        self.declarations = []
+        self._types = dict(StructType={}, TaggedUnion={}, TaggedStructType={}, Enumeration={})
 
     def exitType_name(self, ctx):
         if ctx.pr:
@@ -123,9 +135,7 @@ class AMLListener(antlr4.ParseTreeListener):
         else:
             blockDefinition = None
         mult = True if ctx.m0 or ctx.m1 else False
-        ctx.value = classes.createTaggedStructMember(
-            taggedstructDefinition, blockDefinition, mult
-        )
+        ctx.value = classes.createTaggedStructMember(taggedstructDefinition, blockDefinition, mult)
 
     def exitTaggedstruct_definition(self, ctx):
         mult = True if ctx.mult else False
@@ -202,6 +212,7 @@ class AMLListener(antlr4.ParseTreeListener):
         declarations = [d.value for d in ctx.d]
         ctx.value = declarations
         self.value = declarations
+        self.declarations = declarations
 
     def exitIntValue(self, ctx):
         ctx.value = int(ctx.i.text) if ctx.i else None
@@ -229,3 +240,6 @@ class AMLListener(antlr4.ParseTreeListener):
         elif ctx.f:
             value = D(ctx.f.text)
         ctx.value = value
+
+    def result(self):
+        return ResultType(self.declarations, self._types, self.root_element)

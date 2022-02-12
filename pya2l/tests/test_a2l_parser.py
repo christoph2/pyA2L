@@ -48,7 +48,7 @@ def test_delist_multiple_scalar():
 def test_addr_epk():
     parser = ParserWrapper("a2l", "addrEpk", A2LListener, debug=False)
     DATA = "ADDR_EPK 0x145678"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AddrEpk).all()
     assert len(res) == 1
     assert res[0].address == 0x145678
@@ -57,7 +57,7 @@ def test_addr_epk():
 def test_alignment_byte():
     parser = ParserWrapper("a2l", "alignmentByte", A2LListener, debug=False)
     DATA = "ALIGNMENT_BYTE 4 /* bytes have a 4-byte alignment */"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AlignmentByte).all()
     assert len(res) == 1
     assert res[0].alignmentBorder == 4
@@ -66,7 +66,7 @@ def test_alignment_byte():
 def test_alignment_float32_ieee():
     parser = ParserWrapper("a2l", "alignmentFloat32Ieee", A2LListener, debug=False)
     DATA = "ALIGNMENT_FLOAT32_IEEE 4 /* 32bit floats have a 4-byte alignment */"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AlignmentFloat32Ieee).all()
     assert len(res) == 1
     assert res[0].alignmentBorder == 4
@@ -75,7 +75,7 @@ def test_alignment_float32_ieee():
 def test_alignment_float64_ieee():
     parser = ParserWrapper("a2l", "alignmentFloat64Ieee", A2LListener, debug=False)
     DATA = "ALIGNMENT_FLOAT64_IEEE 4 /* 64bit floats have a 4-byte alignment */"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AlignmentFloat64Ieee).all()
     assert len(res) == 1
     assert res[0].alignmentBorder == 4
@@ -84,7 +84,7 @@ def test_alignment_float64_ieee():
 def test_alignment_int64():
     parser = ParserWrapper("a2l", "alignmentInt64", A2LListener, debug=False)
     DATA = "ALIGNMENT_INT64 4 /* int64 have a 4-byte alignment */"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AlignmentInt64).all()
     assert len(res) == 1
     assert res[0].alignmentBorder == 4
@@ -93,7 +93,7 @@ def test_alignment_int64():
 def test_alignment_long():
     parser = ParserWrapper("a2l", "alignmentLong", A2LListener, debug=False)
     DATA = "ALIGNMENT_LONG 8 /* longs have a 8-byte alignment */"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AlignmentLong).all()
     assert len(res) == 1
     assert res[0].alignmentBorder == 8
@@ -102,7 +102,7 @@ def test_alignment_long():
 def test_alignment_word():
     parser = ParserWrapper("a2l", "alignmentWord", A2LListener, debug=False)
     DATA = "ALIGNMENT_WORD 4 /* words have a 4-byte alignment */"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AlignmentWord).all()
     assert len(res) == 1
     assert res[0].alignmentBorder == 4
@@ -139,12 +139,8 @@ def test_annotation():
         /end ANNOTATION
     /end CHARACTERISTIC
     """
-    db = parser.parseFromString(DATA)
-    chx = (
-        db.session.query(model.Characteristic)
-        .filter(model.Characteristic.name == "annotation.example1")
-        .first()
-    )
+    db, _ = parser.parseFromString(DATA)
+    chx = db.session.query(model.Characteristic).filter(model.Characteristic.name == "annotation.example1").first()
     assert chx.name == "annotation.example1"
     assert chx.longIdentifier == "richtig"
     assert chx.type == "VALUE"
@@ -176,7 +172,7 @@ def test_annotation():
 def test_annotation_label():
     parser = ParserWrapper("a2l", "annotationLabel", A2LListener, debug=False)
     DATA = 'ANNOTATION_LABEL    "Calibration Note"'
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AnnotationLabel).first()
     assert res.label == "Calibration Note"
 
@@ -184,7 +180,7 @@ def test_annotation_label():
 def test_annotation_origin():
     parser = ParserWrapper("a2l", "annotationOrigin", A2LListener, debug=False)
     DATA = 'ANNOTATION_ORIGIN   "from the calibration planning department"'
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AnnotationOrigin).all()
     assert len(res) == 1
     assert res[0].origin == "from the calibration planning department"
@@ -213,12 +209,8 @@ def test_annotation_text():
         /end ANNOTATION
     /end CHARACTERISTIC
     """
-    db = parser.parseFromString(DATA)
-    chx = (
-        db.session.query(model.Characteristic)
-        .filter(model.Characteristic.name == "PUMCD")
-        .first()
-    )
+    db, _ = parser.parseFromString(DATA)
+    chx = db.session.query(model.Characteristic).filter(model.Characteristic.name == "PUMCD").first()
     assert chx.name == "PUMCD"
     assert chx.longIdentifier == "Pump characteristic map"
     assert chx.type == "MAP"
@@ -273,12 +265,8 @@ def test_array_size():
 */
     /end MEASUREMENT
     """
-    db = parser.parseFromString(DATA)
-    meas = (
-        db.session.query(model.Measurement)
-        .filter(model.Measurement.name == "N")
-        .first()
-    )
+    db, _ = parser.parseFromString(DATA)
+    meas = db.session.query(model.Measurement).filter(model.Measurement.name == "N").first()
     assert meas.name == "N"
     assert meas.longIdentifier == "Engine speed"
     assert meas.datatype == "UWORD"
@@ -306,7 +294,7 @@ def test_axis_descr():
         MAX_GRAD    20.0    /* Axis: maximum gradient*/
     /end AXIS_DESCR
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AxisDescr).all()
     assert len(res) == 1
     ad = res[0]
@@ -348,7 +336,7 @@ def test_axis_pts():
         CALIBRATION_ACCESS CALIBRATION
     /end AXIS_PTS
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AxisPts).all()
     assert len(res) == 1
     ap = res[0]
@@ -400,7 +388,7 @@ def test_axis_pts_ref():
             /end AXIS_DESCR
         /end CHARACTERISTIC
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.Characteristic).all()
     assert len(res) == 1
     chx = res[0]
@@ -431,7 +419,7 @@ def test_axis_pts_x():
         INDEX_INCR
         DIRECT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AxisPtsX).all()
     assert len(res) == 1
     pt = res[0]
@@ -448,7 +436,7 @@ def test_axis_pts_y():
         INDEX_INCR
         DIRECT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AxisPtsY).all()
     assert len(res) == 1
     pt = res[0]
@@ -465,7 +453,7 @@ def test_axis_pts_z():
         INDEX_INCR
         DIRECT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AxisPtsZ).all()
     assert len(res) == 1
     pt = res[0]
@@ -482,7 +470,7 @@ def test_axis_pts_4():
         INDEX_INCR
         DIRECT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AxisPts4).all()
     assert len(res) == 1
     pt = res[0]
@@ -499,7 +487,7 @@ def test_axis_pts_5():
         INDEX_INCR
         DIRECT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AxisPts5).all()
     assert len(res) == 1
     pt = res[0]
@@ -517,7 +505,7 @@ def test_axis_rescale_x():
         INDEX_INCR
         DIRECT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AxisRescaleX).all()
     assert len(res) == 1
     pt = res[0]
@@ -536,7 +524,7 @@ def test_axis_rescale_y():
         INDEX_INCR
         DIRECT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AxisRescaleY).all()
     assert len(res) == 1
     pt = res[0]
@@ -555,7 +543,7 @@ def test_axis_rescale_z():
         INDEX_INCR
         DIRECT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AxisRescaleZ).all()
     assert len(res) == 1
     pt = res[0]
@@ -574,7 +562,7 @@ def test_axis_rescale_4():
         INDEX_INCR
         DIRECT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AxisRescale4).all()
     assert len(res) == 1
     pt = res[0]
@@ -593,7 +581,7 @@ def test_axis_rescale_5():
         INDEX_INCR
         DIRECT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.AxisRescale5).all()
     assert len(res) == 1
     pt = res[0]
@@ -607,7 +595,7 @@ def test_axis_rescale_5():
 def test_bitmask():
     parser = ParserWrapper("a2l", "bitMask", A2LListener, debug=False)
     DATA = "BIT_MASK 0x40"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.BitMask).all()
     assert len(res) == 1
     assert res[0].mask == 0x40
@@ -621,7 +609,7 @@ def test_bit_operation_right_shift():
         SIGN_EXTEND
     /end BIT_OPERATION
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.BitOperation).all()
     assert len(res) == 1
     assert res[0].right_shift.bitcount == 4
@@ -636,7 +624,7 @@ def test_bit_operation_left_shift():
         SIGN_EXTEND
     /end BIT_OPERATION
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.BitOperation).all()
     assert len(res) == 1
     assert res[0].left_shift.bitcount == 4
@@ -646,7 +634,7 @@ def test_bit_operation_left_shift():
 def test_calibration_access():
     parser = ParserWrapper("a2l", "calibrationAccess", A2LListener, debug=False)
     DATA = "CALIBRATION_ACCESS CALIBRATION"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.CalibrationAccess).all()
     assert len(res) == 1
     assert res[0].type == "CALIBRATION"
@@ -664,7 +652,7 @@ def test_calibration_handle():
         CALIBRATION_HANDLE_TEXT "Nmot"
     /end CALIBRATION_HANDLE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.CalibrationHandle).all()
     assert len(res) == 1
     ch = res[0]
@@ -675,7 +663,7 @@ def test_calibration_handle():
 def test_calibration_handle_text():
     parser = ParserWrapper("a2l", "calibrationHandleText", A2LListener, debug=False)
     DATA = 'CALIBRATION_HANDLE_TEXT "Torque"'
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.CalibrationHandleText).all()
     assert len(res) == 1
     assert res[0].text == "Torque"
@@ -696,7 +684,7 @@ def test_calibration_method():
         /end CALIBRATION_HANDLE
     /end CALIBRATION_METHOD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.CalibrationMethod).all()
     assert len(res) == 1
     cm = res[0]
@@ -758,7 +746,7 @@ def test_characteristic():
         /end AXIS_DESCR
     /end CHARACTERISTIC
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     res = db.session.query(model.Characteristic).all()
     assert len(res) == 1
     cr = res[0]
@@ -795,7 +783,7 @@ def test_calibration_coeffs():
     /* INT = (4/5) * PHYS/[rpm] + (8/5) */
     /* inverted: PHYS/[rpm] = 1.25 * INT - 2.0 */
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     coeffs = db.session.query(model.Coeffs).first()
     assert coeffs.a == 0.0
     assert coeffs.b == 4.0
@@ -813,7 +801,7 @@ def test_calibration_coeffs_linear():
     /* control unit’s internal value of revolutions (INT) as follows: */
     /* PHYS = 1.25 * INT – 2.0 */
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     coeffs = db.session.query(model.CoeffsLinear).first()
     assert coeffs.a == 1.25
     assert coeffs.b == -2.0
@@ -824,7 +812,7 @@ def test_comparision_quantity():
     DATA = """
     COMPARISON_QUANTITY Test
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     cq = db.session.query(model.ComparisonQuantity).first()
     assert cq.name == "Test"
 
@@ -947,7 +935,7 @@ def test_compu_method():
             /end COMPU_METHOD
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     mod = db.session.query(model.Module).first()
     cm = mod.compu_method
     assert len(cm) == 14
@@ -1101,7 +1089,7 @@ def test_compu_tab():
         DEFAULT_VALUE_NUMERIC 99.0
     /end COMPU_TAB
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ct = db.session.query(model.CompuTab).first()
     assert ct.name == "TT"
     assert ct.longIdentifier == "conversion table for oil temperatures"
@@ -1122,7 +1110,7 @@ def test_compu_tab():
 def test_compu_tab_ref():
     parser = ParserWrapper("a2l", "compuTabRef", A2LListener, debug=False)
     DATA = """COMPU_TAB_REF TEMP_TAB /*TEMP_TAB: conversion table*/"""
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ctr = db.session.query(model.CompuTabRef).first()
     assert ctr.conversionTable == "TEMP_TAB"
 
@@ -1148,7 +1136,7 @@ def test_compu_v_tab():
         /end COMPU_VTAB
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     module = db.session.query(model.Module).first()
     assert module.name == "testModule"
     assert module.longIdentifier == ""
@@ -1182,11 +1170,7 @@ def test_compu_v_tab():
 
 
 def compareCompuVTabRangeTriple(pair, inValMin, inValMax, outVal):
-    return (
-        pair.inValMin == inValMin
-        and pair.inValMax == inValMax
-        and pair.outVal == outVal
-    )
+    return pair.inValMin == inValMin and pair.inValMax == inValMax and pair.outVal == outVal
 
 
 def test_compu_v_tab_range():
@@ -1203,7 +1187,7 @@ def test_compu_v_tab_range():
         DEFAULT_VALUE "Value_out_of_Range"
     /end COMPU_VTAB_RANGE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     cvr = db.session.query(model.CompuVtabRange).first()
     assert cvr.name == "TT"
     assert cvr.longIdentifier == "engine status conversion"
@@ -1211,16 +1195,10 @@ def test_compu_v_tab_range():
     assert cvr.default_value.display_string == "Value_out_of_Range"
     t0, t1, t2, t3, t4 = cvr.triples
     assert compareCompuVTabRangeTriple(t0, inValMin=0.0, inValMax=0.0, outVal="ONE")
-    assert compareCompuVTabRangeTriple(
-        t1, inValMin=1.0, inValMax=2.0, outVal="first_section"
-    )
+    assert compareCompuVTabRangeTriple(t1, inValMin=1.0, inValMax=2.0, outVal="first_section")
     assert compareCompuVTabRangeTriple(t2, inValMin=3.0, inValMax=3.0, outVal="THIRD")
-    assert compareCompuVTabRangeTriple(
-        t3, inValMin=4.0, inValMax=5.0, outVal="second_section"
-    )
-    assert compareCompuVTabRangeTriple(
-        t4, inValMin=6.0, inValMax=500.0, outVal="usual_case"
-    )
+    assert compareCompuVTabRangeTriple(t3, inValMin=4.0, inValMax=5.0, outVal="second_section")
+    assert compareCompuVTabRangeTriple(t4, inValMin=6.0, inValMax=500.0, outVal="usual_case")
 
 
 def test_cpu_type():
@@ -1228,7 +1206,7 @@ def test_cpu_type():
     DATA = """
     CPU_TYPE "INTEL 4711"
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     cpu = db.session.query(model.CpuType).first()
     assert cpu.cPU == "INTEL 4711"
 
@@ -1310,7 +1288,7 @@ def test_curve_axis_ref():
         /end CHARACTERISTIC
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     mod = db.session.query(model.Module).first()
     assert mod.name == "test"
     assert mod.longIdentifier == ""
@@ -1392,7 +1370,7 @@ def test_customer():
     DATA = """
     CUSTOMER "LANZ - Landmaschinen"
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     cust = db.session.query(model.Customer).first()
     assert cust.customer == "LANZ - Landmaschinen"
 
@@ -1402,7 +1380,7 @@ def test_customer_no():
     DATA = """
     CUSTOMER_NO     "191188"
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     cust = db.session.query(model.CustomerNo).first()
     assert cust.number == "191188"
 
@@ -1412,7 +1390,7 @@ def test_data_size():
     DATA = """
     DATA_SIZE   16
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ds = db.session.query(model.DataSize).first()
     assert ds.size == 16
 
@@ -1425,7 +1403,7 @@ def test_def_characteristic():
         DELAY_FACTOR
     /end DEF_CHARACTERISTIC
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     dc = db.session.query(model.DefCharacteristic).first()
     ids = dc.identifier
     assert ids[0] == "INJECTION_CURVE"
@@ -1437,7 +1415,7 @@ def test_default_value():
     DATA = """
     DEFAULT_VALUE "overflow_state"
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     dv = db.session.query(model.DefaultValue).first()
     assert dv.display_string == "overflow_state"
 
@@ -1447,7 +1425,7 @@ def test_default_value_numeric():
     DATA = """
     DEFAULT_VALUE_NUMERIC 999.0
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     dv = db.session.query(model.DefaultValueNumeric).first()
     assert dv.display_value == 999.0
 
@@ -1478,7 +1456,7 @@ def test_dependent_characteristic():
         /end DEPENDENT_CHARACTERISTIC
     /end CHARACTERISTIC
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     chx = db.session.query(model.Characteristic).first()
     assert chx.name == "FUEL_ADJ"
     assert chx.longIdentifier == "Air fuel table"
@@ -1499,7 +1477,7 @@ def test_deposit():
     DATA = """
     DEPOSIT DIFFERENCE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ds = db.session.query(model.Deposit).first()
     assert ds.mode == "DIFFERENCE"
 
@@ -1519,7 +1497,7 @@ def test_discrete():
         DISCRETE
     /end MEASUREMENT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     meas = db.session.query(model.Measurement).first()
     assert meas.name == "counter"
     assert meas.longIdentifier == "..."
@@ -1537,7 +1515,7 @@ def test_display_identifier():
     DATA = """
     DISPLAY_IDENTIFIER load_engine
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     di = db.session.query(model.DisplayIdentifier).first()
     assert di.display_name == "load_engine"
 
@@ -1548,7 +1526,7 @@ def test_dist_op_x():
     DIST_OP_X   21
                 UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     di = db.session.query(model.DistOpX).first()
     assert di.position == 21
     assert di.datatype == "UWORD"
@@ -1560,7 +1538,7 @@ def test_dist_op_y():
     DIST_OP_Y   21
                 UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     di = db.session.query(model.DistOpY).first()
     assert di.position == 21
     assert di.datatype == "UWORD"
@@ -1572,7 +1550,7 @@ def test_dist_op_z():
     DIST_OP_Z   21
                 UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     di = db.session.query(model.DistOpZ).first()
     assert di.position == 21
     assert di.datatype == "UWORD"
@@ -1584,7 +1562,7 @@ def test_dist_op_4():
     DIST_OP_4   21
                 UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     di = db.session.query(model.DistOp4).first()
     assert di.position == 21
     assert di.datatype == "UWORD"
@@ -1596,7 +1574,7 @@ def test_dist_op_5():
     DIST_OP_5   21
                 UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     di = db.session.query(model.DistOp5).first()
     assert di.position == 21
     assert di.datatype == "UWORD"
@@ -1605,7 +1583,7 @@ def test_dist_op_5():
 def test_ecu():
     parser = ParserWrapper("a2l", "ecu", A2LListener, debug=False)
     DATA = 'ECU "Steering control"'
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ec = db.session.query(model.Ecu).first()
     assert ec.controlUnit == "Steering control"
 
@@ -1613,7 +1591,7 @@ def test_ecu():
 def test_ecu_address():
     parser = ParserWrapper("a2l", "ecuAddress", A2LListener, debug=False)
     DATA = "ECU_ADDRESS 0x12FE"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ec = db.session.query(model.EcuAddress).first()
     assert ec.address == 0x12FE
 
@@ -1633,7 +1611,7 @@ def test_ecu_address_extension():
         ECU_ADDRESS_EXTENSION 1
     /end MEASUREMENT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     meas = db.session.query(model.Measurement).first()
     assert meas.name == "N"
     assert meas.longIdentifier == "Engine speed"
@@ -1650,7 +1628,7 @@ def test_ecu_address_extension():
 def test_ecu_calibration_offset():
     parser = ParserWrapper("a2l", "ecuCalibrationOffset", A2LListener, debug=False)
     DATA = "ECU_CALIBRATION_OFFSET 0x1000"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ec = db.session.query(model.EcuCalibrationOffset).first()
     assert ec.offset == 0x1000
 
@@ -1658,7 +1636,7 @@ def test_ecu_calibration_offset():
 def test_epk():
     parser = ParserWrapper("a2l", "epk", A2LListener, debug=False)
     DATA = 'EPK "EPROM identifier test"'
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     epk = db.session.query(model.Epk).first()
     assert epk.identifier == "EPROM identifier test"
 
@@ -1666,7 +1644,7 @@ def test_epk():
 def test_error_mask():
     parser = ParserWrapper("a2l", "errorMask", A2LListener, debug=False)
     DATA = "ERROR_MASK 0x00000001"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     em = db.session.query(model.ErrorMask).first()
     assert em.mask == 0x00000001
 
@@ -1677,7 +1655,7 @@ def test_extended_limits():
         EXTENDED_LIMITS     0
                             6000.0
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     el = db.session.query(model.ExtendedLimits).first()
     assert el.lowerLimit == 0.0
     assert el.upperLimit == 6000.0
@@ -1691,7 +1669,7 @@ def test_fix_axis_par():
                     4
                     6
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     fap = db.session.query(model.FixAxisPar).first()
     assert fap.offset == 0
     assert fap.shift == 4
@@ -1705,7 +1683,7 @@ def test_fix_axis_par_dist():
                         100
                         8
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     fap = db.session.query(model.FixAxisParDist).first()
     assert fap.offset == 0
     assert fap.distance == 100
@@ -1719,7 +1697,7 @@ def test_fix_axis_par_list():
         2 5 9
     /end FIX_AXIS_PAR_LIST
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     fal = db.session.query(model.FixAxisParList).first()
     assert fal.axisPts_Value == [2.0, 5.0, 9.0]
 
@@ -1727,7 +1705,7 @@ def test_fix_axis_par_list():
 def test_fix_no_axis_pts_x():
     parser = ParserWrapper("a2l", "fixNoAxisPtsX", A2LListener, debug=False)
     DATA = "FIX_NO_AXIS_PTS_X   17"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     fp = db.session.query(model.FixNoAxisPtsX).first()
     assert fp.numberOfAxisPoints == 17
 
@@ -1735,7 +1713,7 @@ def test_fix_no_axis_pts_x():
 def test_fix_no_axis_pts_y():
     parser = ParserWrapper("a2l", "fixNoAxisPtsY", A2LListener, debug=False)
     DATA = "FIX_NO_AXIS_PTS_Y   17"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     fp = db.session.query(model.FixNoAxisPtsY).first()
     assert fp.numberOfAxisPoints == 17
 
@@ -1743,7 +1721,7 @@ def test_fix_no_axis_pts_y():
 def test_fix_no_axis_pts_z():
     parser = ParserWrapper("a2l", "fixNoAxisPtsZ", A2LListener, debug=False)
     DATA = "FIX_NO_AXIS_PTS_Z   17"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     fp = db.session.query(model.FixNoAxisPtsZ).first()
     assert fp.numberOfAxisPoints == 17
 
@@ -1751,7 +1729,7 @@ def test_fix_no_axis_pts_z():
 def test_fix_no_axis_pts_4():
     parser = ParserWrapper("a2l", "fixNoAxisPts4", A2LListener, debug=False)
     DATA = "FIX_NO_AXIS_PTS_4   17"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     fp = db.session.query(model.FixNoAxisPts4).first()
     assert fp.numberOfAxisPoints == 17
 
@@ -1759,7 +1737,7 @@ def test_fix_no_axis_pts_4():
 def test_fix_no_axis_pts_5():
     parser = ParserWrapper("a2l", "fixNoAxisPts5", A2LListener, debug=False)
     DATA = "FIX_NO_AXIS_PTS_5   17"
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     fp = db.session.query(model.FixNoAxisPts5).first()
     assert fp.numberOfAxisPoints == 17
 
@@ -1772,7 +1750,7 @@ def test_fnc_values():
                 COLUMN_DIR
                 DIRECT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     fv = db.session.query(model.FncValues).first()
     assert fv.position == 7
     assert fv.datatype == "SWORD"
@@ -1783,7 +1761,7 @@ def test_fnc_values():
 def test_format():
     parser = ParserWrapper("a2l", "format_", A2LListener, debug=False)
     DATA = 'FORMAT "%4.2"'
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     fm = db.session.query(model.Format).first()
     assert fm.formatString == "%4.2"
 
@@ -1794,7 +1772,7 @@ def test_formula():
         /begin FORMULA "sqrt( 3 - 4*sin(X1) )"
         /end FORMULA
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     fm = db.session.query(model.Formula).first()
     assert fm.f_x == "sqrt( 3 - 4*sin(X1) )"
 
@@ -1804,7 +1782,7 @@ def test_formula_inv():
     DATA = """
     FORMULA_INV "asin( sqrt( (3 - X1)/4 ) )"
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     fm = db.session.query(model.FormulaInv).first()
     assert fm.g_x == "asin( sqrt( (3 - X1)/4 ) )"
 
@@ -1819,7 +1797,7 @@ def test_frame():
         FRAME_MEASUREMENT LOOP_COUNTER TEMPORARY_1
     /end FRAME
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     frame = db.session.query(model.Frame).first()
     assert frame.name == "ABS_ADJUSTM"
     assert frame.longIdentifier == "function group ABS adjustment"
@@ -1833,7 +1811,7 @@ def test_frame_measurement():
     DATA = """
     FRAME_MEASUREMENT WHEEL_REVOLUTIONS ENGINE_SPEED
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     fm = db.session.query(model.FrameMeasurement).first()
     assert fm.identifier == ["WHEEL_REVOLUTIONS", "ENGINE_SPEED"]
 
@@ -1857,7 +1835,7 @@ def test_function():
         /end SUB_FUNCTION
     /end FUNCTION
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     func = db.session.query(model.Function).first()
     assert func.name == "ID_ADJUSTM"
     assert func.longIdentifier == "function group idling adjustment"
@@ -1878,7 +1856,7 @@ def test_function_list():
         SPEED_LIM
     /end FUNCTION_LIST
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     func = db.session.query(model.FunctionList).first()
     assert func.name == ["ID_ADJUSTM", "FL_ADJUSTM", "SPEED_LIM"]
 
@@ -1888,7 +1866,7 @@ def test_function_version():
     DATA = """
     FUNCTION_VERSION "BG5.0815"
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     func = db.session.query(model.FunctionVersion).first()
     assert func.versionIdentifier == "BG5.0815"
 
@@ -2029,7 +2007,7 @@ def test_group():
     /end GROUP
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     groups = db.session.query(model.Group).all()
     assert len(groups) == 17
     g0, g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11, g12, g13, g14, g15, g16 = groups
@@ -2061,10 +2039,7 @@ def test_group():
     assert g6.groupLongIdentifier == "Module filename c6tderft"
 
     assert g7.groupName == "CALIBRATION_COMPONENTS"
-    assert (
-        g7.groupLongIdentifier
-        == "assignment of the definitions to calibration components"
-    )
+    assert g7.groupLongIdentifier == "assignment of the definitions to calibration components"
 
     assert g8.groupName == "CALIBRATION_COMPONENTS_L4"
     assert g8.groupLongIdentifier == "L4-PCM 2002 cals"
@@ -2118,7 +2093,7 @@ def test_guard_rails():
         /end AXIS_DESCR
     /end CHARACTERISTIC
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     chx = db.session.query(model.Characteristic).first()
 
     assert chx.name == "F_INJ_CORR"
@@ -2148,7 +2123,7 @@ def test_header():
         PROJECT_NO M4711Z1
     /end HEADER
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     hdr = db.session.query(model.Header).first()
     assert hdr.version.versionIdentifier == "BG5.0815"
     assert hdr.comment == "see also specification XYZ of 01.02.1994"
@@ -2162,7 +2137,7 @@ def test_identification():
         1
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     idf = db.session.query(model.Identification).first()
     assert idf.position == 1
     assert idf.datatype == "UWORD"
@@ -2175,7 +2150,7 @@ def test_in_measurement():
         ENGINE_SPEED
     /end IN_MEASUREMENT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     im = db.session.query(model.InMeasurement).first()
     assert im.identifier == ["WHEEL_REVOLUTIONS", "ENGINE_SPEED"]
 
@@ -2187,7 +2162,7 @@ def test_loc_measurement():
         TEMPORARY_1
     /end LOC_MEASUREMENT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     lm = db.session.query(model.LocMeasurement).first()
     assert lm.identifier == ["LOOP_COUNTER", "TEMPORARY_1"]
 
@@ -2199,7 +2174,7 @@ def test_map_list():
         MAP_2 MAP_3
     /end MAP_LIST
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     lm = db.session.query(model.MapList).first()
     assert lm.name == ["MAP_1", "MAP_2", "MAP_3"]
 
@@ -2211,7 +2186,7 @@ def test_matrix_dim():
                 4
                 3
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     md = db.session.query(model.MatrixDim).first()
     assert md.xDim == 2
     assert md.yDim == 4
@@ -2223,7 +2198,7 @@ def test_max_grad():
     DATA = """
     MAX_GRAD 200.0
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     mg = db.session.query(model.MaxGrad).first()
     assert mg.maxGradient == 200.0
 
@@ -2234,7 +2209,7 @@ def test_max_refresh():
     MAX_REFRESH
         998 2   /* ScalingUnit = 998 --> Every second frame */
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     mr = db.session.query(model.MaxRefresh).first()
     assert mr.scalingUnit == 998
     assert mr.rate == 2
@@ -2297,7 +2272,7 @@ def test_measurement():
         /end MEASUREMENT
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     meas = db.session.query(model.Measurement).all()
     assert len(meas) == 3
     m0, m1, m2 = meas
@@ -2376,7 +2351,7 @@ def test_memory_layout():
         /end MEMORY_LAYOUT
     /end MOD_PAR
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ly = db.session.query(model.MemoryLayout).all()
     l0, l1, l2, l3, l4, l5 = ly
 
@@ -2504,7 +2479,7 @@ def test_memory_segment():
         /end MEMORY_SEGMENT
     /end MOD_PAR
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ms = db.session.query(model.MemorySegment).all()
     m0, m1, m2, m3, m4, m5, m6 = ms
     assert m0.name == "Data1"
@@ -2610,7 +2585,7 @@ def test_mod_common():
         ALIGNMENT_BYTE 2
     /end MOD_COMMON
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     mc = db.session.query(model.ModCommon).first()
     assert mc.comment == "Characteristic maps always deposited in same mode"
     assert mc.s_rec_layout.name == "S_ABL"
@@ -2663,7 +2638,7 @@ def test_mod_par():
         SYSTEM_CONSTANT "CONTROLLERx constant2" "2.79"
     /end MOD_PAR
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     mp = db.session.query(model.ModPar).first()
     assert mp.comment == "Note: Provisional release for test purposes only!"
 
@@ -2733,7 +2708,7 @@ def test_monotony():
     DATA = """
     MONOTONY MON_INCREASE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     mn = db.session.query(model.Monotony).first()
     assert mn.monotony == "MON_INCREASE"
 
@@ -2744,7 +2719,7 @@ def test_no_axis_pts_x():
     NO_AXIS_PTS_X   2
                     UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     na = db.session.query(model.NoAxisPtsX).first()
     assert na.position == 2
     assert na.datatype == "UWORD"
@@ -2756,7 +2731,7 @@ def test_no_axis_pts_y():
     NO_AXIS_PTS_Y   2
                     UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     na = db.session.query(model.NoAxisPtsY).first()
     assert na.position == 2
     assert na.datatype == "UWORD"
@@ -2768,7 +2743,7 @@ def test_no_axis_pts_z():
     NO_AXIS_PTS_Z   2
                     UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     na = db.session.query(model.NoAxisPtsZ).first()
     assert na.position == 2
     assert na.datatype == "UWORD"
@@ -2780,7 +2755,7 @@ def test_no_axis_pts_4():
     NO_AXIS_PTS_4   2
                     UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     na = db.session.query(model.NoAxisPts4).first()
     assert na.position == 2
     assert na.datatype == "UWORD"
@@ -2792,7 +2767,7 @@ def test_no_axis_pts_5():
     NO_AXIS_PTS_5   2
                     UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     na = db.session.query(model.NoAxisPts5).first()
     assert na.position == 2
     assert na.datatype == "UWORD"
@@ -2803,7 +2778,7 @@ def test_no_of_interfaces():
     DATA = """
     NO_OF_INTERFACES    2
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     no = db.session.query(model.NoOfInterfaces).first()
     assert no.num == 2
 
@@ -2814,7 +2789,7 @@ def test_no_rescale_x():
     NO_RESCALE_X    1
                     UBYTE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     na = db.session.query(model.NoRescaleX).first()
     assert na.position == 1
     assert na.datatype == "UBYTE"
@@ -2826,7 +2801,7 @@ def test_no_rescale_y():
     NO_RESCALE_Y    1
                     UBYTE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     na = db.session.query(model.NoRescaleY).first()
     assert na.position == 1
     assert na.datatype == "UBYTE"
@@ -2838,7 +2813,7 @@ def test_no_rescale_z():
     NO_RESCALE_Z    1
                     UBYTE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     na = db.session.query(model.NoRescaleZ).first()
     assert na.position == 1
     assert na.datatype == "UBYTE"
@@ -2850,7 +2825,7 @@ def test_no_rescale_4():
     NO_RESCALE_4    1
                     UBYTE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     na = db.session.query(model.NoRescale4).first()
     assert na.position == 1
     assert na.datatype == "UBYTE"
@@ -2862,7 +2837,7 @@ def test_no_rescale_5():
     NO_RESCALE_5    1
                     UBYTE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     na = db.session.query(model.NoRescale5).first()
     assert na.position == 1
     assert na.datatype == "UBYTE"
@@ -2873,7 +2848,7 @@ def test_number():
     DATA = """
     NUMBER  7
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     nu = db.session.query(model.Number).first()
     assert nu.number == 7
 
@@ -2884,7 +2859,7 @@ def test_offset_x():
     OFFSET_X    16
                 UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     na = db.session.query(model.OffsetX).first()
     assert na.position == 16
     assert na.datatype == "UWORD"
@@ -2896,7 +2871,7 @@ def test_offset_y():
     OFFSET_Y    16
                 UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     na = db.session.query(model.OffsetY).first()
     assert na.position == 16
     assert na.datatype == "UWORD"
@@ -2908,7 +2883,7 @@ def test_offset_z():
     OFFSET_Z    16
                 UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     na = db.session.query(model.OffsetZ).first()
     assert na.position == 16
     assert na.datatype == "UWORD"
@@ -2920,7 +2895,7 @@ def test_offset_4():
     OFFSET_4    16
                 UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     na = db.session.query(model.Offset4).first()
     assert na.position == 16
     assert na.datatype == "UWORD"
@@ -2932,7 +2907,7 @@ def test_offset_5():
     OFFSET_5    16
                 UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     na = db.session.query(model.Offset5).first()
     assert na.position == 16
     assert na.datatype == "UWORD"
@@ -2945,7 +2920,7 @@ def test_out_measurement():
         SENSOR_FLAG
     /end OUT_MEASUREMENT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     om = db.session.query(model.OutMeasurement).first()
     assert om.identifier == ["OK_FLAG", "SENSOR_FLAG"]
 
@@ -2955,7 +2930,7 @@ def test_phone_no():
     DATA = """
     PHONE_NO "09498 594562"
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     pn = db.session.query(model.PhoneNo).first()
     assert pn.telnum == "09498 594562"
 
@@ -2965,7 +2940,7 @@ def test_phys_unit():
     DATA = """
     PHYS_UNIT "°C"
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     pn = db.session.query(model.PhysUnit).first()
     assert pn.unit == "°C"
 
@@ -2983,7 +2958,7 @@ def test_project():
 //        /include ABS_ECU.A2L /* Include for ABS module */
         /end PROJECT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     prj = db.session.query(model.Project).first()
     assert prj.name == "RAPE_SEED_ENGINE"
     assert prj.longIdentifier == "Engine tuning for operation with rape oil"
@@ -2997,7 +2972,7 @@ def test_project_no():
     DATA = """
     PROJECT_NO M4711Z1
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     pn = db.session.query(model.ProjectNo).first()
     assert pn.projectNumber == "M4711Z1"
 
@@ -3024,7 +2999,7 @@ def test_read_only():
         READ_ONLY
     /end CHARACTERISTIC
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     chx = db.session.query(model.Characteristic).first()
 
     assert chx.name == "KI"
@@ -3067,7 +3042,7 @@ def test_read_write():
 */
     /end MEASUREMENT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     meas = db.session.query(model.Measurement).first()
     assert meas.name == "N"
     assert meas.longIdentifier == "Engine speed"
@@ -3182,7 +3157,7 @@ def test_record_layout():
         /end RECORD_LAYOUT
     /end MODULE
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     recs = db.session.query(model.RecordLayout).all()
     (
         r0,
@@ -3409,7 +3384,7 @@ def test_ref_characteristic():
     /begin REF_CHARACTERISTIC ENG_SPEED_CORR_CURVE
     /end REF_CHARACTERISTIC
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     rc = db.session.query(model.RefCharacteristic).first()
     assert rc.identifier == ["ENG_SPEED_CORR_CURVE"]
 
@@ -3421,7 +3396,7 @@ def test_ref_group():
         GROUP_2
     /end REF_GROUP
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     rg = db.session.query(model.RefGroup).first()
     assert rg.identifier == ["GROUP_1", "GROUP_2"]
 
@@ -3433,7 +3408,7 @@ def test_ref_measurement():
         TEMPORARY_1
     /end REF_MEASUREMENT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     rm = db.session.query(model.RefMeasurement).first()
     assert rm.identifier == ["LOOP_COUNTER", "TEMPORARY_1"]
 
@@ -3443,7 +3418,7 @@ def test_ref_memory_segment():
     DATA = """
     REF_MEMORY_SEGMENT Data1
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     rm = db.session.query(model.RefMemorySegment).first()
     assert rm.name == "Data1"
 
@@ -3460,7 +3435,7 @@ def test_ref_unit():
         REF_UNIT kms_per_hour /* new (optional) parameter */
     /end COMPU_METHOD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     cm = db.session.query(model.CompuMethod).first()
     assert cm.name == "Velocity"
     assert cm.longIdentifier == "conversion method for velocity"
@@ -3482,7 +3457,7 @@ def test_reserved():
     RESERVED 7
         LONG
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     rs = db.session.query(model.Reserved).first()
     assert rs.position == 7
     assert rs.dataSize == "LONG"
@@ -3494,7 +3469,7 @@ def test_rip_addr_w():
     RIP_ADDR_W 19
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ra = db.session.query(model.RipAddrW).first()
     assert ra.position == 19
     assert ra.datatype == "UWORD"
@@ -3506,7 +3481,7 @@ def test_rip_addr_x():
     RIP_ADDR_X 19
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ra = db.session.query(model.RipAddrX).first()
     assert ra.position == 19
     assert ra.datatype == "UWORD"
@@ -3518,7 +3493,7 @@ def test_rip_addr_y():
     RIP_ADDR_Y 19
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ra = db.session.query(model.RipAddrY).first()
     assert ra.position == 19
     assert ra.datatype == "UWORD"
@@ -3530,7 +3505,7 @@ def test_rip_addr_z():
     RIP_ADDR_Z 19
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ra = db.session.query(model.RipAddrZ).first()
     assert ra.position == 19
     assert ra.datatype == "UWORD"
@@ -3542,7 +3517,7 @@ def test_rip_addr_4():
     RIP_ADDR_4 19
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ra = db.session.query(model.RipAddr4).first()
     assert ra.position == 19
     assert ra.datatype == "UWORD"
@@ -3554,7 +3529,7 @@ def test_rip_addr_5():
     RIP_ADDR_5 19
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ra = db.session.query(model.RipAddr5).first()
     assert ra.position == 19
     assert ra.datatype == "UWORD"
@@ -3571,7 +3546,7 @@ def test_root():
         /end SUB_GROUP
     /end GROUP
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     grp = db.session.query(model.Group).first()
     assert grp.groupName == "SOFTWARE_COMPONENTS"
     assert grp.groupLongIdentifier == "assignment of the definitions to C files"
@@ -3585,7 +3560,7 @@ def test_shift_op_x():
     SHIFT_OP_X 21
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ra = db.session.query(model.ShiftOpX).first()
     assert ra.position == 21
     assert ra.datatype == "UWORD"
@@ -3597,7 +3572,7 @@ def test_shift_op_y():
     SHIFT_OP_Y 21
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ra = db.session.query(model.ShiftOpY).first()
     assert ra.position == 21
     assert ra.datatype == "UWORD"
@@ -3609,7 +3584,7 @@ def test_shift_op_z():
     SHIFT_OP_Z 21
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ra = db.session.query(model.ShiftOpZ).first()
     assert ra.position == 21
     assert ra.datatype == "UWORD"
@@ -3621,7 +3596,7 @@ def test_shift_op_4():
     SHIFT_OP_4 21
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ra = db.session.query(model.ShiftOp4).first()
     assert ra.position == 21
     assert ra.datatype == "UWORD"
@@ -3633,7 +3608,7 @@ def test_shift_op_5():
     SHIFT_OP_5 21
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ra = db.session.query(model.ShiftOp5).first()
     assert ra.position == 21
     assert ra.datatype == "UWORD"
@@ -3650,7 +3625,7 @@ def test_si_exponents():
         SI_EXPONENTS 1 1 -2 0 0 0 0 /*[N] = [m]*[kg]*[s] -2 */
     /end UNIT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     unit = db.session.query(model.Unit).first()
     assert unit.name == "newton"
     assert unit.longIdentifier == "extended SI unit for force"
@@ -3671,7 +3646,7 @@ def test_src_addr_x():
     SRC_ADDR_X 1
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ra = db.session.query(model.SrcAddrX).first()
     assert ra.position == 1
     assert ra.datatype == "UWORD"
@@ -3683,7 +3658,7 @@ def test_src_addr_y():
     SRC_ADDR_Y 1
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ra = db.session.query(model.SrcAddrY).first()
     assert ra.position == 1
     assert ra.datatype == "UWORD"
@@ -3695,7 +3670,7 @@ def test_src_addr_z():
     SRC_ADDR_Z 1
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ra = db.session.query(model.SrcAddrZ).first()
     assert ra.position == 1
     assert ra.datatype == "UWORD"
@@ -3707,7 +3682,7 @@ def test_src_addr_4():
     SRC_ADDR_4 1
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ra = db.session.query(model.SrcAddr4).first()
     assert ra.position == 1
     assert ra.datatype == "UWORD"
@@ -3719,7 +3694,7 @@ def test_src_addr_5():
     SRC_ADDR_5 1
         UWORD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ra = db.session.query(model.SrcAddr5).first()
     assert ra.position == 1
     assert ra.datatype == "UWORD"
@@ -3738,7 +3713,7 @@ def test_static_record_layout():
         STATIC_RECORD_LAYOUT
     /end RECORD_LAYOUT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     rl = db.session.query(model.RecordLayout).first()
     assert rl.name == "mapLayoutNotCompact"
     assert rl.no_axis_pts_x.position == 1
@@ -3772,7 +3747,7 @@ def test_status_string_ref():
         STATUS_STRING_REF CT_SensorStatus
     /end COMPU_METHOD
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     cm = db.session.query(model.CompuMethod).first()
     assert cm.name == "CM_LINFUNC_SENSOR_A"
     assert cm.longIdentifier == "conversion method for Sensor A"
@@ -3789,7 +3764,7 @@ def test_step_size():
     DATA = """
     STEP_SIZE 0.025
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ss = db.session.query(model.StepSize).first()
     assert ss.stepSize == 0.025
 
@@ -3800,7 +3775,7 @@ def test_sub_function():
     /begin SUB_FUNCTION ID_ADJUSTM_SUB
     /end SUB_FUNCTION
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     sf = db.session.query(model.SubFunction).first()
     assert sf.identifier == ["ID_ADJUSTM_SUB"]
 
@@ -3811,7 +3786,7 @@ def test_sub_group():
     /begin SUB_GROUP ID_ADJUSTM_SUB
     /end SUB_GROUP
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     sf = db.session.query(model.SubGroup).first()
     assert sf.identifier == ["ID_ADJUSTM_SUB"]
 
@@ -3821,7 +3796,7 @@ def test_supplier():
     DATA = """
     SUPPLIER "Smooth and Easy"
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     sp = db.session.query(model.Supplier).first()
     assert sp.manufacturer == "Smooth and Easy"
 
@@ -3832,7 +3807,7 @@ def test_symbol_link():
     SYMBOL_LINK "_VehicleSpeed" /* Symbol name */
                 0
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     sl = db.session.query(model.SymbolLink).first()
     assert sl.symbolName == "_VehicleSpeed"
     assert sl.offset == 0
@@ -3844,7 +3819,7 @@ def test_system_constant():
     SYSTEM_CONSTANT "CONTROLLER_CONSTANT12"
         "2.7134"
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     sc = db.session.query(model.SystemConstant).first()
     assert sc.name == "CONTROLLER_CONSTANT12"
     assert sc.value == "2.7134"
@@ -3855,7 +3830,7 @@ def test_s_rec_layout():
     DATA = """
     S_REC_LAYOUT S_ABL /* record layout */
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     sl = db.session.query(model.SRecLayout).first()
     assert sl.name == "S_ABL"
 
@@ -3872,7 +3847,7 @@ def test_unit():
         UNIT_CONVERSION 3.6 0.0 /* y [km/h] = (60*60/1000) * x [m/s] + 0.0 */
     /end UNIT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     unit = db.session.query(model.Unit).first()
     assert unit.name == "kms_per_hour"
     assert unit.longIdentifier == "derived unit for velocity: kilometres per hour"
@@ -3895,7 +3870,7 @@ def test_unit_conversion():
         UNIT_CONVERSION 1.0 -273.15 /* y [°C] = 1.0 * x [K] + (-273.15) */
     /end UNIT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     unit = db.session.query(model.Unit).first()
     assert unit.name == "degC"
     assert unit.longIdentifier == "unit for temperature: degree Celsius"
@@ -3911,7 +3886,7 @@ def test_user():
     DATA = """
     USER "Nigel Hurst"
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     sp = db.session.query(model.User).first()
     assert sp.userName == "Nigel Hurst"
 
@@ -3924,7 +3899,7 @@ def test_user_rights():
         /end REF_GROUP
     /end USER_RIGHTS
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     ur = db.session.query(model.UserRights).first()
     assert ur.userLevelId == "calibration_engineers"
     assert ur.ref_group[0].identifier == ["group_1"]
@@ -3940,7 +3915,7 @@ def test_var_address():
         0x8888
     /end VAR_ADDRESS
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     va = db.session.query(model.VarAddress).first()
     assert va.address == [34880, 34904, 34928, 34952]
 
@@ -3964,7 +3939,7 @@ def test_var_characteristic():
         /end VAR_ADDRESS
     /end VAR_CHARACTERISTIC
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     vc = db.session.query(model.VarCharacteristic).first()
     assert vc.name == "NLLM"
     assert vc.criterionName == ["Gear", "Car"]
@@ -3984,7 +3959,7 @@ def test_var_criterion():
         VAR_SELECTION_CHARACTERISTIC V_CAR
     /end VAR_CRITERION
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     vc = db.session.query(model.VarCriterion).first()
     assert vc.name == "Car"
     assert vc.longIdentifier == "Car body"
@@ -4002,7 +3977,7 @@ def test_var_forbidden_comb():
         /end VAR_FORBIDDEN_COMB
     /end VARIANT_CODING
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     vf = db.session.query(model.VarForbiddenComb).first()
     print(vf)
 
@@ -4016,7 +3991,7 @@ def test_var_measurement():
         VAR_MEASUREMENT S_GEAR_BOX
     /end VAR_CRITERION
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     vc = db.session.query(model.VarCriterion).first()
     assert vc.name == "Car"
     assert vc.longIdentifier == "Car body"
@@ -4029,7 +4004,7 @@ def test_var_naming():
     /* variant extension: see example VAR_CRITERION*/
     VAR_NAMING NUMERIC
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     vn = db.session.query(model.VarNaming).first()
     assert vn.tag == "NUMERIC"
 
@@ -4043,7 +4018,7 @@ def test_var_selection_characteristic():
         VAR_SELECTION_CHARACTERISTIC S_GEAR_BOX
     /end VAR_CRITERION
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     vs = db.session.query(model.VarCriterion).first()
     assert vs.name == "Car"
     assert vs.longIdentifier == "Car body"
@@ -4059,7 +4034,7 @@ def test_var_separator():
     /* 2.) Separator: "." (decimal point) */
     /* 3.) Variants extension: "1" */
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     vs = db.session.query(model.VarSeparator).first()
     assert vs.separator == "."
 
@@ -4109,7 +4084,7 @@ def test_variant_coding():
         /end VAR_CHARACTERISTIC
     /end VARIANT_CODING
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     vc = db.session.query(model.VariantCoding).first()
     assert vc.var_separator.separator == "."
     assert vc.var_naming.tag == "NUMERIC"
@@ -4143,7 +4118,7 @@ def test_version():
     DATA = """
     VERSION "BG5.0815"
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     vs = db.session.query(model.Version).first()
     assert vs.versionIdentifier == "BG5.0815"
 
@@ -4165,7 +4140,7 @@ def test_virtual():
         /end VIRTUAL
     /end MEASUREMENT
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     meas = db.session.query(model.Measurement).first()
     assert meas.name == "PHI_FIRING"
     assert meas.longIdentifier == "Firing angle"
@@ -4186,7 +4161,7 @@ def test_virtual_characteristic():
         B
     /end VIRTUAL_CHARACTERISTIC
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     vs = db.session.query(model.VirtualCharacteristic).first()
     assert vs.characteristic_id == ["B"]
     assert vs.formula == "sin(X1)"
@@ -4201,7 +4176,7 @@ def test_meta_data():
     """
     from pya2l.model import CURRENT_SCHEMA_VERSION
 
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     meta = db.session.query(model.MetaData).first()
     assert meta.schema_version == CURRENT_SCHEMA_VERSION
 
@@ -4221,7 +4196,7 @@ def test_multi_dimensional_array():
         FORMAT "%3.1"
     /end CHARACTERISTIC
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     chx = db.session.query(model.Characteristic).first()
 
 
@@ -4230,7 +4205,7 @@ def test_asap2_version():
     DATA = """
     ASAP2_VERSION 1 60
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     vers = db.session.query(model.Asap2Version).first()
     assert vers.versionNo == 1
     assert vers.upgradeNo == 60
@@ -4241,7 +4216,7 @@ def test_asap2_version_out_of_range():
     DATA = """
     ASAP2_VERSION 1 30
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     vers = db.session.query(model.Asap2Version).first()
     assert vers.versionNo == 1
     assert vers.upgradeNo == 30
@@ -4252,7 +4227,7 @@ def test_a2ml_version():
     DATA = """
     A2ML_VERSION 1 2
     """
-    db = parser.parseFromString(DATA)
+    db, _ = parser.parseFromString(DATA)
     vers = db.session.query(model.A2mlVersion).first()
     assert vers.versionNo == 1
     assert vers.upgradeNo == 2

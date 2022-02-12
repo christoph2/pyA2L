@@ -14,14 +14,11 @@ from pya2l.preprocessor import Preprocessor
 def test_singleline_ifdata():
     pre = Preprocessor()
     res = pre.process(BASE_DIR / "singleline_ifdata.a2l")
-    assert len(res.if_data_sections) == 1
-    sec = res.if_data_sections[0]
-    assert (
-        sec.data
-        == r"/begin IF_DATA XCP /begin DAQ_EVENT FIXED_EVENT_LIST EVENT 0x0 /end DAQ_EVENT /end IF_DATA"
-    )
-    assert sec.start_line == (1, 173)
-    assert sec.end_line == (1, 263)
+    if_data_sections = res.if_data_sections
+    assert len(if_data_sections) == 1
+    pos, data = if_data_sections.popitem()
+    assert data == r"/begin IF_DATA XCP /begin DAQ_EVENT FIXED_EVENT_LIST EVENT 0x0 /end DAQ_EVENT /end IF_DATA"
+    assert pos == ((0, 173), (0, 256))
     assert (
         res.a2l_data
         == '/begin MEASUREMENT ecuCounter "16 bit counter incrementing exactly every 100us in XCP slave time" UWORD ecuCounter_COMPU_METHOD 0 0 0 65535 ECU_ADDRESS 0x2E348 PHYS_UNIT "" /begin IF_DATA XCP                                                            /end IF_DATA /end MEASUREMENT'
@@ -37,30 +34,20 @@ def test_multiple_ifdatas_per_line():
     """
     sections = res.if_data_sections
     assert len(sections) == 3
+    """
+        {((0, 200), (0, 303)): '/begin IF_DATA CANAPE_EXT 100 LINK_MAP "wordCounter" 0x125438 0x0 0 0x0 1 0x8F 0x0 DISPLAY 0 0 15 /end IF_DATA',
+        ((0, 534), (0, 638)): '/begin IF_DATA CANAPE_EXT 100 LINK_MAP "wordCounter1" 0x12543a 0x0 0 0x0 1 0x8F 0x0 DISPLAY 0 0 31 /end IF_DATA',
+        ((0, 871), (0, 975)): '/begin IF_DATA CANAPE_EXT 100 LINK_MAP "wordCounter2" 0x12543c 0x0 0 0x0 1 0x8F 0x0 DISPLAY 0 0 31 /end IF_DATA'}
 
-    sec = sections[0]
-    assert sec.start_line == (1, 200)
-    assert sec.end_line == (1, 310)
-    assert (
-        sec.data
-        == '/begin IF_DATA CANAPE_EXT 100 LINK_MAP "wordCounter" 0x125438 0x0 0 0x0 1 0x8F 0x0 DISPLAY 0 0 15 /end IF_DATA'
-    )
+    """
+    data = sections[((0, 200), (0, 303))]
+    assert data == '/begin IF_DATA CANAPE_EXT 100 LINK_MAP "wordCounter" 0x125438 0x0 0 0x0 1 0x8F 0x0 DISPLAY 0 0 15 /end IF_DATA'
 
-    sec = sections[1]
-    assert sec.start_line == (1, 534)
-    assert sec.end_line == (1, 645)
-    assert (
-        sec.data
-        == '/begin IF_DATA CANAPE_EXT 100 LINK_MAP "wordCounter1" 0x12543a 0x0 0 0x0 1 0x8F 0x0 DISPLAY 0 0 31 /end IF_DATA'
-    )
+    data = sections[((0, 534), (0, 638))]
+    assert data == '/begin IF_DATA CANAPE_EXT 100 LINK_MAP "wordCounter1" 0x12543a 0x0 0 0x0 1 0x8F 0x0 DISPLAY 0 0 31 /end IF_DATA'
 
-    sec = sections[2]
-    assert sec.start_line == (1, 871)
-    assert sec.end_line == (1, 982)
-    assert (
-        sec.data
-        == '/begin IF_DATA CANAPE_EXT 100 LINK_MAP "wordCounter2" 0x12543c 0x0 0 0x0 1 0x8F 0x0 DISPLAY 0 0 31 /end IF_DATA'
-    )
+    data = sections[((0, 871), (0, 975))]
+    assert data == '/begin IF_DATA CANAPE_EXT 100 LINK_MAP "wordCounter2" 0x12543c 0x0 0 0x0 1 0x8F 0x0 DISPLAY 0 0 31 /end IF_DATA'
 
 
 # @pytest.mark.skip
@@ -69,13 +56,8 @@ def test_clean_ifdata():
     res = pre.process(BASE_DIR / "clean_ifdata.a2l")
     sections = res.if_data_sections
     assert len(sections) == 1
-    sec = sections[0]
-    assert sec.start_line == (12, 4)
-    assert sec.end_line == (16, 16)
-    assert (
-        sec.data
-        == "/begin IF_DATA XCP\n/begin DAQ_EVENT\nFIXED_EVENT_LIST EVENT 0x0\n/end DAQ_EVENT\n    /end IF_DATA"
-    )
+    data = sections[((11, 4), (15, 9))]
+    assert data == "/begin IF_DATA XCP\n/begin DAQ_EVENT\nFIXED_EVENT_LIST EVENT 0x0\n/end DAQ_EVENT\n    /end IF_DATA"
     assert (
         res.a2l_data
         == """/begin MEASUREMENT
@@ -104,14 +86,8 @@ def test_notso_clean_ifdata1():
     res = pre.process(BASE_DIR / "notso_clean_ifdata.a2l")
     sections = res.if_data_sections
     assert len(sections) == 1
-    sec = sections[0]
-    # print(res)
-    assert sec.start_line == (13, 4)
-    assert sec.end_line == (16, 36)
-    assert (
-        sec.data
-        == "/begin IF_DATA XCP \n/begin DAQ_EVENT\nFIXED_EVENT_LIST EVENT 0x0\n        /end DAQ_EVENT  /end IF_DATA"
-    )
+    data = sections[((12, 4), (15, 29))]
+    assert data == "/begin IF_DATA XCP \n/begin DAQ_EVENT\nFIXED_EVENT_LIST EVENT 0x0\n        /end DAQ_EVENT  /end IF_DATA"
     assert (
         res.a2l_data
         == '\n/begin MEASUREMENT \n    ecuCounter \n    "16 bit counter incrementing exactly every 100us in XCP slave time" \n    UWORD ecuCounter_\n    COMPU_METHOD \n    0 \n    0 \n    0 \n    65535 \n    ECU_ADDRESS 0x2E348 \n    PHYS_UNIT "" \n    /begin IF_DATA XCP \n\n\n                        /end IF_DATA'
@@ -124,14 +100,8 @@ def test_notso_clean_ifdata2():
     res = pre.process(BASE_DIR / "notso_clean_ifdata2.a2l")
     sections = res.if_data_sections
     assert len(sections) == 1
-    sec = sections[0]
-    # print(res)
-    assert sec.start_line == (13, 4)
-    assert sec.end_line == (16, 36)
-    assert (
-        sec.data
-        == "/begin IF_DATA XCP \n/begin DAQ_EVENT\nFIXED_EVENT_LIST EVENT 0x0\n        /end DAQ_EVENT  /end IF_DATA"
-    )
+    data = sections[((12, 4), (15, 29))]
+    assert data == "/begin IF_DATA XCP \n/begin DAQ_EVENT\nFIXED_EVENT_LIST EVENT 0x0\n        /end DAQ_EVENT  /end IF_DATA"
     assert (
         res.a2l_data
         == '\n/begin MEASUREMENT \n    ecuCounter \n    "16 bit counter incrementing exactly every 100us in XCP slave time" \n    UWORD ecuCounter_\n    COMPU_METHOD \n    0 \n    0 \n    0 \n    65535 \n    ECU_ADDRESS 0x2E348 \n    PHYS_UNIT "" \n    /begin IF_DATA XCP \n\n\n                        /end IF_DATA'

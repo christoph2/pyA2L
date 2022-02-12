@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__copyright__="""
+__copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
    (C) 2022 by Christoph Schueler <cpu12.gems@googlemail.com>
@@ -37,15 +37,15 @@ import antlr4
 from antlr4.BufferedTokenStream import BufferedTokenStream
 from antlr4.error.ErrorListener import ErrorListener
 
-import importlib as imp
-import pya2l
-imp.reload(pya2l)
-import pya2l.a2llg
-imp.reload(pya2l.a2llg)
-import pya2l.aml
-imp.reload(pya2l.aml)
-import pya2l.aml.classes
-imp.reload(pya2l.aml.classes)
+# import importlib as imp
+# import pya2l
+# imp.reload(pya2l)
+# import pya2l.a2llg
+# imp.reload(pya2l.a2llg)
+# import pya2l.aml
+# imp.reload(pya2l.aml)
+# import pya2l.aml.classes
+# imp.reload(pya2l.aml.classes)
 
 from pya2l import a2llg
 from pya2l.aml.classes import AMLPredefinedTypes, Referrer
@@ -67,28 +67,26 @@ IF_DATA_ELEMENTS = (
     "MEASUREMENT",
     "MEMORY_LAYOUT",
     "MEMORY_SEGMENT",
-    "MODULE"
+    "MODULE",
 )
 
 
 def token_to_int(token):
-    """
-    """
+    """ """
     text = token.text
     if text.startswith(("0x", "0X")):
         return int(text, 16)
     else:
         return int(text, 10)
 
+
 def token_to_float(token):
-    """
-    """
+    """ """
     return float(token.text)
 
 
 class IfDataParser:
-    """
-    """
+    """ """
 
     def __init__(self, syntax):
         self.logger = getLogger(self.__class__.__name__)
@@ -108,8 +106,7 @@ class IfDataParser:
         self.elements = []
 
     def parse(self, buffer):
-        """
-        """
+        """ """
         self.empty_stack()
         self.push_element(self.syntax.root_element)
         input_stream = antlr4.InputStream(buffer)
@@ -135,7 +132,7 @@ class IfDataParser:
         """Get the token at the current stream position."""
         return self.lookahead(0)
 
-    def lookahead(self, n = 1):
+    def lookahead(self, n=1):
         """Get the token `n` elements ahead of current stream position."""
         index = self.token_idx + n
         if index < self.num_tokens:
@@ -153,15 +150,15 @@ class IfDataParser:
         elif token.type == self.lexer.FLOAT:
             value = token_to_float(token)
         elif token.type == self.lexer.STRING:
-            value = token.text[1 : -1]
-        #print("\tValue: '{}'[{}]".format(value, token.type))
+            value = token.text[1:-1]
+        # print("\tValue: '{}'[{}]".format(value, token.type))
         return value
 
     def consume(self):
         """Increment token stream position by one."""
         self.token_idx += 1
 
-    def match(self, token_type, value = None):
+    def match(self, token_type, value=None):
         ok = self.current_token.type == token_type
         token_value = self.value(self.current_token)
         self.consume()
@@ -187,7 +184,7 @@ class IfDataParser:
             entry = elem.definition
         self.push_element(entry)
         class_name = entry.__class__.__name__
-        #print("block:", tag, multiple, class_name)
+        # print("block:", tag, multiple, class_name)
         if class_name == "TaggedUnion":
             result.append({"tag": tag, "value": self.tagged_union()})
         elif class_name == "StructType":
@@ -212,7 +209,7 @@ class IfDataParser:
         tag = self.current_token.text
         name = self.current_element.name
         definition = self.current_element.tags.get(tag)
-        #print("tagged_union", tag, name)
+        # print("tagged_union", tag, name)
         if definition:
             tp = definition.type_name
             tn = tp.type_.__class__.__name__
@@ -253,7 +250,7 @@ class IfDataParser:
             result = self.value(self.current_token)
             self.consume()
         self.leave("predefined_type")
-        #return {"type": tp, "value": result}
+        # return {"type": tp, "value": result}
         return result
 
     def enum(self):
@@ -262,21 +259,21 @@ class IfDataParser:
         self.match(self.lexer.IDENT)
         ok = enumerator in self.current_element.enumerators
         self.leave("enum")
-        #return {"type": "enum", "value": enumerator}
+        # return {"type": "enum", "value": enumerator}
         return enumerator
 
     def struct(self):
         self.enter("struct")
         members = self.current_element.members
         name = self.current_element.name
-        #print("struct: ", name)
+        # print("struct: ", name)
         result = []
-        for mem in members: ##!!!
+        for mem in members:  ##!!!
             value = mem.value
             multiple = mem.multiple
             entry = value.type_name.type_
             idi = entry.identifier if hasattr(entry, "identifier") else "n/a"
-            #print("str-mem:", name, idi, multiple)
+            # print("str-mem:", name, idi, multiple)
             if isinstance(entry, Referrer):
                 entry = self.syntax.get_type(entry.category, entry.identifier)
             self.push_element(entry)
@@ -307,7 +304,7 @@ class IfDataParser:
         self.enter("tagged_struct")
         tag = self.block_or_tag()
         name = self.current_element.name
-        #print("tagged_struct:", tag, name)
+        # print("tagged_struct:", tag, name)
         tags = self.current_element.tags.keys()
         counter = {k: False for k in tags}
         result = []
@@ -319,9 +316,9 @@ class IfDataParser:
                     self.push_element(definition.block_definition)
                     result.append(self.block())
                     self.pop_element()
-                    if (((self.current_token.type != self.lexer.IDENT) or
-                        (not self.current_token.text in tags)) and
-                        (self.current_token.type != self.lexer.BEGIN)):
+                    if ((self.current_token.type != self.lexer.IDENT) or (not self.current_token.text in tags)) and (
+                        self.current_token.type != self.lexer.BEGIN
+                    ):
                         break
                 elif definition.taggedstruct_definition.member:
                     self.consume()
@@ -329,10 +326,10 @@ class IfDataParser:
                         self.push_element(definition.taggedstruct_definition)
                         result.append(self.tagged_struct_member())
                         self.pop_element()
-                        if (((self.current_token.type != self.lexer.IDENT) or
-                            (not self.current_token.text in tags)) and
-                            (self.current_token.type != self.lexer.BEGIN)):
-                            #result = self.rewrite_tagged_struct_members(result)
+                        if ((self.current_token.type != self.lexer.IDENT) or (not self.current_token.text in tags)) and (
+                            self.current_token.type != self.lexer.BEGIN
+                        ):
+                            # result = self.rewrite_tagged_struct_members(result)
                             break
                     else:
                         raise NotImplementedError(definition.taggedstruct_definition.__class__.__name__)
@@ -349,7 +346,7 @@ class IfDataParser:
         tp = self.current_element.member.type_name.type_
         multiple = self.current_element.multiple
         tag = self.current_element.tag
-        #print("tagged_struct_member:", tag, multiple)
+        # print("tagged_struct_member:", tag, multiple)
         self.push_element(tp)
         class_name = tp.__class__.__name__
         if class_name == "PredefinedType":
@@ -358,17 +355,17 @@ class IfDataParser:
             result = {"type": "struct", "value": self.struct()}
         elif class_name == "Enumeration":
             result = {"value": self.enum()}
-            #result = self.enum()
+            # result = self.enum()
         elif class_name == "TaggedUnion":
-            #result = self.tagged_union()
+            # result = self.tagged_union()
             result = {"type": "tagged_union", "value": self.tagged_union()}
         elif class_name == "TaggedStructType":
-            #result = self.tagged_struct()
+            # result = self.tagged_struct()
             result = {"type": "tagged_struct", "value": self.tagged_struct()}
         else:
             raise NotImplementedError(tp.__class__.__name__)
         self.pop_element()
-        #print("\tTSM: {} TAG: {}".format(result, tag))
+        # print("\tTSM: {} TAG: {}".format(result, tag))
         return_value = {"tag": tag}
         return_value.update(result)
         return return_value
@@ -383,16 +380,13 @@ class IfDataParser:
 
     def type_as_str(self, type_):
         TYPE_MAP = {
-            self.lexer.IDENT:     "IDENT",
-            self.lexer.FLOAT:     "FLOAT",
-            self.lexer.INT:       "INT",
-            self.lexer.COMMENT:   "COMMENT",
-            self.lexer.WS:        "WS",
-            self.lexer.STRING:    "STRING",
-            self.lexer.BEGIN:     "BEGIN",
-            self.lexer.END:       "END",
+            self.lexer.IDENT: "IDENT",
+            self.lexer.FLOAT: "FLOAT",
+            self.lexer.INT: "INT",
+            self.lexer.COMMENT: "COMMENT",
+            self.lexer.WS: "WS",
+            self.lexer.STRING: "STRING",
+            self.lexer.BEGIN: "BEGIN",
+            self.lexer.END: "END",
         }
         return TYPE_MAP.get(type_)
-
-
-

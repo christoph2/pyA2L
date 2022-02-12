@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2021 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2022 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -27,6 +27,7 @@ __copyright__ = """
 __author__ = "Christoph Schueler"
 __version__ = "0.1.0"
 
+from collections import namedtuple
 import os
 import importlib
 import sys
@@ -35,6 +36,9 @@ import antlr4
 from antlr4.error.ErrorListener import ErrorListener
 
 from pya2l import model
+
+
+ResultType = namedtuple("ResultType", "db listener_result")
 
 
 class MyErrorListener(ErrorListener):
@@ -55,6 +59,23 @@ class MyErrorListener(ErrorListener):
             print("line " + str(line) + ":" + str(column) + " " + msg, file=sys.stderr)
 
 
+class LineMap:
+    """ """
+
+    def lookup(self, line):
+        return ":memory:", line
+
+
+class PPR:
+    """ """
+
+    def __init__(self):
+        self.line_map = LineMap()
+        self.aml_section = []
+        self.a2l_data = []
+        self.if_data_sections = []
+
+
 class ParserWrapper:
     """"""
 
@@ -63,19 +84,19 @@ class ParserWrapper:
         grammarName,
         startSymbol,
         listener=None,
-        useDatabase=True,
         debug=False,
         prepro_result=None,
     ):
         self.debug = debug
         self.grammarName = grammarName
         self.startSymbol = startSymbol
+        if prepro_result is None:
+            prepro_result = PPR()
         self.line_map = prepro_result.line_map
         self.prepro_result = prepro_result
         self.lexerModule, self.lexerClass = self._load("Lexer")
         self.parserModule, self.parserClass = self._load("Parser")
         self.listener = listener
-        self.useDatabase = useDatabase
 
     def _load(self, name):
         className = "{0}{1}".format(self.grammarName, name)
@@ -88,8 +109,7 @@ class ParserWrapper:
         )
 
     def parse(self, input, trace=False):
-        if self.useDatabase:
-            self.db = model.A2LDatabase(self.fnbase, debug=self.debug)
+        self.db = model.A2LDatabase(self.fnbase, debug=self.debug)
         lexer = self.lexerClass(input)
         lexer.removeErrorListeners()
         lexer.addErrorListener(MyErrorListener(self.line_map))
@@ -101,17 +121,15 @@ class ParserWrapper:
         meth = getattr(parser, self.startSymbol)
         self._syntaxErrors = parser._syntaxErrors
         tree = meth()
+        listener_result = None
         if self.listener:
-            if self.useDatabase:
-                self.listener.db = self.db
+            self.listener.db = self.db
             listener = self.listener(self.prepro_result)
             walker = antlr4.ParseTreeWalker()
-            result = walker.walk(listener, tree)
-        if self.useDatabase:
-            self.db.session.commit()
-            return self.db
-        else:
-            return listener
+            walker.walk(listener, tree)
+            listener_result = listener.result()
+        self.db.session.commit()
+        return ResultType(self.db, listener_result)
 
     def parseFromFile(self, filename, encoding="latin-1", trace=False):
         if filename == ":memory:":
