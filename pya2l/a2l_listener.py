@@ -269,7 +269,7 @@ class A2LListener(BaseListener):
                 (el, ec),
             )
         )
-        ctx.value = model.IfData(sl=sl, sc=sc, el=el, ec=ec, raw=ids, parsed="")
+        ctx.value = model.IfData(sl=sl, sc=sc, el=el, ec=ec, raw=ids, parsed=b"")
         self.db.session.add(ctx.value)
 
     def exitMatrixDim(self, ctx):

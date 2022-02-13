@@ -133,9 +133,15 @@ class DB(object):
         aml_section = prepro_result.aml_section
         if aml_section:
             self.logger.info("Parsing AML section ...")
-            parser = parsers.aml(prepro_result=prepro_result)
-            parsed = pickle.dumps(parser.parseFromString(aml_section, encoding=encoding).listener_result)
-            self.session.add(model.AMLSection(text=aml_section, parsed=parsed))
+            aml_parser = parsers.aml(prepro_result=prepro_result)
+            aml_result = aml_parser.parseFromString(aml_section, encoding=encoding).listener_result
+            aml_parsed = pickle.dumps(aml_result)
+            self.session.add(model.AMLSection(text=aml_section, parsed=aml_parsed))
+            for item in self.session.query(model.IfData).all():
+                ip = parsers.if_data(aml_result)
+                parsed_if_data = pickle.dumps(ip.parse(item.raw))
+                item.parsed = parsed_if_data
+                self.session.add(item)
             self.session.commit()
         self.logger.info("Done [elapsed time {:.2f}s].".format(perf_counter() - start_time))
         return self.session

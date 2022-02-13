@@ -27,6 +27,7 @@ __copyright__ = """
 
 import datetime
 import mmap
+import pickle
 import re
 import sqlite3
 
@@ -1098,7 +1099,15 @@ class IfData(Base):
     el = StdULong()
     ec = StdULong()
     raw = StdString()
-    parsed = StdString()
+    parsed = Column(
+        types.BINARY,
+        default=None,
+        nullable=True,
+    )
+
+    @property
+    def items(self):
+        return pickle.loads(self.parsed)
 
     __required_parameters__ = ()
 
