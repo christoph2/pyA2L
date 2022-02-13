@@ -28,11 +28,13 @@ __author__ = "Christoph Schueler"
 __version__ = "0.10.2"
 
 
+import pickle
 import pkgutil
 import sys
 from time import perf_counter
 from pathlib import Path
 import warnings
+
 
 import pya2l.model as model
 from pya2l.logger import Logger
@@ -125,9 +127,16 @@ class DB(object):
         encoding = encoding or detect_encoding(file_name=self._a2lfn)
         prepro_result = prepro.process(self._a2lfn, encoding=encoding)
         a2l_parser = parsers.a2l(debug=debug, prepro_result=prepro_result)
-        self.logger.info("Parsing pre-processed data ...".format())
+        self.logger.info("Parsing pre-processed data ...")
         self.db, listener_result = a2l_parser.parseFromString(prepro_result.a2l_data, dbname=str(self._dbfn), encoding=encoding)
         self.session = self.db.session
+        aml_section = prepro_result.aml_section
+        if aml_section:
+            self.logger.info("Parsing AML section ...")
+            parser = parsers.aml(prepro_result=prepro_result)
+            parsed = pickle.dumps(parser.parseFromString(aml_section, encoding=encoding).listener_result)
+            self.session.add(model.AMLSection(text=aml_section, parsed=parsed))
+            self.session.commit()
         self.logger.info("Done [elapsed time {:.2f}s].".format(perf_counter() - start_time))
         return self.session
 

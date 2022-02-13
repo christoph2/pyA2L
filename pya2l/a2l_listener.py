@@ -65,11 +65,6 @@ class BaseListener(antlr4.ParseTreeListener):
         super(BaseListener, self).__init__(*args, **kws)
         self.prepro_result = prepro_result
         self.logger = Logger(__name__)
-        aml_section = self.prepro_result.aml_section
-        if aml_section:
-            # parser =
-            # parsed = parser.result.listener_result
-            self.db.session.add(model.AMLSection(text=aml_section))
 
     def getList(self, attr):
         return [x.value for x in attr] if attr else []
