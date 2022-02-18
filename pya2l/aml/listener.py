@@ -101,12 +101,12 @@ class AMLListener(antlr4.ParseTreeListener):
         ctx.value = value
 
     def exitStruct_member(self, ctx):
-        if ctx.m:
-            value = ctx.m.value
-            multiple = False
-        else:
+        if self.get_text(ctx.m0) == "*":
             value = ctx.mstar.value
             multiple = True
+        else:
+            value = ctx.m.value
+            multiple = False
         ctx.value = classes.createStructMember(value, multiple)
 
     def exitTaggedstruct_type_name(self, ctx):
@@ -134,11 +134,13 @@ class AMLListener(antlr4.ParseTreeListener):
             blockDefinition = ctx.bl1.value
         else:
             blockDefinition = None
-        mult = True if ctx.m0 or ctx.m1 else False
+        chs = list(ctx.getChildren())
+        mult = len(chs) == 5
         ctx.value = classes.createTaggedStructMember(taggedstructDefinition, blockDefinition, mult)
 
     def exitTaggedstruct_definition(self, ctx):
-        mult = True if ctx.mult else False
+        chs = list(ctx.getChildren())
+        mult = len(chs) > 4
         tag = ctx.tag.value if ctx.tag else None
         member = ctx.mem.value if ctx.mem else None
         ctx.value = classes.createTaggedStructDefinition(tag, member, mult)
@@ -198,7 +200,8 @@ class AMLListener(antlr4.ParseTreeListener):
         tag = ctx.tag.value
         typename = ctx.tn.value if ctx.tn else None
         member = ctx.mem.value if ctx.mem else None
-        mult = True if ctx.mult else False
+        mult = True if self.get_text(ctx.mult) == "*" else False
+        # chs = list(ctx.getChildren())
         ctx.value = classes.createBlockDefinition(tag, typename, member, mult)
         if tag == "IF_DATA":
             self.root_element = ctx.value
@@ -240,6 +243,9 @@ class AMLListener(antlr4.ParseTreeListener):
         elif ctx.f:
             value = D(ctx.f.text)
         ctx.value = value
+
+    def get_text(self, obj):
+        return obj.text if obj is not None else None
 
     def result(self):
         return ResultType(self.declarations, self._types, self.root_element)

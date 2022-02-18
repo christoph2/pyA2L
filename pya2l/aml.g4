@@ -65,7 +65,7 @@ predefined_type_name:
    ;
 
 block_definition:
-   'block' tag = tagValue (tn = type_name | /* Owed to Vector Informatik... */ '(' mem = member ')' mult = '*')
+   'block' tag = tagValue tn = type_name | /* Owed to Vector Informatik... */ '(' mem = member ')' (mult = '*')?
    ;
 
 enum_type_name:
@@ -88,7 +88,7 @@ struct_type_name:
 
 struct_member:
      m = member ';'
-   | '(' mstar = member ')' m0 = '*' ';'
+   | '(' mstar = member ')' (m0 = '*')? ';'
    ;
 
 member:
@@ -105,15 +105,15 @@ taggedstruct_type_name:
    ;
 
 taggedstruct_member:
-    ('(' ts0 = taggedstruct_definition ')' m0 = '*' ';')
-    | ('(' bl0 = block_definition ')' m1 = '*' ';')
+    ('(' ts0 = taggedstruct_definition ')' '*' ';')
+    | ('(' bl0 = block_definition ')' '*' ';')
     | (ts1 = taggedstruct_definition ';')
     | (bl1 = block_definition ';')
    ;
 
 taggedstruct_definition:
      tag = tagValue? mem = member?
-   | tag = tagValue? '(' mem = member ')' mult = '*'
+   | tag = tagValue? '(' mem = member ')' '*'
    ;
 
 taggedunion_type_name:

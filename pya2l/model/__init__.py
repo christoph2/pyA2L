@@ -1101,12 +1101,12 @@ class IfData(Base):
     raw = StdString()
     parsed = Column(
         types.BINARY,
-        default=None,
+        default=b"",
         nullable=True,
     )
 
     @property
-    def items(self):
+    def value(self):
         return pickle.loads(self.parsed)
 
     __required_parameters__ = ()

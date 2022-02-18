@@ -119,6 +119,8 @@ class IfDataParser:
             result = self.block()
         else:
             raise ValueError("Expected block statement.")
+        import pprint
+
         return result
 
     def enter(self, name):
@@ -151,7 +153,6 @@ class IfDataParser:
             value = token_to_float(token)
         elif token.type == self.lexer.STRING:
             value = token.text[1:-1]
-        # print("\tValue: '{}'[{}]".format(value, token.type))
         return value
 
     def consume(self):
@@ -174,7 +175,7 @@ class IfDataParser:
         self.enter("block")
         elem = self.current_element
         tag = elem.tag
-        # multiple = elem.multiple
+        multiple = elem.multiple
         self.match(self.lexer.BEGIN)
         self.match(self.lexer.IDENT, elem.tag)
         tp = elem.type_name.type_
@@ -190,7 +191,9 @@ class IfDataParser:
         elif class_name == "StructType":
             result.append({"tag": tag, "value": self.struct()})
         elif class_name == "TaggedStructType":
-            result.append({"tag": tag, "value": self.tagged_struct()})
+            ts = self.tagged_struct()
+            if ts:
+                result.append({"tag": tag, "value": ts})
         elif class_name == "PredefinedType":
             result.append({"tag": tag, "value": self.predefined_type()})
         elif class_name == "Enumeration":
@@ -201,6 +204,8 @@ class IfDataParser:
         self.match(self.lexer.END)
         self.match(self.lexer.IDENT, elem.tag)
         self.leave("block")
+        result = result if multiple else result[0]
+        print("BLOCK:", result, end="\n\n")
         return result
 
     def tagged_union(self):
@@ -218,7 +223,9 @@ class IfDataParser:
             if tn == "StructType":
                 result.append(self.struct())
             elif tn == "TaggedStructType":
-                result.append(self.tagged_struct())
+                ts = self.tagged_struct()
+                if ts:
+                    result.append(ts)
             elif tn == "TaggedUnion":
                 result.append(self.tagged_union())
             elif tn == "PredefinedType":
@@ -248,7 +255,6 @@ class IfDataParser:
             result = self.value(self.current_token)
             self.consume()
         self.leave("predefined_type")
-        # return {"type": tp, "value": result}
         return result
 
     def enum(self):
@@ -257,7 +263,6 @@ class IfDataParser:
         self.match(self.lexer.IDENT)
         # ok = enumerator in self.current_element.enumerators
         self.leave("enum")
-        # return {"type": "enum", "value": enumerator}
         return enumerator
 
     def struct(self):
@@ -277,7 +282,9 @@ class IfDataParser:
             self.push_element(entry)
             tn = entry.__class__.__name__
             if tn == "TaggedStructType":
-                result.append(self.tagged_struct())
+                ts = self.tagged_struct()
+                if ts:
+                    result.append(ts)
             elif tn == "StructType":
                 result.append(self.struct())
             elif tn == "TaggedUnion":
@@ -301,18 +308,22 @@ class IfDataParser:
     def tagged_struct(self):
         self.enter("tagged_struct")
         tag = self.block_or_tag()
-        # name = self.current_element.name
-        # print("tagged_struct:", tag, name)
         tags = self.current_element.tags.keys()
         counter = {k: False for k in tags}
-        result = []
+        tag_dict = defaultdict(list)
         while True:
             definition = self.current_element.tags.get(tag)
             if definition:
                 counter[tag] = True
                 if definition.block_definition:
                     self.push_element(definition.block_definition)
-                    result.append(self.block())
+                    block = self.block()
+                    tag = block.pop("tag")
+                    value = block.get("value")
+                    if definition.multiple:
+                        tag_dict[tag].append(value)
+                    else:
+                        tag_dict[tag] = value
                     self.pop_element()
                     if ((self.current_token.type != self.lexer.IDENT) or (self.current_token.text not in tags)) and (
                         self.current_token.type != self.lexer.BEGIN
@@ -322,29 +333,32 @@ class IfDataParser:
                     self.consume()
                     if definition.taggedstruct_definition.__class__.__name__ == "TaggedStructDefinition":
                         self.push_element(definition.taggedstruct_definition)
-                        result.append(self.tagged_struct_member())
+                        tsm = self.tagged_struct_member()
+                        tag = tsm.pop("tag")
+                        value = tsm.get("value")
+                        if definition.multiple:
+                            tag_dict[tag].append(value)
+                        else:
+                            tag_dict[tag] = value
                         self.pop_element()
                         if ((self.current_token.type != self.lexer.IDENT) or (self.current_token.text not in tags)) and (
                             self.current_token.type != self.lexer.BEGIN
                         ):
-                            # result = self.rewrite_tagged_struct_members(result)
                             break
                     else:
                         raise NotImplementedError(definition.taggedstruct_definition.__class__.__name__)
                 else:
-                    result.append({"tag": tag, "value": None})  # just a tag.
+                    tag_dict[tag] = None  # just a tag.
                     self.consume()
                 tag = self.block_or_tag()
             else:
                 break
         self.leave("tagged_struct")
-        return result
+        return dict(tag_dict)
 
     def tagged_struct_member(self):
         tp = self.current_element.member.type_name.type_
-        # multiple = self.current_element.multiple
         tag = self.current_element.tag
-        # print("tagged_struct_member:", tag, multiple)
         self.push_element(tp)
         class_name = tp.__class__.__name__
         if class_name == "PredefinedType":
@@ -353,28 +367,18 @@ class IfDataParser:
             result = {"type": "struct", "value": self.struct()}
         elif class_name == "Enumeration":
             result = {"value": self.enum()}
-            # result = self.enum()
         elif class_name == "TaggedUnion":
-            # result = self.tagged_union()
             result = {"type": "tagged_union", "value": self.tagged_union()}
         elif class_name == "TaggedStructType":
-            # result = self.tagged_struct()
-            result = {"type": "tagged_struct", "value": self.tagged_struct()}
+            ts = self.tagged_struct()
+            if ts:
+                result = {"type": "tagged_struct", "value": ts}
         else:
             raise NotImplementedError(tp.__class__.__name__)
         self.pop_element()
-        # print("\tTSM: {} TAG: {}".format(result, tag))
         return_value = {"tag": tag}
         return_value.update(result)
         return return_value
-
-    def rewrite_tagged_struct_members(self, values):
-        tag = values[0].get("tag")
-        entries = []
-        for entry in values:
-            entries.append(entry["value"])
-        print("\tENTRIES:", entries)
-        return {"tag": tag, "values": entries}
 
     def type_as_str(self, type_):
         TYPE_MAP = {

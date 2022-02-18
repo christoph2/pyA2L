@@ -1,11 +1,7 @@
 
-[tool.poetry.dependencies]
-#python = "^3.5"
-
-[tool.poetry.dev-dependencies]
-
 [tool.pdm]
 includes = []
+build = "build_ext.py"
 
 [tool.pdm.dev-dependencies]
 dev = []
