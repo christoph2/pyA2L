@@ -83,3 +83,15 @@ exclude = '''
     | dist
 )/
 '''
+
+[tool.cibuildwheel]
+build-verbosity = 3
+build = "cp3{6,7,8,9,10}-*"
+#test-command = "pytest {package}/tests"
+#build-frontend = "build"
+#build-frontend = "pip"
+before-build = [
+    'wget https://www.antlr.org/download/antlr-4.9.3-complete.jar',
+    'export CLASSPATH=".:$(pwd)/antlr-4.9.3-complete.jar:$CLASSPATH"'
+]
+
