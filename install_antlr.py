@@ -21,7 +21,7 @@ def main():
         check_call(["choco", "install", "adoptopenjdk"])
     else:
         check_call(["curl", "-O", "-C", "-", "-L", ANTLR])
-        check_call(["apt-get", "install", "-y", "adoptopenjdk"])
+        check_call(["sudo", "apt-get", "install", "-y", "adoptopenjdk"])
 
 
 if __name__ == "__main__":
