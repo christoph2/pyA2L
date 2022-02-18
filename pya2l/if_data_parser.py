@@ -119,8 +119,6 @@ class IfDataParser:
             result = self.block()
         else:
             raise ValueError("Expected block statement.")
-        import pprint
-
         return result
 
     def enter(self, name):
@@ -185,7 +183,6 @@ class IfDataParser:
             entry = elem.definition
         self.push_element(entry)
         class_name = entry.__class__.__name__
-        # print("block:", tag, multiple, class_name)
         if class_name == "TaggedUnion":
             result.append({"tag": tag, "value": self.tagged_union()})
         elif class_name == "StructType":
@@ -205,7 +202,6 @@ class IfDataParser:
         self.match(self.lexer.IDENT, elem.tag)
         self.leave("block")
         result = result if multiple else result[0]
-        print("BLOCK:", result, end="\n\n")
         return result
 
     def tagged_union(self):
@@ -276,7 +272,6 @@ class IfDataParser:
             # multiple = mem.multiple
             entry = value.type_name.type_
             # idi = entry.identifier if hasattr(entry, "identifier") else "n/a"
-            # print("str-mem:", name, idi, multiple)
             if isinstance(entry, Referrer):
                 entry = self.syntax.get_type(entry.category, entry.identifier)
             self.push_element(entry)
