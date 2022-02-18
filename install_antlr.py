@@ -18,10 +18,10 @@ print(uname)
 def main():
     if os == "windows":
         check_call(["Invoke-WebRequest", "-O", "-C", "-", "-L", ANTLR])
-        check_call(["choco", "install", "adaptopenjdk"])
+        check_call(["choco", "install", "adoptopenjdk"])
     else:
         check_call(["curl", "-O", "-C", "-", "-L", ANTLR])
-        check_call(["apt-get", "install", "-y", "adaptopenjdk"])
+        check_call(["apt-get", "install", "-y", "adoptopenjdk"])
 
 
 if __name__ == "__main__":
