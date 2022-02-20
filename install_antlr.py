@@ -18,9 +18,8 @@ print("MY-UNAME:", uname)
 def main():
     if os == "windows":
         # check_call(["Invoke-WebRequest", "-O", "-C", "-", "-L", ANTLR])
-        check_call(["wget", ANTLR])
-        # check_call(["curl", "-O", "-C", "-", "-L", ANTLR])
         check_call(["choco", "install", "adoptopenjdk-16-hotspot"])
+        check_call(["curl", "-O", "-C", "-", "-L", ANTLR])
     else:
         check_call(["curl", "-O", "-C", "-", "-L", ANTLR])
         # check_call(["sudo", "apt-get", "install", "-y", "adoptopenjdk"])
