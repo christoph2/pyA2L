@@ -4,7 +4,7 @@ import platform as pf
 from os import environ
 from subprocess import check_call
 
-environ["FLONZ"] = "buhh"
+print(environ)
 
 VERSION = "4.9.3"
 ANTLR = "https://www.antlr.org/download/antlr-{}-complete.jar".format(VERSION)
@@ -21,7 +21,8 @@ def main():
         check_call(["choco", "install", "adoptopenjdk"])
     else:
         check_call(["curl", "-O", "-C", "-", "-L", ANTLR])
-        check_call(["sudo", "apt-get", "install", "-y", "adoptopenjdk"])
+        # check_call(["sudo", "apt-get", "install", "-y", "adoptopenjdk"])
+        check_call(["yum", "install", "adoptopenjdk"])
 
 
 if __name__ == "__main__":
