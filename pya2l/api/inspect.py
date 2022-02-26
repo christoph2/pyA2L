@@ -498,8 +498,8 @@ class NoModCommon(SingletonBase):
 
     def __init__(self):
         self._comment = None
-        self._alignment = {k: None for k in ("BYTE", "WORD", "DWORD", "QWORD", "FLOAT16", "FLOAT32", "FLOAT64")}
-        self._byteOrder = None
+        self._alignment = NATURAL_ALIGNMENTS
+        self._byteOrder = "MSB_FIRST"
         self._dataSize = None
         self._deposit = None
         self._sRecLayout = None
@@ -2198,7 +2198,7 @@ class RecordLayoutComponents:
         """"""
         offset = 0
         # axis_pts = {n: self.axis_pts(n) for n in self.axes_names}
-        for idx, (_, pos) in enumerate(self._components_by_pos):
+        for _, pos in self._components_by_pos:
             tp = pos["type"]
             if len(tp) == 2:
                 tp, axis = tp
