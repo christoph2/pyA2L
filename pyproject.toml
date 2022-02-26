@@ -4,7 +4,9 @@ includes = []
 build = "build_ext.py"
 
 [tool.pdm.dev-dependencies]
-dev = []
+dev = [
+    "flake8-bugbear>=19.8.0",
+]
 
 [build-system]
 requires = ["pdm-pep517"]
@@ -26,6 +28,7 @@ description = ""
 [project.urls]
 
 
+[project.optional-dependencies]
 [tool.pytest]
 addopts = "--verbose --tb=short --junitxml=result.xml -o junit_family=xunit2"
 testpaths = "pya2l/tests"

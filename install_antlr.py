@@ -24,17 +24,17 @@ def main():
         check_call(["curl", "-O", "-C", "-", "-L", ANTLR])
         # check_call(["sudo", "apt-get", "install", "-y", "adoptopenjdk"])
         check_call(
-            """cat << 'EOF' >/etc/yum.repos.d/adoptopenjdk.repo
+            """sudo cat << 'EOF' >/etc/yum.repos.d/adoptopenjdk.repo
 [AdoptOpenJDK]
 name=AdoptOpenJDK
-baseutl=http://adoptopenjdk.jfrog.io/adoptopenjdk/rpm/centos/$releasever/$basearch
+baseutl=http://adoptopenjdk.jfrog.io/artifactory/rpm/centos/$releasever/$basearch
 enabled=1
 gpgcheck=1
 gpgkey=http://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
 EOF""",
             shell=True,
         )
-        check_call(["yum", "install", "adoptopenjdk-16-hotspot"])
+        check_call(["sudo", "yum", "install", "adoptopenjdk-16-hotspot"])
 
 
 if __name__ == "__main__":
