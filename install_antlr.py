@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import platform as pf
 from os import environ
+from subprocess import call
 from subprocess import check_call
 
 
@@ -18,12 +19,12 @@ print("MY-UNAME:", uname)
 def main():
     if os == "windows":
         # check_call(["Invoke-WebRequest", "-O", "-C", "-", "-L", ANTLR])
-        check_call(["choco", "install", "adoptopenjdk-16-hotspot"])
-        check_call(["curl", "-O", "-C", "-", "-L", ANTLR])
+        call(["choco", "install", "adoptopenjdk"])
+        call(["curl", "-O", "-C", "-", "-L", ANTLR])
     else:
-        check_call(["curl", "-O", "-C", "-", "-L", ANTLR])
+        call(["curl", "-O", "-C", "-", "-L", ANTLR])
         # check_call(["sudo", "apt-get", "install", "-y", "adoptopenjdk"])
-        check_call(
+        call(
             """sudo cat << 'EOF' >/etc/yum.repos.d/adoptopenjdk.repo
 [AdoptOpenJDK]
 name=AdoptOpenJDK
@@ -34,7 +35,7 @@ gpgkey=http://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
 EOF""",
             shell=True,
         )
-        check_call(["sudo", "yum", "install", "adoptopenjdk-16-hotspot"])
+        call(["sudo", "yum", "install", "adoptopenjdk-16-hotspot"])
 
 
 if __name__ == "__main__":
