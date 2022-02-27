@@ -37,6 +37,7 @@ def findAntlr():
         classpath = classpath if classpath is not None else ""
 
     if "antlr" not in classpath.lower():
+        print("ANTLR NOT in classpath!!!")
         if os.environ.get("GITHUB_ACTIONS"):
             print("OK, ANTLR found in classpath")
             # antlrJar = "./antlr-{}-complete.jar".format(ANTLR_VERSION)  # Patch for Github Actions.
@@ -44,6 +45,7 @@ def findAntlr():
         else:
             raise OSError("Could not locate ANTLR4 jar in 'CLASSPATH'.")
     else:
+        print("OK, ANTLR found in CLASSPATH.")
         for pt in classpath.split(os.pathsep):
             if "antlr" in pt.lower():
                 antlrJar = pt

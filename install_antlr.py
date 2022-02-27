@@ -34,7 +34,9 @@ gpgkey=http://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
 EOF""",
             shell=True,
         )
-        call(["yum", "install", "adoptopenjdk-16-hotspot"])
+        # call(["yum", "install", "adoptopenjdk-16-hotspot"])
+        call(["yum", "update"])
+        call(["yum", "install", "adoptopenjdk"])
         call(["ls", "-l", "-A"])
 
 
