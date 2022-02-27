@@ -90,7 +90,7 @@ exclude = '''
 [tool.cibuildwheel]
 build-verbosity = 3
 build = "cp3{6,7,8,9,10}-*"
-environment = { CLASSPATH="./antlr-4.9.3-complete.jar:" }
+environment = { CLASSPATH="antlr-4.9.3-complete.jar:" }
 #test-command = "pytest {package}/tests"
 #build-frontend = "build"
 #build-frontend = "pip"

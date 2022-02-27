@@ -18,14 +18,13 @@ print("MY-UNAME:", uname)
 
 def main():
     if os == "windows":
-        # check_call(["Invoke-WebRequest", "-O", "-C", "-", "-L", ANTLR])
         call(["choco", "install", "adoptopenjdk"])
         call(["curl", "-O", "-C", "-", "-L", ANTLR])
+        call(["dir"])
     else:
         call(["curl", "-O", "-C", "-", "-L", ANTLR])
-        # check_call(["sudo", "apt-get", "install", "-y", "adoptopenjdk"])
         call(
-            """sudo cat << 'EOF' >/etc/yum.repos.d/adoptopenjdk.repo
+            """cat << 'EOF' >/etc/yum.repos.d/adoptopenjdk.repo
 [AdoptOpenJDK]
 name=AdoptOpenJDK
 baseutl=http://adoptopenjdk.jfrog.io/artifactory/rpm/centos/$releasever/$basearch
@@ -35,7 +34,8 @@ gpgkey=http://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
 EOF""",
             shell=True,
         )
-        call(["sudo", "yum", "install", "adoptopenjdk-16-hotspot"])
+        call(["yum", "install", "adoptopenjdk-16-hotspot"])
+        call(["ls", "-l", "-A"])
 
 
 if __name__ == "__main__":
