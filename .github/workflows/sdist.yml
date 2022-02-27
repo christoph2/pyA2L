@@ -3,9 +3,9 @@ name: Build and distribute sdist
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, develop ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, develop ]
 
 jobs:
   build:
@@ -22,7 +22,8 @@ jobs:
         pip install -r requirements.txt
     - name: Build sdist
       run: |
-           python setup.py sdist --formats=gztar
+          # python setup.py sdist --formats=gztar
+          pip wheel --no-binary ":all:" -w dist/ . 
     - name: Upload to PyPI
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USER_NAME }}
