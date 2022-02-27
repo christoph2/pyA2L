@@ -10,33 +10,37 @@ VERSION = "4.9.3"
 ANTLR = "https://www.antlr.org/download/antlr-{}-complete.jar".format(VERSION)
 
 
-print("MY-ENVIRON:", environ)
+print("ENVIRON:", environ)
 os = pf.system().lower()
 uname = pf.uname()
-print("MY-UNAME:", uname)
+print("UNAME:", uname)
 
 
 def main():
     if os == "windows":
-        call(["choco", "install", "adoptopenjdk"])
+        # call(["choco", "install", "adoptopenjdk"])
         call(["curl", "-O", "-C", "-", "-L", ANTLR])
         call(["dir"])
     else:
         call(["curl", "-O", "-C", "-", "-L", ANTLR])
-        call(
-            """cat << 'EOF' >/etc/yum.repos.d/adoptopenjdk.repo
-[AdoptOpenJDK]
-name=AdoptOpenJDK
-baseutl=http://adoptopenjdk.jfrog.io/artifactory/rpm/centos/$releasever/$basearch
-enabled=1
-gpgcheck=1
-gpgkey=http://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
-EOF""",
-            shell=True,
-        )
-        # call(["yum", "install", "adoptopenjdk-16-hotspot"])
-        call(["yum", "update"])
-        call(["yum", "install", "adoptopenjdk"])
+        #        call(
+        #            """cat << 'EOF' >/etc/yum.repos.d/adoptopenjdk.repo
+        # [AdoptOpenJDK]
+        # name=AdoptOpenJDK
+        # baseutl=http://adoptopenjdk.jfrog.io/artifactory/rpm/centos/$releasever/$basearch
+        # enabled=1
+        # gpgcheck=1
+        # gpgkey=http://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
+        # EOF""",
+        #           shell=True,
+        #        )
+        if os == "linux":
+            call(["yum", "update"])
+            # call(["yum", "install", "adoptopenjdk"])
+            call(["yum", "install", "openjdk-16-jre"])
+            # call(["yum", "install", "adoptopenjdk-16-hotspot"])
+        elif os == "darwin":
+            pass
         call(["ls", "-l", "-A"])
 
 
