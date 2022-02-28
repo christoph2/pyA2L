@@ -1,7 +1,7 @@
 
 [tool.pdm]
 includes = []
-build = "build_ext.py"
+build = "build.py"
 
 [tool.pdm.dev-dependencies]
 dev = [
@@ -88,6 +88,9 @@ exclude = '''
 '''
 
 [tool.cibuildwheel.linux]
+environment = { CLASSPATH="$PWD/antlr-4.9.3-complete.jar" }
+
+[tool.cibuildwheel.macos]
 environment = { CLASSPATH="$PWD/antlr-4.9.3-complete.jar" }
 
 [tool.cibuildwheel.windows]

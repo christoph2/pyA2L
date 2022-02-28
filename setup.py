@@ -29,35 +29,6 @@ TEST_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.test.txt")
 ANTLR_VERSION = next(req.specs[0][1] for req in BASE_REQUIREMENTS if req.project_name == "antlr4-python3-runtime")
 
 
-def findAntlr():
-    """Try to find the ANTLR .jar-file."""
-    if os.environ.get("APPVEYOR"):
-        classpath = r"c:\projects\pya2l\antlr-{}-complete.jar".format(ANTLR_VERSION)
-    else:
-        classpath = os.getenv("CLASSPATH")
-        classpath = classpath if classpath is not None else ""
-
-    if "antlr" not in classpath.lower():
-        if os.environ.get("GITHUB_ACTIONS"):
-            antlrJar = "./antlr-{}-complete.jar".format(ANTLR_VERSION)  # Patch for Github Actions.
-        else:
-            raise OSError("Could not locate ANTLR4 jar in 'CLASSPATH'.")
-    else:
-        for pt in classpath.split(os.pathsep):
-            if "antlr" in pt.lower():
-                antlrJar = pt
-                print(antlrJar)
-                break
-
-    if ANTLR_VERSION not in antlrJar:
-        raise ValueError("pyA2L requires Antlr {0} -- found '{1}'".format(ANTLR_VERSION, antlrJar))
-
-    if not os.path.exists(antlrJar):
-        raise FileNotFoundError("ANTLR4 not found: {0}".format(antlrJar))
-
-    return antlrJar
-
-
 class AntlrAutogen(distutils.cmd.Command):
     """Custom command to autogenerate Python code using ANTLR."""
 
@@ -86,8 +57,7 @@ class AntlrAutogen(distutils.cmd.Command):
 
     def run(self):
         """Run ANTLR."""
-        antlrPath = findAntlr()
-        antlrCmd = ["java", "-Xmx500M", "-cp", antlrPath, "org.antlr.v4.Tool"]
+        antlrCmd = ["java", "-Xmx500M", "org.antlr.v4.Tool"]
         self.announce(" ".join(antlrCmd + self.arguments), level=distutils.log.INFO)
         subprocess.check_call(antlrCmd + self.arguments)
         clean()
