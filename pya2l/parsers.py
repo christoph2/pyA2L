@@ -37,8 +37,8 @@ def aml(debug: bool = False, prepro_result=None):
     return parser
 
 
-def a2l(debug: bool = False, prepro_result=None):
-    parser = ParserWrapper("a2l", "a2lFile", A2LListener, debug=debug, prepro_result=prepro_result)
+def a2l(debug: bool = False, prepro_result=None, start_production="a2lFile"):
+    parser = ParserWrapper("a2l", start_production, A2LListener, debug=debug, prepro_result=prepro_result)
     return parser
 
 
