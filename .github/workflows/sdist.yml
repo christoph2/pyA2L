@@ -22,12 +22,9 @@ jobs:
         pip install -r requirements.txt
     - name: Build sdist
       run: |
-          # python setup.py sdist --formats=gztar
-          pip wheel --no-binary ":all:" -w dist/ . 
+          pipx run build --sdist
     - name: Upload to PyPI
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USER_NAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      if: env.TWINE_USERNAME != null
-      run: |
-        twine upload dist/*
+      uses: pypa/gh-action-pypi-publish@v1.4.2
+      with:
+        user: ${{ secrets.PYPI_USER_NAME }}
+        password: ${{ secrets.PYPI_PASSWORD }}
