@@ -57,7 +57,9 @@ class AntlrAutogen(distutils.cmd.Command):
 
     def run(self):
         """Run ANTLR."""
-        antlrCmd = ["java", "-Xmx500M", "org.antlr.v4.Tool"]
+        pwd = Path(os.environ.get("PWD", "."))
+        antlrJar = pwd / Path("antlr-{}-complete.jar".format(ANTLR_VERSION))
+        antlrCmd = ["java", "-Xmx500M", "-cp", antlrJar, "org.antlr.v4.Tool"]
         self.announce(" ".join(antlrCmd + self.arguments), level=distutils.log.INFO)
         subprocess.check_call(antlrCmd + self.arguments)
         clean()
