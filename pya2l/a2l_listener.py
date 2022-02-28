@@ -347,8 +347,8 @@ class A2LListener(BaseListener):
         self.db.session.add(ctx.value)
 
     def exitProject(self, ctx):
-        name = ctx.name.value
-        longIdentifier = ctx.longIdentifier.value
+        name = ctx.name.value if ctx.name else ""
+        longIdentifier = ctx.longIdentifier.value if ctx.longIdentifier else ""
         v_header = delist(self.getList(ctx.v_header), True)
         v_module = self.getList(ctx.v_module)
         ctx.value = model.Project(name=name, longIdentifier=longIdentifier, header=v_header, module=v_module)
