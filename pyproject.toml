@@ -99,7 +99,7 @@ environment = { CLASSPATH="%PWD%/antlr-4.9.3-complete.jar" }
 [tool.cibuildwheel]
 build-verbosity = 3
 build = "cp3{6,7,8,9,10}-*"
-test-command = "pytest -svv"
+#test-command = "pytest -svv"
 #build-frontend = "build"
 #build-frontend = "pip"
 before-build = [
