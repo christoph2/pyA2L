@@ -23,22 +23,23 @@ def main():
         call(["dir"])
     else:
         call(["curl", "-O", "-C", "-", "-L", ANTLR])
-        #        call(
-        #            """cat << 'EOF' >/etc/yum.repos.d/adoptopenjdk.repo
-        # [AdoptOpenJDK]
-        # name=AdoptOpenJDK
-        # baseutl=http://adoptopenjdk.jfrog.io/artifactory/rpm/centos/$releasever/$basearch
-        # enabled=1
-        # gpgcheck=1
-        # gpgkey=http://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
-        # EOF""",
-        #           shell=True,
-        #        )
         if os == "linux":
-            call(["yum", "update"])
+            call(
+                """cat << 'EOF' > adoptopenjdk.repo
+[AdoptOpenJDK]
+name=AdoptOpenJDK
+baseutl=http://adoptopenjdk.jfrog.io/artifactory/rpm/centos/$releasever/$basearch
+enabled=1
+gpgcheck=1
+gpgkey=http://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
+EOF""",
+                shell=True,
+            )
+            call(["cp", "adoptopenjdk.repo", "/etc/yum.repos.d/"])
             # call(["yum", "install", "adoptopenjdk"])
-            call(["yum", "install", "openjdk-16-jre"])
-            # call(["yum", "install", "adoptopenjdk-16-hotspot"])
+            # call(["yum", "install", "openjdk-16-jre"])
+            call(["yum", "update"])
+            call(["yum", "install", "adoptopenjdk-16-hotspot"])
         elif os == "darwin":
             pass
         call(["ls", "-l", "-A"])
