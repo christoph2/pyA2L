@@ -39,7 +39,7 @@ EOF""",
             # call(["yum", "install", "adoptopenjdk"])
             # call(["yum", "install", "openjdk-16-jre"])
             call(["yum", "update"])
-            call(["yum", "install", "adoptopenjdk-16-hotspot"])
+            call(["yum", "install", "java-14-openjdk"])
         elif os == "darwin":
             pass
         call(["ls", "-l", "-A"])
