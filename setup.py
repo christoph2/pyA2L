@@ -5,13 +5,12 @@ import subprocess
 from itertools import chain
 from pathlib import Path
 
-import distutils.cmd
-import distutils.log
 import setuptools.command.build_py
 import setuptools.command.develop
-from distutils.core import setup
 from pkg_resources import parse_requirements
+from setuptools import Command
 from setuptools import find_packages
+from setuptools import setup
 
 
 def _parse_requirements(filepath):
@@ -24,12 +23,11 @@ def _parse_requirements(filepath):
 ROOT_DIRPATH = Path(__file__).parent
 
 BASE_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.txt")
-SETUP_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.setup.txt")
 TEST_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.test.txt")
 ANTLR_VERSION = next(req.specs[0][1] for req in BASE_REQUIREMENTS if req.project_name == "antlr4-python3-runtime")
 
 
-class AntlrAutogen(distutils.cmd.Command):
+class AntlrAutogen(Command):
     """Custom command to autogenerate Python code using ANTLR."""
 
     description = "generate python code using antlr"
@@ -60,7 +58,7 @@ class AntlrAutogen(distutils.cmd.Command):
         pwd = Path(os.environ.get("PWD", "."))
         antlrJar = str(pwd / Path("antlr-{}-complete.jar".format(ANTLR_VERSION)))
         antlrCmd = ["java", "-Xmx500M", "-cp", antlrJar, "org.antlr.v4.Tool"]
-        self.announce(" ".join(antlrCmd + self.arguments), level=distutils.log.INFO)
+        self.announce(" ".join(antlrCmd + self.arguments))
         subprocess.check_call(antlrCmd + self.arguments)
         clean()
 
@@ -120,7 +118,6 @@ setup(
     packages=find_packages(where=str(ROOT_DIRPATH)),
     package_dir={"pya2l": str(ROOT_DIRPATH / "pya2l")},
     install_requires=list(map(str, BASE_REQUIREMENTS)),
-    setup_requires=list(map(str, SETUP_REQUIREMENTS)),
     tests_require=list(map(str, TEST_REQUIREMENTS)),
     package_data={"pya2l.cgen.templates": ["*.tmpl"]},
     test_suite="pya2l.tests",

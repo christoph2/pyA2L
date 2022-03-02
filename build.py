@@ -7,10 +7,9 @@ from pathlib import Path
 from typing import Any
 from typing import Dict
 
-import distutils.cmd
-import distutils.log
 import setuptools.command.build_py
 from pkg_resources import parse_requirements
+from setuptools import Command
 
 
 def _parse_requirements(filepath):
@@ -61,7 +60,7 @@ def findAntlr():
     return antlrJar
 
 
-class AntlrAutogen(distutils.cmd.Command):
+class AntlrAutogen(Command):
     """Custom command to autogenerate Python code using ANTLR."""
 
     description = "generate python code using antlr"
@@ -91,7 +90,7 @@ class AntlrAutogen(distutils.cmd.Command):
         """Run ANTLR."""
         # antlrPath = findAntlr()
         antlrCmd = ["java", "-Xmx500M", "org.antlr.v4.Tool"]
-        self.announce(" ".join(antlrCmd + self.arguments), level=distutils.log.INFO)
+        self.announce(" ".join(antlrCmd + self.arguments))
         subprocess.check_call(antlrCmd + self.arguments)
         clean()
 
