@@ -22,7 +22,7 @@ authors = [
 ]
 requires-python = ">=3.5,<4.0"
 dependencies = []
-version = "0.12.75"
+version = "0.12.76"
 description = ""
 
 [project.urls]
