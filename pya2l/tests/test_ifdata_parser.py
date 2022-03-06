@@ -112,7 +112,8 @@ BASIC = """
             MASTER 0x14 0x5
       /end PROTOCOL_LAYER
       /begin DAQ
-        STATIC 0x3 0x2 0x0 OPTIMISATION_TYPE_DEFAULT ADDRESS_EXTENSION_DAQ IDENTIFICATION_FIELD_TYPE_ABSOLUTE GRANULARITY_ODT_ENTRY_SIZE_DAQ_BYTE 0x4 OVERLOAD_INDICATION_EVENT
+        STATIC 0x3 0x2 0x0 OPTIMISATION_TYPE_DEFAULT ADDRESS_EXTENSION_DAQ IDENTIFICATION_FIELD_TYPE_ABSOLUTE
+        GRANULARITY_ODT_ENTRY_SIZE_DAQ_BYTE 0x4 OVERLOAD_INDICATION_EVENT
         PRESCALER_SUPPORTED
         /begin TIMESTAMP_SUPPORTED
           0x1 SIZE_DWORD UNIT_1US
@@ -176,37 +177,36 @@ def test_if_data_segment(vector_aml):
     assert res == {
         "tag": "IF_DATA",
         "value": [
-            [
-                {
-                    "SEGMENT": [
-                        0,
-                        2,
-                        0,
-                        0,
-                        0,
-                        {
-                            "CHECKSUM": ["XCP_ADD_12", {"MAX_BLOCK_SIZE": 0, "EXTERNAL_FUNCTION": ""}],
-                            "PAGE": [
-                                [
-                                    1,
-                                    "ECU_ACCESS_DONT_CARE",
-                                    "XCP_READ_ACCESS_DONT_CARE",
-                                    "XCP_WRITE_ACCESS_DONT_CARE",
-                                    {"INIT_SEGMENT": 0},
-                                ],
-                                [
-                                    0,
-                                    "ECU_ACCESS_DONT_CARE",
-                                    "XCP_READ_ACCESS_DONT_CARE",
-                                    "XCP_WRITE_ACCESS_DONT_CARE",
-                                    {"INIT_SEGMENT": 0},
-                                ],
+            {
+                "SEGMENT": [
+                    0,
+                    2,
+                    0,
+                    0,
+                    0,
+                    {
+                        "CHECKSUM": ["XCP_ADD_12", {"MAX_BLOCK_SIZE": 0, "EXTERNAL_FUNCTION": ""}],
+                        "PAGE": [
+                            [
+                                1,
+                                "ECU_ACCESS_DONT_CARE",
+                                "XCP_READ_ACCESS_DONT_CARE",
+                                "XCP_WRITE_ACCESS_DONT_CARE",
+                                {"INIT_SEGMENT": 0},
                             ],
-                            "ADDRESS_MAPPING": [[921688, 921688, 3741]],
-                        },
-                    ]
-                }
-            ]
+                            [
+                                0,
+                                "ECU_ACCESS_DONT_CARE",
+                                "XCP_READ_ACCESS_DONT_CARE",
+                                "XCP_WRITE_ACCESS_DONT_CARE",
+                                {"INIT_SEGMENT": 0},
+                            ],
+                        ],
+                        "ADDRESS_MAPPING": [[921688, 921688, 3741]],
+                    },
+                ]
+            },
+            {},
         ],
     }
 
@@ -217,98 +217,96 @@ def test_basic(vector_aml):
     assert res == {
         "tag": "IF_DATA",
         "value": [
-            [
-                {
-                    "PROTOCOL_LAYER": [
-                        256,
-                        32,
-                        32,
-                        32,
-                        32,
-                        32,
-                        32,
-                        32,
-                        8,
-                        8,
-                        "BYTE_ORDER_MSB_LAST",
-                        "ADDRESS_GRANULARITY_BYTE",
-                        {
-                            "OPTIONAL_CMD": [
-                                "SET_REQUEST",
-                                "GET_SEED",
-                                "UNLOCK",
-                                "SET_MTA",
-                                "SHORT_DOWNLOAD",
-                                "PROGRAM_START",
-                                "PROGRAM_CLEAR",
-                                "PROGRAM",
-                                "PROGRAM_RESET",
-                                "GET_PGM_PROCESSOR_INFO",
-                                "GET_SECTOR_INFO",
-                                "PROGRAM_PREPARE",
-                                "PROGRAM_NEXT",
-                                "PROGRAM_MAX",
-                                "PROGRAM_VERIFY",
-                                "TRANSPORT_LAYER_CMD",
-                                "GET_ID",
-                                "UPLOAD",
-                                "SHORT_UPLOAD",
-                                "BUILD_CHECKSUM",
-                                "DOWNLOAD_NEXT",
-                                "SET_CAL_PAGE",
-                                "GET_CAL_PAGE",
-                                "CLEAR_DAQ_LIST",
-                                "SET_DAQ_PTR",
-                                "WRITE_DAQ",
-                                "SET_DAQ_LIST_MODE",
-                                "GET_DAQ_LIST_MODE",
-                                "START_STOP_DAQ_LIST",
-                                "FREE_DAQ",
-                                "ALLOC_DAQ",
-                                "ALLOC_ODT",
-                                "ALLOC_ODT_ENTRY",
-                                "START_STOP_SYNCH",
-                                "DOWNLOAD",
-                                "MODIFY_BITS",
-                                "GET_PAG_PROCESSOR_INFO",
-                                "GET_SEGMENT_INFO",
-                                "GET_PAGE_INFO",
-                                "SET_SEGMENT_MODE",
-                                "GET_SEGMENT_MODE",
-                                "COPY_CAL_PAGE",
-                                "GET_DAQ_CLOCK",
-                                "READ_DAQ",
-                                "GET_DAQ_LIST_MODE",
-                                "DOWNLOAD_MAX",
-                            ],
-                            "COMMUNICATION_MODE_SUPPORTED": [{"SLAVE": None, "MASTER": [20, 5]}],
-                        },
-                    ],
-                    "DAQ": [
-                        "STATIC",
-                        3,
-                        2,
-                        0,
-                        "OPTIMISATION_TYPE_DEFAULT",
-                        "ADDRESS_EXTENSION_DAQ",
-                        "IDENTIFICATION_FIELD_TYPE_ABSOLUTE",
-                        "GRANULARITY_ODT_ENTRY_SIZE_DAQ_BYTE",
-                        4,
-                        "OVERLOAD_INDICATION_EVENT",
-                        {
-                            "PRESCALER_SUPPORTED": None,
-                            "TIMESTAMP_SUPPORTED": [1, "SIZE_DWORD", "UNIT_1US"],
-                            "DAQ_LIST": [
-                                [0, {"DAQ_LIST_TYPE": "DAQ", "MAX_ODT": 5, "MAX_ODT_ENTRIES": 7}],
-                                [1, {"DAQ_LIST_TYPE": "DAQ", "MAX_ODT": 4, "MAX_ODT_ENTRIES": 7}],
-                                [2, {"DAQ_LIST_TYPE": "DAQ", "MAX_ODT": 3, "MAX_ODT_ENTRIES": 7}],
-                            ],
-                            "EVENT": [["5ms", "5ms", 0, "DAQ", 255, 5, 6, 255], ["extEvent", "extEvent", 1, "DAQ", 255, 1, 9, 255]],
-                        },
-                    ],
-                },
-                {"XCP_ON_CAN": [[256, {"CAN_ID_BROADCAST": 82, "CAN_ID_MASTER": 81, "CAN_ID_SLAVE": 80, "BAUDRATE": 500000}]]},
-            ]
+            {
+                "PROTOCOL_LAYER": [
+                    256,
+                    32,
+                    32,
+                    32,
+                    32,
+                    32,
+                    32,
+                    32,
+                    8,
+                    8,
+                    "BYTE_ORDER_MSB_LAST",
+                    "ADDRESS_GRANULARITY_BYTE",
+                    {
+                        "OPTIONAL_CMD": [
+                            "SET_REQUEST",
+                            "GET_SEED",
+                            "UNLOCK",
+                            "SET_MTA",
+                            "SHORT_DOWNLOAD",
+                            "PROGRAM_START",
+                            "PROGRAM_CLEAR",
+                            "PROGRAM",
+                            "PROGRAM_RESET",
+                            "GET_PGM_PROCESSOR_INFO",
+                            "GET_SECTOR_INFO",
+                            "PROGRAM_PREPARE",
+                            "PROGRAM_NEXT",
+                            "PROGRAM_MAX",
+                            "PROGRAM_VERIFY",
+                            "TRANSPORT_LAYER_CMD",
+                            "GET_ID",
+                            "UPLOAD",
+                            "SHORT_UPLOAD",
+                            "BUILD_CHECKSUM",
+                            "DOWNLOAD_NEXT",
+                            "SET_CAL_PAGE",
+                            "GET_CAL_PAGE",
+                            "CLEAR_DAQ_LIST",
+                            "SET_DAQ_PTR",
+                            "WRITE_DAQ",
+                            "SET_DAQ_LIST_MODE",
+                            "GET_DAQ_LIST_MODE",
+                            "START_STOP_DAQ_LIST",
+                            "FREE_DAQ",
+                            "ALLOC_DAQ",
+                            "ALLOC_ODT",
+                            "ALLOC_ODT_ENTRY",
+                            "START_STOP_SYNCH",
+                            "DOWNLOAD",
+                            "MODIFY_BITS",
+                            "GET_PAG_PROCESSOR_INFO",
+                            "GET_SEGMENT_INFO",
+                            "GET_PAGE_INFO",
+                            "SET_SEGMENT_MODE",
+                            "GET_SEGMENT_MODE",
+                            "COPY_CAL_PAGE",
+                            "GET_DAQ_CLOCK",
+                            "READ_DAQ",
+                            "GET_DAQ_LIST_MODE",
+                            "DOWNLOAD_MAX",
+                        ],
+                        "COMMUNICATION_MODE_SUPPORTED": {"SLAVE": None, "MASTER": [20, 5]},
+                    },
+                ],
+                "DAQ": [
+                    "STATIC",
+                    3,
+                    2,
+                    0,
+                    "OPTIMISATION_TYPE_DEFAULT",
+                    "ADDRESS_EXTENSION_DAQ",
+                    "IDENTIFICATION_FIELD_TYPE_ABSOLUTE",
+                    "GRANULARITY_ODT_ENTRY_SIZE_DAQ_BYTE",
+                    4,
+                    "OVERLOAD_INDICATION_EVENT",
+                    {
+                        "PRESCALER_SUPPORTED": None,
+                        "TIMESTAMP_SUPPORTED": [1, "SIZE_DWORD", "UNIT_1US", {}],
+                        "DAQ_LIST": [
+                            [0, {"DAQ_LIST_TYPE": "DAQ", "MAX_ODT": 5, "MAX_ODT_ENTRIES": 7}],
+                            [1, {"DAQ_LIST_TYPE": "DAQ", "MAX_ODT": 4, "MAX_ODT_ENTRIES": 7}],
+                            [2, {"DAQ_LIST_TYPE": "DAQ", "MAX_ODT": 3, "MAX_ODT_ENTRIES": 7}],
+                        ],
+                        "EVENT": [["5ms", "5ms", 0, "DAQ", 255, 5, 6, 255], ["extEvent", "extEvent", 1, "DAQ", 255, 1, 9, 255]],
+                    },
+                ],
+            },
+            {"XCP_ON_CAN": [[256, {"CAN_ID_BROADCAST": 82, "CAN_ID_MASTER": 81, "CAN_ID_SLAVE": 80, "BAUDRATE": 500000}], {}]},
         ],
     }
 
@@ -318,17 +316,17 @@ def test_etas1(etas_aml):
     res = ip.parse(ETAS1)
     assert res == {
         "tag": "IF_DATA",
-        "value": [{"KP_BLOB": [{"BUFFER_OFFSET": "VSwVlv_r_Bypass.Vector", "SOURCE_ID": "VSwVlv_r_Bypass.Channel"}]}],
+        "value": {"KP_BLOB": [{"BUFFER_OFFSET": "VSwVlv_r_Bypass.Vector", "SOURCE_ID": "VSwVlv_r_Bypass.Channel"}]},
     }
 
 
 def test_etas2(etas_aml):
     ip = parsers.if_data(etas_aml)
     res = ip.parse(ETAS2)
-    assert res == {"tag": "IF_DATA", "value": [{"KP_BLOB": [0, 3489665600, 2, {"RASTER": [1]}]}]}
+    assert res == {"tag": "IF_DATA", "value": {"KP_BLOB": [0, 3489665600, 2, {"RASTER": [1]}]}}
 
 
 def test_etas3(etas_aml):
     ip = parsers.if_data(etas_aml)
     res = ip.parse(ETAS3)
-    assert res == {"tag": "IF_DATA", "value": [{"KP_BLOB": [3489665600, "INTERN", 2, {"RASTER": [2]}]}]}
+    assert res == {"tag": "IF_DATA", "value": {"KP_BLOB": [3489665600, "INTERN", 2, {"RASTER": [2]}]}}
