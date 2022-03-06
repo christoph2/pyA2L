@@ -24,18 +24,18 @@ def main():
     else:
         call(["curl", "-O", "-C", "-", "-L", ANTLR])
         if os == "linux":
-            call(
-                """cat << 'EOF' > adoptopenjdk.repo
-[AdoptOpenJDK]
-name=AdoptOpenJDK
-baseutl=http://adoptopenjdk.jfrog.io/artifactory/rpm/centos/$releasever/$basearch
-enabled=1
-gpgcheck=1
-gpgkey=http://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
-EOF""",
-                shell=True,
-            )
-            call(["cp", "adoptopenjdk.repo", "/etc/yum.repos.d/"])
+            #            call(
+            #                """cat << 'EOF' > adoptopenjdk.repo
+            # [AdoptOpenJDK]
+            # name=AdoptOpenJDK
+            # baseutl=http://adoptopenjdk.jfrog.io/artifactory/rpm/centos/$releasever/$basearch
+            # enabled=1
+            # gpgcheck=1
+            # gpgkey=http://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
+            # EOF""",
+            #                shell=True,
+            #            )
+            #            call(["cp", "adoptopenjdk.repo", "/etc/yum.repos.d/"])
             # call(["yum", "install", "adoptopenjdk"])
             # call(["yum", "install", "openjdk-16-jre"])
             call(["yum", "update"])
