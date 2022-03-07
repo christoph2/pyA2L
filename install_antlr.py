@@ -40,7 +40,7 @@ def main():
             # call(["yum", "install", "openjdk-16-jre"])
             # call(["yum", "update"])
             call(["yum", "search", "openjdk"])
-            call(["yum", "install", "java-12-openjdk"])
+            call(["yum", "install", "java-latest-openjdk.{}".format(uname.machine)])
         elif os == "darwin":
             pass
         call(["ls", "-l", "-A"])
