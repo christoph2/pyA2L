@@ -38,7 +38,7 @@ def main():
             #            call(["cp", "adoptopenjdk.repo", "/etc/yum.repos.d/"])
             # call(["yum", "install", "adoptopenjdk"])
             # call(["yum", "install", "openjdk-16-jre"])
-            call(["yum", "update"])
+            # call(["yum", "update"])
             call(["yum", "search", "openjdk"])
             call(["yum", "install", "java-12-openjdk"])
         elif os == "darwin":
