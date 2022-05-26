@@ -56,6 +56,7 @@ class AntlrAutogen(Command):
     def run(self):
         """Run ANTLR."""
         pwd = Path(os.environ.get("PWD", "."))
+        print(os.listdir())
         antlrJar = str(pwd / Path("antlr-{}-complete.jar".format(ANTLR_VERSION)))
         antlrCmd = ["java", "-Xmx500M", "-cp", antlrJar, "org.antlr.v4.Tool"]
         self.announce(" ".join(antlrCmd + self.arguments))

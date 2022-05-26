@@ -58,7 +58,7 @@ SYSC = re.compile(r"sysc\s*\((?P<param>.*?)\s*\)")
 
 def fix_axis_par(offset: int, shift: int, num_apo: int) -> list:
     """"""
-    return np.array([offset + (i * (2 ** shift)) for i in range(num_apo)], dtype="float64")
+    return np.array([offset + (i * (2**shift)) for i in range(num_apo)], dtype="float64")
 
 
 def fix_axis_par_dist(offset: int, distance: int, num_apo: int) -> list:
