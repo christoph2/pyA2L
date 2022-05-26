@@ -30,7 +30,7 @@ ANTLR_VERSION = next(req.specs[0][1] for req in BASE_REQUIREMENTS if req.project
 def findAntlr():
     """Try to find the ANTLR .jar-file."""
     if os.environ.get("APPVEYOR"):
-        classpath = r"c:\projects\pya2l\antlr-{}-complete.jar".format(ANTLR_VERSION)
+        classpath = r"antlr-{}-complete.jar".format(ANTLR_VERSION)
     else:
         classpath = os.getenv("CLASSPATH")
         classpath = classpath if classpath is not None else ""

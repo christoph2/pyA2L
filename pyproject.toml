@@ -13,6 +13,10 @@ requires = ["pdm-pep517"]
 build-backend = "pdm.pep517.api"
 
 
+dynamic = [
+    "entry-points"
+]
+
 [project]
 # PEP 621 project metadata
 # See https://www.python.org/dev/peps/pep-0621/
@@ -24,9 +28,25 @@ requires-python = ">=3.5,<4.0"
 dependencies = []
 version = "0.12.80"
 description = ""
+readme="README.md"
+classifiers=[
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+license = {file = "LICENSE"}
+[project.scripts]
+a2ldb-imex = "pya2l.scripts.a2ldb_imex:main"
 
 [project.urls]
-
 
 [project.optional-dependencies]
 [tool.pytest]
