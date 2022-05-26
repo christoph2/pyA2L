@@ -144,9 +144,9 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
     ],
-    entry_points={
-        "console_scripts": [
-            "a2ldb-imex = pya2l.scripts.a2ldb_imex:main",
-        ],
-    },
+    # entry_points={
+    #    "console_scripts": [
+    #        "a2ldb-imex = pya2l.scripts.a2ldb_imex:main",
+    #    ],
+    # },
 )
