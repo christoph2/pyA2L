@@ -30,7 +30,7 @@ dependencies = [
     "numpy",
     "scipy",
 ]
-version = "0.12.83"
+version = "0.12.84"
 description = ""
 readme="README.md"
 classifiers=[
