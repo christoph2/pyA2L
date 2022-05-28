@@ -23,12 +23,12 @@ authors = [
 ]
 requires-python = ">=3.5,<4.0"
 dependencies = [
-    "antlr4-python3-runtime",
+    "antlr4-python3-runtime==4.9.3",
     "chardet",
     "Mako",
     "SQLAlchemy",
-    "numpy>=1.18.5",
-    "scipy>=1.4.1",
+    "numpy",
+    "scipy",
 ]
 version = "0.12.83"
 description = ""
