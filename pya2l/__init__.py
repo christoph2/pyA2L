@@ -202,6 +202,9 @@ class DB(object):
             else:
                 raise InvalidA2LDatabase("Database seems to be corrupted. No meta-data found.")
 
+    def close(self):
+        self.db.close()
+
     def _set_path_components(self, file_name, local=False):
         """"""
         if hasattr(self, "_dbfn"):

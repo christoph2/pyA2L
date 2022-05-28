@@ -847,6 +847,8 @@ class Characteristic(CachedBase):
 
     def __init__(self, session, name: str, module_name: str = None):
         self.characteristic = session.query(model.Characteristic).filter(model.Characteristic.name == name).first()
+        if self.characteristic is None:
+            raise ValueError("'{}' object does not exist.".format(name))
         self.name = name
         self.longIdentifier = self.characteristic.longIdentifier
         self.type = self.characteristic.type

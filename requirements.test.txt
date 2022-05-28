@@ -1,3 +1,2 @@
-numpy
 pytest
-scipy
+flake8-bugbear

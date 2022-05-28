@@ -5,6 +5,7 @@ build = "build.py"
 
 [tool.pdm.dev-dependencies]
 dev = [
+    "pytest",
     "flake8-bugbear>=19.8.0",
 ]
 
@@ -21,7 +22,14 @@ authors = [
     {name = "Christoph Schueler", email = "cpu12.gems@googlemail.com"},
 ]
 requires-python = ">=3.5,<4.0"
-dependencies = []
+dependencies = [
+    "antlr4-python3-runtime",
+    "chardet",
+    "Mako",
+    "SQLAlchemy",
+    "numpy>=1.18.5",
+    "scipy>=1.4.1",
+]
 version = "0.12.82"
 description = ""
 readme="README.md"
