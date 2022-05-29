@@ -20,7 +20,7 @@ def _parse_requirements(filepath):
     return requirements
 
 
-ROOT_DIRPATH = Path(__file__).parent
+ROOT_DIRPATH = Path(".")
 
 BASE_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.txt")
 TEST_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.test.txt")
