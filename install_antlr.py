@@ -18,7 +18,6 @@ print("UNAME:", uname)
 
 def main():
     if os == "windows":
-        # call(["choco", "install", "adoptopenjdk"])
         call(["curl", "-O", "-C", "-", "-L", ANTLR])
         call(["dir"])
     else:
@@ -35,12 +34,13 @@ gpgkey=http://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
 EOF""",
                 shell=True,
             )
-            call(["cp", "adoptopenjdk.repo", "/etc/yum.repos.d/"])
+            call(["su", "-c", "yum", "install", "java-1.8.0-openjdk"])
+            # call(["cp", "adoptopenjdk.repo", "/etc/yum.repos.d/"])
             # call(["yum", "install", "adoptopenjdk"])
             # call(["yum", "install", "openjdk-16-jre"])
-            call(["yum", "update"])
-            call(["yum", "search", "openjdk"])
-            call(["yum", "install", "java-12-openjdk"])
+            # call(["yum", "update"])
+            # call(["yum", "search", "openjdk"])
+            # call(["yum", "install", "java-12-openjdk"])
         elif os == "darwin":
             pass
         call(["ls", "-l", "-A"])
