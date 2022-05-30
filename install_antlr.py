@@ -34,7 +34,7 @@ gpgkey=http://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
 EOF""",
                 shell=True,
             )
-            call(["su", "-c", "yum", "install", "java-1.8.0-openjdk"])
+            call(["sudo", "yum", "install", "java-1.8.0-openjdk"])
             # call(["cp", "adoptopenjdk.repo", "/etc/yum.repos.d/"])
             # call(["yum", "install", "adoptopenjdk"])
             # call(["yum", "install", "openjdk-16-jre"])
