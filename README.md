@@ -16,6 +16,23 @@ ASAP2 is typically used together with CCP (CAN Calibration Protocol) or XCP (Uni
 
 Supported Versions: 1.6
 
+Installation
+------------
+
+- Via `pip` (Currently only Windows and MacOS):
+    ```shell
+    $ pip install pya2ldb
+    ```
+    **IMPORTANT**: Package-name is `pya2ldb` **NOT** `pya2l`!!!
+
+- From Github:
+    - Clone / fork / download [pyA2Ldb repository](https://github.com/christoph2/pya2l).
+    - Make sure you have a working Java installation on your system, like [AdoptOpenJDK](https://adoptopenjdk.net/) or [OpenJDK](https://openjdk.java.net/).
+    - Download and install `ANTLR 4.9.3`:
+        - `curl -O -C - -L https://www.antlr.org/download/antlr-4.9.3-complete.jar`
+        - Add `ANTLR` to your `CLASSPATH` environment variable, e.g.: `export CLASSPATH=$CLASSPATH:~/jars/antlr-4.9.3-complete.jar` (you may put this in your `.bashrc`, `.zshrc`, ...).
+    - Run setup-script: `python setup.py develop`
+
 Getting Started
 ---------------
 
