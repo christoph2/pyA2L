@@ -2,6 +2,7 @@
 # pylint: disable=C0111
 import os
 import subprocess
+import sys
 from itertools import chain
 from pathlib import Path
 
@@ -56,7 +57,11 @@ class AntlrAutogen(Command):
     def run(self):
         """Run ANTLR."""
         pwd = Path(os.environ.get("PWD", "."))
-        antlrJar = str(pwd / Path("antlr-{}-complete.jar".format(ANTLR_VERSION)))
+        antlrJar = pwd / Path("antlr-{}-complete.jar".format(ANTLR_VERSION))
+        if not antlrJar.exists():
+            print(f"{antlrJar} not found in '{pwd}'")
+            sys.exit(2)
+        antlrJar = str(antlrJar)
         antlrCmd = ["java", "-Xmx500M", "-cp", antlrJar, "org.antlr.v4.Tool"]
         self.announce(" ".join(antlrCmd + self.arguments))
         subprocess.check_call(antlrCmd + self.arguments)
