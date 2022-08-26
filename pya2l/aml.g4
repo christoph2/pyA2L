@@ -1,7 +1,7 @@
 /*
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2020 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2022 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -59,6 +59,8 @@ predefined_type_name:
    | name = 'uchar'
    | name = 'uint'
    | name = 'ulong'
+   | name = 'int64'
+   | name = 'uint64'
    | name = 'double'
    | name = 'float'
    )
