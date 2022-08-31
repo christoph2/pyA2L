@@ -3206,12 +3206,104 @@ class TypedefMeasurement(CachedBase):
             self.compuMethod,
         )
         return """
-Measurement {{
+TypedefMeasurement {{
     name            = "{}";
     longIdentifier  = "{}";
     datatype        = {};
     resolution      = {};
     accuracy        = {};
+    lowerLimit      = {};
+    upperLimit      = {};
+    compuMethod     = {};
+}}""".format(
+            *names
+        )
+
+    __repr__ = __str__
+
+
+class TypedefCharacteristic(CachedBase):
+    """
+    Parameters
+    ----------
+    session: Sqlite3 session object
+
+    name: str
+        name of one existing TYPEDEF_CHARACTERISTIC object.
+
+    Attributes
+    ----------
+    typedef:
+        Raw Sqlite3 database object.
+
+    name: str
+        name of the TypedefCharacteristic (s. Parameters...)
+
+    longIdentifier: str
+        comment, description.
+
+    datatype: ['UBYTE' | 'SBYTE' | 'UWORD' | 'SWORD' | 'ULONG' | 'SLONG' | 'A_UINT64' | 'A_INT64' |
+        'FLOAT16_IEEE' | 'FLOAT32_IEEE' | 'FLOAT64_IEEE']
+        Type of the TypedefCharacteristic.
+
+    deposit: RecordLayout
+        Deposit in memory.
+
+    maxDiff: float
+        possible variation from exact value in %
+
+    lowerLimit: float
+        plausible range of table values, lower limit
+
+    upperLimit: float
+        plausible range of table values, upper limit
+    """
+
+    __slots__ = (
+        "typedef",
+        "name",
+        "longIdentifier",
+        "datatype",
+        "_conversionRef",
+        "deposit",
+        "maxDiff",
+        "lowerLimit",
+        "upperLimit",
+        "compuMethod",
+    )
+
+    def __init__(self, session, name: str, module_name: str = None):
+        self.typedef = session.query(model.TypedefCharacteristic).filter(model.TypedefCharacteristic.name == name).first()
+        self.name = name
+        self.longIdentifier = self.typedef.longIdentifier
+        self.datatype = self.typedef.datatype
+        self._conversionRef = self.typedef.conversion
+        self.deposit = RecordLayout(session, self.typedef.deposit, module_name)
+        self.maxDiff = self.typedef.maxDiff
+        self.lowerLimit = self.typedef.lowerLimit
+        self.upperLimit = self.typedef.upperLimit
+        self.compuMethod = (
+            CompuMethod.get(session, self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
+        )
+
+    def __str__(self):
+        names = (
+            self.name,
+            self.longIdentifier,
+            self.datatype,
+            self.deposit,
+            self.maxDiff,
+            self.lowerLimit,
+            self.upperLimit,
+            self.compuMethod,
+        )
+        return """
+TypedefCharacteristic {{
+    name            = "{}";
+    longIdentifier  = "{}";
+    datatype        = {};
+    deposit         = {};
+    maxDiff         = {};
     lowerLimit      = {};
     upperLimit      = {};
     compuMethod     = {};

@@ -124,8 +124,8 @@ class KeywordType(type):
     classDict = {}
     classes = set()
 
-    def __new__(klass, name, bases, namespace):
-        newKlass = super(klass, KeywordType).__new__(klass, name, bases, namespace)
+    def __new__(metacls, name, bases, namespace):
+        newKlass = super(metacls, KeywordType).__new__(metacls, name, bases, namespace)
         KeywordType.classDict[newKlass.__name__] = newKlass
         KeywordType.classes.add(newKlass.__name__.lower())
 
@@ -139,26 +139,26 @@ class KeywordType(type):
             if variableAttribute:
                 # print("VA: {} ==> {}".format(newKlass.__name__, variableAttribute))
                 variableAttribute = variableAttribute[0]
-        setattr(newKlass, "fixedAttributes", fixedAttributes)
-        setattr(newKlass, "variableAttribute", variableAttribute)
-        setattr(newKlass, "attrDict", dict(zip([a[1] for a in attrs], attrs)))
+        newKlass.fixedAttributes = fixedAttributes
+        newKlass.variableAttribute = variableAttribute
+        newKlass.attrDict = dict(zip([a[1] for a in attrs], attrs))
 
         return newKlass
 
-    def __getitem__(self, key):
-        return self.attrDict.get(key, None)
+    def __getitem__(cls, key):
+        return cls.attrDict.get(key, None)
 
-    def __eq__(self, other):
-        return self.__class__.__name__ == other.__class__.__name__
+    def __eq__(cls, other):
+        return cls.__class__.__name__ == other.__class__.__name__
 
-    def __lt__(self, other):
-        return self.__class__.__name__ < other.__class__.__name__
+    def __lt__(cls, other):
+        return cls.__class__.__name__ < other.__class__.__name__
 
-    def __hash__(self):
-        return id(self)
+    def __hash__(cls):
+        return id(cls)
 
     @classmethod
-    def getClass(klass, name):
+    def getClass(metacls, name):
         result = KeywordType.classDict.get(name, None)
         if not result:
             pass
@@ -1193,6 +1193,7 @@ class MODULE(Keyword):
         "MOD_COMMON",
         "MOD_PAR",
         "RECORD_LAYOUT",
+        "TYPEDEF_CHARACTERISTIC",
         "TYPEDEF_MEASUREMENT",
         "TYPEDEF_STRUCTURE",
         "UNIT",
@@ -1701,6 +1702,21 @@ class STRUCTURE_COMPONENT(Keyword):
     ]
 
 
+class TYPEDEF_CHARACTERISTIC(Keyword):
+    multiple = True
+    block = True
+    attrs = [
+        (Ident, "Name"),
+        (String, "LongIdentifier"),
+        (Datatype, "Datatype"),
+        (Ident, "Deposit"),
+        (Float, "MaxDiff"),
+        (Ident, "Conversion"),
+        (Float, "LowerLimit"),
+        (Float, "UpperLimit"),
+    ]
+
+
 class TYPEDEF_MEASUREMENT(Keyword):
     multiple = True
     block = True
@@ -2031,6 +2047,7 @@ KEYWORD_MAP = {
     "SYMBOL_LINK": SYMBOL_LINK,
     "SYSTEM_CONSTANT": SYSTEM_CONSTANT,
     "S_REC_LAYOUT": S_REC_LAYOUT,
+    "TYPEDEF_CHARACTERISTIC": TYPEDEF_CHARACTERISTIC,
     "TYPEDEF_MEASUREMENT": TYPEDEF_MEASUREMENT,
     "TYPEDEF_STRUCTURE": TYPEDEF_STRUCTURE,
     "UNIT": UNIT,
