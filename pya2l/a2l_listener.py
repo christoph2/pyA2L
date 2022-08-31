@@ -1009,9 +1009,7 @@ class A2LListener(BaseListener):
         conversion = ctx.conversion.value
         lowerLimit = ctx.lowerLimit.value
         upperLimit = ctx.upperLimit.value
-        print(dir(model.TypedefMeasurement))
-        print("FILE", model.__file__)
-        ctx.value = model.TypedefMeasurement(
+        ctx.value = model.TypedefCharacteristic(
             name=name,
             longIdentifier=longIdentifier,
             type=type_,
