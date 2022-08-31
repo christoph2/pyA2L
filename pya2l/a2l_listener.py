@@ -1000,6 +1000,29 @@ class A2LListener(BaseListener):
         )
         self.db.session.add(ctx.value)
 
+    def exitTypedefCharacteristic(self, ctx):
+        name = ctx.name.value
+        longIdentifier = ctx.longIdentifier.value
+        type_ = ctx.type_.text
+        deposit = ctx.deposit_.value
+        maxDiff = ctx.maxDiff.value
+        conversion = ctx.conversion.value
+        lowerLimit = ctx.lowerLimit.value
+        upperLimit = ctx.upperLimit.value
+        print(dir(model.TypedefMeasurement))
+        print("FILE", model.__file__)
+        ctx.value = model.TypedefMeasurement(
+            name=name,
+            longIdentifier=longIdentifier,
+            type=type_,
+            deposit=deposit,
+            maxDiff=maxDiff,
+            conversion=conversion,
+            lowerLimit=lowerLimit,
+            upperLimit=upperLimit,
+        )
+        self.db.session.add(ctx.value)
+
     def exitTypedefMeasurement(self, ctx):
         name = ctx.name.value
         longIdentifier = ctx.longIdentifier.value

@@ -1533,7 +1533,19 @@ typedefCharacteristic:
     BEGIN 'TYPEDEF_CHARACTERISTIC'
     name = identifierValue
     longIdentifier = stringValue
-    datatype = dataType
+    
+    type_ =
+    (
+        'ASCII' |
+        'CURVE' |
+        'MAP' |
+        'CUBOID' |
+        'CUBE_4' |
+        'CUBE_5' |
+        'VAL_BLK' |
+        'VALUE'
+    )
+
     deposit_ = identifierValue
     maxDiff = numericValue
     conversion = identifierValue

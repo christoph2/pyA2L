@@ -3242,8 +3242,7 @@ class TypedefCharacteristic(CachedBase):
     longIdentifier: str
         comment, description.
 
-    datatype: ['UBYTE' | 'SBYTE' | 'UWORD' | 'SWORD' | 'ULONG' | 'SLONG' | 'A_UINT64' | 'A_INT64' |
-        'FLOAT16_IEEE' | 'FLOAT32_IEEE' | 'FLOAT64_IEEE']
+    type: ("ASCII", "CURVE", "MAP", "CUBOID", "CUBE_4", "CUBE_5", "VAL_BLK", "VALUE")
         Type of the TypedefCharacteristic.
 
     deposit: RecordLayout
@@ -3263,7 +3262,7 @@ class TypedefCharacteristic(CachedBase):
         "typedef",
         "name",
         "longIdentifier",
-        "datatype",
+        "type",
         "_conversionRef",
         "deposit",
         "maxDiff",
@@ -3276,7 +3275,7 @@ class TypedefCharacteristic(CachedBase):
         self.typedef = session.query(model.TypedefCharacteristic).filter(model.TypedefCharacteristic.name == name).first()
         self.name = name
         self.longIdentifier = self.typedef.longIdentifier
-        self.datatype = self.typedef.datatype
+        self.type = self.typedef.type
         self._conversionRef = self.typedef.conversion
         self.deposit = RecordLayout(session, self.typedef.deposit, module_name)
         self.maxDiff = self.typedef.maxDiff

@@ -5712,7 +5712,7 @@ class TypedefCharacteristic(Base):
 
     longIdentifier = StdString()
 
-    datatype = StdIdent()
+    type = StdString()
 
     deposit = StdIdent()
 
@@ -5727,7 +5727,7 @@ class TypedefCharacteristic(Base):
     __required_parameters__ = (
         Parameter("name", Ident, False),
         Parameter("longIdentifier", String, False),
-        Parameter("datatype", Datatype, False),
+        Parameter("type", Enum, False),
         Parameter("deposit", Ident, False),
         Parameter("maxDiff", Float, False),
         Parameter("conversion", Ident, False),
@@ -6762,6 +6762,7 @@ KEYWORD_MAP = {
     "SYMBOL_LINK" : SymbolLink,
     "SYSTEM_CONSTANT" : SystemConstant,
     "S_REC_LAYOUT" : SRecLayout,
+    "TYPEDEF_CHARACTERISTIC": TypedefCharacteristic,
     "TYPEDEF_MEASUREMENT": TypedefMeasurement,
     "TYPEDEF_STRUCTURE": TypedefStructure,
     "UNIT" : Unit,

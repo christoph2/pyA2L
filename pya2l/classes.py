@@ -1708,7 +1708,11 @@ class TYPEDEF_CHARACTERISTIC(Keyword):
     attrs = [
         (Ident, "Name"),
         (String, "LongIdentifier"),
-        (Datatype, "Datatype"),
+        (
+            Enum,
+            "Type",
+            ("ASCII", "CURVE", "MAP", "CUBOID", "CUBE_4", "CUBE_5", "VAL_BLK", "VALUE"),
+        ),
         (Ident, "Deposit"),
         (Float, "MaxDiff"),
         (Ident, "Conversion"),
