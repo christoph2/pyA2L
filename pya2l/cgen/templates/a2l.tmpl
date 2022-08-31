@@ -747,6 +747,11 @@ project = session.query(model.Project).first()
                         /end IF_DATA
                     %endfor
                     %endif
+                    <% ecu_address_extension = entry3.ecu_address_extension %>
+                            %if ecu_address_extension:
+                    ECU_ADDRESS_EXTENSION
+                        ${ecu_address_extension.extension}  /* extension */
+                    %endif
                 /end INSTANCE
             %endfor
             %endif
@@ -1512,6 +1517,21 @@ project = session.query(model.Project).first()
                         ${src_addr_5.datatype}  /* datatype */
                     %endif
                 /end RECORD_LAYOUT
+            %endfor
+            %endif
+              <% typedef_characteristic = entry2.typedef_characteristic %>
+                    %if typedef_characteristic:
+            %for entry3 in typedef_characteristic:
+                /begin TYPEDEF_CHARACTERISTIC
+                    ${entry3.name}  /* name */
+                    "${entry3.longIdentifier}"  /* longIdentifier */
+                    ${entry3.type}  /* type */
+                    ${entry3.deposit}  /* deposit */
+                    ${entry3.maxDiff}  /* maxDiff */
+                    ${entry3.conversion}  /* conversion */
+                    ${entry3.lowerLimit}  /* lowerLimit */
+                    ${entry3.upperLimit}  /* upperLimit */
+                /end TYPEDEF_CHARACTERISTIC
             %endfor
             %endif
               <% typedef_measurement = entry2.typedef_measurement %>

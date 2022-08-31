@@ -772,7 +772,8 @@ instance:
     /* optional part */
 
     (
-        v_ifData += ifData
+        v_ifData += ifData |
+        v_ecuAddressExtension += ecuAddressExtension
     )*
     END 'INSTANCE'
     ;

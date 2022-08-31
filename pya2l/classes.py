@@ -1001,7 +1001,7 @@ class INSTANCE(Keyword):
         (Ident, "TypeName"),
         (Ulong, "Address"),
     ]
-    children = ["IF_DATA"]
+    children = ["IF_DATA", "ECU_ADDRESS_EXTENSION"]
 
 
 class LAYOUT(Keyword):
