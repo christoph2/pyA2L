@@ -1,0 +1,678 @@
+/******************************************************************************/
+/*                                                                            */
+/*   ASAP2-Meta-Description for measurment and calibration devices            */
+/*   using Diagnostic Services                                                */
+/*                                                                            */
+/*   ASAP-Version:           V1.4                                             */
+/*   ETAS AML-Version:       V03.01                                           */
+/*   (this file "A1B_Diagnostic_Services_V0301.AML")                          */
+/*                                                                            */
+/*   TP-BLOB Version:        V03.00                                           */
+/*   QP-BLOB Version:        V03.00                                           */
+/*   KP-BLOB Version:        V03.00                                           */
+/*   DP-BLOB Version:        V03.00                                           */
+/*                                                                            */
+/*                                                                            */
+/*   Used datatypes:                                                          */
+/*                                                                            */
+/*   A2ML       ASAP2          Windows  Explaination                          */
+/*   -------------------------------------------------------------------------*/
+/*   uchar      UBYTE          BYTE     unsigned 8 Bit                        */
+/*   char       SBYTE          char     signed 8 Bit                          */
+/*   uint       UWORD          WORD     unsigned integer 16 Bit               */
+/*   int        SWORD          int      signed integer 16 Bit                 */
+/*   ulong      ULONG          DWORD    unsigned integer 32 Bit               */
+/*   long       SLONG          LONG     signed integer 32 Bit                 */
+/*   float      FLOAT32_IEEE            float 32 Bit                          */
+/*                                                                            */
+/******************************************************************************/
+
+/*============================================================================*/
+/*   HISTORY:                                                                 */
+/*   ========                                                                 */
+/*   ETAS-Ruo 08.03.2004 Released for INCA 5.0 and successor versions.        */
+/*   - Support Unified Diagnostic Services (UDS) according to ISO 14229 (2003)*/
+/*     on CAN  according to ISO 15765 (2003).                                 */
+/*   ETAS-Ruo 01.04.2004                                                      */
+/*   - added parameter for free running measurement mode                      */
+/*   Note:                                                                    */
+/*   =====                                                                    */
+/*   This AML was defined by ETAS to support UDS. A UDS AML defined by ASAM is*/
+/*   not available by now.                                                    */
+/*============================================================================*/
+
+
+"ASAP1B_DIAGNOSTIC_SERVICES"  taggedstruct
+{
+
+/*____________________________________________________________________________*/
+/*_________________________START ADDRESS_MAPPING______________________________*/
+/******************************************************************************/
+/* The address mapping allows to map the original ECU addresses described     */
+/* in the common A2L part to an interface specific address range              */
+/* (at MEMORY_SEGMENT, optional)                                              */
+/******************************************************************************/
+
+("ADDRESS_MAPPING" struct
+  {
+     ulong;                            /* Start address of MEMORY_SEGMENT     */
+     ulong;                            /* mapped start address                */
+     ulong;                            /* length of range to be mapped        */
+  }
+)*;
+/*_________________________END ADDRESS_MAPPING________________________________*/
+
+
+
+/*____________________________________________________________________________*/
+/*__________________________START DP_BLOB_____________________________________*/
+/******************************************************************************/
+/* The DP_BLOB describes device specific parameters for a characteristics.    */
+/* This part is needed only if the parametes of the generic A2L description   */
+/* are different to the parameters used with this device.                     */
+/* (at CHARACTERISTIC, optional)                                              */
+/******************************************************************************/
+
+"DP_BLOB" struct
+{
+   ulong;                              /* Start address                      */
+   ulong;                              /* Size of characteristic in bytes    */
+   taggedunion
+   {
+     "DP_BLOB_VERSION" uint;           /* Blob version, High byte: version   */
+   };
+                                       /* Low byte : sub version             */
+                                       /* this AML is version 0x0300         */
+};
+/*__________________________END DP_BLOB______________________________________*/
+
+
+
+/*___________________________________________________________________________*/
+/*__________________________START KP_BLOB____________________________________*/
+/*****************************************************************************/
+/* The KP_BLOB describes device specific parameters for a measurement.       */
+/* This part is needed only if the parametes of the generic A2L description  */
+/* are different to the parameters used with this device.                    */
+/* (at MEASUREMENT, optional)                                                */
+/*****************************************************************************/
+
+"KP_BLOB" struct
+{
+   ulong;                              /* Start address                      */
+   uint;                               /* Size of measurement in bytes       */
+   taggedunion
+   {
+      "KP_BLOB_VERSION" uint;          /* Blob version, High byte: version   */
+   };
+                                       /* Low byte : sub version             */
+                                       /* this AML is version 0x0300         */
+};
+/*__________________________END KP_BLOB______________________________________*/
+
+
+
+
+/*___________________________________________________________________________*/
+/*_________________________START SOURCE______________________________________*/
+/*****************************************************************************/
+/* This section describes an available aquisition Source/Raster.             */
+/* Mulitiple SOURCE definitions possible.                                    */
+/*****************************************************************************/
+
+(block "SOURCE" struct
+{                                     /*Source is definded in ASAP2          */
+   struct
+   {
+      char [100];                     /* ident Name (displayed in tool)      */
+
+                                      /* definition of polling rate:         */
+      int;                            /* ScalingUnit                         */
+      long;                           /* Rate                                */
+                                      /* (CSE table in ASAP2 spec.)          */
+   };
+
+  /*__________________________________________________________________________*/
+  /*_________________________START QP_BLOB____________________________________*/
+  /****************************************************************************/
+  /* The QP-BLOB describes the interface specific source parameters           */
+  /****************************************************************************/
+
+   taggedstruct
+   {
+      "QP_BLOB" struct
+      {
+         taggedunion
+         {
+            "QP_BLOB_VERSION" uint;
+                                       /* Blob version, High byte: version    */
+                                       /* Low byte : sub version              */
+                                       /* this AML is version 0x0300          */
+         };
+
+         taggedunion                   /* "Measurement_Mode" */
+         {
+            "ADDRESSMODE" taggedstruct
+            {
+               "MAX_NO_OF_SIGNALS" uint;  /* max. no of signals        */
+               "MAX_NO_OF_BYTES" uint;    /* max. no of bytes          */
+
+               "AVAILABLE_ON" enum        /* This source is available on ...   */
+               {
+                  "CAN"            = 2
+               };
+            };
+
+
+            "BLOCKMODE" taggedstruct
+            {
+               "LOCAL_ID" uint;           /* Block mode: Local Identifier */
+                                          /* e.g. 0xF300                  */
+               "MAX_NO_OF_SIGNALS" uint;  /* max. no of signals           */
+               "MAX_NO_OF_BYTES" uint;    /* max. no of bytes             */
+
+               "AVAILABLE_ON" enum        /* This source is available on... */
+               {
+                  "CAN"            = 2
+               };
+            };
+
+            "FREERUNNINGMODE" taggedstruct
+            {                             /* FreeRunningMode in INCA is available */
+                                          /* using Diagnostic Services on CAN     */
+                                          /* based on                             */
+                                          /* ISO14229-1/2003 and ISO15765/2003    */
+                                          /* whith the service                    */
+                                          /* ReadDataByPeriodicIdentifyer         */
+
+             "RDBPI_PARAMETER" taggedstruct  /* RDBPI: Read Data By Periodic Identifier*/
+               {
+
+               "RESPONSE_TYPE" taggedunion
+                 {
+                  "RDBPI_RESPONSE_TYPE_USDT" ;
+                  "RDBPI_RESPONSE_TYPE_UUDT"  taggedstruct
+                    {
+                      block "CAN" taggedstruct
+                        {
+                          (block "UUDT_CAN_IDs" taggedstruct
+                            {
+                              "FIRST_CAN_ID"  uint;
+                              "LAST_CAN_ID"   uint;
+                            })*;
+                            /* block can be used multiple to be able to describe fragmented ranges*/
+                        };
+                    };
+                 };
+
+
+               "TRANSMISSION_MODE" enum        /* transmission mode to be used for */
+                                               /* data aquisition                  */
+                 {
+                  "TRANSMISSION_MODE_SLOW"              = 1,  /* ISO naming: sentAtSlowRate   */
+                  "TRANSMISSION_MODE_MEDIUM"            = 2,  /*             sentAtMediumRate */
+                  "TRANSMISSION_MODE_FAST"              = 3   /*             sentAtFastRate   */
+                 };
+
+
+               (block "AVAILABLE_PERIODIC_IDENTIFIER_RANGE" taggedstruct
+
+                                           /* If NO block "PERIODIC_IDENTIFIERS" is  */
+                                           /* available as default f200-f2ff applies.*/
+                                           /* 2-Byte Identifier required.            */
+                 {
+                      "FIRST_ID"  uint;
+                      "LAST_ID"   uint;
+                 })*;
+                 /* block can be used multiple to be able to describe fragmented ranges*/
+
+                 /* NOTE: The same IDs may be used in different rasters (sources).        */
+                 /* Overlapping IDs may be used in any of the raster defined.             */
+                 /* However the ID is restricted to one raster per measurement.           */
+
+               } ;
+
+               "AVAILABLE_ON" enum         /* This source is available on ..*/
+               {
+                  "CAN"        = 2
+               };
+            };
+         }; /* end of measurement mode */
+      }; /* end of QP-Blob struct */
+   }; /* end of tagged struct */
+  /*_________________________END QP_BLOB______________________________________*/
+
+} /* end of struct */
+)*; /* end of block */
+/*_________________________END SOURCE ________________________________________*/
+
+
+
+/*____________________________________________________________________________*/
+/*_________________________START TP_BLOB______________________________________*/
+/******************************************************************************/
+/* The TP_BLOB describes dirver specific parameters.                          */
+/******************************************************************************/
+
+block "TP_BLOB" struct
+{
+   uint;                              /* Blob version,    High byte: version */
+                                      /* Low byte : sub version              */
+                                      /* current version 0x0300              */
+
+                                      /* Protocol Version:                   */
+   enum                               /* Select DiagServices specification   */
+                                      /* for UDS(Unified Diagnostic Services)*/
+                                      /* please select ISO14229_1_2003       */
+   {
+      "ISO14229_1_2003" = 2
+   };
+
+   enum                               /* byte order for MEASUREMENTs         */
+   {                                  /* and CHARACTERISTICs                 */
+      "BYTEORDER_MSB_FIRST" = 1,
+      "BYTEORDER_MSB_LAST"  = 2
+   };
+
+
+
+   taggedstruct
+   {
+  /*__________________________________________________________________________*/
+  /*_______________________START SESSION______________________________________*/
+  /****************************************************************************/
+  /* The block session describes available session parameters.              */
+  /****************************************************************************/
+
+      (block "SESSION" struct          /* Note:  The block session is needed  */
+                                       /* at least one time                   */
+      {
+         char[100];                    /* session indentification string used */
+                                       /* as displayed name in the HWC select-*/
+                                       /* ion box                             */
+         uint;                         /* diagnostic mode for this session    */
+
+         taggedstruct
+         {
+            "SessionOpeningOrder" struct /* this parameter gives you the      */
+                                         /* possibility to decide how the     */
+                                         /* session should be opened          */
+            {
+               enum
+               {
+                  "SeedKey_StartDiagSession"  =  0,
+                  "StartDiagSession_SeedKey"  =  1,
+                  "StartDiagSession"          =  2
+               };
+            };
+         };
+      }
+      )*; /* Max. 5 of these blocks are supported by INCA*/
+
+  /*_______________________END SESSION________________________________________*/
+
+
+
+  /*__________________________________________________________________________*/
+  /*_______________________Start DATA_ACCESS__________________________________*/
+  /****************************************************************************/
+  /* This section describes the address layout and accessability of pages     */
+  /* for measruement and calibration devices using Diagnostic Services.       */
+  /****************************************************************************/
+
+      block "DATA_ACCESS" struct
+      {
+         ulong;        /* ECU address offset for fash page                 */
+                       /* (this value is added to the original address,    */
+                       /* default 0x0)                                     */
+         ulong;        /* ECU address offset for K-Line (this value is     */
+                       /* added to the original address , default 0x0) for */
+                       /* RAM page                                         */
+
+         /* The ECU provides .. .. via protocol coded as (0:No, 1:Yes)     */
+         uint;         /* ..read access on ECU flash data..                */
+         uint;         /* ..verify/chechsum access on ECU flash code..     */
+         uint;         /* ..read access on ECU flash code..                */
+         uint;         /* ..upload and download only on active page..      */
+      };
+  /*_______________________END DATA_ACCESS____________________________________*/
+
+
+
+  /*____________________________________________________________________________*/
+  /*_________________________BEGIN CHECKSUM_____________________________________*/
+  /******************************************************************************/
+  /* The section CHECKSUM defines the parameters for checksum calculation       */
+  /******************************************************************************/
+      block "CHECKSUM" struct
+      {
+        ulong;                          /* check sum type qualifier (see table) */
+        uint;                           /* check sum calculation only on        */
+                                        /* active page (0:No, 1:Yes)            */
+        uint;                           /* Routine Number for checksum          */
+        taggedstruct
+         {
+            "CHECKSUM_RESULT" taggedunion
+            {
+               "RequestRoutineResults" taggedstruct
+               {
+                  "RNC_RESULT" ( uchar )*; /* result codes, that sign           */
+                                           /* 'calculation in progress'         */
+
+               };
+               "StartRoutine";
+               "CodedResult";
+            };
+         };
+      };
+  /*_________________________END CHECKSUM_______________________________________*/
+
+
+  /*____________________________________________________________________________*/
+  /*_________________________START COPY_________________________________________*/
+  /******************************************************************************/
+  /* The section COPY defines the parameter for the copy RP to WP operation     */
+  /******************************************************************************/
+
+      block "COPY" struct
+      {                                /* ECU mode for copying Flash into RAM */
+         taggedunion
+         {
+            "RAM_InitByEcu";
+            "RAM_InitByTool" struct
+            {
+               uint;                   /* diagnostic mode to copy Flash to RAM*/
+               taggedstruct
+               {                       /* list of add. parameters for StartDiag*/
+                  "COPY_PARA" ( uchar )*;
+               };
+            };
+         };
+      };
+  /*_________________________END COPY___________________________________________*/
+
+
+  /*____________________________________________________________________________*/
+  /*_________________________START FLASH________________________________________*/
+  /******************************************************************************/
+  /* The section FLASH defines the parameter to flash WP to RP                  */
+  /******************************************************************************/
+      block "FLASH" struct
+      {
+         taggedunion
+         {                            /* ECU mode for copying RAM into Flash   */
+            "NOFLASHBACK";
+            "AUTOFLASHBACK";
+            "TOOLFLASHBACK" struct
+              {
+               uint;                  /* routine number to copy RAM            */
+                                      /* into flash (WP->RP)                   */
+               taggedstruct
+                {
+                  "COPY_FRAME" (uchar)*; /* list of frames to be copied */
+                };
+
+               taggedunion
+               {
+                  "RequestRoutineResults" taggedstruct
+                     {
+                       "RNC_RESULT" (uchar)*;  /* result codes, that         */
+                                               /* sign copy in progress      */
+                     };
+                  "StartRoutine";
+                  "CodedResult";
+               };
+              };
+         };
+       };
+/*_________________________END FLASH__________________________________________*/
+
+
+  /*____________________________________________________________________________*/
+  /*_________________________BEGIN SECURITY_ACCESS______________________________*/
+  /******************************************************************************/
+  /* The section SECURITY_ACCESS defines the parameters to unlock the ECU.      */
+  /* Optionally the section allows to pre-define seed&key file name and location*/
+  /* It gives the possibility to automate the seed&key.dll assignment           */
+  /* in INCA HWC.                                                               */
+  /******************************************************************************/
+
+      ( block "SECURITY_ACCESS" struct
+      {                     /* Parameter for Seed&Key:                      */
+         uint;              /* AccessMode for service Security Access (27h) */
+                            /* defines the unlock level for GetSeed         */
+                            /* (default = 0x1)                              */
+         uint;              /* method of seed&key calculation(default= 0x1) */
+                            /* passed trough to the seed&key DLL            */
+         uint;              /* delaytime in sec from stimulation to         */
+                            /* seed request (default= 0x0)                  */
+  /*____________________________________________________________________________*/
+
+  /*____________________________________________________________________________*/
+  /*_________________________START SEED_KEY_____________________________________*/
+  /******************************************************************************/
+  /* This section allows to predefine a seed&key file name and location.        */
+  /* It gives the possibility to automate the seed&key.dll assignment           */
+  /* in INCA HWC.                                                               */
+  /******************************************************************************/
+         taggedstruct
+         {
+            "SEED_KEY"
+            char[256];      /* name of Seed&Key.DLL incl. path and */
+                            /* extension                           */
+         };
+      }  /* end of struct */
+      )*; /* end of block SECURITY_ACCESS */
+   /*_________________________END SECURITY_ACCESS________________________________*/
+
+
+  /*____________________________________________________________________________*/
+  /*_________________________BEGIN PAGE_SWITCH__________________________________*/
+  /******************************************************************************/
+  /* The section PAGE_SWITCH defines what pages are available and how to        */
+  /* switch the pages of the ECU                                                */
+  /******************************************************************************/
+
+      block "PAGE_SWITCH" struct
+      {
+         taggedstruct
+         {
+            "PAGE_CODE" (uchar)*;         /* Defines page codes. Two pages are possible, the first page */
+                                          /* represents the RP, the second one the WP.                  */
+                                          /* If a page is not available it needs to be marked with 0xFF */
+                                          /* example: PAGE_CODE 0xFF 0x01   for a working page only ECU */
+                                          /*          PAGE_CODE 0x01 0x02   for a Reference- and Working*/
+         };
+
+         taggedunion
+         {
+            "LOCAL_ROUTINE" taggedstruct
+            {
+                  "ROUTINE_NUMBER_SET" uint;     /* no of routine to switch the page  */
+                  "ROUTINE_PARAM_SET" (uchar)*;  /* parameter for local routine       */
+                  "ROUTINE_NUMBER_READ" uint;    /* no of routine to get current page */
+                  "ROUTINE_PARAM_READ" (uchar)*; /* parameter for local routine       */
+                                                 /* Note: It's possible to use the same*/
+                                                 /* routine with different parameter  */
+                                                 /* or different routine numbers      */
+
+                "ROUTINE_RESULTS" taggedunion
+                {
+                     "StartRoutine";
+                     "CodedResults";
+                  };
+
+            };
+        }; /* end of taggedunion */
+      }; /* end of block PAGE_SWITCH */
+
+  /*_________________________END PAGE_SWITCH____________________________________*/
+
+
+
+  /*____________________________________________________________________________*/
+  /*____________ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER ___________________________*/
+  /******************************************************************************/
+  /* This section defines the Address and Length Format Identifiers             */
+  /* This Block is mandatory if using Diagnostic Services ISO14229-1.           */
+  /******************************************************************************/
+
+      block "ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER" struct
+        {
+          uint;  /* general setting (default 0x13)*/
+          taggedstruct
+            {
+                "AALFI_FOR_CHECKSUM_CALCULATION"       uint;
+                "AALFI_FOR_ERASE_MEMORY"               uint;
+                "AALFI_FOR_WRITE_MEMORY_BY_ADDR"       uint;
+                "AALFI_FOR_READ_MEMORY_BY_ADDR"        uint;
+                "AALFI_FOR_DYNAMICALLY_DEFINE_DATA_ID" uint;
+                "AALFI_FOR_REQUEST_DOWNLOAD"           uint;
+            };
+        };
+  /*____________ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER END___________________*/
+
+
+
+
+/******************************************************************************/
+/* Pysical Layer Parameters ...                                               */
+/******************************************************************************/
+
+/*____________________________________________________________________________*/
+/*___________________________START CAN________________________________________*/
+/******************************************************************************/
+/* CAN defines the CAN specific parameters                                    */
+/******************************************************************************/
+
+      block "CAN" struct
+      {
+         ulong;                          /* Baudrate [Hz]                       */
+
+         taggedstruct
+         {
+            "SamplePoint"   uchar;       /* Sample point [% complete bit time]  */
+            "SamplesPerBit" uchar;       /* 1 or 3 samples per bit              */
+            "BTL_CYCLES"    uchar;       /* BTL_CYCLES [slots/bit time]         */
+            "SJW"           uchar;       /* SJW len. synchr. segm. in BTL_CYCLES*/
+            "SYNC_EDGE"     uchar;       /* SYNC_EDGE                           */
+         };
+
+         taggedunion
+         {
+            block "ADDRESS" struct
+            {
+               ulong;                    /* CAN_ID ECU(or gateway)->INCA        */
+               ulong;                    /* CAN_ID INCA->ECU(or gateway)        */
+
+               taggedstruct
+                 {
+                  "TGT_ECU" struct { uint;   /* Extended/remote address ECU    */
+                  taggedstruct
+                    {
+                      "TGT_INCA" uint;       /* Extended address INCA      */
+                    };
+                   };
+                 };
+            }; /* end block ADDRESS */
+         }; /* end taggedunion */
+
+         taggedunion
+         {
+            block "TransportProtocolVersion" struct
+            {
+               enum
+               {
+                  "ISO15765_2_2003"  =  2
+               };
+            };
+         };
+
+         taggedstruct
+         {
+            "NETWORK_LIMITS" struct
+            {
+               uchar;  /* WFT_MAX (max. waitframes) [Number of WaitFrames]*/
+               uint;   /* XDL_MAX (max. datalength) [Number of Bytes]     */
+            };
+         };
+
+
+
+         taggedstruct
+         {
+           "USDTP_TIMING_DEFAULTS" struct  /*used to establish first communication      */
+                                           /*if block is missing INCA defaults are used */
+             {
+               /* USDTP timing parameter */
+               uint;                 /* As [ms]                       */
+               uint;                 /* Bs [ms]                       */
+               uint;                 /* Cr [ms]                       */
+               /* protocol timing parameter */
+               uint;                 /* p2Min     [ms]                */
+               uint;                 /* p2MAX     [ms]                */
+               uint;                 /* p3Min     [ms]                */
+               uint;                 /* p3MAX     [ms]                */
+             };
+           ("USDTP_TIMING" struct    /*alternative timings selectable in the HWC*/
+            {
+               /* USDTP timing parameter */
+               uint;                 /* As [ms]                       */
+               uint;                 /* Bs [ms]                       */
+               uint;                 /* Cr [ms]                       */
+               /* protocol timing parameter */
+               uint;                 /* p2Min     [ms]                */
+               uint;                 /* p2MAX     [ms]                */
+               uint;                 /* p3Min     [ms]                */
+               uint;                 /* p3MAX     [ms]                */
+            }
+           )*;/* Max. 5 of these blocks are supported by INCA */
+         };
+      };
+/*___________________________END CAN__________________________________________*/
+
+   }; /* end tagged struct */
+}; /* end TP_Blob */
+/*_________________________END TP_BLOB________________________________________*/
+}; /* end ASAP1B_Diagnostic_Services */
+
+
+
+
+
+/*____________________________________________________________________________*/
+/*  Additional Information                                                    */
+/*____________________________________________________________________________*/
+
+/******************************************************************************/
+/* Checksum calculation algorithm codes                                       */
+/******************************************************************************/
+/* Name               *  Code       *  Description                            */
+/******************************************************************************/
+/* M_16_BIT_BY_ADD8   *  0x010201   *  Byte-wise addition , result in 16 bits */
+/* M_16_BIT_BY_ADD16  *  0x010202   *  Word-wise addition , result in 16 bits */
+/* M_32_BIT_BY_ADD8   *  0x010401   *  Byte-wise addition , result in 32 bits */
+/* M_32_BIT_BY_ADD16  *  0x010402   *  Word-wise addition , result in 32 bits */
+/* M_32_BIT_BY_ADD32  *  0x010404   *  Long wise addition , result in 32 bits */
+/* M_16_BIT_BY_CRC16  *  0x020202   *  CRC on words, result in 16 bits        */
+/* M_32_BIT_BY_CRC16  *  0x020402   *  CRC on words, result in 32 bits        */
+/* M_16_BIT_BY_CRC32  *  0x020204   *  CRC on longs, result in 16 bits        */
+/* M_32_BIT_BY_CRC32  *  0x020404   *  CRC on longs, result in 32 bits        */
+/******************************************************************************/
+
+/******************************************************************************/
+/* Extended CAN-IDs:                                                          */
+/******************************************************************************/
+/* To mark a CAN-ID as "Extended CAN-ID" bit 32 of the CAN ID must be set to 1*/
+/* Example: ID 0x100 as extende can ID is 0x100 + 0x80000000 = 0x80000100     */
+/******************************************************************************/
+
+/******************************************************************************/
+/* Supported Protocol Layer - Transport Layer combinations                    */
+/******************************************************************************/
+/*                         PL:    * "VDA_1996" * "ISO14229-1_2003" *          */
+/******************************************************************************/
+/* TL: K-Line   "ISO14230"        *     -      *        -          *          */
+/* TL: CAN      "ISO15765-2_1998" *     -      *        -          *          */
+/* TL: CAN      "ISO15765-2_2003" *     -      *         X         *          */
+/******************************************************************************/

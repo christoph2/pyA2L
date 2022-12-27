@@ -1,0 +1,81 @@
+/***************************************************************************/
+/*                                                                         */
+/*   ASAP2 Meta Language for Bypass                                        */
+/*   assumes ASAP2 V1.31                                                   */
+/*                                                                         */
+/*   AML Version V1.0, 05.04.2000                                          */
+/*                                                                         */
+/*   Change History:                                                       */
+/*                                                                         */
+/*   Version  Date        Author               Modification                */
+/*   ===================================================================   */
+/*   V1.0     05.04.2000  K5/ESQ2-Ocker        first release               */
+/*   -------------------------------------------------------------------   */
+/*   V0.3     02.03.2000  K5/ESQ2-Ocker        changed order of KP_BLOB    */
+/*                                             parameters;                 */
+/*                                             meaning of SOURCE_ID        */
+/*                                             changed;                    */
+/*                                             editorial modifications     */
+/*   -------------------------------------------------------------------   */
+/*   V0.2     14.02.2000  K5/ESQ2-Ocker        + source identifier         */
+/*   -------------------------------------------------------------------   */
+/*   V0.1     06.12.1999  K5/ESQ2-Ocker        initial draft               */
+/*                                                                         */
+/*   Robert Bosch GmbH, K5/ESQ2-Ocker                                      */
+/*                                                                         */
+/***************************************************************************/
+
+"ASAP1B_Bypass" taggedstruct {
+
+    (block "SOURCE" struct {
+        struct {
+            char[101];  /* source name                                     */
+            int;        /* period definition: basic scaling unit in CSE    */
+                        /* defined in ASAP1b (CSE = code for scaling unit) */
+            long;       /* period definition: rate in scaling units        */
+        };
+        taggedstruct {
+            block "QP_BLOB" struct {
+                uint;   /* source identifier                               */
+            };
+        };
+    })*;
+
+    block "TP_BLOB" struct {
+        uint;           /* Bypass Version, High Byte: Version              */
+                        /*                 Low Byte : subversion (dec.)    */
+        uint;           /* Blob Version,   High Byte: Version              */
+                        /*                 Low Byte : subversion (dec.)    */
+    };
+
+    block "DP_BLOB" struct {
+    };
+
+    block "PA_BLOB" struct {
+    };
+
+    block "KP_BLOB" struct {
+        taggedstruct {
+
+            "BUFFER_OFFSET"    char[256];  /* parameter value represents   */
+                                           /* switch: 0 = bypass disabled, */
+                                           /*         1 = bypass enabled   */
+
+            "SOURCE_ID"        char[256];  /* parameter value represents   */
+                                           /* stimulus channel             */
+
+            "BIT_OFFSET"       char[256];  /* parameter value represents   */
+                                           /* mask in case of bit objects  */
+
+            "POSSIBLE_SOURCES" ( uint )*;  /* list of all channels, where  */
+                                           /* intervention point is usable */
+                         /* special cases:                                 */
+                         /* empty list = intervention point is defined,    */
+                         /*              but unusable                      */
+                         /* keyword omitted = intervention point is usable */
+                         /*                   in all available channels    */
+        };
+    };
+
+}; /* end of taggedstruct "ASAP1B_Bypass" */
+

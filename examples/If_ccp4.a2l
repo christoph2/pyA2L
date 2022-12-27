@@ -1,0 +1,203 @@
+/*  IF_DATA(Module) for ASAP1A-CCP operation */
+/*  modified for Store Bit Support  10/10/00 */
+/*  project MS45 for BMW                     */
+/*  Changes by thty 10/10/00                 */
+/*  1. TB_BLOP version corrected             */
+/*  2. Store Bit support                     */
+/*  3. Checksum activation prepared          */
+
+  /begin IF_DATA ASAP1B_CCP
+     /begin SOURCE
+         "Crankshaft Synchronous Cyl.1" 0 0 
+         DISPLAY_IDENTIFIER  DAQ1 
+         /begin QP_BLOB
+              1
+              LENGTH 10
+              CAN_ID_FIXED 0x7EB
+              RASTER 1
+              FIRST_PID 0
+         /end QP_BLOB
+     /end SOURCE
+                          
+     /begin SOURCE
+         "Crankshaft Synchronous Cyl.2" 0 0 
+         DISPLAY_IDENTIFIER  DAQ2 
+         /begin QP_BLOB
+              2
+              LENGTH 10
+              CAN_ID_FIXED 0x7EB
+              RASTER 2
+              FIRST_PID 16
+          /end QP_BLOB
+     /end SOURCE
+                          
+     /begin SOURCE
+         "Crankshaft Synchronous Cyl.3" 0 0 
+         DISPLAY_IDENTIFIER  DAQ3 
+         /begin QP_BLOB
+              3
+              LENGTH 10
+              CAN_ID_FIXED 0x7EB
+              RASTER 3
+              FIRST_PID 32
+          /end QP_BLOB
+     /end SOURCE
+                          
+     /begin SOURCE
+         "Crankshaft Synchronous Cyl.4" 0 0 
+         DISPLAY_IDENTIFIER  DAQ4 
+          /begin QP_BLOB
+              4
+              LENGTH 10
+              CAN_ID_FIXED 0x7EB
+              RASTER 4
+              FIRST_PID 48
+          /end QP_BLOB
+     /end SOURCE
+                          
+     /begin SOURCE
+         "Crankshaft Synchronous Cyl.5" 0 0 
+         DISPLAY_IDENTIFIER  DAQ5 
+          /begin QP_BLOB
+              5
+              LENGTH 10
+              CAN_ID_FIXED 0x7EB
+              RASTER 5
+              FIRST_PID 64
+          /end QP_BLOB
+     /end SOURCE
+                          
+     /begin SOURCE
+         "Crankshaft Synchronous Cyl.6" 0 0 
+         DISPLAY_IDENTIFIER  DAQ6 
+          /begin QP_BLOB
+              6
+              LENGTH 10
+              CAN_ID_FIXED 0x7EB
+              RASTER 6
+              FIRST_PID 80
+          /end QP_BLOB
+     /end SOURCE
+                          
+     /begin SOURCE
+         "Time Synchronous 10ms" 3 10 
+         DISPLAY_IDENTIFIER  _10ms 
+          /begin QP_BLOB
+             30
+             LENGTH 10
+             CAN_ID_FIXED 0x7EC
+             RASTER 30
+             FIRST_PID 96
+          /end QP_BLOB
+     /end SOURCE
+                          
+     /begin SOURCE
+         "Display" 0 0 
+         DISPLAY_IDENTIFIER  Disp 
+           /begin QP_BLOB
+             31
+             LENGTH 60
+             CAN_ID_FIXED 0x7ED
+             RASTER 31
+             FIRST_PID 112
+           /end QP_BLOB
+     /end SOURCE
+                          
+     /begin RASTER
+            "Crankshaft Synchronous Cyl. 1" "CYL1" 1 103 1 
+     /end RASTER
+                          
+     /begin RASTER
+            "Crankshaft Synchronous Cyl. 2" "CYL2" 2 103 1 
+     /end RASTER
+                          
+     /begin RASTER
+            "Crankshaft Synchronous Cyl. 3" "CYL3" 3 103 1 
+     /end RASTER
+                          
+     /begin RASTER
+            "Crankshaft Synchronous Cyl. 4" "CYL4" 4 103 1 
+     /end RASTER
+                          
+     /begin RASTER
+            "Crankshaft Synchronous Cyl. 5" "CYL5" 5 103 1 
+     /end RASTER
+
+     /begin RASTER
+            "Crankshaft Synchronous Cyl. 6" "CYL6" 6 103 1 
+     /end RASTER
+
+     /begin RASTER
+            "Time Synchronous 10ms" "10ms" 30 3 10 
+     /end RASTER
+                          
+     /begin RASTER
+            "Display" "DISP" 31 3 100 
+     /end RASTER
+                          
+     /begin EVENT_GROUP
+            "Crankshaft Synchronous Cyl 1-6" "CRANK" 
+             RASTER 1     
+             RASTER 2     
+             RASTER 3     
+             RASTER 4     
+             RASTER 5     
+             RASTER 6     
+     /end EVENT_GROUP
+                          
+     /begin SEED_KEY
+            "" 
+            "" 
+            "" 
+     /end SEED_KEY
+                          
+     /begin TP_BLOB
+            0x0201 0x0202 0x07E8 0x7EA 0x0001 2      /* changed Blob-Version from "2" to "0x0202"  */
+            BAUDRATE 500000
+            SAMPLE_POINT 66
+            SAMPLE_RATE  1
+            BTL_CYCLES   16
+            SJW          2
+            SYNC_EDGE    0
+            DAQ_MODE BURST
+            RESUME_SUPPORTED
+            CONSISTENCY DAQ
+            ADDRESS_EXTENSION DAQ
+                          
+            /begin CHECKSUM_PARAM  0x9001 0x40
+                  CHECKSUM_CALCULATION ACTIVE_PAGE
+            /end CHECKSUM_PARAM 
+                          
+	    STORE_SUPPORTED             /* necessary for store bit support */
+
+            /begin DEFINED_PAGES
+                   1 "Workingpage" 0 0x40000 0x1CE40
+                   RAM
+                   RAM_INIT_BY_ECU
+		   FLASH_BACK           /* necessary for store bit support, replaces DEFAULT */
+            /end DEFINED_PAGES
+
+            /begin DEFINED_PAGES
+                   2 "Referencpage" 0 0x440000 0x1CE40
+                   FLASH
+                   DEFAULT
+            /end DEFINED_PAGES
+
+                          
+            OPTIONAL_CMD 0x05
+            OPTIONAL_CMD 0x08
+            OPTIONAL_CMD 0x09
+            OPTIONAL_CMD 0x0C
+            OPTIONAL_CMD 0x0E
+            OPTIONAL_CMD 0x11
+            OPTIONAL_CMD 0x12
+            OPTIONAL_CMD 0x13
+            OPTIONAL_CMD 0x18
+            OPTIONAL_CMD 0x19
+            OPTIONAL_CMD 0x20
+            OPTIONAL_CMD 0x21
+            OPTIONAL_CMD 0x22
+        /*  OPTIONAL_CMD 0x0E       necessary for checksum calculation */
+     /end TP_BLOB
+  /end IF_DATA
+

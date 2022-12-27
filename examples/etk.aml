@@ -1,0 +1,457 @@
+/****************************************************************************/
+/*                                                                          */
+/*   ETAS GmbH                                                              */
+/*                                                                          */
+/*   ASAP2 Meta description for ETK                                         */
+/*   assumes ASAP2 V1.31 or higher                                          */
+/*                                                                          */
+/*   Used data types:                                                       */
+/*                                                                          */
+/*   A2ML       ASAP2          Windows  Explanation                         */
+/*   ---------------------------------------------------------              */
+/*   uchar      UBYTE          BYTE     unsigned 8 Bit                      */
+/*   char       SBYTE          char     signed 8 Bit                        */
+/*   uint       UWORD          WORD     unsigned integer 16 Bit             */
+/*   int        SWORD          int      signed integer 16 Bit               */
+/*   ulong      ULONG          DWORD    unsigned integer 32 Bit             */
+/*   long       SLONG          LONG     signed integer 32 Bit               */
+/*   float      FLOAT32_IEEE            float 32 Bit                        */
+/*                                                                          */
+/*  Changes:                                                                */
+/*  26.04.99 Hn  closing bracket at 'ADDRESS_MAPPING' added,                */
+/*               Keyword 'RESERVED' changed to 'RESERVED_DISTAB_MEMORY'     */
+/*                                                                          */
+/*  06.07.99 Hn  (V1.0.1) closing bracket at 'ADDRESS_MAPPING' changed to'}'*/
+/*                                                                          */
+/*  03.07.00 Hn  (V1.1.0) New element 'ETK_PRESENCE_CHECK' added to TP-Blob */
+/*                                                                          */
+/*  03.07.01 Hn  (V1.2.0) New element 'COLDSTART_HANDSHAKE' added to TP-Blob*/
+/*                        Parameter 'PBA' deleted                           */
+/*                        New parameter 'InterFaceSpeed' added              */
+/*                                                                          */
+/*                        New QP-Blob for 32 trigger measurement/bypass     */
+/*                                                                          */
+/*  11.01.02 Lug (V1.3.0) RESERVED_DISTAB_MEMORY' section expanded          */
+/*                        New TP_BLOB Version 0x01000101                    */
+/*                                                                          */
+/*  12.07.02 Wnl (V1.4.0) New QP-BLOB Version 0x0101                        */
+/*                        Parameter 'Max. Read Variables' added             */
+/*                        Parameter 'Max. Write Variables' added            */
+/*                                                                          */
+/*  02.10.02 Wnl (V1.4.0) KP_Blob extension                                 */
+/*                        - enum for address location                       */
+/*                        - default RASTER                                  */
+/*                                                                          */
+/*  10.09.03 Wnl (V1.5.0) New TP_BLOB Version 0x01000102:                   */
+/*                        New Parameter for CODE_CHK                        */
+/*                          PERMANENT_RESET / NO_RESET                      */
+/*                        New TP_BLOB entry OVERLAY_CONFIG_TABLE            */
+/*                       - CODE_CHK maxByte 4 -> 32                         */
+/*                                                                          */
+/*  12.04.05 Wnl (V1.6.0) New TP_BLOB Version 0x01000103:                   */
+/*                        New TP_BLOB entry CAL_WAKEUP                      */
+/*                        New TP_BLOB entry PAGE_SWITCH_METHOD              */
+/*                                                                          */
+/*  19.07.06 Wnl (V1.7.0) New TP_BLOB Version 0x01000104:                   */
+/*                        ETK_MAILBOX                                       */
+/*                        - new entry 'Mailbox Type'                        */
+/*                        - new entry 'Mailbox Version'                     */
+/*                        PAGE_SWITCH_METHOD / OVERLAY_CONFIG_TABLE         */
+/*                        - taggedunion {} removed                          */
+/*                          ! it is not allowed to use PAGE_SWITCH_METHOD   */
+/*                            and OVERLAY_CONFIG_TABLE in parallel !        */
+/*                        New QP-BLOB Version 0x0102                        */
+/*                        - Parameter 'RASTER_ID' added                     */
+/*                          For reference of the default raster in KP_BLOB  */
+/****************************************************************************/
+
+/****************************************************************************/
+/*                                                                          */
+/* For a correct working of the ETK, the following MEMORY_SEGMENTs have to  */
+/* be specified in the section 'MOD_PAR' of the ASAP2 file:                 */
+/*                                                                          */
+/*  /begin MEMORY_SEGMENT                                                   */
+/*     Dataxxxx ""  DATA FLASH <mem. location> <address> <size> <mirrors>   */
+/*  /end MEMORY_SEGMENT                                                     */
+/*                                                                          */
+/*  /begin MEMORY_SEGMENT                                                   */
+/*     Codexxxx ""  CODE FLASH <mem. location> <address> <size> <mirrors>   */
+/*  /end MEMORY_SEGMENT                                                     */
+/*                                                                          */
+/*  /begin MEMORY_SEGMENT                                                   */
+/*     ExRAM "ExRAM for DISTAB" VARIABLES RAM EXTERN <address><size><mirrors>*/
+/*  /end MEMORY_SEGMENT                                                     */
+/*                                                                          */
+/*  Remark: All data included in a hex file, but not specified by a memory  */
+/*          segment will be ignored inside the application program and lost */
+/*          when generating hex file export                                 */
+/*                                                                          */
+/****************************************************************************/
+
+"ETK" taggedstruct
+{
+  /* Description of an address mapping between addresses in the view of the */
+  /* EPROM of the ECU (and ASAP2) and the addresses in the scope of the ETK */
+  /* IF_DATA section used with MEMORY_SEGMENT (can be missing if no         */
+  /* differences between the 2 views)                                       */
+
+  ("ADDRESS_MAPPING" struct 
+    {
+     ulong;              /* Start address of MEMORY_SEGMENT                 */
+     ulong;              /* mapped start address for ETK                    */
+     ulong;              /* Length of mapped address range                  */
+    }
+   )*;                   /* multiple use of ADDRESS_MAPPING is possible     */
+                         /* (even each MEMORY_SEGMENT)                      */
+
+
+  (block "SOURCE" struct
+  {
+  /* Description of the acquisition (trigger) levels supplied by the ECU    */
+
+    struct
+    {
+      char [100];        /* Source name                                     */
+      int;               /* CSE unit according to Asap1b (minimal period    */
+                         /* duration) of the acqisition raster              */
+      long;              /* Minimal period number measured in the CSE unit  */
+    };
+    taggedstruct
+    {
+      "QP_BLOB" struct
+      {
+      /* Description of additional information needed by the ETK device     */
+      /* driver to collect the measurement data from a certain              */
+      /* acquisition raster                                                 */
+        uint;            /* version number, high byte must be >=1 to be     */
+                         /* able to distinguish old versions without        */
+                         /* version numbers current value: 0x0102 (V1.2)    */
+        uint;            /* hardware trigger number (1..32)                 */
+        enum {           /* trigger type                                    */
+          "DIRECT"=1,
+          "INDIRECT"=2
+        };
+        uint;            /* raster priority (1..32), higher number = higher */
+                         /* priority                                        */
+        enum {           /* assigned application                            */
+          "MEASUREMENT"=0,
+          "BYPASS"=1
+        }; 
+        ulong;           /* address of trigger flag (only valid if trigger  */
+                         /* type INDIRECT)                                  */
+        uint;            /* maximum length of display table in bytes        */
+        ulong;           /* start address of display table                  */
+        ulong;           /* output address of display table                 */
+        uint;            /* max. size of bypass receive table               */
+        ulong;           /* start address of address table for bypass       */
+                         /* output - Xpass compatible Bypass only !!        */
+        ulong;           /* output address of the bypass table              */
+        ulong;           /* worst case minimum raster time in us            */
+                         /* (1000 = 1ms raster)                             */
+        uint;            /* maximum read variables                          */
+        uint;            /* maximum write variables                         */
+                         /* output - Xpass compatible Bypass only !!        */
+        uchar;           /* RASTER_ID: each raster is named with a number   */
+                         /* beginning with 1 (referenced by KP_BLOB)        */
+      };
+    };
+  })*;                   /* SOURCE can be used several times                */
+
+  block "TP_BLOB" struct
+  {
+  /* Description of additional information needed to configure the ETK      */
+  /* device driver for measurement and calibration                          */
+
+    ulong;               /* Version number of the TP-Blob; uppermost byte   */
+                         /* is always != 0, so that informations cannot be  */
+                         /* mixed up with older blob versions (trigger      */
+                         /* address was previously at the first position    */
+                         /* and had max. 24 Bit)                            */
+                         /* current value: 0x01000104                       */
+    enum {               /* fix comm speed on ETK line to 8/100 MBit/s      */
+      "INTERFACE_SPEED_8MBIT"   = 1,
+      "INTERFACE_SPEED_100MBIT" = 2
+    };
+    ulong;               /* ETKP: RESET_CFG parameter only for PPC family   */
+
+    taggedstruct {
+
+      "DISTAB_CFG" struct
+      {
+        uint;            /* Type of display table (13 recommended,   DSPTAB */
+                         /* 12, 11, 20 only for old projects)               */
+        uint;            /* Data type display table: 1=byte 2=word  DAT_MOD */
+                         /* additional code table for distab 13 depending   */
+                         /* on bus width / bus access                       */
+                         /* (see distab 13 spec. for more information)      */
+        uint;            /* Byte order 1 = high first, 2 = low first    RFG */
+        ulong;           /* Trigger segment address                TRGSEGAD */
+        ulong;           /* Trigger configuration  (special code)   TRG_CFG */
+        taggedstruct {
+          "TRG_MOD" ( uchar)*; /* Dyn. length for                   TRG_MOD */
+                               /* (special code)                            */
+        };
+      };
+
+      "CODE_CHK" struct 
+      {
+      /* A check, whether program and data are matching can be performed,   */
+      /* if the ECU copies a certain 'program identifier' (e.g. the code    */
+      /* checksum) into the external RAM and the same identifier is stored  */
+      /* in the data range. The ETK driver can read and compare both        */
+      /* identifier and issue an error message, if the both identifiers do  */
+      /*  not match.                                                        */
+
+        ulong;           /* ETK: address of program identifier in the data  */
+                         /* range PRG_DATA                                  */
+        uint;            /* ETK: length of program identifier in the data   */
+                         /* range (max. 32 bytes)                           */
+        ulong;           /* ETK: address of program identifier in the       */
+                         /* external RAM PRG_ERAM                           */
+        uint;            /* ETK: length of program identifier in the        */
+                         /* external RAM (max. 32 bytes)                    */
+        /* If all parameters contain 0x0 values, no check is performed      */
+
+        taggedstruct {
+          "ERROR_BEHAVIOR" enum {       /* reaction of MC tool to ECU when  */
+            "PERMANENT_RESET" = 0,      /* code check fails                 */
+            "NO_RESET"        = 1
+          };
+        };
+      };
+
+      "ETK_CFG" ( uchar)*; /* ETK_CFG parameters (dyn. length)              */
+      /* Description of ETK configuration parameters, as configured with    */
+      /* the ETK configuration tool                                         */
+
+      ( "EMU_DATA" struct 
+      {
+      /* Additional description of data ranges overwriting the              */
+      /* MEMORY_SEGMENT description                                         */
+
+        ulong;           /* Start address                                   */
+        ulong;           /* Length in bytes                                 */
+        enum {           /* Memory attribute                                */
+          "INTERN"  = 0,
+          "EXTERN"  = 1
+        };
+                         /* Description of offsets to additional data       */
+                         /* ranges where the contents of this data range    */
+                         /* are mirrored                                    */
+        ulong;           /* Mirror offset 1                                 */
+        ulong;           /* Mirror offset 2                                 */
+        ulong;           /* Mirror offset 3                                 */
+        ulong;           /* Mirror offset 4                                 */
+        ulong;           /* Mirror offset 5                                 */
+                         /* Mirror offsets of -1 indicate that there is no  */
+                         /* mirror offset                                   */
+      })*;
+
+      ( "EMU_CODE" struct
+      {
+      /* Additional description of code ranges overwriting the              */
+      /* MEMORY_SEGMENT description                                         */
+
+        ulong;           /* Start address                                   */
+        ulong;           /* Length in bytes                                 */
+        enum {           /* Memory attribute                                */
+          "INTERN"  = 0,
+          "EXTERN"  = 1
+        };
+        ulong;           /* Mirror offset 1                                 */
+        ulong;           /* Mirror offset 2                                 */
+        ulong;           /* Mirror offset 3                                 */
+        ulong;           /* Mirror offset 4                                 */
+        ulong;           /* Mirror offset 5                                 */
+      })*;
+
+      ( "EMU_RAM" struct 
+      {
+      /* Additional description of external RAM ranges overwriting the      */
+      /* MEMORY_SEGMENT description                                         */
+
+        ulong;           /* Start address                                   */
+        ulong;           /* Length in bytes                                 */
+        enum {           /* Memory attribute                                */
+          "INTERN"  = 0,
+          "EXTERN"  = 1
+        };
+        ulong;           /* Mirror offset 1                                 */
+        ulong;           /* Mirror offset 2                                 */
+        ulong;           /* Mirror offset 3                                 */
+        ulong;           /* Mirror offset 4                                 */
+        ulong;           /* Mirror offset 5                                 */
+      })*;
+
+      ( "RESERVED_DISTAB_MEMORY" struct 
+      {
+      /* Description of 'reserved ranges' (especially in the data or code   */
+      /* ranges; e.g. location of the display tables) that are excluded     */
+      /* from checksum verification. If the 3 display tables stand close    */
+      /* together, the size of the reserved memory is calculated by the     */
+      /* following formula:                                                 */
+      /*          size = (highest start address of the 3 distabs)           */
+      /*                  + ((size of this distab) + 2) * 4                 */
+      /*                  - (lowest start address of the 3 distabs)         */
+
+        ulong;           /* Start address                                   */
+        ulong;           /* Length in bytes                                 */
+        enum {           /* Location                                        */
+          "INTERN"  = 0,
+          "EXTERN"  = 1
+        };
+        enum {           /* application                                     */
+          "MEASUREMENT"	= 0,
+          "BYPASS"		= 1
+        };
+        enum {           /* usage                                           */
+          "CHECKSUM_EXCLUDE_ONLY" = 0,
+          "ECU_DISTAB_INPUT"      = 1,
+          "ECU_DISTAB_OUTPUT"     = 2,
+          "ECU_DISTAB_INOUT"      = 3
+        };
+        ulong;           /* Mirror offset 1                                 */
+        ulong;           /* Mirror offset 2                                 */
+        ulong;           /* Mirror offset 3                                 */
+        ulong;           /* Mirror offset 4                                 */
+        ulong;           /* Mirror offset 5                                 */
+      })*;
+
+      "ETK_MAILBOX" struct 
+      {
+      /* Description of the ETK mailbox that is used for communication      */
+      /* between the ECU and the application program (e.g. for programming  */
+      /* data into the ECU flash)                                           */
+
+        ulong;           /* Test pattern for the ECU to detect a valid      */
+                         /* mailbox                                         */
+        enum {           /* Memory page (code, data, external RAM) used for */
+                         /* communication from application program to ECU   */
+          "CODE"  = 1,
+          "DATA"  = 2,
+          "EXRAM" = 3
+        };
+        ulong;           /* Base address of buffer for communication appl.  */
+                         /* program -> ECU                                  */
+        ulong;           /* Length of buffer for comunication appl.         */
+                         /* program -> ECU                                  */
+        enum {           /* Memory page (code, data, external RAM) used for */
+                         /* communication from ECU to application program   */
+          "CODE"  = 1,
+          "DATA"  = 2,
+          "EXRAM" = 3
+        };
+        ulong;           /* Base address of buffer for communication        */
+                         /* ECU -> appl. program                            */
+        ulong;           /* Length of buffer for comunication               */
+                         /* ECU -> appl. program                            */
+        ulong;           /* Mailbox Type                                    */
+                         /* 0x0 = reserved                                  */
+                         /* 0x1 = KWP2000 mailbox                           */
+                         /* 0x2 = flash Application Buffer to ECU           */
+                         /* 0x3 = flashback Working Page to ECU             */
+        ulong;           /* Mailbox Version (Mailbox Type specific)         */
+                         /* 0x100 = V1.0                                    */
+      };
+
+      block "ETK_PRESENCE_CHECK" struct 
+      {
+        ulong;           /* address of ETK recognition pattern              */
+        taggedstruct {
+          "ETK_PATTERN" (uchar)*; /* Dyn. length for pattern                */
+        };
+      };
+
+      block "COLDSTART_HANDSHAKE" struct 
+      {
+        ulong;           /* address of ETKS cold start pattern              */
+        taggedstruct {
+          "WAIT" ( uchar)*;   /* Dyn. length for 'wait' pattern             */
+        };
+        taggedstruct {
+          "READY" ( uchar)*; /* Dyn. length for 'ready' pattern             */
+        };
+      };
+
+      "CAL_WAKEUP" taggedstruct {
+        "CAL_WAKEUP_PIN" ulong;     /* 1 = wake up enabled, 0 = disabled    */
+        "CAL_TOOL_PRESENT" struct {
+               ulong;               /* address for the pattern              */
+               ulong;               /* pattern                              */
+               ulong;               /* ECU timeout for shut down in s       */
+        };
+      };
+      "OVERLAY_CONFIG_TABLE" struct {
+        ulong;           /* OCT_Type         Type of table                  */
+        ulong;           /* OCT_StartAddress Start address of table         */
+        ulong;           /* OCT_Length       max Length of table in byte    */
+        taggedstruct {
+          "AUTOSTART_BEHAVIOR" enum {
+            "LAST_ACTIVE_PAGE" = 0, /* Table to be filled by INCA with info */
+                                    /* for the current active page          */
+            "ALWAYS_WP"        = 1, /* Table to be filled by INCA always    */
+                                    /* with info for working page           */
+            "ALWAYS_RP"        = 2  /* Table to be filled by INCA always    */
+                                    /* with info for reference page         */
+          };
+        };
+      };
+      "PAGE_SWITCH_METHOD" struct {
+        ulong;                      /* version                              */
+        taggedstruct {
+          "MAILBOX" struct {
+            ulong;           /* MBX_Version                                 */
+                             /* Version of mailbox                          */
+            ulong;           /* MBX_PageSetupTime                           */  
+                             /* max time the ECU needs to set up page in ms */
+            ulong;           /* MBX_StartAddress                            */
+                             /* Start address of table                      */
+          };
+
+          "AUTOSTART_BEHAVIOR" enum {
+            "LAST_ACTIVE_PAGE" = 0, /* Table to be filled by INCA with info */  
+                                    /* for the current active page          */
+            "ALWAYS_WP"        = 1, /* Request field to be filled by INCA   */
+                                    /* always with info for working page    */
+            "ALWAYS_RP"        = 2  /* Request field to be filled by INCA   */
+                                    /* always with info for reference page  */
+          };
+
+          "OCT_WORKINGPAGE" struct {
+            ulong;       /* OCT_Type         Type of table                  */
+            ulong;       /* OCT_StartAddress Start address of table         */
+            ulong;       /* OCT_Length       max Length of table in byte    */
+          };
+
+          "OCT_REFERENCEPAGE" struct {
+            ulong;       /* OCT_Type         Type of table                  */
+            ulong;       /* OCT_StartAddress Start address of table         */
+            ulong;       /* OCT_Length       max Length of table in byte    */
+          };
+        };
+      };
+    };
+  };
+
+  "DP_BLOB" struct
+  {
+  /* for CHARACTERISTIC and AXIS_PTS and MEMORY_LAYOUT                      */
+
+    ulong;               /* start address for example of a map              */
+    ulong;               /* length of the map                               */
+  };
+
+  "KP_BLOB" struct
+  {
+    ulong;               /* Start address of measurement variable           */
+    enum {               /* Address location                                */
+      "INTERN"  = 0,
+      "EXTERN"  = 1
+    };
+    uint;                /* Size of measurement in bytes                    */
+    taggedstruct {
+      ("RASTER" uchar )*;/* Array of event channel initialization values    */
+                         /* References to the RASTER_ID in the QP_BLOB      */
+    };
+  };
+};

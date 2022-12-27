@@ -1,0 +1,322 @@
+/**************************************************************************/
+/*                                                                        */
+/*   ASAP2-Meta-Description for KWP2000 protokoll                         */
+/*   ASAP-Version:              V1.4                                      */
+/*   ETAS KWP2000-AML-Version:  V02.03 (this file "KWP2000_V0203.AML")    */
+/*   TP-BLOB Version:           V02.01                                    */
+/*                                                                        */
+/*------------------------------------------------------------------------*/
+/*   ETAS-Hs 2.3.01                                                       */
+/*   - definition of version 2.0                                          */
+/*   - Integration of parameters for  KWP on CAN                          */
+/*------------------------------------------------------------------------*/
+/*   Ruo 20.08.2002:                                                      */
+/*   - correction:deleted retundant information in QP BLOB                */
+/*                               uint;            sampling period [ms]    */
+/*------------------------------------------------------------------------*/
+/*   RB-Aberfeld 13.02.03                                                 */
+/*   - Add Header information                                             */
+/*   - wrap definition of "block "ADDRESS" struct {}" into a              */
+/*     taggedstruct {}                                                    */
+/*------------------------------------------------------------------------*/
+/*   ETAS-Ruo 06.03.2003                                                  */
+/*   - added version information                                          */
+/*   - replaced german explanation                                        */
+/*------------------------------------------------------------------------*/
+/*   ETAS-Ruo 13.10.2003                                                  */
+/*   - exchanged 5Baud by Stimulation_5Baud                               */
+/*   - exchanged KLINE+CAN by KLINE_AND_CAN                               */
+/*   - supported with INCA V4.0.4                                         */
+/*------------------------------------------------------------------------*/
+/*   ETAS-Ruo 06.06.2006                                                  */
+/*   - TP-Blob version 2.01                                               */
+/*   - Introduced "TesterPresentOptions" to configure                     */
+/*     Tester Present usage for KWPonCAN                                  */
+/*   - Introduced "AccessTimingParameterOptions" to supress               */
+/*     AccessTimingParameters with KWPonCAN                               */
+/*   - NOTE: New settings are only allowed for INCA >= V5.4.1             */
+/*------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------*/
+/*   Used datatypes:                                                      */
+/*                                                                        */
+/*   A2ML       ASAP2          Windows  Explaination                      */
+/*   ---------------------------------------------------------            */
+/*   uchar      UBYTE          BYTE     unsigned 8 Bit                    */
+/*   char       SBYTE          char     signed 8 Bit                      */
+/*   uint       UWORD          WORD     unsigned integer 16 Bit           */
+/*   int        SWORD          int      signed integer 16 Bit             */
+/*   ulong      ULONG          DWORD    unsigned integer 32 Bit           */
+/*   long       SLONG          LONG     signed integer 32 Bit             */
+/*   float      FLOAT32_IEEE            float 32 Bit                      */
+/*                                                                        */
+/**************************************************************************/
+
+"ASAP1B_KWP2000"  taggedstruct {
+
+   /* bei MEMORY_SEGMENT (optional)              */
+   /* ADDRESS_MAPPING can be multiple and partly */
+   ("ADDRESS_MAPPING" struct
+      {
+      ulong;        /* Starting address acc.. MEMORY_SEGMENT                */
+      ulong;        /* mapped starting address                              */
+      ulong;        /* length of range to be mapped                         */
+      }
+   )*;
+
+
+   ("SEED_KEY"      /* Description of the Seed & Key process                */
+   char[256]        /* name of Seed&Key DLL for application, incl. path and extension */
+   )*;
+
+
+   (block "SOURCE" struct {
+      struct {
+         char [100];       /* Name              */
+         int;              /* CSE-units         */
+         long;             /* min periode       */
+      };
+      taggedstruct {
+         "QP_BLOB" struct {
+             enum {            /* Physical layer Information  */
+               "KLINE"      = 1,
+               "CAN"        = 2,
+               "KLINE_AND_CAN"  = 3
+             };
+             enum {        /* Measurement mode of ECU: Block with         */
+                           /* local Id or single by address or freerunning*/
+                "ADDRESSMODE"           = 1,
+                "BLOCKMODE"                = 2,
+                "FREERUNNINGMODE" = 3
+             };
+             uint;           /* Block mode: local identifier     */
+             uint;           /* max. no of signals                    */
+             uint;           /* max. no of bytes                     */
+             ulong;         /* CAN-ID for EUDTP            */
+             uint;           /* Raster ID for EUDTP           */
+         };
+      };
+   }
+   )*;
+
+   block "TP_BLOB" struct {
+      uint;      /* Blob version, High byte: version   */
+                 /*  Low byte : sub version (decimal.) */
+                 /* current version 0x0201             */
+      enum {     /* KWP2000 version                    */
+         "VDA_1996" = 1
+      };
+      enum {     /* byte order in measurements and characteristics  */
+         "MSB_FIRST" = 1,
+         "MSB_LAST"  = 2
+      };
+
+      taggedstruct {
+         "K_LINE" struct {
+            enum {    /* KW INI: stimulation mode of ECU: WuP or 5 baud */
+               "WuP"   = 1,
+               "Stimulation_5Baud" = 2
+            };
+            uint;       /* ECU address on K-line                        */
+            uint;       /* tester address on K-Line                     */
+         };
+      };
+
+
+      taggedstruct {
+         block "CAN" struct {
+            ulong;              /* Baudrate [Hz]                          */
+            char;               /* Sample point [% complete bit time]     */
+            char;               /* 1 or 3 samples per bit                 */
+            char;               /* BTL_CYCLES [slots/bit time]            */
+            char;               /* SJW length synchr. segm. in BTL_CYCLES */
+            char;               /* SYNC_EDGE                              */
+
+
+            taggedstruct {
+               block "ADDRESS" struct {
+                  ulong;        /* CAN_ID ECU(or gateway)->INCA           */
+                  ulong;        /* CAN_ID INCA->ECU(or gateway)           */
+                  taggedstruct {
+                     "TGT_ECU"  uint;   /* Extended/remote address ECU    */
+                     "TGT_INCA" uint;   /* Extended address INCA          */
+                  };
+               };
+            };
+            taggedstruct {     /* Only allowed for INCA >= V5.4.1 !!*/
+               block "TesterPresentOptions" struct{
+                 enum {        /* defines tester present service variant */
+                           "TesterPresent_WithoutParameter"                 = 0,/*default INCA behavior*/
+                           "TesterPresent_WithParameter_ResponseRequired"   = 1,
+                           "TesterPresent_WithParameter_NoResponseRequired" = 2
+                 };
+               };
+            };
+
+            taggedstruct {        /* Only allowed for INCA >= V5.4.1 !!*/
+               block "AccessTimingParameterOptions" struct {
+                 enum {        /* defines if AccessTimingParameters is sent when "KWP_TIMING" is used */
+                            "Send_AccessTimingParameters"                    = 0, /*default INCA behavior*/
+                            "Suppress_AccessTimingParameters"                = 1
+                 };
+               };
+            };
+
+
+            taggedstruct {
+               "NETWORK_LIMITS" struct {
+                  char;        /* WFT_MAX (max. waitframes)               */
+                  uint;        /* XDL_MAX (max. datalength)               */
+               };
+            };
+
+            taggedstruct {
+               "START_STOP" uint;   /* Start_stop FREE_RUNNING :          */
+                                    /* routine number                     */
+            };
+
+         };
+      };
+
+
+      taggedstruct {
+         "DATA_ACCESS" struct {
+            ulong;        /* ECU address type qualifier for Flash page    */
+            ulong;        /* ECU address type qualifier for RAM page      */
+            uint;         /* 1: Read access on ECU flash data             */
+            uint;         /* 1: Verify access on ECU flash code           */
+            uint;         /* 1: Read access on ECU flash code             */
+            uint;         /* 1: Upload and download only on active page   */
+         };
+
+
+         block "CHECKSUM" struct {
+            ulong;        /* check sum type qualifier (see table)         */
+            uint;         /* 1: check sum calculation only on active page */
+            uint;         /* No of local routine for check sum            */
+            enum {        /* result of checksum routine delivered by      */
+               "RequestRoutineResults" = 0,
+               "StartRoutine"          = 1,
+               "CodedResult"           = 2
+            };
+            taggedstruct {
+               "RNC_RESULT" ( uchar )*; /* only at 'RequestRoutineResults':*/
+                                        /* result codes, that sign 'calculation in progress' */
+            };
+         };
+
+
+         block "COPY" struct {
+            enum {       /* ECU mode for copying Flash into RAM            */
+               "RAM_InitByECU"   = 0x10,
+               "RAM_InitByTool"  = 0x20
+            };
+            uint;               /* diagnostic mode for copy Flash  to RAM */
+            taggedstruct {
+               "COPY_PARA" ( uchar )*;/* list of add. Param for StartDiag */
+            };
+         };
+
+
+         block "FLASH" struct {
+            enum {                 /* ECU mode for copying RAM into Flash */
+               "NOFLASHBACK"     = 0x00,
+               "AUTOFLASHBACK" = 0x40,
+               "TOOLFLASHBACK"  = 0x80
+            };
+            uint;        /* No of local routine for copy RAM into flash   */
+            enum {       /* result of copy routine delivered by           */
+               "RequestRoutineResults" = 0,
+               "StartRoutine"          = 1,
+               "CodedResult"           = 2
+            };
+            taggedstruct {
+               "COPY_FRAME" ( uchar )*; /* list of frames to be copied    */
+               "RNC_RESULT" ( uchar )*; /* only at'RequestRoutineResults':*/
+                                        /* result codes, that sign 'copy in progress'*/
+            };
+         };
+
+
+         (block "DIAG_BAUD" struct {    /* Baudrate switch:               */
+            ulong;                      /* BaudRate                       */
+            uint;                       /* DiagMode                       */
+            taggedstruct {
+               "BD_PARA" ( uchar )*;    /* bytes for ECU baudrate switch  */
+            };
+         }
+         )*;
+
+
+         block "TIME_DEF" struct {      /* Timing parameter:              */
+            taggedstruct {
+               ("KWP_TIMING" struct {
+                  uint;                 /* p1        [ms]                */
+                  uint;                 /* p2Min     [ms]                */
+                  uint;                 /* p2MAX     [ms]                */
+                  uint;                 /* p3Min     [ms]                */
+                  uint;                 /* p3MAX     [ms]                */
+                  uint;                 /* p4        [ms]                */
+               }
+               )*;
+            };
+
+            taggedstruct {
+               ("USDTP_TIMING" struct {
+                  uint;                 /* As [ms]                       */
+                  uint;                 /* Bs [ms]                       */
+                  uint;                 /* Cr [ms]                       */
+               }
+               )*;
+            };
+         };
+
+
+         ( "SECURITY_ACCESS" struct { /* Parameter for Seed&Key:         */
+            uint;   /* Access mode for KWP2000 service 27h               */
+            uint;   /* method of seed&key calculation (see table)        */
+            uint;   /* delaytime in sec from stimulation to seed request */
+         }
+         )*;
+
+
+         block "PAGE_SWITCH" struct {
+            enum {                         /* ECU mode for switching pages         */
+               "ESCAPE_CODE"   = 0x80,
+               "LOCAL_ROUTINE" = 0x31
+            };
+            taggedstruct {
+               "ESCAPE_CODE_PARA_SET"  ( uchar )*;
+               "ESCAPE_CODE_PARA_GET"  ( uchar )*;
+               block "ROUTINE_PARA" struct {
+                  uint;               /* No of local routine for page switching    */
+                  enum {              /* result of switching routine delivered by  */
+                     "RequestRoutineResults" = 0,
+                     "StartRoutine"          = 1,
+                     "CodedResult"           = 2
+                  };
+                  taggedstruct {
+                     "RNC_RESULT" ( uchar )*;    /*only at'RequestRoutineResults': */
+                                                 /* result codes, that sign 'switching in progress' */
+                  };
+               };
+               "PAGE_CODE" ( uchar )*;           /* codes for RP and WP            */
+            };
+         };
+      };
+   };
+
+
+   "DP_BLOB" struct {
+      ulong;                        /* Start address                               */
+      ulong;                        /* Size of characteristic in bytes             */
+   };
+
+   "KP_BLOB" struct {
+      ulong;                        /* Start address                               */
+      enum {                        /* Address location                            */
+         "INTERN"  = 0,
+         "EXTERN"  = 1
+      };
+      uint;                         /* Size of measurement in bytes                */
+   };
+};
