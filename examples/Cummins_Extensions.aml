@@ -1,0 +1,22 @@
+block "IF_DATA" taggedunion if_data
+{
+    /************          Extensions for Cummins CMT         ******************/
+
+    /***************************************************************************/
+    /**                   (c) Copyright Cummins, Inc.                         **/
+    /**                       CUMMINS CONFIDENTIAL                            **/
+    /** This document (and the information shown thereon) is CONFIDENTIAL AND **/
+    /** PROPRIETARY and shall not be disclosed to others in hard copy or      **/
+    /** electronic form, reproduced by any means, or used for any purpose     **/
+    /** without written consent of Cummins, Inc.                              **/
+    /***************************************************************************/
+
+    "CUMMINS_EXTENSIONS" struct
+    {
+        ("CMT_PROPERTY" struct
+        {                                 /* multiple possible   */ 
+            char[256];                    /* PROPERTY NAME       */ 
+            char[256];                    /* PROPERTY VALUE      */ 
+        })*;
+    };
+};

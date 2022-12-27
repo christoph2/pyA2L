@@ -1,0 +1,21 @@
+
+/************* start of XCP on different Transport Layers *******************/
+
+"XCP" struct {
+
+  taggedstruct Common_Parameters ; /* default parameters */
+
+  taggedstruct { /* transport layer specific parameters  */
+                 /* overruling of the default parameters */
+
+    block "XCP_ON_USB" struct {
+
+      struct USB_Parameters ;                   /* specific for USB      */
+      taggedstruct Common_Parameters;           /* overruling of default */
+
+    };
+
+  };
+
+};/************* end of XCP on different Transport Layers ********************/
+

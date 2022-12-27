@@ -1,0 +1,102 @@
+
+    /begin IF_DATA ASAP1B_KWP2000
+      /begin SOURCE
+        "timeslot" 0 0
+        QP_BLOB 0 BLOCKMODE 0xf0 0 40
+      /end SOURCE
+      /begin TP_BLOB
+        0x0101                          /* blob Version */
+        0x12                            /* ECU address on k line */
+        0xF1                            /* required tester address */
+        WuP                             /* stimulation mode of ECU: WuP */
+        MSB_FIRST                        /* byte order in measurements and characteristics */
+        1                               /* 1: 1st startDiagnosticSession without baudrate switch */
+        
+       DATA_ACCESS
+       0x000000
+       0x000000
+       1
+       0
+       0
+       1
+ 
+	/*SERAM SERAM_A SERAM_U SERAM_O SERAM_E Flash addr  RAM addr  Data rd  code ver  Code read  Load mode*/
+        SERAM   0x40000 0x40000 0x5C3FF 0x5C3FF 0     0     1   0     0        1
+
+
+
+        /begin CHECKSUM
+          0x010201                      /* check sum type qualifier (see table) */
+          1                             /* 1: check sum calculation only on active page */
+          0x26                          /* No of local routine for check sum */
+          RequestRoutineResults         /* result of checksum routine delivered by */
+          RNC_RESULT 0x23               /* only at 'RequestRoutineResults': */
+                                        /* result codes, that sign 'calculation in progress' */
+        /end CHECKSUM
+
+        /begin FLASH_COPY
+          TOOLFLASHBACK       	        /* ECU mode for copying RAM into Flash */
+          0x27                          /* No of local routine for copy Flash to RAM */
+          RequestRoutineResults         /* result of copy routine delivered by */
+          RAM_InitByECU                 /* ECU mode for copying Flash into RAM */
+          0x86                          /* diagnostic mode for copy RAM to Flash */
+          COPY_FRAME 1                  /* list of page frames to be copied */
+          RNC_RESULT 0x23 0xfb 0xfc     /* only at 'RequestRoutineResults': */
+                                        /* result codes, that sign 'copy in progress' */
+          /* COPY_PARA */               /* list of add. parameters for local routine */
+        /end FLASH_COPY
+
+        /*Baudrate switch: BaudRate  DiagMode  i,k for ECU baudrate*/
+
+
+        /begin DIAG_BAUD
+		113636
+		0x86
+		BD_PARA  0x06  0x01  0xBB  0xE4
+        /end DIAG_BAUD
+
+
+        /begin DIAG_BAUD
+		57600
+		0x86
+		BD_PARA  0x06  0x00  0xE1  0x00
+        /end DIAG_BAUD
+
+
+        /begin DIAG_BAUD
+		38400
+		0x86
+		BD_PARA  0x06  0x00  0x96  0x00
+        /end DIAG_BAUD
+
+
+        /begin DIAG_BAUD
+		19200
+		0x86
+		BD_PARA  0x06  0x00  0x4B  0x00
+        /end DIAG_BAUD
+
+
+        /begin DIAG_BAUD
+		10400
+		0x86
+		BD_PARA  0x06  0x00  0x28  0xA0
+        /end DIAG_BAUD
+
+        /*Timing parameter:  p1Max  p2Min  p2Max  p3Min  p3Max  p4Min */
+        /*Timing parameter:  p1Max  p2Min  p2Max  p3Min  p3Max  p4Min */
+        /*  TIME_DEF           1      0     50      0    500      0 */
+        /*  TIME_DEF           2      0     50      0    500      0 */
+        /*  TIME_DEF           5      1    100      1    500      0 */
+        /*  TIME_DEF          10      1    500      2   1000      1 */
+          TIME_DEF            20      2    49       12   250      0
+         
+        /begin PAGE_SWITCH
+	ESCAPE_CODE
+	ESCAPE_CODE_PARA 0x90
+	PAGE_CODE 0x00 0x01
+        /end PAGE_SWITCH
+
+      /end TP_BLOB
+    /end IF_DATA
+
