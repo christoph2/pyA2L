@@ -10,7 +10,7 @@ import setuptools.command.build_py
 import setuptools.command.develop
 from pkg_resources import parse_requirements
 from setuptools import Command
-from setuptools import find_packages
+from setuptools import find_namespace_packages
 from setuptools import setup
 
 
@@ -59,7 +59,8 @@ class AntlrAutogen(Command):
         pwd = Path(os.environ.get("PWD", "."))
         antlrJar = pwd / Path("antlr-{}-complete.jar".format(ANTLR_VERSION))
         if not antlrJar.exists():
-            print(f"{antlrJar} not found in '{pwd}'")
+            os.system("curl -O -C - -L https://www.antlr.org/download/antlr-{}-complete.jar".format(ANTLR_VERSION))
+            # print(f"{antlrJar} not found in '{pwd}'")
             sys.exit(2)
         antlrJar = str(antlrJar)
         antlrCmd = ["java", "-Xmx500M", "-cp", antlrJar, "org.antlr.v4.Tool"]
@@ -120,7 +121,7 @@ setup(
         "build_py": CustomBuildPy,
         "develop": CustomDevelop,
     },
-    packages=find_packages(where=str(ROOT_DIRPATH)),
+    packages=find_namespace_packages(where=str(ROOT_DIRPATH)),
     package_dir={"pya2l": str(ROOT_DIRPATH / "pya2l")},
     install_requires=list(map(str, BASE_REQUIREMENTS)),
     tests_require=list(map(str, TEST_REQUIREMENTS)),

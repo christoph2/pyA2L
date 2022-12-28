@@ -1770,6 +1770,8 @@ class RecordLayout(CachedBase):
 
     def __init__(self, session, name: str, module_name: str = None):
         self.layout = session.query(model.RecordLayout).filter(model.RecordLayout.name == name).first()
+        if self.layout is None:
+            print("RECORD_LAYOUT '{}' not found".format(name))
         self._mod_common = ModCommon.get(session)
         self.name = name
         self.alignment = {

@@ -29,7 +29,7 @@ Installation
     - Clone / fork / download [pyA2Ldb repository](https://github.com/christoph2/pya2l).
     - Make sure you have a working Java installation on your system, like [AdoptOpenJDK](https://adoptopenjdk.net/) or [OpenJDK](https://openjdk.java.net/).
     - Download and install `ANTLR 4.9.3`:
-        - `curl -O -C - -L https://www.antlr.org/download/antlr-4.9.3-complete.jar`
+        - `curl -O -C - -L https://www.antlr.org/download/antlr-4.11.1-complete.jar`
         - Add `ANTLR` to your `CLASSPATH` environment variable, e.g.: `export CLASSPATH=$CLASSPATH:~/jars/antlr-4.9.3-complete.jar` (you may put this in your `.bashrc`, `.zshrc`, ...).
     - Run setup-script: `python setup.py develop`
 
