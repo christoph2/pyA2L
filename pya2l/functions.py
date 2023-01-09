@@ -4,7 +4,7 @@
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2021 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2022 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -33,16 +33,10 @@ from operator import itemgetter
 
 from pya2l import exceptions, model
 
-try:
-    import numpy as np
-except ImportError:
-    pass
+import numpy as np
 
-try:
-    from scipy import interpolate
-    from scipy.interpolate import RegularGridInterpolator
-except ImportError:
-    pass
+from scipy import interpolate
+from scipy.interpolate import RegularGridInterpolator
 
 try:
     import numexpr
