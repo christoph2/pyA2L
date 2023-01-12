@@ -61,6 +61,7 @@ IF_DATA_END = re.compile(
     re.VERBOSE | re.DOTALL | re.MULTILINE,
 )
 
+
 PreprocessorResult = namedtuple("PreprocessorResult", "a2l_data aml_section if_data_sections line_map")
 
 
@@ -370,6 +371,13 @@ class Preprocessor:
                 else:
                     aml_section.append(line)
                 result.append("")
+            current_line = result[-1]
+            pos = current_line.find('"')
+            if pos >= 0:
+                head = current_line[: pos + 1]
+                tail = current_line[pos + 1 :]
+                tail = re.sub('""', '\x1b', tail)
+                result[-1] = head + tail
         self.aml_section = "\n".join(aml_section)
         self.if_data_sections = IfDataSections(sections)
         return "\n".join(result)

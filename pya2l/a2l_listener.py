@@ -89,7 +89,10 @@ class BaseListener(antlr4.ParseTreeListener):
             ctx.value = None
 
     def exitStringValue(self, ctx):
-        ctx.value = ctx.s.text.strip('"') if ctx.s else None
+        text = ctx.s.text.strip('"') if ctx.s else None
+        if text:
+            text = re.sub('\x1b', '"', text)
+        ctx.value = text
 
     def exitIdentifierValue(self, ctx):
         text = ".".join(self.getList(ctx.i))
