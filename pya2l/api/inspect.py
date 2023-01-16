@@ -1036,9 +1036,14 @@ class Characteristic(CachedBase):
             result["x"] = self._ascii_length
         elif self.type == "VAL_BLK":
             md = self.matrixDim
-            result["x"] = md["x"]
-            result["y"] = md["y"]
-            result["z"] = md["z"]
+            if md:
+                result["x"] = md["x"]
+                result["y"] = md["y"]
+                result["z"] = md["z"]
+            else:
+                num = self.number   # Deprecated -- The use of NUMBER  should be replaced by MATRIX_DIM
+                # TODO: Errorhandling.
+                result["x"] = num
         else:
             axes_names = all_axes_names()
             for desc in self.axisDescriptions:
