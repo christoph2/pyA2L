@@ -136,13 +136,12 @@ class Enumeration(BaseType):
         Descending orderered ``enum``s are not supported yet.
         """
         last_idx = 0
-        for tag, value in sorted(self.enumerators.items(), key=lambda e: e[1] if not e[1] is None else 0):
+        for tag, value in self.enumerators.items():
             if value is None:
                 self.enumerators[tag] = last_idx
                 last_idx += 1
             else:
                 last_idx = value + 1
-
 
 class Enumerator(BaseType):
     def __init__(self, tag, constant):
