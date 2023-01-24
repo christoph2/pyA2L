@@ -53,6 +53,14 @@ class ResultType:
     def root_element(self):
         return self._root_element
 
+    @property
+    def declarations(self):
+        return self._declarations
+
+    @property
+    def types(self):
+        return self._types
+
 
 ##
 ## Listener.
