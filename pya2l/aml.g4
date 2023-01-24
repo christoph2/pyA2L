@@ -107,7 +107,7 @@ taggedstruct_type_name:
    ;
 
 taggedstruct_member:
-    ('(' ts0 = taggedstruct_definition ')' '*' ';')
+    ('(' ts0 = taggedstruct_definition ';'? ')' '*' ';')
     | ('(' bl0 = block_definition ')' '*' ';')
     | (ts1 = taggedstruct_definition ';')
     | (bl1 = block_definition ';')
@@ -151,7 +151,8 @@ identifierValue:
 /*
 ** Lexer
 */
-ID  : ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
+ID  : /* ('a'..'z'|'A'..'Z'|'_') */
+    ('a'..'z'|'A'..'Z'|'0'..'9'|'_')+
     ;
 
 TAG:  '"' ID '"'  // s. 3.2
