@@ -89,7 +89,7 @@ class IfDataParser:
     """ """
 
     def __init__(self, syntax):
-        self.logger = getLogger(self.__class__.__name__)
+        self.logger = getLogger("pya2l.if_data_parser")
         self.syntax = syntax
 
     @property

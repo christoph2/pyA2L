@@ -29,13 +29,13 @@ __version__ = "0.1.0"
 
 
 from decimal import Decimal as D
+import logging
 import pickle
 import re
 
 import antlr4
 
 import pya2l.model as model
-from pya2l.logger import Logger
 
 
 def delist(iterable, scalar=False):
@@ -64,7 +64,7 @@ class BaseListener(antlr4.ParseTreeListener):
     def __init__(self, prepro_result, *args, **kws):
         super(BaseListener, self).__init__(*args, **kws)
         self.prepro_result = prepro_result
-        self.logger = Logger(__name__)
+        self.logger = logging.getLogger("pya2l.a2l_listener")
 
     def getList(self, attr):
         return [x.value for x in attr] if attr else []
@@ -91,7 +91,7 @@ class BaseListener(antlr4.ParseTreeListener):
     def exitStringValue(self, ctx):
         text = ctx.s.text.strip('"') if ctx.s else None
         if text:
-            text = re.sub('\x1b', '"', text)
+            text = re.sub("\x1b", '"', text)
         ctx.value = text
 
     def exitIdentifierValue(self, ctx):

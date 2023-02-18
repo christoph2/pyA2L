@@ -28,6 +28,7 @@ __author__ = "Christoph Schueler"
 __version__ = "0.10.2"
 
 
+import logging
 import pickle
 import pkgutil
 import sys
