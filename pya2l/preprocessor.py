@@ -36,13 +36,13 @@ __version__ = "0.1.0"
 
 from bisect import bisect
 from collections import defaultdict, namedtuple
+import logging
 from os import getenv
 from os.path import pathsep
 from pathlib import Path
 import re
 import string
 
-from pya2l.logger import Logger
 
 CPP_COMMENT = re.compile(r"(?://)(?P<cmt>.*)$", re.DOTALL | re.UNICODE | re.VERBOSE)
 MULTILINE_START = re.compile(r"(?:/\*)(?P<cmt>.*?)", re.DOTALL | re.UNICODE | re.VERBOSE)
@@ -155,7 +155,7 @@ class Preprocessor:
     """"""
 
     def __init__(self, loglevel="INFO"):
-        self.logger = Logger(self.__class__.__name__, loglevel)
+        self.logger = logging.getLogger("pya2l.preprocessor")
         include_paths = getenv("ASAP_INCLUDE", "").split(pathsep)
         self.logger.debug("Pre-processor include directories (considering envvar ASAP_INCLUDE): {}".format(include_paths))
         self.include_paths = [Path(p) for p in include_paths] if include_paths != [""] else []
@@ -173,6 +173,7 @@ class Preprocessor:
         self.local_file_numbers = []
         self.aml_section = None
         self.if_datas = []
+
         data = self._process_file(file_name, join_lines=True, encoding=encoding)
         return PreprocessorResult(
             self._process_aml(data),
@@ -191,7 +192,7 @@ class Preprocessor:
         if abs_file_name in self.line_map:
             raise RuntimeError("Circular dependency to include file '{}'.".format(abs_file_name))
         self.logger.info("Pre-processing '{}'[{}]".format(file_name, encoding))
-        for num, line in enumerate(f_obj, 1):
+        for line in f_obj:
             self.absolute_file_number += 1
             line = line.rstrip("\n")
             if multiline:
@@ -376,13 +377,13 @@ class Preprocessor:
             if pos >= 0:
                 head = current_line[: pos + 1]
                 tail = current_line[pos + 1 :]
-                tail = re.sub('""', '\x1b', tail)
+                tail = re.sub('""', "\x1b", tail)
                 result[-1] = head + tail
         self.aml_section = "\n".join(aml_section)
         self.if_data_sections = IfDataSections(sections)
         return "\n".join(result)
 
-    def shorten_path(pth, file_name):
+    def shorten_path(self, file_name):
         """Remove path component if file is located in current working directory."""
         if Path(file_name).parent == Path.cwd().absolute():
             mapped_file_name = Path(file_name).parts[-1]
