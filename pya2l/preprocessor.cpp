@@ -28,6 +28,7 @@
 #include <iterator>
 #include <fstream>
 #include <map>
+#include <optional>
 #include <regex>
 #include <tuple>
 #include <vector>
@@ -54,15 +55,6 @@ namespace fs = std::filesystem;
 
 using line_map_item_t = std::tuple<int, int>;
 using line_map_t = std::map<std::string, std::vector<line_map_item_t>>;
-
-/*
- * strip from start (in place).
- */
-static inline void lstrip(std::string &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }));
-}
 
 /*
  * strip from end (in place).
@@ -137,33 +129,31 @@ private:
 };
 
 /*
- * Create ofstream object and delete on d-tor.
+ * Create ofstream object and delete on d-tor (or using 'remove()').
  */
 class TempFile {
 public:
 
     TempFile(const std::string& path) : m_path(fs::path(path)), m_file(path)  {
-        if (!m_file.is_open()) {
-            remove();
-        } else {
-            throw std::runtime_error("Could not open file: '" + m_path.string() + "'");
-        }
     }
 
     TempFile() = delete;
 
     ~TempFile() {
-        if (fs::exists(m_path)) {
-            remove();
-        }
+        remove();
     }
 
     std::ofstream& operator()() {
         return m_file;
     }
 
-    void remove() const {
-        fs::remove(m_path);
+    void remove() {
+        if (fs::exists(m_path)) {
+            if (m_file.is_open()) {
+                m_file.close();
+            }
+            fs::remove(m_path);
+        }
     }
 
 private:
@@ -177,7 +167,7 @@ private:
 class Preprocessor {
 public:
 
-    Preprocessor() {
+    Preprocessor() : tmp_a2l("A2L.tmp") {
         get_include_paths_from_env();
     }
 
@@ -342,6 +332,7 @@ protected:
 }
 
 private:
+    TempFile tmp_a2l;
     line_map_t line_map {};
     std::vector<std::string> include_paths {};
     std::uint64_t absolute_line_number {0};
