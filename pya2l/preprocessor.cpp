@@ -53,9 +53,6 @@ const std::regex IF_DATA_END("^(?P<section>.*?)/end(?P<s0>\\s+)IF_DATA(?P<tail>.
 
 namespace fs = std::filesystem;
 
-using line_map_item_t = std::tuple<int, int>;
-using line_map_t = std::map<std::string, std::vector<line_map_item_t>>;
-
 /*
  * strip from end (in place).
  */
@@ -81,7 +78,7 @@ void blank_out(std::string& text, std::int32_t start, std::int32_t end)
 class RegExp {
 public:
 
-    RegExp(const std::regex& pattern) : m_pattern(pattern) {
+    RegExp(const std::regex& pattern) : m_pattern(pattern), m_match{} {
     }
 
     bool operator()(const std::string& text) {
@@ -120,12 +117,99 @@ private:
     bool m_matched {false};
 };
 
-class StringProcessor {
 
+class LineMap {
 public:
+
+    using line_map_item_t = std::tuple<int, int>;
+    using line_map_t = std::map<std::string, std::vector<line_map_item_t>>;
+
+    LineMap() : m_line_map() {
+    }
+
+    int contains(const std::string& key) const {
+        return m_line_map.contains(key);
+    }
+
+    std::vector<line_map_item_t>& operator[](const std::string& key) {
+        return m_line_map[key];
+    }
+
+    std::optional<std::tuple<std::string, std::size_t>> lookup(std::size_t line_no) {
+        auto idx = search_offset(line_no);
+
+        if (idx.has_value()) {
+
+            auto [abs_start, abs_end, rel_start, rel_end, name] = items[idx.value()];
+            std::int32_t offset = (abs_start - rel_start) - 1;
+            std::cout << "\tline_no: " << line_no /* - offset */ << " offset: " << offset << " name: " << name <<  " abs_start: " << abs_start << " rel_start: " << rel_start  << '\n';
+            return std::tuple<std::string, std::size_t>(name, line_no - offset);
+        } else {
+            std::cout << "line_no: " << line_no << " not found\n";
+            return std::nullopt;
+        }
+
+    }
+
+    void finalize() {
+        std::size_t  offset {0};
+        std::vector<std::tuple<std::size_t, std::size_t, std::string>> sections;
+        std::map<std::string, std::size_t> offsets;
+
+        for (const auto& [k, v] : m_line_map) {
+            offsets[k] = 1;
+
+        }
+        for (const auto& [k, v] : m_line_map) {
+            for (const auto& [start, end] : v) {
+                sections.push_back(std::make_tuple(start, end, k));
+            }
+        }
+        std::sort(sections.begin(), sections.end(), [](auto& lhs, auto& rhs) {
+            return std::get<0>(lhs) < std::get<0>(rhs);
+        });
+
+        std::size_t length {0};
+        for (auto [start, end, name]: sections) {
+            length = end - start;
+            start_offsets.push_back(start);
+            offset = offsets[name];
+            offsets[name] = length + offset;
+            last_line_no = end;
+            items.push_back(std::make_tuple(start, end, offset, length + offset, name));
+        }
+        for (auto [abs_start, abs_end, rel_start, rel_end, name]: items) {
+            std::cout << "[" << name << "] " << abs_start << " "  << abs_end << " "  << rel_start << " " << rel_end << " " <<   std::endl;
+        }
+
+    }
 
 private:
 
+    std::optional<std::size_t> search_offset(std::size_t key) const {
+        std::size_t left {0}, mid{0}, right{std::size(start_offsets)};
+
+        if (key > last_line_no) {
+            return std::nullopt;
+        }
+        //key++;
+        while (left < right) {
+            mid = (left + (right - left)) / 2;
+            if (key == start_offsets[mid]) {
+                return mid;
+            } else if (key < start_offsets[mid]) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left - 1;
+    }
+
+    line_map_t m_line_map {};
+    std::vector<size_t> start_offsets {};
+    std::size_t last_line_no {0};
+    std::vector<std::tuple<std::size_t, std::size_t, std::size_t, std::size_t, std::string>> items {};
 };
 
 /*
@@ -134,7 +218,8 @@ private:
 class TempFile {
 public:
 
-    TempFile(const std::string& path) : m_path(fs::path(path)), m_file(path)  {
+    TempFile(const std::string& path, bool binary = false) :
+        m_path(fs::path(path)), m_file(path, std::ios::trunc | std::ios::out | (binary? std::ios::binary : std::ios::out))  {
     }
 
     TempFile() = delete;
@@ -147,12 +232,17 @@ public:
         return m_file;
     }
 
+    void close()
+    {
+        if (m_file.is_open()) {
+            m_file.close();
+        }
+    }
+
     void remove() {
         if (fs::exists(m_path)) {
-            if (m_file.is_open()) {
-                m_file.close();
-            }
-            fs::remove(m_path);
+            close();
+            //fs::remove(m_path);
         }
     }
 
@@ -167,17 +257,21 @@ private:
 class Preprocessor {
 public:
 
-    Preprocessor() : tmp_a2l("A2L.tmp") {
+    Preprocessor() : tmp_a2l("A2L.tmp"), tmp_aml("AML.tmp"), tmp_ifdata("IFDATA.tmp", true) {
         get_include_paths_from_env();
     }
+
+    ~Preprocessor() {
+        //line_map.finalize();
+    }
+
+    LineMap line_map {};
 
 //protected:
     void _process_file(const std::string& filename) {
         std::uint64_t start_line_number = absolute_line_number + 1;
         fs::path path {filename};
         auto abs_pth = fs::absolute(path);
-        std::vector<line_map_t> lines;
-
         std::ifstream file(abs_pth);
 
         if (file.is_open()) {
@@ -189,8 +283,6 @@ public:
             bool cpp_match = false;
             bool c_match = false;
             bool match = false;
-            bool incl = false;
-
             std::vector<std::string> result;
             std::string rl;
 
@@ -198,25 +290,25 @@ public:
                 line_num++;
                 absolute_line_number++;
                 std::getline(file, line);
-                rstrip(line);
+                rstrip(line);   // remove!!!
                 if (multi_line) {
                     match = re_multiline_end(line);
                     if (match) {
                         multi_line = false;
                         rl = re_multiline_end.str(1);
                         printf("%s\n", rl.c_str());
+                        tmp_a2l() << rl << std::endl;
                         continue;
                     } else {
                         rl = "\n";
                         printf("\n");
+                        tmp_a2l() << std::endl;
                         continue;
                     }
                 }
                 cpp_match = re_cpp_comment(line);
                 c_match = re_multiline_start(line);
                 use_c_match = use_cpp_match = false;
-                //printf("[%u]\tC?: %u <%u> CPP: %u <%u>\n", line_num, c_match, re_multiline_start.start(0), cpp_match, re_cpp_comment.start(0));
-                incl = false;
                 if (cpp_match && c_match) {
                     if (re_cpp_comment.start(0) < re_multiline_start.start(0)) {
                         use_cpp_match = true;
@@ -230,53 +322,38 @@ public:
                 }
                 if (use_cpp_match) {
                     rl = re_cpp_comment.prefix();
-                    //printf("%s\n", re_cpp_comment.prefix().c_str());
                 } else if (use_c_match) {
                     match = re_multiline_end(line);
                     if (match) {
                         multi_line = false;
                         blank_out(line, re_multiline_start.start(0), re_multiline_end.start(1));
                         rl = line;
-                        //printf("%s\n", rl.c_str());
                     } else {
                         multi_line = true;
                         blank_out(line, re_multiline_start.start(0), -1);
                         rl = line;
-                        //printf("%s\n", rl.c_str());
                     }
                 } else {
                     rl = line;
-                    //printf("%s\n", line.c_str());
                 }
-
                 match = re_include(rl);
                 if (match) {
                     std::string include_file_name = re_include.str(1);
                     auto where = locate_file(include_file_name, abs_pth.parent_path().string());
-
                     if (where.has_value()) {
-                        auto key = shorten_file_name(abs_pth);
-                        printf("\tS: %llu E: %llu\n", start_line_number, absolute_line_number);
-                        if (line_map.contains(key)) {
-                            printf("Key %s found!!!\n", key.c_str());
-                            auto entry = line_map[key];
-                            entry.push_back(std::tuple<int, int> {start_line_number, absolute_line_number});
-                        } else {
-                            printf("Key %s NOT found!!!\n", key.c_str());
-                            auto item = std::vector<line_map_item_t>{ std::make_tuple(start_line_number, absolute_line_number) };
-                            line_map[key] = item;
-                        }
+                        update_line_map(abs_pth, start_line_number);
                         _process_file(where.value().string());
                         start_line_number = absolute_line_number + 1;
-
                     } else {
                         throw std::runtime_error("Can't find include file: '" + include_file_name + "'");
                     }
                 } else {
+                    escape_string(rl);
                     printf("%s\n", rl.c_str());
+                    tmp_a2l() << rl <<  std::endl;
                 }
-
             }
+            update_line_map(abs_pth, start_line_number);
             file.close();
         } else {
             throw std::runtime_error("Could not open file: '" + abs_pth.string() + "'");
@@ -289,6 +366,21 @@ protected:
             return file_name.filename().string();
         } else {
             return file_name.string();
+        }
+    }
+
+    void update_line_map(const fs::path& path, std::uint64_t start_line_number) {
+        auto key = shorten_file_name(path);
+
+        if (line_map.contains(key)) {
+            auto& entry = line_map[key];
+            //std::cout << "\tAdd key: " << key << " " << start_line_number << " " << absolute_line_number << std::endl;
+            entry.push_back(std::tuple < int, int > {start_line_number, absolute_line_number});
+        } else {
+            auto item = std::vector < LineMap::line_map_item_t >
+                        {std::make_tuple(start_line_number, absolute_line_number)};
+            line_map[key] = item;
+            //std::cout << "\tNew key: " << key << " " << start_line_number << " " << absolute_line_number << std::endl;
         }
     }
 
@@ -323,7 +415,6 @@ protected:
 
         for (const auto& include_path : paths) {
             auto fn (fs::path(include_path) / fs::path(file_name));
-            std::cout << fn.string() << std::endl;
             if (fs::exists(fn)) {
                 return fn;
             }
@@ -333,7 +424,9 @@ protected:
 
 private:
     TempFile tmp_a2l;
-    line_map_t line_map {};
+    TempFile tmp_aml;
+    TempFile tmp_ifdata;
+
     std::vector<std::string> include_paths {};
     std::uint64_t absolute_line_number {0};
     RegExp re_cpp_comment {CPP_COMMENT};
@@ -345,7 +438,6 @@ private:
 enum class State: std::uint8_t {
     IDLE,
     IN_STRING,
-    OPEN_QUOTE,
 };
 
 /*
@@ -379,102 +471,56 @@ void escape_string(std::string& line) {
                 if (pos == length - 1) {
                     return; // Line completly processed.
                 }
-                if (line[pos + 1] == '"') {
+                if (line[pos + 1] == '"' && line[pos - 1] != '\x5c') {
                     line[pos] = '\x5c';
-                    state = State::OPEN_QUOTE;
+                    state = State::IN_STRING;
                     pos += 2;
                 } else {
                     state = State::IDLE;
                     pos += 1;
                 }
                 break;
-            case State::OPEN_QUOTE:
-                if (line[pos + 1] == '"') {
-                    // OK, quote properly closed.
-                    line[pos] = '\x5c';
-                    pos += 2;
-                    state = State::IN_STRING;
-                } else {
-                    // Unterminated quote.
-                    state = State::IDLE;
-                }
-                break;
         }
     }
 }
 
-int main(void)
+void ld(Preprocessor& p, std::size_t line_no)
 {
-#if 0
-    std::string s = "Some people, when confronted with a problem, think "
-                    "\"I know, I'll use regular expressions.\" "
-                    "Now they have two problems.";
-
-    std::regex self_regex("REGULAR EXPRESSIONS",
-                          std::regex_constants::ECMAScript | std::regex_constants::icase);
-    if (std::regex_search(s, self_regex)) {
-        std::cout << "Text contains the phrase 'regular expressions'\n";
+    auto res = p.line_map.lookup(line_no);
+    if (res.has_value()) {
+        auto [name, num] = res.value();
+        std::cout << "\t\t[" << name << "] " << num << std::endl;
+    } else {
+        std::cout << line_no << " not found!" << std::endl;
     }
+}
 
-    std::regex word_regex("(\\w+)");
-    auto words_begin =
-            std::sregex_iterator(s.begin(), s.end(), word_regex);
-    auto words_end = std::sregex_iterator();
-
-    std::cout << "Found "
-              << std::distance(words_begin, words_end)
-              << " words\n";
-
-    const int N = 6;
-    std::cout << "Words longer than " << N << " characters:\n";
-    for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
-        std::smatch match = *i;
-        std::string match_str = match.str();
-        if (match_str.size() > N) {
-            std::cout << "  " << match_str << '\n';
-        }
-    }
-
-    std::regex long_word_regex("(\\w{7,})");
-    std::string new_s = std::regex_replace(s, long_word_regex, "[$&]");
-    std::cout << new_s << '\n';
-
-    std::string CMT = "hello world // This is a comment.";
-    if (std::regex_search(CMT, CPP_COMMENT)) {
-        std::cout << "Text contains Comment!!!\n";
-
-        auto wb = std::sregex_iterator(CMT.begin(), CMT.end(), CPP_COMMENT);
-        auto we = std::sregex_iterator();
-
-        std::cout << "Found "  << std::distance(wb, we) << " words\n";
-
-    }
-
-    std::smatch sm;
-
-    //std::regex_search(CMT, sm, CPP_COMMENT);
-    //std::cout << "Matchie pos: " << sm.position(0) << '\n';
-#endif
-    std::map<std::string, int> m{{"CPU", 10}, {"GPU", 15}, {"RAM", 20}};
-
+int main(int argc, char** argv)
+{
     Preprocessor p;
 
-    //p._process_file("ASAP2_Demo_V161.a2l");
-    p._process_file("comments.txt");
+    if (argc > 1) {
+        p._process_file(argv[1]);
+    } else {
+        //p._process_file("ASAP2_Demo_V161.a2l");
+        p._process_file("comments.txt");
 
-#if 0
-    std::string str ("I like to code in C++");
-    blank_out(str, 7, 18);
-    std::cout << str << '\n';
-#endif
+        p.line_map.finalize();
 
-    RegExp iii(INCLUDE);
-    std::string inci("   /include \"mofakahh.aml\" /* Nize comment */");
-    if (iii(inci)) {
-        //printf("Include statement found!!! \"%s\"\n", iii.str(1).c_str());
-        //printf("Include statement found!!! p:\'%s\' ma:\'%s\' s:\'%s\'\n", iii.prefix().c_str(), iii.str(1).c_str(), iii.suffix().c_str());
-        //std::cout << "'" << iii.prefix() << "'" << " '" << iii.str(1) << "'" << " '" << iii.suffix() << "'" << std::endl;
+        ld(p, 1);
+        ld(p, 3);
+        ld(p, 4);
+        ld(p, 8);
+        ld(p, 12);
+        ld(p, 13);
+
+        //ld(p, 1079);
+        //ld(p,1080);
+        //ld(p,1081);
+        //ld(p,1095);
+        //ld(p,10900);
+
+
     }
-
     return 0;
 }

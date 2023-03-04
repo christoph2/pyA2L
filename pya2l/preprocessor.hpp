@@ -27,13 +27,7 @@
 
 void escape_string(std::string& line);
 
-class LineMap {
-public:
-    int lookup(std::uint64_t line_no) const {
 
-    }
-private:
-};
 
 /*
 class PreprocessorResult {

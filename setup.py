@@ -9,6 +9,10 @@ from pathlib import Path
 import setuptools.command.build_py
 import setuptools.command.develop
 from pkg_resources import parse_requirements
+from pybind11.setup_helpers import build_ext
+from pybind11.setup_helpers import naive_recompile
+from pybind11.setup_helpers import ParallelCompile
+from pybind11.setup_helpers import Pybind11Extension
 from setuptools import Command
 from setuptools import find_namespace_packages
 from setuptools import setup
@@ -26,6 +30,21 @@ ROOT_DIRPATH = Path(".")
 BASE_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.txt")
 TEST_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.test.txt")
 ANTLR_VERSION = next(req.specs[0][1] for req in BASE_REQUIREMENTS if req.project_name == "antlr4-python3-runtime")
+
+INCLUDE_DIRS = subprocess.getoutput("pybind11-config --include")
+
+PKG_NAME = "pp_test"
+EXT_NAMES = ["pp"]
+
+ext_modules = [
+    Pybind11Extension(
+        EXT_NAMES[0],
+        include_dirs=[INCLUDE_DIRS],
+        sources=["pya2l/preprocessor.cpp", "pya2l/preprocessor_wrapper.cpp"],
+        define_macros=[("EXTENSION_NAME", EXT_NAMES[0])],
+        cxx_std=20,
+    ),
+]
 
 
 class AntlrAutogen(Command):
@@ -119,8 +138,10 @@ setup(
     cmdclass={
         "antlr": AntlrAutogen,
         "build_py": CustomBuildPy,
+        "build_ext": build_ext,
         "develop": CustomDevelop,
     },
+    ext_modules=ext_modules,
     packages=find_namespace_packages(where=str(ROOT_DIRPATH)),
     package_dir={"pya2l": str(ROOT_DIRPATH / "pya2l")},
     install_requires=list(map(str, BASE_REQUIREMENTS)),
