@@ -39,22 +39,20 @@
 
 #include "preprocessor.hpp"
 
+namespace fs = std::filesystem;
+
 const std::regex CPP_COMMENT("(?://)(.*)$", std::regex_constants::ECMAScript | std::regex_constants::optimize);
 const std::regex MULTILINE_START("(?:/\\*)(.*?)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
 const std::regex MULTILINE_END("(?:\\*/)(.*)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
 const std::regex INCLUDE("^(?:\\s*)/include\\s+\"([^\"]*)\"", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-
-#if 0
-const std::regex AML_START("^\\s*/begin\\s+A[23]ML(?P<section>.*?)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
+const std::regex AML_START("^\\s*/begin\\s+A[23]ML(.*?)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
 const std::regex AML_END("^\\s*/end\\s+A[23]ML", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-const std::regex IF_DATA_START("/begin(?P<s0>\\s+)IF_DATA(?P<s1>\\s+)(?P<section>\\S*)(?P<tail>.*)$", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-const std::regex IF_DATA_END("^(?P<section>.*?)/end(?P<s0>\\s+)IF_DATA(?P<tail>.*)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-#endif
+const std::regex IF_DATA_START("/begin(\\s+)IF_DATA(\\s+)(\\S*)(.*)$", std::regex_constants::ECMAScript | std::regex_constants::optimize);
+const std::regex IF_DATA_END("^(.*?)/end(\\s+)IF_DATA(.*)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
 
-namespace fs = std::filesystem;
 
 /*
- * strip from end (in place).
+ * strip `std::string` from end (in place).
  */
 static inline void rstrip(std::string &s) {
     s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
@@ -97,6 +95,10 @@ public:
 
     int end(int idx) const {
         return m_match.position(idx) + m_match.length(idx) ;
+    }
+
+    std::tuple<int, int> span(int idx) const {
+        return std::make_tuple(start(idx), end(idx));
     }
 
     auto str(int idx) const {
@@ -192,9 +194,8 @@ private:
         if (key > last_line_no) {
             return std::nullopt;
         }
-        //key++;
         while (left < right) {
-            mid = (left + (right - left)) / 2;
+            mid = left + (right - left) / 2;
             if (key == start_offsets[mid]) {
                 return mid;
             } else if (key < start_offsets[mid]) {
@@ -257,7 +258,7 @@ private:
 class Preprocessor {
 public:
 
-    Preprocessor() : tmp_a2l("A2L.tmp"), tmp_aml("AML.tmp"), tmp_ifdata("IFDATA.tmp", true) {
+    Preprocessor() : tmp_a2l_pre("A2L_pre.tmp"), tmp_a2l("A2L.tmp"), tmp_aml("AML.tmp"), tmp_ifdata("IFDATA.tmp", true) {
         get_include_paths_from_env();
     }
 
@@ -290,19 +291,22 @@ public:
                 line_num++;
                 absolute_line_number++;
                 std::getline(file, line);
-                rstrip(line);   // remove!!!
+                if (file.eof() || !file) {
+                    break;
+                }
+                rstrip(line);
                 if (multi_line) {
                     match = re_multiline_end(line);
                     if (match) {
                         multi_line = false;
                         rl = re_multiline_end.str(1);
                         printf("%s\n", rl.c_str());
-                        tmp_a2l() << rl << std::endl;
+                        tmp_a2l_pre() << rl << std::endl;
                         continue;
                     } else {
                         rl = "\n";
                         printf("\n");
-                        tmp_a2l() << std::endl;
+                        tmp_a2l_pre() << std::endl;
                         continue;
                     }
                 }
@@ -338,6 +342,8 @@ public:
                 }
                 match = re_include(rl);
                 if (match) {
+                    line_num--;
+                    absolute_line_number--;
                     std::string include_file_name = re_include.str(1);
                     auto where = locate_file(include_file_name, abs_pth.parent_path().string());
                     if (where.has_value()) {
@@ -350,7 +356,7 @@ public:
                 } else {
                     escape_string(rl);
                     printf("%s\n", rl.c_str());
-                    tmp_a2l() << rl <<  std::endl;
+                    tmp_a2l_pre() << rl <<  std::endl;
                 }
             }
             update_line_map(abs_pth, start_line_number);
@@ -358,6 +364,98 @@ public:
         } else {
             throw std::runtime_error("Could not open file: '" + abs_pth.string() + "'");
         }
+    }
+
+    void _process_aml() {
+        bool in_aml = false;
+        bool in_if_data = false;
+        std::uint64_t line_num = 0;
+
+        const auto cut_out_ifdata = [&in_aml, &in_if_data, &line_num](const std::string& line) -> void {
+            //std::cout << line_num << std::endl;
+        };
+
+        std::ifstream file("A2L_pre.tmp");
+        //std::cout << "Before AML" << std::endl;
+        if (file.is_open()) {
+            std::string line;
+            bool match = false;
+            std::string rl;
+
+            while (!file.eof()) {
+                line_num++;
+                std::getline(file, line);
+                if (file.eof() || !file) {
+                    break;
+                }
+                if (!in_aml) {
+                    match = re_aml_start(line);
+                    if (match) {
+                        in_aml = true;
+                        // aml_section.append("/begin A2ML")
+                        printf("/begin A2ML [%u]\n", line_num);
+                        tmp_aml() << "/begin A2ML" << std::endl;
+                    } else {
+                        if (!in_if_data) {
+                            cut_out_ifdata(line);
+
+                        } else {
+                            match = re_if_data_end(line);
+                            if (match) {
+                                auto [start, end] = re_if_data_end.span(0);
+                                in_if_data = false;
+/*
+                         match = IF_DATA_END.match(line)
+                        if match:
+                            s, e = match.span()
+                            if_data_end = (line_num, e - len(match.group("tail")))
+                            if_data_section.append("{}/end{}IF_DATA".format(match.group("section"), match.group("s0")))
+                            section = (
+                                if_data_start,
+                                if_data_end,
+                                "\n".join(if_data_section),
+                            )
+                            sections.append(section)
+                            in_if_data = False
+                            if_data_section = []
+                            line = "{}/end{}IF_DATA".format(" " * len(match.group("section")), match.group("s0"))
+                            # cut_out_ifdata()
+                            result.append(line)
+ */
+                            } else {
+                                // if_data_section.append(line.strip())
+                                //result.append("")
+                                printf("\n");
+                            }
+                        }
+                    }
+                } else {
+                    match = re_aml_end(line);
+                    if (match) {
+                        printf("/end A2ML [%u]\n", line_num);
+                        tmp_aml() << "/end A2ML" << std::endl;
+                        in_aml = false;
+                    } else {
+                        tmp_aml() << line << std::endl;
+                    }
+/*
+ match = AML_END.match(line)
+                if match:
+                    aml_section.append("/end A2ML ")
+                    line = ""
+                    in_aml = False
+                else:
+                    aml_section.append(line)
+                result.append("")
+ */
+                }
+                //cut_out_ifdata(line);
+            }
+        } else {
+            throw std::runtime_error("Temporary file 'A2L.tmp' could not opened; this should not happen.");
+        }
+        file.close();
+        //std::cout << "After AML" << std::endl;
     }
 
 protected:
@@ -423,6 +521,7 @@ protected:
 }
 
 private:
+    TempFile tmp_a2l_pre;
     TempFile tmp_a2l;
     TempFile tmp_aml;
     TempFile tmp_ifdata;
@@ -433,6 +532,10 @@ private:
     RegExp re_multiline_start {MULTILINE_START};
     RegExp re_multiline_end {MULTILINE_END};
     RegExp re_include {INCLUDE};
+    RegExp re_aml_start {AML_START};
+    RegExp re_aml_end  {AML_END};
+    RegExp re_if_data_start  {IF_DATA_START};
+    RegExp re_if_data_end  {IF_DATA_END};
 };
 
 enum class State: std::uint8_t {
@@ -501,6 +604,7 @@ int main(int argc, char** argv)
 
     if (argc > 1) {
         p._process_file(argv[1]);
+        p._process_aml();
     } else {
         //p._process_file("ASAP2_Demo_V161.a2l");
         p._process_file("comments.txt");
@@ -513,6 +617,7 @@ int main(int argc, char** argv)
         ld(p, 8);
         ld(p, 12);
         ld(p, 13);
+        p._process_aml();
 
         //ld(p, 1079);
         //ld(p,1080);
