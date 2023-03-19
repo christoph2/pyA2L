@@ -33,14 +33,14 @@ ANTLR_VERSION = next(req.specs[0][1] for req in BASE_REQUIREMENTS if req.project
 
 INCLUDE_DIRS = subprocess.getoutput("pybind11-config --include")
 
-PKG_NAME = "pp_test"
-EXT_NAMES = ["pp"]
+PKG_NAME = "preprocessor"
+EXT_NAMES = ["pya2l.preprocessor"]
 
 ext_modules = [
     Pybind11Extension(
         EXT_NAMES[0],
         include_dirs=[INCLUDE_DIRS],
-        sources=["pya2l/preprocessor.cpp", "pya2l/preprocessor_wrapper.cpp"],
+        sources=["pya2l/preprocessor_wrapper.cpp"],
         define_macros=[("EXTENSION_NAME", EXT_NAMES[0])],
         cxx_std=20,
     ),

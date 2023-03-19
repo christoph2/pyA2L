@@ -31,35 +31,35 @@ public:
     using line_map_item_t = std::tuple<int, int>;
     using line_map_t = std::map<std::string, std::vector<line_map_item_t>>;
 
-    LineMap() : m_line_map() {
+    LineMap() noexcept : m_line_map() {
     }
 
-    int contains(const std::string& key) const {
+    int contains(const std::string& key) const noexcept {
         return m_line_map.contains(key);
     }
 
-    std::vector<line_map_item_t>& operator[](const std::string& key) {
+    std::vector<line_map_item_t>& operator[](const std::string& key) noexcept {
         return m_line_map[key];
     }
 
-    std::optional<std::tuple<std::string, std::size_t>> lookup(std::size_t line_no) {
+    std::optional<std::tuple<std::string, std::size_t>> lookup(std::size_t line_no) const noexcept {
         auto idx = search_offset(line_no);
 
         if (idx.has_value()) {
 
             auto [abs_start, abs_end, rel_start, rel_end, name] = items[idx.value()];
             std::int32_t offset = (abs_start - rel_start) - 1;
-            std::cout << "\tline_no: " << line_no /* - offset */ << " offset: " << offset << " name: " << name << " abs_start: " << abs_start << " rel_start: " << rel_start << '\n';
+            //std::cout << "\tline_no: " << line_no /* - offset */ << " offset: " << offset << " name: " << name << " abs_start: " << abs_start << " rel_start: " << rel_start << '\n';
             return std::tuple<std::string, std::size_t>(name, line_no - offset);
         }
         else {
-            std::cout << "line_no: " << line_no << " not found\n";
+            //std::cout << "line_no: " << line_no << " not found\n";
             return std::nullopt;
         }
 
     }
 
-    void finalize() {
+    void finalize() noexcept {
         std::size_t  offset{ 0 };
         std::vector<std::tuple<std::size_t, std::size_t, std::string>> sections;
         std::map<std::string, std::size_t> offsets;
@@ -78,6 +78,8 @@ public:
             });
 
         std::size_t length{ 0 };
+        std::string previous{};
+        auto idx{0};
         for (auto [start, end, name] : sections) {
             length = end - start;
             start_offsets.push_back(start);
@@ -85,10 +87,15 @@ public:
             offsets[name] = length + offset;
             last_line_no = end;
             items.push_back(std::make_tuple(start, end, offset, length + offset, name));
+            //if (previous != "") {
+            //    offsets[previous] += 1;
+            //}
+            previous = name;
+            ++idx;
         }
         //#if 0
         for (auto [abs_start, abs_end, rel_start, rel_end, name] : items) {
-            std::cout << "[" << name << "] " << abs_start << " " << abs_end << " " << rel_start << " " << rel_end << " " << std::endl;
+            //std::cout << "[" << name << "] " << abs_start << " " << abs_end << " " << rel_start << " " << rel_end << " " << std::endl;
         }
         //#endif
 
@@ -96,7 +103,7 @@ public:
 
 private:
 
-    std::optional<std::size_t> search_offset(std::size_t key) const {
+    std::optional<std::size_t> search_offset(std::size_t key) const noexcept {
         std::size_t left{ 0 }, mid{ 0 }, right{ std::size(start_offsets) };
 
         if (key > last_line_no) {

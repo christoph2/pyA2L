@@ -29,12 +29,12 @@ __version__ = "0.1.0"
 
 
 from decimal import Decimal as D
-import logging
 import pickle
 import re
 
 import antlr4
 
+from pya2l.logger import Logger
 import pya2l.model as model
 
 
@@ -61,10 +61,18 @@ class BaseListener(antlr4.ParseTreeListener):
 
     value = []
 
-    def __init__(self, prepro_result, *args, **kws):
+    def __init__(self, prepro_result, loglevel="INFO", *args, **kws):
         super(BaseListener, self).__init__(*args, **kws)
-        self.prepro_result = prepro_result
-        self.logger = logging.getLogger("pya2l.a2l_listener")
+        filenames, line_map, ifdata_reader = prepro_result
+        self.ifdata_reader = ifdata_reader
+        self.ifdata_reader = ifdata_reader
+        self.logger = Logger(self.__class__.__name__, loglevel)
+        self.ifdata_reader = ifdata_reader
+        self.ifdata_reader.open()
+        self.info("Inserting rows to Database.")
+
+    def __del__(self):
+        self.ifdata_reader.close()
 
     def getList(self, attr):
         return [x.value for x in attr] if attr else []
@@ -266,10 +274,12 @@ class A2LListener(BaseListener):
     def exitIfData(self, ctx):
         sl, sc = ctx.start.line, ctx.start.column
         el, ec = ctx.stop.line, ctx.stop.column
-        ids = self.prepro_result.if_data_sections.get(
+        ids = self.ifdata_reader.get(
             (
-                (sl, sc),
-                (el, ec),
+                sl,
+                sc,
+                el,
+                ec,
             )
         )
         ctx.value = model.IfData(sl=sl, sc=sc, el=el, ec=ec, raw=ids, parsed=b"")
@@ -338,7 +348,7 @@ class A2LListener(BaseListener):
         upgradeNo = ctx.upgradeNo.value
 
         if versionNo > 1 or (versionNo == 1 and upgradeNo < 60):
-            self.error("ASAP2 Version '{}.{}' may not parsed correctly.".format(versionNo, upgradeNo))
+            self.warn("ASAP2 Version '{}.{}' may not parsed correctly.".format(versionNo, upgradeNo))
 
         ctx.value = model.Asap2Version(versionNo=versionNo, upgradeNo=upgradeNo)
         self.db.session.add(ctx.value)
