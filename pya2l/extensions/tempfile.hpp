@@ -31,35 +31,39 @@
 class TempFile {
 public:
 
-    TempFile(const std::string& path, bool binary = false) :
+    TempFile(const std::string& path, bool binary = false) noexcept :
         m_path(fs::path(path)), m_file(path, std::ios::trunc | std::ios::out | (binary ? std::ios::binary : std::ios::out)) {
     }
 
     TempFile() = delete;
 
-    ~TempFile() {
+    ~TempFile() noexcept {
         remove();
     }
 
-    std::ofstream& operator()() {
+    std::ofstream& operator()() noexcept {
         return m_file;
     }
 
-    void close()
+    void close() noexcept
     {
         if (m_file.is_open()) {
             m_file.close();
         }
     }
 
-    void remove() {
+    std::string abs_path() const noexcept {
+        return fs::absolute(m_path.string()).string();
+    }
+
+    void remove() noexcept {
         if (fs::exists(m_path)) {
             close();
             //fs::remove(m_path);
         }
     }
 
-    std::ofstream& handle() {
+    std::ofstream& handle() noexcept {
         return m_file;
     }
 

@@ -28,39 +28,39 @@
 class RegExp {
 public:
 
-    RegExp(const std::regex& pattern) : m_pattern(pattern), m_match{} {
+    RegExp(const std::regex& pattern) noexcept : m_pattern(pattern), m_match{} {
     }
 
-    bool operator()(const std::string& text) {
+    bool operator()(const std::string& text) noexcept {
         m_matched = std::regex_search(text, m_match, m_pattern);
         return m_matched;
     }
 
-    int pos(int idx) const {
+    int pos(int idx) const noexcept {
         return m_match.position(idx);
     }
 
-    int start(int idx) const {
+    int start(int idx) const noexcept {
         return pos(idx);
     }
 
-    int end(int idx) const {
+    int end(int idx) const noexcept {
         return m_match.position(idx) + m_match.length(idx);
     }
 
-    std::tuple<int, int> span(int idx) const {
+    std::tuple<int, int> span(int idx) const noexcept {
         return std::make_tuple(start(idx), end(idx));
     }
 
-    auto str(int idx) const {
+    auto str(int idx) const noexcept {
         return m_match.str(idx);
     }
 
-    auto prefix() const {
+    auto prefix() const noexcept {
         return m_match.prefix().str();
     }
 
-    auto suffix() const {
+    auto suffix() const noexcept {
         return m_match.suffix().str();
     }
 

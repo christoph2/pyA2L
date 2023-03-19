@@ -49,21 +49,66 @@ namespace fs = std::filesystem;
 #include "extensions/line_map.hpp"
 #include "extensions/regex.hpp"
 
+
+const std::regex CPP_COMMENT("(?://)(.*)$", std::regex_constants::ECMAScript | std::regex_constants::optimize);
+const std::regex MULTILINE_START("(?:/\\*)(.*?)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
+const std::regex MULTILINE_END("(?:\\*/)(.*)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
+const std::regex INCLUDE("^(?:\\s*)/include\\s+\"([^\"]*)\"", std::regex_constants::ECMAScript | std::regex_constants::optimize);
+const std::regex AML_START("^\\s*/begin\\s+A[23]ML(.*?)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
+const std::regex AML_END("^\\s*/end\\s+A[23]ML", std::regex_constants::ECMAScript | std::regex_constants::optimize);
+const std::regex IF_DATA_START("/begin(\\s+)IF_DATA(\\s+)(\\S*)(.*)$", std::regex_constants::ECMAScript | std::regex_constants::optimize);
+const std::regex IF_DATA_END("^(.*?)/end(\\s+)IF_DATA(.*)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
+
+
+struct Filenames {
+
+    Filenames() = default;
+    Filenames(const Filenames&) = default;
+    Filenames(Filenames&&) = default;
+    Filenames(const std::string& _a2l, const std::string& _aml, const std::string& _ifdata) : a2l(_a2l), aml(_aml), ifdata(_ifdata) {}
+
+    std::string a2l;
+    std::string aml;
+    std::string ifdata;
+};
+
+/*
+struct PreprocessorResult {
+
+    PreprocessorResult() = default;
+    PreprocessorResult(const PreprocessorResult&) = default;
+    PreprocessorResult(PreprocessorResult&&) = default;
+    PreprocessorResult(const Filenames& f, const LineMap& m, const IfDataReader& r) : filenames(f), line_map(m), ifdata_reader(r) {}
+
+    Filenames filenames{};
+    LineMap line_map{};
+    IfDataReader ifdata_reader{};
+};
+*/
+
 class Preprocessor {
 public:
 
-    Preprocessor() : tmp_a2l_pre("A2L_pre.tmp"), tmp_a2l("A2L.tmp"), tmp_aml("AML.tmp"), tmp_ifdata("IFDATA.tmp", true) {
+    const std::string A2L_PRE_TMP = "A2L_pre.tmp";
+    const std::string A2L_TMP = "A2L.tmp";
+    const std::string AML_TMP = "AML.tmp";
+    const std::string IFDATA_TMP = "IFDATA.tmp";
+
+    Preprocessor(const std::string& loglevel) : tmp_a2l_pre(A2L_PRE_TMP), tmp_a2l(A2L_TMP), tmp_aml(AML_TMP), tmp_ifdata(IFDATA_TMP, true) {
         get_include_paths_from_env();
+        m_filenames.a2l = tmp_a2l.abs_path();
+        m_filenames.aml = tmp_aml.abs_path();
+        m_filenames.ifdata = tmp_ifdata.abs_path();
     }
 
     ~Preprocessor() {
 
     }
 
-    void process(const std::string& filename) {
+    std::tuple<Filenames, LineMap, IfDataReader> process(const std::string& filename, const std::string& encoding) {
         _process_file(filename);
         line_map.finalize();
-        IfDataReader ifdata_reader = _process_aml();
+        return std::tuple<Filenames, LineMap, IfDataReader>(m_filenames, line_map, _process_aml());
     }
 
     LineMap line_map{};
@@ -74,6 +119,10 @@ protected:
         fs::path path{ filename };
         auto abs_pth = fs::absolute(path);
         std::ifstream file(abs_pth);
+
+        if (line_map.contains(abs_pth.string())) {
+            throw std::runtime_error("Circular dependency to include file '" + abs_pth.string() + "'.");
+        }
 
         if (file.is_open()) {
             std::string line;
@@ -86,6 +135,8 @@ protected:
             bool match = false;
             std::vector<std::string> result;
             std::string rl;
+
+            std::cout << "[INFO (pya2l.Preprocessor)]: Preprocessing '" + filename + "'." << std::endl;
 
             while (!file.eof()) {
                 line_num++;
@@ -165,6 +216,7 @@ protected:
                     tmp_a2l_pre() << rl << std::endl;
                 }
             }
+            absolute_line_number--;
             update_line_map(abs_pth, start_line_number);
             file.close();
         }
@@ -231,7 +283,7 @@ protected:
             //}
         };
 
-        std::ifstream file("A2L_pre.tmp");
+        std::ifstream file(A2L_PRE_TMP);
         if (file.is_open()) {
             std::string line;
             bool match = false;
@@ -263,7 +315,7 @@ protected:
                                 auto xs0 = re_if_data_end.str(2);
                                 auto xtail = re_if_data_end.str(3);
                                 in_if_data = false;
-                                ifdata_end_line_num = { line_num, end - std::size(xtail) };
+                                ifdata_end_line_num = { line_num, end - std::size(xtail) - std::size("IF_DATA") + 1};
                                 std::string xfiller(std::size(xsection), ' ');
 
                                 ifdata_builder.set_line_numbers(ifdata_start_line_num, ifdata_end_line_num);
@@ -272,25 +324,6 @@ protected:
                                 //ifdata_segments.push_back(xsection + "/end" + xs0 + "IF_DATA" + '\n');
                                 ifdata_builder.add_section(xsection + "/end" + xs0 + "IF_DATA" + '\n');
                                 ifdata_builder.finalize();
-
-                                /*
-                                                        match = IF_DATA_END.match(line)
-                                                        if match:
-                                                            s, e = match.span()
-                                                            if_data_end = (line_num, e - len(match.group("tail")))
-                                                            if_data_section.append("{}/end{}IF_DATA".format(match.group("section"), match.group("s0")))
-                                                            section = (
-                                                                if_data_start,
-                                                                if_data_end,
-                                                                "\n".join(if_data_section),
-                                                            )
-                                                            sections.append(section)
-                                                            in_if_data = False
-                                                            if_data_section = []
-                                                            line = "{}/end{}IF_DATA".format(" " * len(match.group("section")), match.group("s0"))
-                                                            # cut_out_ifdata()
-                                                            result.append(line)
-                                 */
                             }
                             else {
                                 ifdata_builder.add_section(line + "\n");
@@ -314,10 +347,12 @@ protected:
             }
         }
         else {
-            throw std::runtime_error("Temporary file 'A2L_pre.tmp' could not opened; this should not happen.");
+            throw std::runtime_error("Temporary file '" + A2L_PRE_TMP + "' could not opened; this should not happen.");
         }
         file.close();
-        return IfDataReader("IFDATA.tmp", ifdata_builder);
+        tmp_ifdata.close();
+        tmp_aml.close();
+        return IfDataReader(IFDATA_TMP, ifdata_builder);
     }
 
 protected:
@@ -336,7 +371,7 @@ protected:
         if (line_map.contains(key)) {
             auto& entry = line_map[key];
             //std::cout << "\tAdd key: " << key << " " << start_line_number << " " << absolute_line_number << std::endl;
-            entry.push_back(std::tuple < int, int > {start_line_number, absolute_line_number});
+            entry.push_back(std::tuple <decltype(start_line_number), decltype(absolute_line_number)> {start_line_number, absolute_line_number});
         }
         else {
             auto item = std::vector < LineMap::line_map_item_t >
@@ -390,6 +425,7 @@ private:
     TempFile tmp_aml;
     TempFile tmp_ifdata;
 
+    Filenames m_filenames{};
     std::vector<std::string> include_paths{};
     std::uint64_t absolute_line_number{ 0 };
     RegExp re_cpp_comment{ CPP_COMMENT };

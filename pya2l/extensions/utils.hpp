@@ -33,7 +33,7 @@ enum class State : std::uint8_t {
 /*
  * Replace pesky A2L string ""escapes"" by the usual C/C++ \" version.
  */
-void escape_string(std::string& line) {
+void escape_string(std::string& line) noexcept {
     State state{ State::IDLE };
     std::size_t pos = line.find('"', 0);
     const std::size_t length = std::size(line);
@@ -79,7 +79,7 @@ void escape_string(std::string& line) {
 /*
  * strip `std::string` from end (in place).
  */
-static inline void rstrip(std::string& s) {
+static inline void rstrip(std::string& s) noexcept {
     s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
         return !std::isspace(ch);
         }).base(), s.end());
@@ -88,7 +88,7 @@ static inline void rstrip(std::string& s) {
 /*
  * Cut out section of text and replace it with a single space.
  */
-void blank_out(std::string& text, std::int32_t start, std::int32_t end)
+void blank_out(std::string& text, std::int32_t start, std::int32_t end) noexcept
 {
     if (end == -1) {
         text.resize(start);

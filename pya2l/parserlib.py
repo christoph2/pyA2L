@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2022 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2023 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -59,23 +59,6 @@ class MyErrorListener(ErrorListener):
             print("line " + str(line) + ":" + str(column) + " " + msg, file=sys.stderr)
 
 
-class LineMap:
-    """ """
-
-    def lookup(self, line):
-        return ":memory:", line
-
-
-class PPR:
-    """ """
-
-    def __init__(self):
-        self.line_map = LineMap()
-        self.aml_section = []
-        self.a2l_data = []
-        self.if_data_sections = []
-
-
 class ParserWrapper:
     """"""
 
@@ -90,9 +73,8 @@ class ParserWrapper:
         self.debug = debug
         self.grammarName = grammarName
         self.startSymbol = startSymbol
-        if prepro_result is None:
-            prepro_result = PPR()
-        self.line_map = prepro_result.line_map
+        filenames, line_map, ifdata_reader = prepro_result
+        self.line_map = line_map
         self.prepro_result = prepro_result
         self.lexerModule, self.lexerClass = self._load("Lexer")
         self.parserModule, self.parserClass = self._load("Parser")
@@ -137,7 +119,7 @@ class ParserWrapper:
         else:
             pth, fname = os.path.split(filename)
             self.fnbase = os.path.splitext(fname)[0]
-        return self.parse(ParserWrapper.stringStream(filename, encoding), trace)
+        return self.parse(antlr4.FileStream(filename, encoding), trace)
 
     def parseFromString(self, buf, encoding="latin-1", trace=False, dbname=":memory:"):
         self.fnbase = dbname

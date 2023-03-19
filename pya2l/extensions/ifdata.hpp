@@ -25,6 +25,7 @@
 #if !defined(__IFDATA_HPP)
 #define __IFDATA_HPP
 
+#include <cstdio>
 #include "line_numbers.hpp"
 
 struct IfDataBase {
@@ -38,9 +39,7 @@ public:
 
     IfDataBuilder(std::ofstream& out) noexcept : m_out(out) {}
 
-    ~IfDataBuilder() {
-
-    }
+    ~IfDataBuilder() {}
 
     void set_line_numbers(std::tuple< std::size_t, std::size_t> start, std::tuple< std::size_t, std::size_t> end) noexcept
     {
@@ -74,7 +73,6 @@ public:
         );
 
         file_map[std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>(m_line_numbers.start_line, m_line_numbers.start_col, m_line_numbers.end_line, m_line_numbers.end_col)] = m_offset;
-
         m_offset += (HEADER_SIZE + m_length);
         assert(m_out.tellp() == m_offset);
 
@@ -107,13 +105,32 @@ private:
 
 class IfDataReader : public IfDataBase {
 public:
-    IfDataReader() = delete;
-    IfDataReader(const std::string& fname, IfDataBuilder& builder) : m_file(fname, /*std::ios::in |*/ std::ios::binary),
-        file_map(std::move(builder.get_map())) {}
 
-    ~IfDataReader() {
-        m_file.close();
+    IfDataReader() = default;
+    IfDataReader(const IfDataReader&) = default;
+
+    IfDataReader(IfDataReader&& other) noexcept
+    {
+        m_file_name = std::move(other.m_file_name);
+        m_file = std::move(other.m_file);
+        file_map = std::move(other.file_map);
     }
+
+    IfDataReader& operator=(const IfDataReader&) = default;
+
+    IfDataReader& operator=(IfDataReader&&) = default;
+
+    IfDataReader(const std::string& fname, IfDataBuilder& builder) : m_file_name(fname), file_map(std::move(builder.get_map())) {}
+
+    void open() {
+        m_file = std::fopen(m_file_name.c_str(), "rb");
+    }
+
+    void close() {
+        std::fclose(m_file);
+    }
+
+    ~IfDataReader() {}
 
     std::optional<std::string> get(const line_type& line) {
 
@@ -122,9 +139,7 @@ public:
         }
 
         auto offset = file_map[line];
-
-        m_file.seekg(offset);
-
+        auto res = std::fseek(m_file, offset, SEEK_SET);
         auto length = read_int();
         auto start_line = read_int();
         assert(std::get<0>(line) == start_line);
@@ -135,7 +150,6 @@ public:
         auto end_col = read_int();
         assert(std::get<3>(line) == end_col);
         auto ifdata = read_string(length);
-
         return ifdata;
     }
 
@@ -144,22 +158,20 @@ private:
     std::size_t read_int() {
         std::size_t value = 0;
 
-        if (!m_file.read(reinterpret_cast<char*>(&value), sizeof value)) {
-        }
+        auto res = std::fread((char*)&value, sizeof(std::size_t), 1, m_file);
         return value;
     }
 
     std::string read_string(std::size_t count) {
-        char* value = new char[count + 1];
+        std::vector<char> buf(count + 1);
 
-        m_file.read(value, count);
-        value[count] = '\x00';
-        std::string result{ value };
-        delete[] value;
+        auto res = std::fread(/*reinterpret_cast<char*>*/(buf.data()), 1, count, m_file);
+        buf[count] = '\x00';        std::string result{ buf.data() };
         return result;
     }
 
-    std::ifstream m_file;
+    std::string m_file_name;
+    std::FILE* m_file{nullptr};
     map_type file_map;
 };
 
