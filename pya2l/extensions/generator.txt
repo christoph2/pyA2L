@@ -1,0 +1,83 @@
+#include <cassert>
+#include <coroutine>
+#include <iostream>
+
+template <typename Ty_>
+struct Generator {
+
+    /*
+    ** Promise implementation.
+    */
+    struct promise_type {
+        Ty_ m_val;
+
+        Generator get_return_object() { 
+            return this; 
+        }
+
+        std::suspend_never initial_suspend() { 
+            return {}; 
+        }
+
+        std::suspend_always final_suspend() noexcept(true) { 
+            return {}; 
+        }
+
+        std::suspend_always yield_value(const Ty_& val) {
+            m_val = val;
+            return {};
+        }
+        void unhandled_exception() {}
+    };
+
+    /*
+    ** Iterator implementation.
+     */
+    struct iterator {
+        
+        bool operator!=(const iterator &rhs) { 
+            return not m_h_ptr->done(); 
+        }
+        
+        iterator &operator++() {
+            m_h_ptr->resume();
+            return *this;
+        }
+
+        int operator*() { 
+            return m_h_ptr->promise().m_val; 
+        }
+        
+        std::coroutine_handle<promise_type> *m_h_ptr;
+    };
+
+    iterator begin() { 
+        return iterator{&m_handle}; 
+    }
+
+    iterator end() { 
+        return iterator{nullptr}; 
+    }
+  
+  /* ----------------------------------------------------------------------------------
+   */
+    Generator(promise_type *p) : m_handle(std::coroutine_handle<promise_type>::from_promise(*p)) {}
+
+    ~Generator() { 
+        m_handle.destroy(); 
+    }
+  
+    std::coroutine_handle<promise_type> m_handle;
+};
+
+Generator<uint32_t> range(uint32_t start, uint32_t end) {
+  while (start != end)
+    co_yield start++;
+}
+
+int main() {
+  for (auto &&no : range(5, 24)) { // Isn't this look like Python !
+    std::cout << no << std::endl;
+  }
+  return EXIT_SUCCESS;
+}
