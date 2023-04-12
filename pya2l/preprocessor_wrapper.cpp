@@ -8,7 +8,8 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(preprocessor, m) {
-    py::function f(m, "escape_string");
+    m.def("escape_string", &escape_string);
+	m.def("test_escape_string", &test_escape_string);
     py::class_<Preprocessor>(m, "Preprocessor")
         .def(py::init<const std::string &>(), py::arg("loglevel"))
         .def("process", &Preprocessor::process, py::arg("filename"), py::arg("encoding"))

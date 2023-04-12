@@ -317,11 +317,8 @@ protected:
                                 in_if_data = false;
                                 ifdata_end_line_num = { line_num, end - std::size(xtail) - std::size("IF_DATA") + 1};
                                 std::string xfiller(std::size(xsection), ' ');
-
                                 ifdata_builder.set_line_numbers(ifdata_start_line_num, ifdata_end_line_num);
-
                                 tmp_a2l() << xfiller + "/end" + xs0 + "IF_DATA" << xtail << std::endl;
-                                //ifdata_segments.push_back(xsection + "/end" + xs0 + "IF_DATA" + '\n');
                                 ifdata_builder.add_section(xsection + "/end" + xs0 + "IF_DATA" + '\n');
                                 ifdata_builder.finalize();
                             }
