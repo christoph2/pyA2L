@@ -130,11 +130,11 @@ class DB(object):
         filenames, line_map, ifdata_reader = prepro_result
         a2l_parser = parsers.a2l(debug=debug, prepro_result=prepro_result)
         self.logger.info("Parsing pre-processed data ...")
-        self.db, listener_result = a2l_parser.parseFromFile(filenames.a2l, encoding=encoding)
+        self.db, listener_result = a2l_parser.parseFromFile(filename=filenames.a2l, dbname=str(self._dbfn), encoding=encoding)
         self.session = self.db.session
         self.logger.info("Parsing AML section ...")
         aml_parser = parsers.aml(prepro_result=prepro_result)
-        aml_result = aml_parser.parseFromFile(filenames.aml, encoding=encoding).listener_result
+        aml_result = aml_parser.parseFromFile(filename=filenames.aml, dbname=str(self._dbfn), encoding=encoding).listener_result
         aml_parsed = pickle.dumps(aml_result)
         aml_text = open(filenames.aml).read()
         self.session.add(model.AMLSection(text=aml_text, parsed=aml_parsed))

@@ -49,6 +49,8 @@ class MyErrorListener(ErrorListener):
         self.line_map = line_map
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        line -= 1
+        column += 1
         if self.line_map:
             file_name, line = self.line_map.lookup(line)
             print(
@@ -113,12 +115,8 @@ class ParserWrapper:
         self.db.session.commit()
         return ResultType(self.db, listener_result)
 
-    def parseFromFile(self, filename, encoding="latin-1", trace=False):
-        if filename == ":memory:":
-            self.fnbase = ":memory:"
-        else:
-            pth, fname = os.path.split(filename)
-            self.fnbase = os.path.splitext(fname)[0]
+    def parseFromFile(self, filename, encoding="latin-1", trace=False, dbname=":memory:"):
+        self.fnbase = dbname
         return self.parse(antlr4.FileStream(filename, encoding), trace)
 
     def parseFromString(self, buf, encoding="latin-1", trace=False, dbname=":memory:"):
