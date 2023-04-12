@@ -22,19 +22,7 @@
     s. FLOSS-EXCEPTION.txt
 */
 
-
 #include "preprocessor.hpp"
-
-const std::regex CPP_COMMENT("(?://)(.*)$", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-const std::regex MULTILINE_START("(?:/\\*)(.*?)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-const std::regex MULTILINE_END("(?:\\*/)(.*)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-const std::regex INCLUDE("^(?:\\s*)/include\\s+\"([^\"]*)\"", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-const std::regex AML_START("^\\s*/begin\\s+A[23]ML(.*?)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-const std::regex AML_END("^\\s*/end\\s+A[23]ML", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-const std::regex IF_DATA_START("/begin(\\s+)IF_DATA(\\s+)(\\S*)(.*)$", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-const std::regex IF_DATA_END("^(.*?)/end(\\s+)IF_DATA(.*)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-
-
 
 // clang++ -Wall -ggdb -std=c++20 preprocessor.cpp -o preprocessor.exe
 
@@ -50,20 +38,36 @@ void ld(Preprocessor& p, std::size_t line_no)
     }
 }
 
+void test_strings()
+{
+    std::string line;
+    std::ifstream file("strings.txt");
+
+    auto idx{ 0 };
+    if (file.is_open()) {
+        while (!file.eof()) {
+            std::getline(file, line);
+            escape_string(line);
+            std::cout << line << std::endl;
+            idx++;
+        }
+    }
+    std::exit(1);
+}
+
 int main(int argc, char** argv)
 {
 
     auto FN{ "C:\\csProjects\\pyA2L\\pya2l\\examples\\03G906021KE_9970_501409_P447_HAXN_EDC16U34_3.41.a2l" };
 
-    Preprocessor p;
+    test_strings();
+
+    Preprocessor p{"INFO"};
 
     if (argc > 1) {
-        p.process(argv[1]);
-        //auto res = ifdata_reader.get({ 2179, 4, 2184, 16 });
-        //res = ifdata_reader.get({ 1051, 8, 1056, 20 });
+        p.process(argv[1], "UTF-8");
     } else {
-        //p._process_file("ASAP2_Demo_V161.a2l");
-        p.process("comments.txt");
+        p.process("comments.txt", "UTF-8");
 
         ld(p, 1);
         ld(p, 3);
