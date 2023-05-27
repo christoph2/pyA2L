@@ -38,8 +38,6 @@
 #include <cassert>
 #include <cctype>
 
-#include "line_numbers.hpp"
-
 /*
 **  Basic c++20 generator implementation.
 */
@@ -110,42 +108,6 @@ struct Generator {
 
     std::coroutine_handle<promise_type> m_handle;
 };
-
-enum class CharClass : std::int8_t {
-    NONE = -1,
-    WHITESPACE = 0,
-    REGULAR = 1,
-    STRING = 1,
-};
-
-const char SLASH = '/';
-const char ASTERIX = '*';
-const char NL = '\n';
-const char CR = '\r';
-const char DQUOTE = '"';
-
-struct TokenType : public std::string {};
-struct WhitespaceType : public std::string {};
-struct Eof {};
-
-enum class StringStateType : std::uint8_t {
-    IDLE,
-    IN_STRING,
-    MAY_CLOSE,
-};
-
-enum class CommentStateType : std::uint8_t {
-    IDLE,
-    MAY_START,
-    SINGLE_LINE,
-    OPEN,
-    MAY_CLOSE
-};
-
-using TokenizerReturnType = std::tuple<CharClass, std::string>;
-
-bool is_space(char ch);
-Generator <TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool supress_whitespace = false);
 
 
 #endif // __GENERATOR_HPP

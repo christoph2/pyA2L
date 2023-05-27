@@ -25,6 +25,8 @@
 #if !defined(__UTILS_HPP)
 #define __UTILS_HPP
 
+#include <ranges>
+
 enum class State : std::uint8_t {
     IDLE,
     IN_STRING,
@@ -108,6 +110,31 @@ std::string test_escape_string(std::string& line)
 	std::copy(line.begin(), line.end(), std::back_inserter(result));
 
 	return result;
+}
+
+auto to_string = [](auto&& r) -> std::string {
+    const auto data = &*r.begin();
+    const auto size = static_cast<std::size_t>(std::ranges::distance(r));
+
+    return std::string{ data, size };
+};
+
+bool is_space(char ch) {
+    if ((ch == '\t') || (ch == '\n') || (ch == '\v') || (ch == '\f') || (ch == '\r') || (ch == '\x20')) {
+        return true;
+    }
+    return false;
+}
+
+auto split(const std::string& str, char delimiter) -> std::vector<std::string>
+{
+    auto result = std::vector<std::string>{};
+
+    auto range = str |
+        std::ranges::views::split(delimiter) |
+        std::ranges::views::transform(to_string);
+
+    return { std::ranges::begin(range), std::ranges::end(range) };
 }
 
 #endif // __UTILS_HPP
