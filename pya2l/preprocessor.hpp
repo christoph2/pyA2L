@@ -47,17 +47,7 @@ namespace fs = std::filesystem;
 #include "extensions/utils.hpp"
 #include "extensions/tempfile.hpp"
 #include "extensions/line_map.hpp"
-#include "extensions/regex.hpp"
-
-
-const std::regex CPP_COMMENT("(?://)(.*)$", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-const std::regex MULTILINE_START("(?:/\\*)(.*?)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-const std::regex MULTILINE_END("(?:\\*/)(.*)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-const std::regex INCLUDE("^(?:\\s*)/include\\s+\"([^\"]*)\"", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-const std::regex AML_START("^\\s*/begin\\s+A[23]ML(.*?)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-const std::regex AML_END("^\\s*/end\\s+A[23]ML", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-const std::regex IF_DATA_START("/begin(\\s+)IF_DATA(\\s+)(\\S*)(.*)$", std::regex_constants::ECMAScript | std::regex_constants::optimize);
-const std::regex IF_DATA_END("^(.*?)/end(\\s+)IF_DATA(.*)", std::regex_constants::ECMAScript | std::regex_constants::optimize);
+#include "extensions/tokenizer.hpp"
 
 
 struct Filenames {
@@ -89,12 +79,11 @@ struct PreprocessorResult {
 class Preprocessor {
 public:
 
-    const std::string A2L_PRE_TMP = "A2L_pre.tmp";
     const std::string A2L_TMP = "A2L.tmp";
     const std::string AML_TMP = "AML.tmp";
     const std::string IFDATA_TMP = "IFDATA.tmp";
 
-    Preprocessor(const std::string& loglevel) : tmp_a2l_pre(A2L_PRE_TMP), tmp_a2l(A2L_TMP), tmp_aml(AML_TMP), tmp_ifdata(IFDATA_TMP, true) {
+    Preprocessor(const std::string& loglevel) : tmp_a2l(A2L_TMP), tmp_aml(AML_TMP), tmp_ifdata(IFDATA_TMP, true), ifdata_builder{ tmp_ifdata.handle() } {
         get_include_paths_from_env();
         m_filenames.a2l = tmp_a2l.abs_path();
         m_filenames.aml = tmp_aml.abs_path();
@@ -108,248 +97,122 @@ public:
     std::tuple<Filenames, LineMap, IfDataReader> process(const std::string& filename, const std::string& encoding) {
         _process_file(filename);
         line_map.finalize();
-        return std::tuple<Filenames, LineMap, IfDataReader>(m_filenames, line_map, _process_aml());
+        {
+            return std::tuple<Filenames, LineMap, IfDataReader>(m_filenames, line_map, {});
+        }
     }
 
     LineMap line_map{};
 
 protected:
     void _process_file(const std::string& filename) {
-        std::uint64_t start_line_number = absolute_line_number + 1;
+        //std::uint64_t start_line_number = absolute_line_number + 1;
         fs::path path{ filename };
         auto abs_pth = fs::absolute(path);
         std::ifstream file(abs_pth);
+        bool begin = false;
+        bool a2ml = false;
+        bool ifdata = false;
+        bool collect = false;
+        bool include = false;
+        std::vector<Token> collected_tokens{};
 
         if (line_map.contains(abs_pth.string())) {
-            throw std::runtime_error("Circular dependency to include file '" + abs_pth.string() + "'.");
+            throw std::runtime_error("[ERROR (pya2l.Preprocessor)]: Circular dependency to include file '" + abs_pth.string() + "'.");
         }
 
         if (file.is_open()) {
-            std::string line;
-            std::uint64_t line_num = 0;
-            bool multi_line = false;
-            bool use_c_match = false;
-            bool use_cpp_match = false;
-            bool cpp_match = false;
-            bool c_match = false;
-            bool match = false;
-            std::vector<std::string> result;
-            std::string rl;
-
             std::cout << "[INFO (pya2l.Preprocessor)]: Preprocessing '" + filename + "'." << std::endl;
+            for (const auto&& token : tokenizer(file)) {
+                //std::cout << token.m_payload << " [" << token.m_line_numbers.start_line << ", " <<
+                //    token.m_line_numbers.start_col << ", " << token.m_line_numbers.end_line << ", " << token.m_line_numbers.end_col << "]" << std::endl;
+                if (token.m_token_type == TokenType::COMMENT) {
+                    auto lines = split(token.m_payload, '\n');
+                    auto line_count = lines.size();
+                    for (auto&& line : lines) {
+                        std::cout << std::string(line.length(), ' ');
+                        if (a2ml == true) {
+                            tmp_aml() << std::string(line.length(), ' ');
+                        }
+                        if (--line_count > 0) {
+                            std::cout << std::endl;
+                            if (a2ml == true) {
+                                tmp_aml() << std::endl;
+                            }
+                        }
+                    }
+                } else if (token.m_token_type == TokenType::REGULAR) {
+                    if (a2ml == true) {
+                        tmp_aml() << token.m_payload;
+                        if (token.m_payload == "/end") {
+                            tmp_aml() << " A2ML";
+                            a2ml = false;
+                        }
+                    } else if (ifdata == true) {
+                        //tmp_ifdata() << token.m_payload;
+                        ifdata_builder.add_token(token);
+                        if (token.m_payload == "/end") {
+                            //tmp_ifdata() << " IF_DATA";
+                            // ifdata_builder.add_token(item);  // TODO: IMPL!!!
+                            ifdata = false;
+                            ifdata_builder.finalize();
+                        }
+                    } else if (include == true) {
+                        auto incl_file = locate_file(token.m_payload.substr(1, token.m_payload.length() - 2), path.parent_path().string());
 
-            while (!file.eof()) {
-                line_num++;
-                absolute_line_number++;
-                std::getline(file, line);
-                if (file.eof() || !file) {
-                    break;
-                }
-                rstrip(line);
-                if (multi_line) {
-                    match = re_multiline_end(line);
-                    if (match) {
-                        multi_line = false;
-                        rl = re_multiline_end.str(1);
-                        tmp_a2l_pre() << rl << std::endl;
-                        continue;
+                        if (incl_file.has_value()) {
+
+                        } else {
+                            throw std::runtime_error("[ERROR (pya2l.Preprocessor)]: Could not locate include file '" + file_name + "'.");
+                        }
+                        include = false;
                     }
-                    else {
-                        rl = "\n";
-                        tmp_a2l_pre() << std::endl;
-                        continue;
+                    if (ifdata == true || a2ml == true) {
+                        std::cout << std::string(token.m_payload.length(), ' ');
+                    } else {
+                        std::cout << token.m_payload;
                     }
-                }
-                cpp_match = re_cpp_comment(line);
-                c_match = re_multiline_start(line);
-                use_c_match = use_cpp_match = false;
-                if (cpp_match && c_match) {
-                    if (re_cpp_comment.start(0) < re_multiline_start.start(0)) {
-                        use_cpp_match = true;
+                    if (begin) {
+                        begin = false;
+                        collect = false;
+                        collected_tokens.push_back(token);
+                        if (token.m_payload == "A2ML") {
+                            a2ml = true;
+                            for (auto& item : collected_tokens) {
+                                tmp_aml() << item.m_payload;
+                            }
+                        } else if (token.m_payload == "IF_DATA") {
+                            ifdata = true;
+                            for (auto& item : collected_tokens) {
+                                //tmp_ifdata() << item.m_payload;
+                                ifdata_builder.add_token(item);
+                            }
+                        }
+                        collected_tokens.clear();
                     }
-                    else {
-                        use_c_match = true;
+                    if (token.m_payload == "/begin") {
+                        begin = true;
+                        collect = true;
+                        collected_tokens.push_back(token);
+                    } else if (token.m_payload == "/include") {
+                        include = true;
                     }
-                }
-                else if (c_match) {
-                    use_c_match = true;
-                }
-                else if (cpp_match) {
-                    use_cpp_match = true;
-                }
-                if (use_cpp_match) {
-                    rl = re_cpp_comment.prefix();
-                }
-                else if (use_c_match) {
-                    match = re_multiline_end(line);
-                    if (match) {
-                        multi_line = false;
-                        blank_out(line, re_multiline_start.start(0), re_multiline_end.start(1));
-                        rl = line;
+                } else if (token.m_token_type == TokenType::WHITESPACE) {
+                    std::cout << token.m_payload;
+                    if (a2ml == true) {
+                        tmp_aml() << token.m_payload;
+                    } else if (ifdata == true) {
+                        //tmp_ifdata() << token.m_payload;
+                        ifdata_builder.add_token(token);
+                    } else if (collect == true) {
+                        collected_tokens.push_back(token);
                     }
-                    else {
-                        multi_line = true;
-                        blank_out(line, re_multiline_start.start(0), -1);
-                        rl = line;
-                    }
-                }
-                else {
-                    rl = line;
-                }
-                match = re_include(rl);
-                if (match) {
-                    line_num--;
-                    absolute_line_number--;
-                    std::string include_file_name = re_include.str(1);
-                    auto where = locate_file(include_file_name, abs_pth.parent_path().string());
-                    if (where.has_value()) {
-                        update_line_map(abs_pth, start_line_number);
-                        _process_file(where.value().string());
-                        start_line_number = absolute_line_number + 1;
-                    }
-                    else {
-                        throw std::runtime_error("Can't find include file: '" + include_file_name + "'");
-                    }
-                }
-                else {
-                    escape_string(rl);
-                    tmp_a2l_pre() << rl << std::endl;
+
                 }
             }
-            absolute_line_number--;
-            update_line_map(abs_pth, start_line_number);
-            file.close();
-        }
-        else {
+        } else {
             throw std::runtime_error("Could not open file: '" + abs_pth.string() + "'");
         }
-    }
-
-    IfDataReader _process_aml() {
-        bool in_aml = false;
-        bool in_if_data = false;
-        std::uint64_t line_num = 0;
-        std::tuple<std::size_t, std::size_t> ifdata_start_line_num, ifdata_end_line_num;
-        IfDataBuilder ifdata_builder{ tmp_ifdata.handle() };
-
-        const auto cut_out_ifdata = [&ifdata_builder, &in_if_data, &line_num,
-            &ifdata_start_line_num, &ifdata_end_line_num, this](std::string& line) -> void {
-            bool match{ false };
-            bool single_line{ false };
-
-            //while (true) {
-            match = re_if_data_start(line);
-            if (match) {
-                in_if_data = true;
-                auto [start, end] = re_if_data_start.span(0);
-                auto s0 = re_if_data_start.str(1);
-                auto s1 = re_if_data_start.str(2);
-                auto section = re_if_data_start.str(3);
-                auto tail = re_if_data_start.str(4);
-                auto if_data_start = std::tuple<std::size_t, std::size_t>(line_num, start);
-                auto ifdata_head = re_if_data_start.prefix() + "/begin" + s0 + "IF_DATA" + s1 + section;
-                ifdata_start_line_num = { line_num, start };
-                single_line = false;
-                match = re_if_data_end(tail);
-                if (match) {
-                    //auto [xstart, xend] = re_if_data_end.span(0);
-                    auto xsection = re_if_data_end.str(1);
-                    auto xs0 = re_if_data_end.str(2);
-                    auto xtail = re_if_data_end.str(3);
-                    single_line = true;
-                    in_if_data = false;
-                    auto offset = std::size(ifdata_head) + std::size(xsection) + 4 + 7 + 1;
-
-                    ifdata_end_line_num = { line_num, offset };
-
-                    auto ifdata_end = "/end" + xs0 + "IF_DATA";
-                    std::string filler(std::size(line) - (std::size(ifdata_head) + std::size(ifdata_end) + std::size(xtail)), ' ');
-                    line = ifdata_head + filler + ifdata_end;
-                    auto xxy = xsection + "/end" + xs0 + "IF_DATA";
-                }
-                else {
-                    auto complete_match = re_if_data_start.str(0);
-                    ifdata_builder.add_section(complete_match + '\n');
-                    line = ifdata_head;
-                }
-                if (!single_line) {
-                    //break;
-                }
-            }
-            else {
-                //break;
-            }
-
-            //}
-        };
-
-        std::ifstream file(A2L_PRE_TMP);
-        if (file.is_open()) {
-            std::string line;
-            bool match = false;
-            std::string rl;
-
-            while (!file.eof()) {
-                line_num++;
-                std::getline(file, line);
-                if (file.eof() || !file) {
-                    break;
-                }
-                if (!in_aml) {
-                    match = re_aml_start(line);
-                    if (match) {
-                        in_aml = true;
-                        tmp_aml() << "/begin A2ML" << std::endl;
-                        tmp_a2l() << "/begin A2ML" << std::endl;
-                    }
-                    else {
-                        if (!in_if_data) {
-                            cut_out_ifdata(line);
-                            tmp_a2l() << line << std::endl;
-                        }
-                        else {
-                            match = re_if_data_end(line);
-                            if (match) {
-                                auto [start, end] = re_if_data_end.span(0);
-                                auto xsection = re_if_data_end.str(1);
-                                auto xs0 = re_if_data_end.str(2);
-                                auto xtail = re_if_data_end.str(3);
-                                in_if_data = false;
-                                ifdata_end_line_num = { line_num, end - std::size(xtail) - std::size("IF_DATA") + 1};
-                                std::string xfiller(std::size(xsection), ' ');
-                                ifdata_builder.set_line_numbers(ifdata_start_line_num, ifdata_end_line_num);
-                                tmp_a2l() << xfiller + "/end" + xs0 + "IF_DATA" << xtail << std::endl;
-                                ifdata_builder.add_section(xsection + "/end" + xs0 + "IF_DATA" + '\n');
-                                ifdata_builder.finalize();
-                            }
-                            else {
-                                ifdata_builder.add_section(line + "\n");
-                                tmp_a2l() << std::endl;
-                            }
-                        }
-                    }
-                }
-                else {
-                    match = re_aml_end(line);
-                    if (match) {
-                        tmp_aml() << "/end A2ML" << std::endl;
-                        tmp_a2l() << "/end A2ML" << std::endl;
-                        in_aml = false;
-                    }
-                    else {
-                        tmp_aml() << line << std::endl;
-                        tmp_a2l() << std::endl;
-                    }
-                }
-            }
-        }
-        else {
-            throw std::runtime_error("Temporary file '" + A2L_PRE_TMP + "' could not opened; this should not happen.");
-        }
-        file.close();
-        tmp_ifdata.close();
-        tmp_aml.close();
-        return IfDataReader(IFDATA_TMP, ifdata_builder);
     }
 
 protected:
@@ -417,22 +280,14 @@ protected:
     }
 
 private:
-    TempFile tmp_a2l_pre;
     TempFile tmp_a2l;
     TempFile tmp_aml;
     TempFile tmp_ifdata;
+    IfDataBuilder ifdata_builder;
 
+	std::size_t absolute_line_number;
     Filenames m_filenames{};
     std::vector<std::string> include_paths{};
-    std::uint64_t absolute_line_number{ 0 };
-    RegExp re_cpp_comment{ CPP_COMMENT };
-    RegExp re_multiline_start{ MULTILINE_START };
-    RegExp re_multiline_end{ MULTILINE_END };
-    RegExp re_include{ INCLUDE };
-    RegExp re_aml_start{ AML_START };
-    RegExp re_aml_end{ AML_END };
-    RegExp re_if_data_start{ IF_DATA_START };
-    RegExp re_if_data_end{ IF_DATA_END };
 };
 
 #endif // __PREPROCESSOR_HPP

@@ -26,7 +26,7 @@
 #define __IFDATA_HPP
 
 #include <cstdio>
-#include "line_numbers.hpp"
+#include "tokenizer.hpp"
 
 struct IfDataBase {
     using line_type = std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>;
@@ -37,27 +37,20 @@ struct IfDataBase {
 class IfDataBuilder : public IfDataBase {
 public:
 
-    IfDataBuilder(std::ofstream& out) noexcept : m_out(out) {}
+    IfDataBuilder(std::ofstream& out) noexcept : m_out(out) {
+        m_out.seekp(0);
+    }
 
     ~IfDataBuilder() {}
 
-    void set_line_numbers(std::tuple< std::size_t, std::size_t> start, std::tuple< std::size_t, std::size_t> end) noexcept
-    {
-        m_line_numbers = LineNumbers(start, end);
+    void add_token(const Token& token) noexcept {
+        m_length += token.m_payload.length();
+        m_tokens.emplace_back(token);
     }
-
-    void add_section(std::string& text) noexcept {
-        m_length += text.length();
-        m_sections.emplace_back(text);
-    }
-
-    void add_section(std::string&& text) noexcept {
-        m_length += text.length();
-        m_sections.emplace_back(std::move(text));
-    }
-
 
     void finalize() noexcept {
+        set_line_numbers();
+
         write_int(m_length);
 
         // NOTE: line information is NOT required -- only used for testing.
@@ -66,17 +59,14 @@ public:
         write_int(m_line_numbers.end_line);
         write_int(m_line_numbers.end_col);
 
-        std::for_each(m_sections.begin(), m_sections.end(), [this](const auto& elem)
-            {
-                write_string(elem);
-            }
-        );
+        for (auto&& elem : m_tokens) {
+            write_string(elem.m_payload);
+        }
 
         file_map[std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>(m_line_numbers.start_line, m_line_numbers.start_col, m_line_numbers.end_line, m_line_numbers.end_col)] = m_offset;
         m_offset += (HEADER_SIZE + m_length);
         assert(m_out.tellp() == m_offset);
-
-        m_sections.clear();
+        m_tokens.clear();
         m_length = 0;
     }
 
@@ -85,6 +75,13 @@ public:
     }
 
 private:
+
+    void set_line_numbers() noexcept
+    {
+        auto start = m_tokens[0].m_line_numbers;
+        auto end = m_tokens[m_tokens.size() - 1].m_line_numbers;
+        m_line_numbers = LineNumbers(start.start_line, start.start_col, end.end_line, end.end_col);
+    }
 
     void write_int(std::size_t value) {
         m_out.write(reinterpret_cast<char*>(&value), sizeof value);
@@ -96,7 +93,7 @@ private:
 
     std::ofstream& m_out;
     LineNumbers m_line_numbers{};
-    std::vector<std::string> m_sections{};
+    std::vector<Token> m_tokens{};
     std::size_t m_length{ 0 };
     std::size_t m_offset{ 0 };
     map_type file_map{};
