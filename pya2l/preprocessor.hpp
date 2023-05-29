@@ -76,6 +76,13 @@ struct PreprocessorResult {
 };
 */
 
+enum class CollectionType : std::uint8_t {
+    NONE,
+    A2l,
+    AML,
+    IFDATA
+};
+
 class Preprocessor {
 public:
 
@@ -83,8 +90,9 @@ public:
     const std::string AML_TMP = "AML.tmp";
     const std::string IFDATA_TMP = "IFDATA.tmp";
 
-    Preprocessor(const std::string& loglevel) : tmp_a2l(A2L_TMP), tmp_aml(AML_TMP), tmp_ifdata(IFDATA_TMP, true), ifdata_builder{ tmp_ifdata.handle() } {
+    Preprocessor(const std::string& loglevel) : tmp_a2l(A2L_TMP), tmp_aml(AML_TMP), tmp_ifdata(IFDATA_TMP, true), ifdata_builder{tmp_ifdata.handle()} {
         get_include_paths_from_env();
+        //tmp_a2l.to_stdout();
         m_filenames.a2l = tmp_a2l.abs_path();
         m_filenames.aml = tmp_aml.abs_path();
         m_filenames.ifdata = tmp_ifdata.abs_path();
@@ -111,9 +119,10 @@ protected:
         auto abs_pth = fs::absolute(path);
         std::ifstream file(abs_pth);
         bool begin = false;
+        bool end = false;
         bool a2ml = false;
         bool ifdata = false;
-        bool collect = false;
+        bool collect { false };
         bool include = false;
         std::vector<Token> collected_tokens{};
 
@@ -124,53 +133,78 @@ protected:
         if (file.is_open()) {
             std::cout << "[INFO (pya2l.Preprocessor)]: Preprocessing '" + filename + "'." << std::endl;
             for (const auto&& token : tokenizer(file)) {
-                //std::cout << token.m_payload << " [" << token.m_line_numbers.start_line << ", " <<
-                //    token.m_line_numbers.start_col << ", " << token.m_line_numbers.end_line << ", " << token.m_line_numbers.end_col << "]" << std::endl;
                 if (token.m_token_type == TokenType::COMMENT) {
                     auto lines = split(token.m_payload, '\n');
                     auto line_count = lines.size();
                     for (auto&& line : lines) {
-                        std::cout << std::string(line.length(), ' ');
+                        tmp_a2l() << std::string(line.length(), ' ');
                         if (a2ml == true) {
                             tmp_aml() << std::string(line.length(), ' ');
                         }
                         if (--line_count > 0) {
-                            std::cout << std::endl;
+                            tmp_a2l() << std::endl;
                             if (a2ml == true) {
                                 tmp_aml() << std::endl;
                             }
                         }
                     }
                 } else if (token.m_token_type == TokenType::REGULAR) {
+                    if (end == true) {
+                        if (token.m_payload == "A2ML") {
+                            a2ml = false;
+                        } else if (token.m_payload == "IF_DATA") {
+                            ifdata = false;
+                            ifdata_builder.add_token(token);
+                            ifdata_builder.finalize();
+                            for (auto&& item : collected_tokens) {
+                                tmp_a2l() << item.m_payload;
+                            }
+                        } else {
+                            for (auto&& item : collected_tokens) {
+                                if (item.m_token_type == TokenType::REGULAR) {
+                                    tmp_a2l() << std::string(item.m_payload.length(), ' ');
+                                } else if (item.m_token_type == TokenType::WHITESPACE) {
+                                    tmp_a2l() << item.m_payload;
+                                }
+                            }
+                        }
+                        collected_tokens.clear();
+                        collect = false;
+                        end = false;
+                    }
                     if (a2ml == true) {
                         tmp_aml() << token.m_payload;
                         if (token.m_payload == "/end") {
-                            tmp_aml() << " A2ML";
-                            a2ml = false;
+                            end = true;
+                            tmp_a2l() << token.m_payload;
                         }
                     } else if (ifdata == true) {
-                        //tmp_ifdata() << token.m_payload;
                         ifdata_builder.add_token(token);
                         if (token.m_payload == "/end") {
-                            //tmp_ifdata() << " IF_DATA";
-                            // ifdata_builder.add_token(item);  // TODO: IMPL!!!
-                            ifdata = false;
-                            ifdata_builder.finalize();
+                            collected_tokens.push_back(token);
+                            collect = true;
+                            end = true;
                         }
                     } else if (include == true) {
-                        auto incl_file = locate_file(token.m_payload.substr(1, token.m_payload.length() - 2), path.parent_path().string());
+                        auto _fn = token.m_payload.substr(1, token.m_payload.length() - 2);
+                        auto incl_file = locate_file(_fn, path.parent_path().string());
+                        auto line_no = token.m_line_numbers.start_line;
 
                         if (incl_file.has_value()) {
-
+                            auto sfn = shorten_file_name(abs_pth);
+                            std::cout << "*** " << sfn << " [" << line_no << "] ***" << std::endl;
                         } else {
-                            throw std::runtime_error("[ERROR (pya2l.Preprocessor)]: Could not locate include file '" + file_name + "'.");
+                            throw std::runtime_error("[ERROR (pya2l.Preprocessor)]: Could not locate include file '" + _fn + "'.");
                         }
                         include = false;
                     }
                     if (ifdata == true || a2ml == true) {
-                        std::cout << std::string(token.m_payload.length(), ' ');
+                        if (end == false) {
+                            //tmp_a2l() << token.m_payload;
+                            tmp_a2l() << std::string(token.m_payload.length(), ' ');
+                        }
                     } else {
-                        std::cout << token.m_payload;
+                        tmp_a2l() << token.m_payload;
                     }
                     if (begin) {
                         begin = false;
@@ -184,13 +218,12 @@ protected:
                         } else if (token.m_payload == "IF_DATA") {
                             ifdata = true;
                             for (auto& item : collected_tokens) {
-                                //tmp_ifdata() << item.m_payload;
                                 ifdata_builder.add_token(item);
                             }
                         }
                         collected_tokens.clear();
                     }
-                    if (token.m_payload == "/begin") {
+                    if ((token.m_payload == "/begin") && (ifdata == false)) {
                         begin = true;
                         collect = true;
                         collected_tokens.push_back(token);
@@ -198,16 +231,18 @@ protected:
                         include = true;
                     }
                 } else if (token.m_token_type == TokenType::WHITESPACE) {
-                    std::cout << token.m_payload;
+                    if (end == false) {
+                        tmp_a2l() << token.m_payload;
+                    }
+
+                    if (collect == true) {
+                        collected_tokens.push_back(token);
+                    } /*else*/
                     if (a2ml == true) {
                         tmp_aml() << token.m_payload;
                     } else if (ifdata == true) {
-                        //tmp_ifdata() << token.m_payload;
                         ifdata_builder.add_token(token);
-                    } else if (collect == true) {
-                        collected_tokens.push_back(token);
                     }
-
                 }
             }
         } else {
