@@ -99,8 +99,13 @@ Generator <TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool
         stream.get(ch);
         if (stream.eof()) {
             LineNumbers line_numbers{ start_line, start_column, line, column - 1 };
-            //co_yield { current, token[char_class_to_int(current)] };
-            co_yield{ Token(TokenType::REGULAR, line_numbers, token[char_class_to_int(current)]) };   // TODO: FIX ME!!!
+            TokenType tt{};
+            if (current == CharClass::WHITESPACE) {
+                tt = TokenType::WHITESPACE;
+            } else if (current == CharClass::REGULAR) {
+                tt = TokenType::REGULAR;
+            }
+            co_yield{ Token(tt, line_numbers, token[char_class_to_int(current)]) };   // TODO: FIX ME!!!
         }
         column++;
         current = get_char_class(ch);

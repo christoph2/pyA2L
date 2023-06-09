@@ -63,25 +63,13 @@ struct Filenames {
 };
 
 /*
-struct PreprocessorResult {
-
-    PreprocessorResult() = default;
-    PreprocessorResult(const PreprocessorResult&) = default;
-    PreprocessorResult(PreprocessorResult&&) = default;
-    PreprocessorResult(const Filenames& f, const LineMap& m, const IfDataReader& r) : filenames(f), line_map(m), ifdata_reader(r) {}
-
-    Filenames filenames{};
-    LineMap line_map{};
-    IfDataReader ifdata_reader{};
-};
-*/
-
 enum class CollectionType : std::uint8_t {
     NONE,
     A2l,
     AML,
     IFDATA
 };
+*/
 
 class Preprocessor {
 public:
@@ -114,7 +102,7 @@ public:
 
 protected:
     void _process_file(const std::string& filename) {
-        //std::uint64_t start_line_number = absolute_line_number + 1;
+        std::uint64_t start_line_number = 1;
         fs::path path{ filename };
         auto abs_pth = fs::absolute(path);
         std::ifstream file(abs_pth);
@@ -124,6 +112,7 @@ protected:
         bool ifdata = false;
         bool collect { false };
         bool include = false;
+        std::uint8_t skip_tokens = 0;
         std::vector<Token> collected_tokens{};
 
         if (line_map.contains(abs_pth.string())) {
@@ -132,7 +121,13 @@ protected:
 
         if (file.is_open()) {
             std::cout << "[INFO (pya2l.Preprocessor)]: Preprocessing '" + filename + "'." << std::endl;
+            std::size_t end_line{ 0 };
+
             for (const auto&& token : tokenizer(file)) {
+                end_line = token.m_line_numbers.end_line;
+                if (skip_tokens > 0) {
+                    skip_tokens--;
+                }
                 if (token.m_token_type == TokenType::COMMENT) {
                     auto lines = split(token.m_payload, '\n');
                     auto line_count = lines.size();
@@ -152,6 +147,10 @@ protected:
                     if (end == true) {
                         if (token.m_payload == "A2ML") {
                             a2ml = false;
+                            tmp_aml() << token.m_payload;
+                            for (auto&& item : collected_tokens) {
+                                tmp_a2l() << item.m_payload;
+                            }
                         } else if (token.m_payload == "IF_DATA") {
                             ifdata = false;
                             ifdata_builder.add_token(token);
@@ -176,7 +175,8 @@ protected:
                         tmp_aml() << token.m_payload;
                         if (token.m_payload == "/end") {
                             end = true;
-                            tmp_a2l() << token.m_payload;
+                            collected_tokens.push_back(token);
+                            collect = true;
                         }
                     } else if (ifdata == true) {
                         ifdata_builder.add_token(token);
@@ -185,26 +185,39 @@ protected:
                             collect = true;
                             end = true;
                         }
-                    } else if (include == true) {
+                    }
+                    if (include == true) {
                         auto _fn = token.m_payload.substr(1, token.m_payload.length() - 2);
                         auto incl_file = locate_file(_fn, path.parent_path().string());
-                        auto line_no = token.m_line_numbers.start_line;
 
                         if (incl_file.has_value()) {
-                            auto sfn = shorten_file_name(abs_pth);
-                            std::cout << "*** " << sfn << " [" << line_no << "] ***" << std::endl;
-                        } else {
+                            update_line_map(abs_pth, start_line_number);
+                            auto length = (end_line - start_line_number);
+                            std::cout << "\t[ " << abs_pth.string() << ": " << line_offset << " " << line_offset + length - 1 << " " << start_line_number << " " << token.m_line_numbers.start_line - 1 << " ]" << std::endl;
+                            //line_offset += token.m_line_numbers.end_line;
+                            line_offset += length;
+
+                            std::cout << "[INFO (pya2l.Preprocessor)]: Including '" + incl_file.value().string() + "'." << std::endl;
+                            _process_file(incl_file.value().string());
+                        }
+                        else {
                             throw std::runtime_error("[ERROR (pya2l.Preprocessor)]: Could not locate include file '" + _fn + "'.");
                         }
-                        include = false;
+                        include = false;                  
+                        start_line_number = token.m_line_numbers.end_line + 1;
+                        skip_tokens = 2;
+                    }
+                    if (token.m_payload == "/include") {
+                        include = true;
                     }
                     if (ifdata == true || a2ml == true) {
                         if (end == false) {
-                            //tmp_a2l() << token.m_payload;
                             tmp_a2l() << std::string(token.m_payload.length(), ' ');
                         }
                     } else {
-                        tmp_a2l() << token.m_payload;
+                        if ((include == false) && (skip_tokens == 0)) {
+                            tmp_a2l() << token.m_payload;
+                        }
                     }
                     if (begin) {
                         begin = false;
@@ -227,17 +240,14 @@ protected:
                         begin = true;
                         collect = true;
                         collected_tokens.push_back(token);
-                    } else if (token.m_payload == "/include") {
-                        include = true;
                     }
                 } else if (token.m_token_type == TokenType::WHITESPACE) {
-                    if (end == false) {
+                    if ((end == false) && (include == false) && (skip_tokens == 0)) {
                         tmp_a2l() << token.m_payload;
                     }
-
                     if (collect == true) {
                         collected_tokens.push_back(token);
-                    } /*else*/
+                    }
                     if (a2ml == true) {
                         tmp_aml() << token.m_payload;
                     } else if (ifdata == true) {
@@ -245,6 +255,11 @@ protected:
                     }
                 }
             }
+            update_line_map(abs_pth, start_line_number);
+            auto length = (end_line - start_line_number);
+            std::cout << "\t[ " << abs_pth.string() << ": " << line_offset << " " << line_offset + length - 1 << " " << start_line_number << " " << end_line - 1 << " ]" << std::endl;
+            //line_offset += end_line;
+            line_offset += length;
         } else {
             throw std::runtime_error("Could not open file: '" + abs_pth.string() + "'");
         }
@@ -260,18 +275,19 @@ protected:
         }
     }
 
-    void update_line_map(const fs::path& path, std::uint64_t start_line_number) {
+    void update_line_map(const fs::path& path, std::uint64_t abs_start, std::uint64_t abs_end, std::uint64_t rel_start, std::uint64_t rel_end) {
         auto key = shorten_file_name(path);
 
         if (line_map.contains(key)) {
             auto& entry = line_map[key];
             //std::cout << "\tAdd key: " << key << " " << start_line_number << " " << absolute_line_number << std::endl;
-            entry.push_back(std::tuple <decltype(start_line_number), decltype(absolute_line_number)> {start_line_number, absolute_line_number});
+            
+            entry.push_back(std::tuple <decltype(start_line_number), decltype(line_offset)> {start_line_number, line_offset});
         }
         else {
-            auto item = std::vector < LineMap::line_map_item_t >
-            { std::make_tuple(start_line_number, absolute_line_number) };
+            auto item = std::vector < LineMap::line_map_item_t > { std::make_tuple(start_line_number, line_offset) };
             line_map[key] = item;
+
             //std::cout << "\tNew key: " << key << " " << start_line_number << " " << absolute_line_number << std::endl;
         }
     }
@@ -319,10 +335,9 @@ private:
     TempFile tmp_aml;
     TempFile tmp_ifdata;
     IfDataBuilder ifdata_builder;
-
-	std::size_t absolute_line_number;
     Filenames m_filenames{};
     std::vector<std::string> include_paths{};
+    std::size_t line_offset{ 1 };
 };
 
 #endif // __PREPROCESSOR_HPP

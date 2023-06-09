@@ -66,7 +66,6 @@ public:
 
         for (const auto& [k, v] : m_line_map) {
             offsets[k] = 1;
-
         }
         for (const auto& [k, v] : m_line_map) {
             for (const auto& [start, end] : v) {
@@ -76,7 +75,6 @@ public:
         std::sort(sections.begin(), sections.end(), [](auto& lhs, auto& rhs) {
             return std::get<0>(lhs) < std::get<0>(rhs);
             });
-
         std::size_t length{ 0 };
         std::string previous{};
         auto idx{0};
@@ -95,7 +93,7 @@ public:
         }
         //#if 0
         for (auto [abs_start, abs_end, rel_start, rel_end, name] : items) {
-            //std::cout << "[" << name << "] " << abs_start << " " << abs_end << " " << rel_start << " " << rel_end << " " << std::endl;
+            std::cout << "[" << name << "] " << abs_start << " " << abs_end << " " << rel_start << " " << rel_end << " " << std::endl;
         }
         //#endif
 
