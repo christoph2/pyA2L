@@ -40,7 +40,7 @@ ext_modules = [
     Pybind11Extension(
         EXT_NAMES[0],
         include_dirs=[INCLUDE_DIRS],
-        sources=["pya2l/preprocessor_wrapper.cpp"],
+        sources=["pya2l/preprocessor_wrapper.cpp", "pya2l/extensions/tokenizer.cpp"],
         define_macros=[("EXTENSION_NAME", EXT_NAMES[0])],
         cxx_std=20,
     ),

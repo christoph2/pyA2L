@@ -92,10 +92,7 @@ public:
 
     std::tuple<Filenames, LineMap, IfDataReader> process(const std::string& filename, const std::string& encoding) {
         _process_file(filename);
-        line_map.finalize();
-        {
             return std::tuple<Filenames, LineMap, IfDataReader>(m_filenames, line_map, {});
-        }
     }
 
     LineMap line_map{};
@@ -110,6 +107,7 @@ protected:
         bool end = false;
         bool a2ml = false;
         bool ifdata = false;
+        bool ifdata_name = false;
         bool collect { false };
         bool include = false;
         std::uint8_t skip_tokens = 0;
@@ -124,10 +122,15 @@ protected:
             std::size_t end_line{ 0 };
 
             for (const auto&& token : tokenizer(file)) {
-                end_line = token.m_line_numbers.end_line;
+//                /*
                 if (skip_tokens > 0) {
-                    skip_tokens--;
+                    if (token.m_token_type  != TokenType::COMMENT) {
+                        skip_tokens--;
+                    }
+                } else {
+                    end_line = token.m_line_numbers.end_line;
                 }
+//                */
                 if (token.m_token_type == TokenType::COMMENT) {
                     auto lines = split(token.m_payload, '\n');
                     auto line_count = lines.size();
@@ -191,19 +194,16 @@ protected:
                         auto incl_file = locate_file(_fn, path.parent_path().string());
 
                         if (incl_file.has_value()) {
-                            update_line_map(abs_pth, start_line_number);
                             auto length = (end_line - start_line_number);
-                            std::cout << "\t[ " << abs_pth.string() << ": " << line_offset << " " << line_offset + length - 1 << " " << start_line_number << " " << token.m_line_numbers.start_line - 1 << " ]" << std::endl;
-                            //line_offset += token.m_line_numbers.end_line;
+                            update_line_map(abs_pth, line_offset, line_offset + length - 1, start_line_number, end_line - 1);
                             line_offset += length;
 
                             std::cout << "[INFO (pya2l.Preprocessor)]: Including '" + incl_file.value().string() + "'." << std::endl;
                             _process_file(incl_file.value().string());
-                        }
-                        else {
+                        } else {
                             throw std::runtime_error("[ERROR (pya2l.Preprocessor)]: Could not locate include file '" + _fn + "'.");
                         }
-                        include = false;                  
+                        include = false;
                         start_line_number = token.m_line_numbers.end_line + 1;
                         skip_tokens = 2;
                     }
@@ -212,7 +212,12 @@ protected:
                     }
                     if (ifdata == true || a2ml == true) {
                         if (end == false) {
-                            tmp_a2l() << std::string(token.m_payload.length(), ' ');
+                            if (ifdata_name == true) {
+                                tmp_a2l() << token.m_payload;
+                                ifdata_name = false;
+                            } else {
+                                tmp_a2l() << std::string(token.m_payload.length(), ' ');
+                            }
                         }
                     } else {
                         if ((include == false) && (skip_tokens == 0)) {
@@ -230,6 +235,7 @@ protected:
                             }
                         } else if (token.m_payload == "IF_DATA") {
                             ifdata = true;
+                            ifdata_name = true;
                             for (auto& item : collected_tokens) {
                                 ifdata_builder.add_token(item);
                             }
@@ -253,12 +259,17 @@ protected:
                     } else if (ifdata == true) {
                         ifdata_builder.add_token(token);
                     }
+                #if 0
+                    if (skip_tokens > 0) {
+                        skip_tokens--;
+                    } else {
+                        end_line = token.m_line_numbers.end_line;
+                    }
+                #endif
                 }
             }
-            update_line_map(abs_pth, start_line_number);
             auto length = (end_line - start_line_number);
-            std::cout << "\t[ " << abs_pth.string() << ": " << line_offset << " " << line_offset + length - 1 << " " << start_line_number << " " << end_line - 1 << " ]" << std::endl;
-            //line_offset += end_line;
+            update_line_map(abs_pth, line_offset, line_offset + length, start_line_number - 0, end_line - 1);
             line_offset += length;
         } else {
             throw std::runtime_error("Could not open file: '" + abs_pth.string() + "'");
@@ -277,19 +288,8 @@ protected:
 
     void update_line_map(const fs::path& path, std::uint64_t abs_start, std::uint64_t abs_end, std::uint64_t rel_start, std::uint64_t rel_end) {
         auto key = shorten_file_name(path);
-
-        if (line_map.contains(key)) {
-            auto& entry = line_map[key];
-            //std::cout << "\tAdd key: " << key << " " << start_line_number << " " << absolute_line_number << std::endl;
-            
-            entry.push_back(std::tuple <decltype(start_line_number), decltype(line_offset)> {start_line_number, line_offset});
-        }
-        else {
-            auto item = std::vector < LineMap::line_map_item_t > { std::make_tuple(start_line_number, line_offset) };
-            line_map[key] = item;
-
-            //std::cout << "\tNew key: " << key << " " << start_line_number << " " << absolute_line_number << std::endl;
-        }
+        std::cout << "\t[ " << path << ": " << abs_start << " " << abs_end << " " << rel_start << " " << rel_end << " ]" << std::endl;
+        line_map.add_entry(path.string(), abs_start, abs_end, rel_start, rel_end);
     }
 
     void get_include_paths_from_env() {

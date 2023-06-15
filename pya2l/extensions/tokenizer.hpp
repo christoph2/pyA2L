@@ -26,6 +26,7 @@
 
 #include "generator.hpp"
 #include "line_numbers.hpp"
+#include "utils.hpp"
 
 enum class CharClass : std::int8_t {
     NONE = -1,
@@ -75,5 +76,9 @@ using TokenizerReturnType = Token;
 
 bool is_space(char ch);
 Generator <TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool supress_whitespace = false);
+
+std::vector<Token> split_by_new_line(const std::string &line,
+                                   std::size_t start_line,
+                                   std::size_t start_column);
 
 #endif // __tokenizer_hpp
