@@ -216,10 +216,17 @@ class DB(object):
             self._dbfn = ":memory:"
         else:
             if local:
-                self._dbfn = Path(file_path.stem).with_suffix(".a2ldb")
+                self._dbfn = enforce_suffix(Path(file_path.stem), ".a2ldb")
             else:
-                self._dbfn = (file_path.parent / file_path.stem).with_suffix(".a2ldb")
+                self._dbfn = enforce_suffix((file_path.parent / file_path.stem), ".a2ldb")
         if not file_path.suffix:
-            self._a2lfn = (file_path.parent / file_path.stem).with_suffix(".a2l")
+            self._a2lfn = enforce_suffix((file_path.parent / file_path.stem), ".a2l")
         else:
-            self._a2lfn = (file_path.parent / file_path.stem).with_suffix(file_path.suffix)
+            self._a2lfn = enforce_suffix((file_path.parent / file_path.stem), file_path.suffix)
+
+
+def enforce_suffix(pth: Path, suffix: str):
+    """Path.with_suffix() works not as expected, if filename contains dots."""
+    if not str(pth).endswith(suffix):
+        return Path(str(pth) + suffix)
+    return pth

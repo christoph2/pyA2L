@@ -22,8 +22,78 @@
     s. FLOSS-EXCEPTION.txt
 */
 
+#include <cstring>
+#include <iomanip>
+
 #include "tokenizer.hpp"
 
+std::vector<Token> split_by_new_line(const std::string &line, std::size_t start_line, std::size_t start_column) {
+
+    auto set_line_numbers = [](LineNumbers &l, std::size_t sl, std::size_t sc, std::size_t el, std::size_t ec) -> void {
+        l.start_line = sl;
+        l.start_col = sc;
+        l.end_line = el;
+        l.end_col = ec;
+    };
+
+    char * cstr = (char*)line.c_str();
+    char const * const START = line.c_str();
+    const std::size_t LAST_IDX = line.length() - 1;
+
+    if (LAST_IDX < 1) {
+        return std::vector<Token>{ Token(TokenType::WHITESPACE, LineNumbers(start_line, start_column, start_line, start_column), line) };
+    }
+    if (line.find('\n') == std::string::npos) {
+        return std::vector<Token>{ Token(TokenType::WHITESPACE, LineNumbers(start_line, start_column, start_line, start_column + line.length() - 1), line) };
+    }
+
+    std::int64_t pos = 0;
+    std::int64_t prev = -1;
+    auto row = start_line;
+    LineNumbers line_numbers{};
+    std::vector<Token> result;
+    do {
+        cstr = std::strstr(cstr, "\n");
+        if (cstr) {
+            pos = cstr - START;
+            if (prev == -1) {
+                if (pos > 0) {
+                    set_line_numbers(line_numbers, row, start_column, row, start_column + pos - 1);
+                    result.push_back(Token(TokenType::WHITESPACE, line_numbers, line.substr(0, pos)));
+                    set_line_numbers(line_numbers, row, start_column + pos, row, start_column + pos);
+                    result.push_back(Token(TokenType::WHITESPACE, line_numbers, "\n"));
+                    row++;
+                } else {
+                    set_line_numbers(line_numbers, row, start_column, row, start_column);
+                    result.push_back(Token(TokenType::WHITESPACE, line_numbers, "\n"));
+                    row++;
+                }
+            } else {
+                if ((pos - prev) > 1) {
+                    auto start = prev + 1;
+                    auto length = pos - prev - 1;
+                    set_line_numbers(line_numbers, row, 1, row, length);
+                    result.push_back( Token(TokenType::WHITESPACE, line_numbers, line.substr(start, length)));
+                    set_line_numbers(line_numbers, row, prev + length, row, prev + length);
+                    result.push_back(Token(TokenType::WHITESPACE, line_numbers, line.substr(prev + length + 1, 1)));
+                    row++;
+                } else {
+                    set_line_numbers(line_numbers, row, 1, row, 1);
+                    result.push_back(Token(TokenType::WHITESPACE, line_numbers, line.substr(pos, 1)));
+                    row++;
+                }
+            }
+            cstr++;
+            prev = pos;
+        }
+    } while (cstr && *cstr);
+    if (pos < LAST_IDX) {
+        set_line_numbers(line_numbers, row, 1, row, LAST_IDX - pos);
+        result.push_back(Token(TokenType::WHITESPACE, line_numbers, line.substr(pos + 1)));
+    }
+
+    return result;
+}
 
 auto split_single_line_comment(const std::string& line, std::size_t start_line, std::size_t start_column) {
     std::string::size_type pos = line.find("//");
@@ -99,13 +169,17 @@ Generator <TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool
         stream.get(ch);
         if (stream.eof()) {
             LineNumbers line_numbers{ start_line, start_column, line, column - 1 };
-            TokenType tt{};
             if (current == CharClass::WHITESPACE) {
-                tt = TokenType::WHITESPACE;
+                if (token[char_class_to_int(CharClass::WHITESPACE)] == "\n") {
+                    line_numbers.end_line = line_numbers.start_line;
+                    line_numbers.end_col = line_numbers.start_col;
+                }
+                for (const auto &elem : split_by_new_line(token[char_class_to_int(CharClass::WHITESPACE)], start_line, start_column)) {
+                    co_yield {elem};
+                }
             } else if (current == CharClass::REGULAR) {
-                tt = TokenType::REGULAR;
+                co_yield {Token(TokenType::REGULAR, line_numbers, token[char_class_to_int(current)])};
             }
-            co_yield{ Token(tt, line_numbers, token[char_class_to_int(current)]) };   // TODO: FIX ME!!!
         }
         column++;
         current = get_char_class(ch);
@@ -180,7 +254,9 @@ Generator <TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool
                     if (token[char_class_to_int(CharClass::WHITESPACE)].length()) {
                         if (!supress_whitespace) {
                             LineNumbers line_numbers{ start_line, start_column, line, column - 1 };
-                            co_yield{ Token(TokenType::WHITESPACE, line_numbers, token[char_class_to_int(CharClass::WHITESPACE)]) };
+                            for (const auto &elem : split_by_new_line(token[char_class_to_int(CharClass::WHITESPACE)], start_line, start_column)) {
+                                co_yield {elem};
+                            }
                         }
                         token[char_class_to_int(CharClass::WHITESPACE)].clear();
                         start_column++;
@@ -191,14 +267,20 @@ Generator <TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool
                     if (current == CharClass::REGULAR) {
                         token[char_class_to_int(CharClass::REGULAR)].push_back(ch);
                         if (!supress_whitespace) {
-                            LineNumbers line_numbers{ start_line, start_column, line, column - 1 };
-                            co_yield{ Token(TokenType::WHITESPACE, line_numbers, token[char_class_to_int(CharClass::WHITESPACE)]) };
+                            if (token[char_class_to_int(CharClass::WHITESPACE)] == "\n") {
+                                line_numbers = {start_line, start_column, start_line, start_column };
+                            } else {
+                              line_numbers = {start_line, start_column, line, column - 1};
+                            }
+                            for (const auto &elem : split_by_new_line(token[char_class_to_int(CharClass::WHITESPACE)], start_line, start_column)) {
+                                co_yield {elem};
+                            }
                         }
                         token[char_class_to_int(CharClass::WHITESPACE)].clear();
                     }
                     else {
                         token[char_class_to_int(CharClass::WHITESPACE)].push_back(ch);
-                        LineNumbers line_numbers{ start_line, start_column, line, column - 1 };
+                        /*LineNumbers*/ line_numbers = {start_line, start_column, line, column - 1};
                         if (token[char_class_to_int(CharClass::REGULAR)] != "") {
                             co_yield{ Token(TokenType::REGULAR, line_numbers, token[char_class_to_int(CharClass::REGULAR)]) };
                         }

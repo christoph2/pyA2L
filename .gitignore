@@ -145,3 +145,4 @@ cython_debug/
 # static files generated from Django application using `collectstatic`
 media
 static
+/pya2l/preprocessor.cpp

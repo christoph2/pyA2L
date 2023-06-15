@@ -35,7 +35,7 @@ enum class State : std::uint8_t {
 /*
  * Replace pesky A2L string ""escapes"" by the usual C/C++ \" version.
  */
-void escape_string(std::string& line) noexcept {
+inline void escape_string(std::string &line) noexcept {
     State state{ State::IDLE };
     std::size_t pos = line.find('"', 0);
     const std::size_t length = std::size(line);
@@ -90,8 +90,8 @@ static inline void rstrip(std::string& s) noexcept {
 /*
  * Cut out section of text and replace it with a single space.
  */
-void blank_out(std::string& text, std::int32_t start, std::int32_t end) noexcept
-{
+inline void blank_out(std::string &text, std::int32_t start,
+                      std::int32_t end) noexcept {
     if (end == -1) {
         text.resize(start);
     }
@@ -102,8 +102,7 @@ void blank_out(std::string& text, std::int32_t start, std::int32_t end) noexcept
 }
 
 
-std::string test_escape_string(std::string& line)
-{
+inline std::string test_escape_string(std::string &line) {
 	std::string result;
 
 	escape_string(line);
@@ -112,21 +111,21 @@ std::string test_escape_string(std::string& line)
 	return result;
 }
 
-auto to_string = [](auto&& r) -> std::string {
+inline auto to_string = [](auto &&r) -> std::string {
     const auto data = &*r.begin();
     const auto size = static_cast<std::size_t>(std::ranges::distance(r));
 
     return std::string{ data, size };
 };
 
-bool is_space(char ch) {
+inline bool is_space(char ch) {
     if ((ch == '\t') || (ch == '\n') || (ch == '\v') || (ch == '\f') || (ch == '\r') || (ch == '\x20')) {
         return true;
     }
     return false;
 }
 
-auto split(const std::string& str, char delimiter) -> std::vector<std::string>
+inline auto split(const std::string& str, char delimiter) -> std::vector<std::string>
 {
     auto result = std::vector<std::string>{};
 

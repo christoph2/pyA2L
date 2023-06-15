@@ -25,107 +25,65 @@
 #if !defined(__LINE_MAP_HPP)
 #define __LINE_MAP_HPP
 
+#include <set>
+
+
 class LineMap {
 public:
 
-    using line_map_item_t = std::tuple<int, int>;
-    using line_map_t = std::map<std::string, std::vector<line_map_item_t>>;
+    using item_t = std::tuple<std::size_t, std::size_t, std::size_t, std::size_t, std::string>;
 
-    LineMap() noexcept : m_line_map() {
+    LineMap() noexcept /* : m_line_map()*/ {
     }
 
     int contains(const std::string& key) const noexcept {
-        return m_line_map.contains(key);
-    }
-
-    std::vector<line_map_item_t>& operator[](const std::string& key) noexcept {
-        return m_line_map[key];
+        return m_keys.contains(key);
     }
 
     std::optional<std::tuple<std::string, std::size_t>> lookup(std::size_t line_no) const noexcept {
-        auto idx = search_offset(line_no);
+        auto item = search_offset(line_no);
 
-        if (idx.has_value()) {
-
-            auto [abs_start, abs_end, rel_start, rel_end, name] = items[idx.value()];
-            std::int32_t offset = (abs_start - rel_start) - 1;
-            //std::cout << "\tline_no: " << line_no /* - offset */ << " offset: " << offset << " name: " << name << " abs_start: " << abs_start << " rel_start: " << rel_start << '\n';
+        if (item.has_value()) {
+            auto idx = item.value();
+            auto [abs_start, abs_end, rel_start, rel_end, name] = m_items[idx];
+            std::int32_t offset = (abs_start - rel_start);
             return std::tuple<std::string, std::size_t>(name, line_no - offset);
-        }
-        else {
-            //std::cout << "line_no: " << line_no << " not found\n";
+        } else {
             return std::nullopt;
         }
-
     }
 
-    void finalize() noexcept {
-        std::size_t  offset{ 0 };
-        std::vector<std::tuple<std::size_t, std::size_t, std::string>> sections;
-        std::map<std::string, std::size_t> offsets;
-
-        for (const auto& [k, v] : m_line_map) {
-            offsets[k] = 1;
-        }
-        for (const auto& [k, v] : m_line_map) {
-            for (const auto& [start, end] : v) {
-                sections.push_back(std::make_tuple(start, end, k));
-            }
-        }
-        std::sort(sections.begin(), sections.end(), [](auto& lhs, auto& rhs) {
-            return std::get<0>(lhs) < std::get<0>(rhs);
-            });
-        std::size_t length{ 0 };
-        std::string previous{};
-        auto idx{0};
-        for (auto [start, end, name] : sections) {
-            length = end - start;
-            start_offsets.push_back(start);
-            offset = offsets[name];
-            offsets[name] = length + offset;
-            last_line_no = end;
-            items.push_back(std::make_tuple(start, end, offset, length + offset, name));
-            //if (previous != "") {
-            //    offsets[previous] += 1;
-            //}
-            previous = name;
-            ++idx;
-        }
-        //#if 0
-        for (auto [abs_start, abs_end, rel_start, rel_end, name] : items) {
-            std::cout << "[" << name << "] " << abs_start << " " << abs_end << " " << rel_start << " " << rel_end << " " << std::endl;
-        }
-        //#endif
-
+    void add_entry(const std::string& path, std::uint64_t abs_start, std::uint64_t abs_end, std::uint64_t rel_start, std::uint64_t rel_end) {
+        m_items.push_back(std::tuple <decltype(abs_start), decltype(abs_end), decltype(rel_start), decltype(rel_end), decltype(path)> {abs_start, abs_end, rel_start, rel_end, path});
+        m_start_offsets.push_back(abs_start);
+        last_line_no = rel_end;
+        m_keys.insert(path);
     }
 
 private:
-
     std::optional<std::size_t> search_offset(std::size_t key) const noexcept {
-        std::size_t left{ 0 }, mid{ 0 }, right{ std::size(start_offsets) };
+        std::size_t left{ 0 }, mid{ 0 }, right{ std::size(m_start_offsets) };
 
         if (key > last_line_no) {
             return std::nullopt;
         }
         while (left < right) {
             mid = left + (right - left) / 2;
-            if (key == start_offsets[mid]) {
+            if (key == m_start_offsets[mid]) {
                 return mid;
-            }
-            else if (key < start_offsets[mid]) {
+            } else if (key < m_start_offsets[mid]) {
                 right = mid;
-            }
-            else {
+            } else {
                 left = mid + 1;
             }
         }
         return left - 1;
     }
 
-    line_map_t m_line_map{};
-    std::vector<size_t> start_offsets{};
+    std::vector<size_t> m_start_offsets{};
     std::size_t last_line_no{ 0 };
-    std::vector<std::tuple<std::size_t, std::size_t, std::size_t, std::size_t, std::string>> items{};
+    std::vector<item_t> m_items {};
+    std::set<std::string> m_keys {};
 };
 
 #endif // __LINE_MAP_HPP

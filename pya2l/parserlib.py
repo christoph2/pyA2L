@@ -49,8 +49,6 @@ class MyErrorListener(ErrorListener):
         self.line_map = line_map
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        line -= 1
-        column += 1
         if self.line_map:
             file_name, line = self.line_map.lookup(line)
             print(
