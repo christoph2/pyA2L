@@ -95,6 +95,12 @@ public:
             return std::tuple<Filenames, LineMap, IfDataReader>(m_filenames, line_map, {});
     }
 
+    void finalize() {
+        tmp_a2l.close();
+        tmp_aml.close();
+        tmp_ifdata.close();
+    }
+
     LineMap line_map{};
 
 protected:
@@ -121,8 +127,7 @@ protected:
             std::cout << "[INFO (pya2l.Preprocessor)]: Preprocessing '" + filename + "'." << std::endl;
             std::size_t end_line{ 0 };
 
-            for (const auto&& token : tokenizer(file)) {
-//                /*
+            for (const auto& token : tokenizer(file)) {
                 if (skip_tokens > 0) {
                     if (token.m_token_type  != TokenType::COMMENT) {
                         skip_tokens--;
@@ -130,11 +135,10 @@ protected:
                 } else {
                     end_line = token.m_line_numbers.end_line;
                 }
-//                */
                 if (token.m_token_type == TokenType::COMMENT) {
                     auto lines = split(token.m_payload, '\n');
                     auto line_count = lines.size();
-                    for (auto&& line : lines) {
+                    for (auto& line : lines) {
                         tmp_a2l() << std::string(line.length(), ' ');
                         if (a2ml == true) {
                             tmp_aml() << std::string(line.length(), ' ');
@@ -151,18 +155,18 @@ protected:
                         if (token.m_payload == "A2ML") {
                             a2ml = false;
                             tmp_aml() << token.m_payload;
-                            for (auto&& item : collected_tokens) {
+                            for (auto& item : collected_tokens) {
                                 tmp_a2l() << item.m_payload;
                             }
                         } else if (token.m_payload == "IF_DATA") {
                             ifdata = false;
                             ifdata_builder.add_token(token);
                             ifdata_builder.finalize();
-                            for (auto&& item : collected_tokens) {
+                            for (auto& item : collected_tokens) {
                                 tmp_a2l() << item.m_payload;
                             }
                         } else {
-                            for (auto&& item : collected_tokens) {
+                            for (auto& item : collected_tokens) {
                                 if (item.m_token_type == TokenType::REGULAR) {
                                     tmp_a2l() << std::string(item.m_payload.length(), ' ');
                                 } else if (item.m_token_type == TokenType::WHITESPACE) {
@@ -271,7 +275,6 @@ protected:
             auto length = (end_line - start_line_number);
             update_line_map(abs_pth, line_offset, line_offset + length, start_line_number - 0, end_line);
             line_offset += length;
-            std::cout << "END-LINE: " << end_line << std::endl;
         } else {
             throw std::runtime_error("Could not open file: '" + abs_pth.string() + "'");
         }

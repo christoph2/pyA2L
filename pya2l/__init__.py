@@ -127,6 +127,7 @@ class DB(object):
 
         encoding = encoding or detect_encoding(file_name=self._a2lfn)
         prepro_result = prepro.process(str(self._a2lfn), encoding=encoding)
+        prepro.finalize()
         filenames, line_map, ifdata_reader = prepro_result
         a2l_parser = parsers.a2l(debug=debug, prepro_result=prepro_result)
         self.logger.info("Parsing pre-processed data ...")

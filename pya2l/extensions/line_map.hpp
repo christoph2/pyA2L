@@ -46,7 +46,7 @@ public:
         if (item.has_value()) {
             auto idx = item.value();
             auto [abs_start, abs_end, rel_start, rel_end, name] = m_items[idx];
-            std::int32_t offset = (abs_start - rel_start);
+            std::int64_t offset = (abs_start - rel_start);
             return std::tuple<std::string, std::size_t>(name, line_no - offset);
         } else {
             return std::nullopt;
