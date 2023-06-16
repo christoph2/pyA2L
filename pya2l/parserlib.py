@@ -96,18 +96,14 @@ class ParserWrapper:
         lexer = self.lexerClass(input)
         lexer.removeErrorListeners()
         lexer.addErrorListener(MyErrorListener(self.line_map))
-        print("TOKENIZING...")
         tokenStream = antlr4.CommonTokenStream(lexer)
         parser = self.parserClass(tokenStream)
         parser.removeErrorListeners()
         parser.addErrorListener(MyErrorListener(self.line_map))
         parser.setTrace(trace)
-        # print(dir(parser))
         meth = getattr(parser, self.startSymbol)
         self._syntaxErrors = parser._syntaxErrors
-        print("PARSING...")
         tree = meth()
-        print("DONE.")
         listener_result = None
         if self.listener:
             self.listener.db = self.db

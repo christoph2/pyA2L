@@ -77,5 +77,4 @@ private:
     std::ofstream m_file;
 };
 
-
 #endif // __TEMPFILE_HPP

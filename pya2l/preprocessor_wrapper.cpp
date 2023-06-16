@@ -13,6 +13,7 @@ PYBIND11_MODULE(preprocessor, m) {
     py::class_<Preprocessor>(m, "Preprocessor")
         .def(py::init<const std::string &>(), py::arg("loglevel"))
         .def("process", &Preprocessor::process, py::arg("filename"), py::arg("encoding"))
+        .def("finalize", &Preprocessor::finalize)
     ;
     py::class_<Filenames>(m, "Filenames")
         .def(py::init<const std::string&, const std::string&, const std::string&>())

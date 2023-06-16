@@ -1,7 +1,7 @@
 /*
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2021 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2023 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -1803,12 +1803,6 @@ INT: ('+' | '-')? '0'..'9'+
     ;
 
 HEX:   '0'('x' | 'X') ('a' .. 'f' | 'A' .. 'F' | '0' .. '9')+
-    ;
-
-COMMENT:
-    ('//' ~('\n'|'\r')* '\r'? '\n'
-    |   '/*' .*? '*/')
-        -> channel(HIDDEN)
     ;
 
 WS  :   (' ' | '\t' | '\r' | '\n') -> skip
