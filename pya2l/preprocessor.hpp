@@ -269,8 +269,9 @@ protected:
                 }
             }
             auto length = (end_line - start_line_number);
-            update_line_map(abs_pth, line_offset, line_offset + length, start_line_number - 0, end_line - 1);
+            update_line_map(abs_pth, line_offset, line_offset + length, start_line_number - 0, end_line);
             line_offset += length;
+            std::cout << "END-LINE: " << end_line << std::endl;
         } else {
             throw std::runtime_error("Could not open file: '" + abs_pth.string() + "'");
         }
