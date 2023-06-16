@@ -49,6 +49,7 @@ class MyErrorListener(ErrorListener):
         self.line_map = line_map
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        column = column + 1
         if self.line_map:
             file_name, line = self.line_map.lookup(line)
             print(
@@ -95,14 +96,18 @@ class ParserWrapper:
         lexer = self.lexerClass(input)
         lexer.removeErrorListeners()
         lexer.addErrorListener(MyErrorListener(self.line_map))
+        print("TOKENIZING...")
         tokenStream = antlr4.CommonTokenStream(lexer)
         parser = self.parserClass(tokenStream)
         parser.removeErrorListeners()
         parser.addErrorListener(MyErrorListener(self.line_map))
         parser.setTrace(trace)
+        # print(dir(parser))
         meth = getattr(parser, self.startSymbol)
         self._syntaxErrors = parser._syntaxErrors
+        print("PARSING...")
         tree = meth()
+        print("DONE.")
         listener_result = None
         if self.listener:
             self.listener.db = self.db

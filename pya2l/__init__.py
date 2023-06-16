@@ -139,11 +139,13 @@ class DB(object):
         aml_text = open(filenames.aml).read()
         self.session.add(model.AMLSection(text=aml_text, parsed=aml_parsed))
         self.logger.info("Parsing IF_DATA sections ...")
+        """
         ip = parsers.if_data(aml_result)
         for item in self.session.query(model.IfData).all():
             parsed_if_data = pickle.dumps(ip.parse(item.raw))
             item.parsed = parsed_if_data
             self.session.add(item)
+        """
         self.session.commit()
         self.logger.info("Done [Elapsed time {:.2f}s].".format(perf_counter() - start_time))
         return self.session
