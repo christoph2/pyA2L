@@ -23,9 +23,9 @@
 */
 
 #if !defined(__UTILS_HPP)
-#define __UTILS_HPP
+    #define __UTILS_HPP
 
-#include <ranges>
+    #include <ranges>
 
 enum class State : std::uint8_t {
     IDLE,
@@ -36,44 +36,42 @@ enum class State : std::uint8_t {
  * Replace pesky A2L string ""escapes"" by the usual C/C++ \" version.
  */
 inline void escape_string(std::string &line) noexcept {
-    State state{ State::IDLE };
-    std::size_t pos = line.find('"', 0);
+    State             state{ State::IDLE };
+    std::size_t       pos    = line.find('"', 0);
     const std::size_t length = std::size(line);
 
     if (length == 0 || std::string::npos == pos) {
-        return; // Nothing to do.
+        return;  // Nothing to do.
     }
     state = State::IN_STRING;
     pos += 1;
     while (true) {
         pos = line.find('"', pos);
         switch (state) {
-        case State::IDLE:
-            if (std::string::npos == pos) {
-                return; // We're done.
-            }
-            else {
-                state = State::IN_STRING;
-            }
-            break;
-        case State::IN_STRING:
-            if (std::string::npos == pos) {
-                // unterminated string -- don't handle, i.e. hand-over to ANTLR.
-                return;
-            }
-            if (pos == length - 1) {
-                return; // Line completly processed.
-            }
-            if (line[pos + 1] == '"' && line[pos - 1] != '\x5c') {
-                line[pos] = '\x5c';
-                state = State::IN_STRING;
-                pos += 2;
-            }
-            else {
-                state = State::IDLE;
-                pos += 1;
-            }
-            break;
+            case State::IDLE:
+                if (std::string::npos == pos) {
+                    return;  // We're done.
+                } else {
+                    state = State::IN_STRING;
+                }
+                break;
+            case State::IN_STRING:
+                if (std::string::npos == pos) {
+                    // unterminated string -- don't handle, i.e. hand-over to ANTLR.
+                    return;
+                }
+                if (pos == length - 1) {
+                    return;  // Line completly processed.
+                }
+                if (line[pos + 1] == '"' && line[pos - 1] != '\x5c') {
+                    line[pos] = '\x5c';
+                    state     = State::IN_STRING;
+                    pos += 2;
+                } else {
+                    state = State::IDLE;
+                    pos += 1;
+                }
+                break;
         }
     }
 }
@@ -81,34 +79,29 @@ inline void escape_string(std::string &line) noexcept {
 /*
  * strip `std::string` from end (in place).
  */
-static inline void rstrip(std::string& s) noexcept {
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
-        return !std::isspace(ch);
-        }).base(), s.end());
+static inline void rstrip(std::string &s) noexcept {
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
 }
 
 /*
  * Cut out section of text and replace it with a single space.
  */
-inline void blank_out(std::string &text, std::int32_t start,
-                      std::int32_t end) noexcept {
+inline void blank_out(std::string &text, std::int32_t start, std::int32_t end) noexcept {
     if (end == -1) {
         text.resize(start);
-    }
-    else {
+    } else {
         text.erase(text.begin() + start, text.begin() + end);
     }
     rstrip(text);
 }
 
-
 inline std::string test_escape_string(std::string &line) {
-	std::string result;
+    std::string result;
 
-	escape_string(line);
-	std::copy(line.begin(), line.end(), std::back_inserter(result));
+    escape_string(line);
+    std::copy(line.begin(), line.end(), std::back_inserter(result));
 
-	return result;
+    return result;
 }
 
 inline auto to_string = [](auto &&r) -> std::string {
@@ -125,15 +118,12 @@ inline bool is_space(char ch) {
     return false;
 }
 
-inline auto split(const std::string& str, char delimiter) -> std::vector<std::string>
-{
+inline auto split(const std::string &str, char delimiter) -> std::vector<std::string> {
     auto result = std::vector<std::string>{};
 
-    auto range = str |
-        std::ranges::views::split(delimiter) |
-        std::ranges::views::transform(to_string);
+    auto range = str | std::ranges::views::split(delimiter) | std::ranges::views::transform(to_string);
 
     return { std::ranges::begin(range), std::ranges::end(range) };
 }
 
-#endif // __UTILS_HPP
+#endif  // __UTILS_HPP
