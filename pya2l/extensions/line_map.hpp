@@ -23,13 +23,12 @@
 */
 
 #if !defined(__LINE_MAP_HPP)
-#define __LINE_MAP_HPP
+    #define __LINE_MAP_HPP
 
-#include <set>
-
+    #include <set>
 
 class LineMap {
-public:
+   public:
 
     using item_t = std::tuple<std::size_t, std::size_t, std::size_t, std::size_t, std::string>;
 
@@ -44,23 +43,29 @@ public:
         auto item = search_offset(line_no);
 
         if (item.has_value()) {
-            auto idx = item.value();
+            auto idx                                            = item.value();
             auto [abs_start, abs_end, rel_start, rel_end, name] = m_items[idx];
-            std::int64_t offset = (abs_start - rel_start);
+            std::int64_t offset                                 = (abs_start - rel_start);
             return std::tuple<std::string, std::size_t>(name, line_no - offset);
         } else {
             return std::nullopt;
         }
     }
 
-    void add_entry(const std::string& path, std::uint64_t abs_start, std::uint64_t abs_end, std::uint64_t rel_start, std::uint64_t rel_end) {
-        m_items.push_back(std::tuple <decltype(abs_start), decltype(abs_end), decltype(rel_start), decltype(rel_end), decltype(path)> {abs_start, abs_end, rel_start, rel_end, path});
+    void add_entry(
+        const std::string& path, std::uint64_t abs_start, std::uint64_t abs_end, std::uint64_t rel_start, std::uint64_t rel_end
+    ) {
+        m_items.push_back(
+            std::tuple<decltype(abs_start), decltype(abs_end), decltype(rel_start), decltype(rel_end), decltype(path)>{
+                abs_start, abs_end, rel_start, rel_end, path }
+        );
         m_start_offsets.push_back(abs_start);
-        last_line_no = rel_end;
+        last_line_no = abs_end;
         m_keys.insert(path);
     }
 
-private:
+   private:
+
     std::optional<std::size_t> search_offset(std::size_t key) const noexcept {
         std::size_t left{ 0 }, mid{ 0 }, right{ std::size(m_start_offsets) };
 
@@ -80,10 +85,10 @@ private:
         return left - 1;
     }
 
-    std::vector<size_t> m_start_offsets{};
-    std::size_t last_line_no{ 0 };
-    std::vector<item_t> m_items {};
-    std::set<std::string> m_keys {};
+    std::vector<size_t>   m_start_offsets{};
+    std::size_t           last_line_no{ 0 };
+    std::vector<item_t>   m_items{};
+    std::set<std::string> m_keys{};
 };
 
-#endif // __LINE_MAP_HPP
+#endif  // __LINE_MAP_HPP

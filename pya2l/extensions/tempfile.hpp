@@ -23,13 +23,13 @@
 */
 
 #if !defined(__TEMPFILE_HPP)
-#define __TEMPFILE_HPP
+    #define __TEMPFILE_HPP
 
 /*
  * Create ofstream object and delete on d-tor (or using 'remove()').
  */
 class TempFile {
-public:
+   public:
 
     TempFile(const std::string& path, bool binary = false) noexcept :
         m_path(fs::path(path)), m_file(path, std::ios::trunc | std::ios::out | (binary ? std::ios::binary : std::ios::out)) {
@@ -45,8 +45,7 @@ public:
         return m_file;
     }
 
-    void close() noexcept
-    {
+    void close() noexcept {
         if (m_file.is_open()) {
             m_file.close();
         }
@@ -59,7 +58,7 @@ public:
     void remove() noexcept {
         if (fs::exists(m_path)) {
             close();
-            //fs::remove(m_path);
+            // fs::remove(m_path);
         }
     }
 
@@ -71,10 +70,10 @@ public:
         return m_file;
     }
 
-private:
+   private:
 
-    fs::path m_path;
+    fs::path      m_path;
     std::ofstream m_file;
 };
 
-#endif // __TEMPFILE_HPP
+#endif  // __TEMPFILE_HPP

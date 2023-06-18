@@ -109,7 +109,7 @@ byteOrder:
 
 calibrationAccess:
      'CALIBRATION_ACCESS'
-    
+
     type_ =
     (
         'CALIBRATION' |
@@ -127,7 +127,7 @@ defaultValue:
 
 deposit:
      'DEPOSIT'
-    
+
     mode_ =
     (
         'ABSOLUTE' |
@@ -192,7 +192,7 @@ maxRefresh:
 
 monotony:
      'MONOTONY'
-    
+
     monotony_ =
     (
         'MON_DECREASE' |
@@ -367,7 +367,7 @@ characteristic:
     BEGIN 'CHARACTERISTIC'
     name = identifierValue
     longIdentifier = stringValue
-    
+
     type_ =
     (
         'ASCII' |
@@ -420,7 +420,7 @@ characteristic:
 
 axisDescr:
     BEGIN 'AXIS_DESCR'
-    
+
     attribute =
     (
         'CURVE_AXIS' |
@@ -526,7 +526,7 @@ compuMethod:
     BEGIN 'COMPU_METHOD'
     name = identifierValue
     longIdentifier = stringValue
-    
+
     conversionType =
     (
         'IDENTICAL' |
@@ -599,7 +599,7 @@ compuTab:
     BEGIN 'COMPU_TAB'
     name = identifierValue
     longIdentifier = stringValue
-    
+
     conversionType =
     (
         'TAB_INTP' |
@@ -626,7 +626,7 @@ compuVtab:
     BEGIN 'COMPU_VTAB'
     name = identifierValue
     longIdentifier = stringValue
-    
+
     conversionType =
         'TAB_VERB'
 
@@ -859,7 +859,7 @@ errorMask:
 
 layout:
      'LAYOUT'
-    
+
     indexMode =
     (
         'ROW_DIR' |
@@ -1000,7 +1000,7 @@ epk:
 
 memoryLayout:
     BEGIN 'MEMORY_LAYOUT'
-    
+
     prgType =
     (
         'PRG_CODE' |
@@ -1027,7 +1027,7 @@ memorySegment:
     BEGIN 'MEMORY_SEGMENT'
     name = identifierValue
     longIdentifier = stringValue
-    
+
     prgType =
     (
         'CALIBRATION_VARIABLES' |
@@ -1040,7 +1040,7 @@ memorySegment:
         'VARIABLES'
     )
 
-    
+
     memoryType =
     (
         'EEPROM' |
@@ -1051,7 +1051,7 @@ memorySegment:
         'REGISTER'
     )
 
-    
+
     attribute =
     (
         'INTERN' |
@@ -1315,7 +1315,7 @@ fncValues:
      'FNC_VALUES'
     position = integerValue
     datatype = dataType
-    
+
     indexMode =
     (
         'ALTERNATE_CURVES' |
@@ -1534,7 +1534,7 @@ typedefCharacteristic:
     BEGIN 'TYPEDEF_CHARACTERISTIC'
     name = identifierValue
     longIdentifier = stringValue
-    
+
     type_ =
     (
         'ASCII' |
@@ -1598,7 +1598,7 @@ unit:
     name = identifierValue
     longIdentifier = stringValue
     display = stringValue
-    
+
     type_ =
     (
         'DERIVED' |
@@ -1714,7 +1714,7 @@ varForbiddenComb:
 
 varNaming:
      'VAR_NAMING'
-    
+
     tag =
     (
         'NUMERIC' |
@@ -1808,8 +1808,9 @@ HEX:   '0'('x' | 'X') ('a' .. 'f' | 'A' .. 'F' | '0' .. '9')+
 WS  :   (' ' | '\t' | '\r' | '\n') -> skip
     ;
 
+
 STRING:
-    '"' ( ESC_SEQ | ~('\\'|'"') )* '"'
+    '"' ( ESC_SEQ | ~('\\'|'"'|'\n') )* '"'
     ;
 
 fragment

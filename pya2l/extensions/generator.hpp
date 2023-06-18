@@ -23,27 +23,25 @@
 */
 
 #if !defined(__GENERATOR_HPP)
-#define __GENERATOR_HPP
+    #define __GENERATOR_HPP
 
-#include <array>
-#include <coroutine>
-#include <iostream>
-#include <fstream>
-#include <future>
-#include <strstream>
-#include <tuple>
-#include <variant>
-#include <vector>
-
-#include <cassert>
-#include <cctype>
+    #include <array>
+    #include <cassert>
+    #include <cctype>
+    #include <coroutine>
+    #include <fstream>
+    #include <future>
+    #include <iostream>
+    #include <strstream>
+    #include <tuple>
+    #include <variant>
+    #include <vector>
 
 /*
 **  Basic c++20 generator implementation.
 */
-template <typename Ty_>
+template<typename Ty_>
 struct Generator {
-
     /*
     ** Promise implementation.
     */
@@ -66,16 +64,18 @@ struct Generator {
             m_val = val;
             return {};
         }
-        void return_void() {}
 
-        void unhandled_exception() {}
+        void return_void() {
+        }
+
+        void unhandled_exception() {
+        }
     };
 
     /*
     ** Iterator implementation.
-     */
+    */
     struct iterator {
-
         bool operator!=(const iterator& rhs) const noexcept {
             return not m_h_ptr->done();
         }
@@ -100,7 +100,8 @@ struct Generator {
         return iterator{ nullptr };
     }
 
-    Generator(promise_type* p) : m_handle(std::coroutine_handle<promise_type>::from_promise(*p)) {}
+    Generator(promise_type* p) : m_handle(std::coroutine_handle<promise_type>::from_promise(*p)) {
+    }
 
     ~Generator() {
         m_handle.destroy();
@@ -109,5 +110,4 @@ struct Generator {
     std::coroutine_handle<promise_type> m_handle;
 };
 
-
-#endif // __GENERATOR_HPP
+#endif  // __GENERATOR_HPP

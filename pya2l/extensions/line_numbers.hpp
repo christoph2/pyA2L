@@ -23,16 +23,20 @@
 */
 
 #if !defined(__LINE_NUMBERS_HPP)
-#define __LINE_NUMBERS_HPP
+    #define __LINE_NUMBERS_HPP
 
 struct LineNumbers {
-
     LineNumbers() = default;
-    LineNumbers(std::size_t sl, std::size_t sc, std::size_t el, std::size_t ec) noexcept  : start_line(sl), start_col(sc), end_line(el), end_col(ec) {}
+
+    LineNumbers(std::size_t sl, std::size_t sc, std::size_t el, std::size_t ec) noexcept :
+        start_line(sl), start_col(sc), end_line(el), end_col(ec) {
+    }
+
     LineNumbers(const LineNumbers&) = default;
 
     LineNumbers(std::tuple< std::size_t, std::size_t> start, std::tuple< std::size_t, std::size_t> end) noexcept :
-        start_line(std::get<0>(start)), start_col(std::get<1>(start)), end_line(std::get<0>(end)), end_col(std::get<1>(end)) {}
+        start_line(std::get<0>(start)), start_col(std::get<1>(start)), end_line(std::get<0>(end)), end_col(std::get<1>(end)) {
+    }
 
     std::tuple<std::size_t, std::size_t, std::size_t, std::size_t> get() const noexcept {
         return std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>(start_line, start_col, end_line, end_col);
@@ -42,4 +46,4 @@ struct LineNumbers {
     std::size_t end_line, end_col;
 };
 
-#endif // __LINE_NUMBERS_HPP
+#endif  // __LINE_NUMBERS_HPP
