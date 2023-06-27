@@ -64,7 +64,7 @@ enum class TokenType : std::uint8_t {
 struct Token {
     Token() = default;
 
-    Token(TokenType token_type, const LineNumbers& line_numbers, const std::string& payload) :
+    Token(TokenType token_type, const LineNumbers& line_numbers, std::string_view payload) :
         m_token_type{ token_type }, m_line_numbers{ line_numbers }, m_payload{ payload } {
     }
 
@@ -78,6 +78,6 @@ using TokenizerReturnType = Token;
 bool                           is_space(char ch);
 Generator<TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool supress_whitespace = false);
 
-std::vector<Token> split_by_new_line(const std::string& line, std::size_t start_line, std::size_t start_column);
+std::vector<Token> split_by_new_line(std::string_view line, std::size_t start_line, std::size_t start_column);
 
 #endif  // __tokenizer_hpp

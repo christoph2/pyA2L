@@ -27,17 +27,17 @@
 #include <cstring>
 #include <iomanip>
 
-std::vector<Token> split_by_new_line(const std::string& line, std::size_t start_line, std::size_t start_column) {
-    auto set_line_numbers = [](LineNumbers& l, std::size_t sl, std::size_t sc, std::size_t el, std::size_t ec) -> void {
+std::vector<Token> split_by_new_line(std::string_view line, std::size_t start_line, std::size_t start_column) {
+    auto set_line_numbers = [](LineNumbers& l, std::size_t sl, std::size_t sc, std::size_t el, std::size_t ec) {
         l.start_line = sl;
         l.start_col  = sc;
         l.end_line   = el;
         l.end_col    = ec;
     };
 
-    char const *       cstr     = line.c_str();
-    char const * const START    = line.c_str();
-    const std::size_t  LAST_IDX = line.length() - 1;
+    char const *       cstr     = line.data() /*.c_str()*/;
+    char const * const START    = line.data() /*.c_str() */;
+    const std::int64_t LAST_IDX = line.length() - 1;
 
     if (LAST_IDX < 1) {
         return std::vector<Token>{
@@ -55,6 +55,8 @@ std::vector<Token> split_by_new_line(const std::string& line, std::size_t start_
     auto               row  = start_line;
     LineNumbers        line_numbers{};
     std::vector<Token> result;
+    using enum TokenType;
+
     do {
         cstr = std::strstr(cstr, "\n");
         if (cstr) {
@@ -62,13 +64,13 @@ std::vector<Token> split_by_new_line(const std::string& line, std::size_t start_
             if (prev == -1) {
                 if (pos > 0) {
                     set_line_numbers(line_numbers, row, start_column, row, start_column + pos - 1);
-                    result.push_back(Token(TokenType::WHITESPACE, line_numbers, line.substr(0, pos)));
+                    result.emplace_back(WHITESPACE, line_numbers, line.substr(0, pos));
                     set_line_numbers(line_numbers, row, start_column + pos, row, start_column + pos);
-                    result.push_back(Token(TokenType::WHITESPACE, line_numbers, "\n"));
+                    result.emplace_back(WHITESPACE, line_numbers, "\n");
                     row++;
                 } else {
                     set_line_numbers(line_numbers, row, start_column, row, start_column);
-                    result.push_back(Token(TokenType::WHITESPACE, line_numbers, "\n"));
+                    result.emplace_back(WHITESPACE, line_numbers, "\n");
                     row++;
                 }
             } else {
@@ -76,13 +78,13 @@ std::vector<Token> split_by_new_line(const std::string& line, std::size_t start_
                     auto start  = prev + 1;
                     auto length = pos - prev - 1;
                     set_line_numbers(line_numbers, row, 1, row, length);
-                    result.push_back(Token(TokenType::WHITESPACE, line_numbers, line.substr(start, length)));
+                    result.emplace_back(WHITESPACE, line_numbers, line.substr(start, length));
                     set_line_numbers(line_numbers, row, prev + length, row, prev + length);
-                    result.push_back(Token(TokenType::WHITESPACE, line_numbers, line.substr(prev + length + 1, 1)));
+                    result.emplace_back(WHITESPACE, line_numbers, line.substr(prev + length + 1, 1));
                     row++;
                 } else {
                     set_line_numbers(line_numbers, row, 1, row, 1);
-                    result.push_back(Token(TokenType::WHITESPACE, line_numbers, line.substr(pos, 1)));
+                    result.emplace_back(WHITESPACE, line_numbers, line.substr(pos, 1));
                     row++;
                 }
             }
@@ -92,48 +94,47 @@ std::vector<Token> split_by_new_line(const std::string& line, std::size_t start_
     } while (cstr && *cstr);
     if (pos < LAST_IDX) {
         set_line_numbers(line_numbers, row, 1, row, LAST_IDX - pos);
-        result.push_back(Token(TokenType::WHITESPACE, line_numbers, line.substr(pos + 1)));
+        result.emplace_back(WHITESPACE, line_numbers, line.substr(pos + 1));
     }
-
     return result;
 }
 
-auto split_single_line_comment(const std::string& line, std::size_t start_line, std::size_t start_column) {
+auto split_single_line_comment(std::string_view line, std::size_t start_line, std::size_t start_column) {
     std::string::size_type pos = line.find("//");
     std::vector<Token>     result;
+    using enum TokenType;
 
     if (pos > 0) {
         LineNumbers line_numbers{ start_line, start_column, start_line, start_column + pos - 1 };
-        result.push_back(Token{ TokenType::REGULAR, line_numbers, line.substr(0, pos) });
+        result.emplace_back(REGULAR, line_numbers, line.substr(0, pos));
         line_numbers = { start_line, start_column + pos, start_line, line.length() - pos };
-        result.push_back(Token{ TokenType::COMMENT, line_numbers, line.substr(pos, line.length() - pos - 1) });
+        result.emplace_back(COMMENT, line_numbers, line.substr(pos, line.length() - pos - 1));
         line_numbers = { start_line, line.length() - pos + 1, start_line, line.length() - pos + 1 };
-        result.push_back(Token{ TokenType::WHITESPACE, line_numbers, "\n" });
+        result.emplace_back(WHITESPACE, line_numbers, "\n");
     } else {
         LineNumbers line_numbers{ start_line, start_column, start_line, line.length() - 1 };
-        result.push_back(Token{ TokenType::COMMENT, line_numbers, line.substr(0, line.length() - 1) });
+        result.emplace_back(COMMENT, line_numbers, line.substr(0, line.length() - 1));
         line_numbers = { start_line, line.length(), start_line, line.length() };
-        result.push_back(Token{ TokenType::WHITESPACE, line_numbers, "\n" });
+        result.emplace_back(WHITESPACE, line_numbers, "\n");
     }
     return result;
 }
 
 auto split_multi_line_comment(
-    const std::string& line, std::size_t start_line, std::size_t start_column, std::size_t end_line, std::size_t end_column
+    std::string_view line, std::size_t start_line, std::size_t start_column, std::size_t end_line, std::size_t end_column
 ) {
     std::string::size_type start_pos = line.find("/*");
-    std::string::size_type end_pos   = line.find("*/");
-    auto                   len       = line.length();
     std::vector<Token>     result;
+    using enum TokenType;
 
     if (start_pos > 0) {
         LineNumbers line_numbers{ start_line, start_column, start_line, start_column + start_pos - 1 };
-        result.push_back(Token{ TokenType::REGULAR, line_numbers, line.substr(0, start_pos) });
+        result.emplace_back(REGULAR, line_numbers, line.substr(0, start_pos));
         line_numbers = { start_line, start_column + start_pos, start_line, line.length() };
-        result.push_back(Token{ TokenType::COMMENT, line_numbers, line.substr(start_pos, line.length() - start_pos) });
+        result.emplace_back(COMMENT, line_numbers, line.substr(start_pos, line.length() - start_pos));
     } else {
         LineNumbers line_numbers = { start_line, start_column + start_pos, end_line, end_column + 1 };
-        result.push_back(Token{ TokenType::COMMENT, line_numbers, line });
+        result.emplace_back(COMMENT, line_numbers, line);
     }
 
     return result;
@@ -141,7 +142,6 @@ auto split_multi_line_comment(
 
 Generator<TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool supress_whitespace) {
     char                       ch{};
-    char                       previous_ch{};
     StringStateType            string_state{ StringStateType::IDLE };
     CommentStateType           comment_state{ CommentStateType::IDLE };
     CharClass                  current{ CharClass::NONE };
@@ -152,20 +152,20 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool 
     std::size_t                start_line   = 1;
     std::size_t                start_column = 1;
 
-    const auto get_char_class = [](char ch) noexcept -> CharClass {
+    const auto get_char_class = [](char ch) noexcept {
         return is_space(ch) ? CharClass::WHITESPACE : CharClass::REGULAR;
     };
 
-    const auto char_class_to_int = [](const CharClass& cc) noexcept -> std::int8_t {
+    const auto char_class_to_int = [](const CharClass& cc) noexcept {
         return static_cast<std::int8_t>(cc);
     };
 
-    const auto in_comment = [&comment_state]() noexcept -> bool {
-        return (comment_state == CommentStateType::SINGLE_LINE) || (comment_state == CommentStateType::OPEN) ||
-               (comment_state == CommentStateType::MAY_CLOSE);
+    const auto in_comment = [&comment_state]() noexcept {
+        using enum CommentStateType;
+        return (comment_state == SINGLE_LINE) || (comment_state == OPEN) || (comment_state == MAY_CLOSE);
     };
 
-    const auto in_string = [&string_state]() noexcept -> bool {
+    const auto in_string = [&string_state]() noexcept {
         return (string_state == StringStateType::IN_STRING) || (string_state == StringStateType::MAY_CLOSE);
     };
 
@@ -215,7 +215,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool 
                 comment_state = CommentStateType::OPEN;
             }
         }
-        if ((ch == SLASH) && !in_comment()) {
+        if ((ch == SLASH) && (!in_comment()) && (!in_string())) {
             if (comment_state == CommentStateType::IDLE) {
                 comment_state = CommentStateType::MAY_START;
             }
@@ -287,8 +287,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool 
                 }
             }
         }
-        previous    = current;
-        previous_ch = ch;
+        previous = current;
         if (ch == NL) {
             line++;
             column = 0;

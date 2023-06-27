@@ -25,6 +25,7 @@
 #if !defined(__LINE_MAP_HPP)
     #define __LINE_MAP_HPP
 
+    #include <numeric>
     #include <set>
 
 class LineMap {
@@ -35,6 +36,12 @@ class LineMap {
     LineMap() noexcept /* : m_line_map()*/ {
     }
 
+    LineMap(const LineMap& other) :
+        m_start_offsets(other.m_start_offsets), m_last_line_no(other.m_last_line_no), m_items(other.m_items), m_keys(other.m_keys) {
+    }
+
+    LineMap(LineMap&& other) = delete;
+
     int contains(const std::string& key) const noexcept {
         return m_keys.contains(key);
     }
@@ -43,9 +50,9 @@ class LineMap {
         auto item = search_offset(line_no);
 
         if (item.has_value()) {
-            auto idx                                            = item.value();
-            auto [abs_start, abs_end, rel_start, rel_end, name] = m_items[idx];
-            std::int64_t offset                                 = (abs_start - rel_start);
+            auto idx                                             = item.value();
+            auto& [abs_start, abs_end, rel_start, rel_end, name] = m_items[idx];
+            std::int64_t offset                                  = (abs_start - rel_start);
             return std::tuple<std::string, std::size_t>(name, line_no - offset);
         } else {
             return std::nullopt;
@@ -60,20 +67,22 @@ class LineMap {
                 abs_start, abs_end, rel_start, rel_end, path }
         );
         m_start_offsets.push_back(abs_start);
-        last_line_no = abs_end;
+        m_last_line_no = abs_end;
         m_keys.insert(path);
     }
 
    private:
 
     std::optional<std::size_t> search_offset(std::size_t key) const noexcept {
-        std::size_t left{ 0 }, mid{ 0 }, right{ std::size(m_start_offsets) };
+        std::size_t left{ 0 };
+        std::size_t mid{ 0 };
+        std::size_t right{ std::size(m_start_offsets) };
 
-        if (key > last_line_no) {
+        if (key > m_last_line_no) {
             return std::nullopt;
         }
         while (left < right) {
-            mid = left + (right - left) / 2;
+            mid = std::midpoint(left, right);
             if (key == m_start_offsets[mid]) {
                 return mid;
             } else if (key < m_start_offsets[mid]) {
@@ -86,7 +95,7 @@ class LineMap {
     }
 
     std::vector<size_t>   m_start_offsets{};
-    std::size_t           last_line_no{ 0 };
+    std::size_t           m_last_line_no{ 0 };
     std::vector<item_t>   m_items{};
     std::set<std::string> m_keys{};
 };

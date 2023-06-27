@@ -62,15 +62,6 @@ struct Filenames {
     std::string ifdata;
 };
 
-/*
-enum class CollectionType : std::uint8_t {
-    NONE,
-    A2l,
-    AML,
-    IFDATA
-};
-*/
-
 class Preprocessor {
    public:
 
@@ -92,7 +83,9 @@ class Preprocessor {
 
     std::tuple<Filenames, LineMap, IfDataReader> process(const std::string& filename, const std::string& encoding) {
         _process_file(filename);
-        return std::tuple<Filenames, LineMap, IfDataReader>(m_filenames, line_map, {});
+        return {
+            m_filenames, line_map, IfDataReader{m_filenames.ifdata, ifdata_builder}
+        };
     }
 
     void finalize() {
@@ -141,7 +134,7 @@ class Preprocessor {
                 if (token.m_token_type == TokenType::COMMENT) {
                     auto lines      = split(token.m_payload, '\n');
                     auto line_count = lines.size();
-                    for (auto& line : lines) {
+                    for (const auto& line : lines) {
                         tmp_a2l() << std::string(line.length(), ' ');
                         if (a2ml == true) {
                             tmp_aml() << std::string(line.length(), ' ');
@@ -158,18 +151,18 @@ class Preprocessor {
                         if (token.m_payload == "A2ML") {
                             a2ml = false;
                             tmp_aml() << token.m_payload;
-                            for (auto& item : collected_tokens) {
+                            for (const auto& item : collected_tokens) {
                                 tmp_a2l() << item.m_payload;
                             }
                         } else if (token.m_payload == "IF_DATA") {
                             ifdata = false;
                             ifdata_builder.add_token(token);
                             ifdata_builder.finalize();
-                            for (auto& item : collected_tokens) {
+                            for (const auto& item : collected_tokens) {
                                 tmp_a2l() << item.m_payload;
                             }
                         } else {
-                            for (auto& item : collected_tokens) {
+                            for (const auto& item : collected_tokens) {
                                 if (item.m_token_type == TokenType::REGULAR) {
                                     tmp_a2l() << std::string(item.m_payload.length(), ' ');
                                 } else if (item.m_token_type == TokenType::WHITESPACE) {
@@ -197,10 +190,9 @@ class Preprocessor {
                         }
                     }
                     if (include == true) {
-                        auto _fn       = token.m_payload.substr(1, token.m_payload.length() - 2);
-                        auto incl_file = locate_file(_fn, path.parent_path().string());
+                        auto _fn = token.m_payload.substr(1, token.m_payload.length() - 2);
 
-                        if (incl_file.has_value()) {
+                        if (auto incl_file = locate_file(_fn, path.parent_path().string()); incl_file.has_value()) {
                             auto length = (end_line - start_line_number);
                             update_line_map(abs_pth, line_offset, line_offset + length - 1, start_line_number, end_line - 1);
                             line_offset += length;
@@ -214,10 +206,7 @@ class Preprocessor {
                         include = false;
                         line_offset++;
                         start_line_number = token.m_line_numbers.end_line + 1;
-    #if 0
-                        start_line_number = line_offset + 1; /* token.m_line_numbers.end_line + 2*/;
-    #endif
-                        skip_tokens = 2;
+                        skip_tokens       = 2;
                     }
                     if (token.m_payload == "/include") {
                         include = true;
@@ -242,13 +231,13 @@ class Preprocessor {
                         collected_tokens.push_back(token);
                         if (token.m_payload == "A2ML") {
                             a2ml = true;
-                            for (auto& item : collected_tokens) {
+                            for (const auto& item : collected_tokens) {
                                 tmp_aml() << item.m_payload;
                             }
                         } else if (token.m_payload == "IF_DATA") {
                             ifdata      = true;
                             ifdata_name = true;
-                            for (auto& item : collected_tokens) {
+                            for (const auto& item : collected_tokens) {
                                 ifdata_builder.add_token(item);
                             }
                         }
@@ -281,8 +270,6 @@ class Preprocessor {
         }
     }
 
-   protected:
-
     std::string shorten_file_name(fs::path file_name) {
         if (file_name.parent_path() == fs::current_path()) {
             return file_name.filename().string();
@@ -295,8 +282,6 @@ class Preprocessor {
         const fs::path& path, std::uint64_t abs_start, std::uint64_t abs_end, std::uint64_t rel_start, std::uint64_t rel_end
     ) {
         auto key = shorten_file_name(path);
-        std::cout << "\t[ " << path << ": " << abs_start << " " << abs_end << " " << rel_start << " " << rel_end << " ]"
-                  << std::endl;
         line_map.add_entry(path.string(), abs_start, abs_end, rel_start, rel_end);
     }
 
@@ -312,7 +297,7 @@ class Preprocessor {
             return;
         }
 
-        char* ptr;
+        char const * ptr;
         ptr = strtok(asap_include, &delimiter);
         while (ptr != NULL) {
             include_paths.push_back(ptr);
