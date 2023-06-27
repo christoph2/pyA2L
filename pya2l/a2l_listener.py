@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2022 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2023 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -98,8 +98,8 @@ class BaseListener(antlr4.ParseTreeListener):
 
     def exitStringValue(self, ctx):
         text = ctx.s.text.strip('"') if ctx.s else None
-        if text:
-            text = re.sub("\x1b", '"', text)
+        # if text:
+        #    text = re.sub(r'"', '""', text)
         ctx.value = text
 
     def exitIdentifierValue(self, ctx):
@@ -274,6 +274,8 @@ class A2LListener(BaseListener):
     def exitIfData(self, ctx):
         sl, sc = ctx.start.line, ctx.start.column
         el, ec = ctx.stop.line, ctx.stop.column
+        sc += 1
+        ec += len(ctx.stop.text)
         ids = self.ifdata_reader.get(
             (
                 sl,
@@ -282,6 +284,8 @@ class A2LListener(BaseListener):
                 ec,
             )
         )
+        if not ids:
+            raise RuntimeError(f"IF_DATA section {( sl, sc, el, ec, )} not found.")
         ctx.value = model.IfData(sl=sl, sc=sc, el=el, ec=ec, raw=ids, parsed=b"")
         self.db.session.add(ctx.value)
 

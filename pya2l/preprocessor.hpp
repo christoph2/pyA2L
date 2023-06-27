@@ -62,6 +62,14 @@ struct Filenames {
     std::string ifdata;
 };
 
+void set_token_type(Token& token) {
+    auto entry = A2L_KEYWORDS.find(token.m_payload);
+    auto found = entry != A2L_KEYWORDS.end();
+    if (found) {
+        // std::cout << "Value for token ['" << entry->first << "'] ==> " << entry->second << "\n";
+    }
+}
+
 class Preprocessor {
    public:
 
@@ -123,15 +131,15 @@ class Preprocessor {
             std::cout << "[INFO (pya2l.Preprocessor)]: Preprocessing '" + filename + "'." << std::endl;
             std::size_t end_line{ 0 };
 
-            for (const auto& token : tokenizer(file)) {
+            for (/*const*/ auto token : tokenizer(file)) {
                 if (skip_tokens > 0) {
-                    if (token.m_token_type != TokenType::COMMENT) {
+                    if (token.m_token_class != TokenClass::COMMENT) {
                         skip_tokens--;
                     }
                 } else {
                     end_line = token.m_line_numbers.end_line;
                 }
-                if (token.m_token_type == TokenType::COMMENT) {
+                if (token.m_token_class == TokenClass::COMMENT) {
                     auto lines      = split(token.m_payload, '\n');
                     auto line_count = lines.size();
                     for (const auto& line : lines) {
@@ -146,7 +154,8 @@ class Preprocessor {
                             }
                         }
                     }
-                } else if (token.m_token_type == TokenType::REGULAR) {
+                } else if (token.m_token_class == TokenClass::REGULAR) {
+                    set_token_type(token);
                     if (end == true) {
                         if (token.m_payload == "A2ML") {
                             a2ml = false;
@@ -163,9 +172,9 @@ class Preprocessor {
                             }
                         } else {
                             for (const auto& item : collected_tokens) {
-                                if (item.m_token_type == TokenType::REGULAR) {
+                                if (item.m_token_class == TokenClass::REGULAR) {
                                     tmp_a2l() << std::string(item.m_payload.length(), ' ');
-                                } else if (item.m_token_type == TokenType::WHITESPACE) {
+                                } else if (item.m_token_class == TokenClass::WHITESPACE) {
                                     tmp_a2l() << item.m_payload;
                                 }
                             }
@@ -248,7 +257,7 @@ class Preprocessor {
                         collect = true;
                         collected_tokens.push_back(token);
                     }
-                } else if (token.m_token_type == TokenType::WHITESPACE) {
+                } else if (token.m_token_class == TokenClass::WHITESPACE) {
                     if ((end == false) && (include == false) && (skip_tokens == 0)) {
                         tmp_a2l() << token.m_payload;
                     }
