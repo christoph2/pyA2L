@@ -122,7 +122,7 @@ class DB(object):
                 except Exception:
                     pass
             elif self._dbfn.exists():
-                raise OSError("file '{}' already exists.".format(self._dbfn))
+                raise OSError("file '{}' already exists.".format(self._dbfn))  # Use 'open_create()' or 'open_existing()'.--
         prepro = Preprocessor(loglevel=loglevel)
 
         encoding = encoding or detect_encoding(file_name=self._a2lfn)
@@ -131,7 +131,14 @@ class DB(object):
         filenames, line_map, ifdata_reader = prepro_result
         a2l_parser = parsers.a2l(debug=debug, prepro_result=prepro_result)
         self.logger.info("Parsing pre-processed data ...")
-        self.db, listener_result = a2l_parser.parseFromFile(filename=filenames.a2l, dbname=str(self._dbfn), encoding=encoding)
+        try:
+            TRACE = False
+            self.db, listener_result = a2l_parser.parseFromFile(
+                filename=filenames.a2l, dbname=str(self._dbfn), encoding=encoding, trace=TRACE
+            )
+        except UnicodeDecodeError:
+            self.logger.error(f"File cannot decoded as '{encoding}'. Try an encoding like 'latin-1'.")
+            sys.exit(2)
         self.session = self.db.session
         self.logger.info("Parsing AML section ...")
         aml_parser = parsers.aml(prepro_result=prepro_result)
@@ -140,13 +147,11 @@ class DB(object):
         aml_text = open(filenames.aml).read()
         self.session.add(model.AMLSection(text=aml_text, parsed=aml_parsed))
         self.logger.info("Parsing IF_DATA sections ...")
-        """
         ip = parsers.if_data(aml_result)
         for item in self.session.query(model.IfData).all():
             parsed_if_data = pickle.dumps(ip.parse(item.raw))
             item.parsed = parsed_if_data
             self.session.add(item)
-        """
         self.session.commit()
         self.logger.info("Done [Elapsed time {:.2f}s].".format(perf_counter() - start_time))
         return self.session

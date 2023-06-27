@@ -26,6 +26,7 @@
 
     #include "generator.hpp"
     #include "line_numbers.hpp"
+    #include "token_type.hpp"
     #include "utils.hpp"
 
 enum class CharClass : std::int8_t {
@@ -55,7 +56,7 @@ enum class CommentStateType : std::uint8_t {
     MAY_CLOSE
 };
 
-enum class TokenType : std::uint8_t {
+enum class TokenClass : std::uint8_t {
     REGULAR,
     WHITESPACE,
     COMMENT,
@@ -64,11 +65,11 @@ enum class TokenType : std::uint8_t {
 struct Token {
     Token() = default;
 
-    Token(TokenType token_type, const LineNumbers& line_numbers, std::string_view payload) :
-        m_token_type{ token_type }, m_line_numbers{ line_numbers }, m_payload{ payload } {
+    Token(TokenClass token_type, const LineNumbers& line_numbers, std::string_view payload) :
+        m_token_class{ token_type }, m_line_numbers{ line_numbers }, m_payload{ payload } {
     }
 
-    TokenType   m_token_type;
+    TokenClass  m_token_class;
     LineNumbers m_line_numbers;
     std::string m_payload;
 };

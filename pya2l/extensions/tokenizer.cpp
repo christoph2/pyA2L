@@ -35,18 +35,18 @@ std::vector<Token> split_by_new_line(std::string_view line, std::size_t start_li
         l.end_col    = ec;
     };
 
-    char const *       cstr     = line.data() /*.c_str()*/;
-    char const * const START    = line.data() /*.c_str() */;
+    char const *       cstr     = line.data();
+    char const * const START    = line.data();
     const std::int64_t LAST_IDX = line.length() - 1;
 
     if (LAST_IDX < 1) {
         return std::vector<Token>{
-            Token(TokenType::WHITESPACE, LineNumbers(start_line, start_column, start_line, start_column), line)
+            Token(TokenClass::WHITESPACE, LineNumbers(start_line, start_column, start_line, start_column), line)
         };
     }
     if (line.find('\n') == std::string::npos) {
         return std::vector<Token>{
-            Token(TokenType::WHITESPACE, LineNumbers(start_line, start_column, start_line, start_column + line.length() - 1), line)
+            Token(TokenClass::WHITESPACE, LineNumbers(start_line, start_column, start_line, start_column + line.length() - 1), line)
         };
     }
 
@@ -55,7 +55,7 @@ std::vector<Token> split_by_new_line(std::string_view line, std::size_t start_li
     auto               row  = start_line;
     LineNumbers        line_numbers{};
     std::vector<Token> result;
-    using enum TokenType;
+    using enum TokenClass;
 
     do {
         cstr = std::strstr(cstr, "\n");
@@ -102,7 +102,7 @@ std::vector<Token> split_by_new_line(std::string_view line, std::size_t start_li
 auto split_single_line_comment(std::string_view line, std::size_t start_line, std::size_t start_column) {
     std::string::size_type pos = line.find("//");
     std::vector<Token>     result;
-    using enum TokenType;
+    using enum TokenClass;
 
     if (pos > 0) {
         LineNumbers line_numbers{ start_line, start_column, start_line, start_column + pos - 1 };
@@ -125,7 +125,7 @@ auto split_multi_line_comment(
 ) {
     std::string::size_type start_pos = line.find("/*");
     std::vector<Token>     result;
-    using enum TokenType;
+    using enum TokenClass;
 
     if (start_pos > 0) {
         LineNumbers line_numbers{ start_line, start_column, start_line, start_column + start_pos - 1 };
@@ -183,7 +183,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool 
                     co_yield { elem };
                 }
             } else if (current == CharClass::REGULAR) {
-                co_yield { Token(TokenType::REGULAR, line_numbers, token[char_class_to_int(current)]) };
+                co_yield { Token(TokenClass::REGULAR, line_numbers, token[char_class_to_int(current)]) };
             }
         }
         column++;
@@ -278,7 +278,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool 
                         token[char_class_to_int(CharClass::WHITESPACE)].push_back(ch);
                         line_numbers = { start_line, start_column, line, column - 1 };
                         if (token[char_class_to_int(CharClass::REGULAR)] != "") {
-                            co_yield { Token(TokenType::REGULAR, line_numbers, token[char_class_to_int(CharClass::REGULAR)]) };
+                            co_yield { Token(TokenClass::REGULAR, line_numbers, token[char_class_to_int(CharClass::REGULAR)]) };
                         }
                         token[char_class_to_int(CharClass::REGULAR)].clear();
                     }
