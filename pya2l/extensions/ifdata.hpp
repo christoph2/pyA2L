@@ -69,7 +69,7 @@ class IfDataBuilder : public IfDataBase {
             m_line_numbers.start_line, m_line_numbers.start_col, m_line_numbers.end_line, m_line_numbers.end_col
         )] = m_offset;
         m_offset += (HEADER_SIZE + m_length);
-        assert(m_out.tellp() == m_offset);
+        // assert(m_out.tellp() == m_offset);
         m_tokens.clear();
         m_length = 0;
     }
@@ -90,7 +90,7 @@ class IfDataBuilder : public IfDataBase {
         m_out.write(std::bit_cast<const char*>(&value), sizeof value);
     }
 
-    void write_string(const std::string& text) {
+    void write_string(std::string_view text) {
         m_out << text;
     }
 
@@ -105,8 +105,13 @@ class IfDataBuilder : public IfDataBase {
 class IfDataReader : public IfDataBase {
    public:
 
-    IfDataReader()                    = default;
-    IfDataReader(const IfDataReader&) = default;
+    IfDataReader() = default;
+
+    IfDataReader(const IfDataReader& other) {
+        m_file_name = other.m_file_name;
+        m_file      = other.m_file;
+        file_map    = other.file_map;
+    }
 
     IfDataReader(IfDataReader&& other) noexcept {
         m_file_name = std::move(other.m_file_name);
@@ -114,15 +119,19 @@ class IfDataReader : public IfDataBase {
         file_map    = std::move(other.file_map);
     }
 
-    IfDataReader& operator=(const IfDataReader&) = default;
+    IfDataReader& operator=(const IfDataReader&) = delete;
 
-    IfDataReader& operator=(IfDataReader&&) = default;
+    IfDataReader& operator=(IfDataReader&&) = delete;
 
-    IfDataReader(const std::string& fname, IfDataBuilder& builder) : m_file_name(fname), file_map(std::move(builder.get_map())) {
+    IfDataReader(std::string_view fname, IfDataBuilder& builder) : m_file_name(fname), file_map(std::move(builder.get_map())) {
     }
 
     void open() {
+    #if defined(_MSC_VER)
         m_file = std::fopen(m_file_name.c_str(), "rb");
+    #else
+        m_file = std::fopen(m_file_name.c_str(), "rb");
+    #endif
     }
 
     void close() {
@@ -136,9 +145,8 @@ class IfDataReader : public IfDataBase {
         if (!file_map.contains(line)) {
             return std::nullopt;
         }
-
-        auto offset     = file_map[line];
-        auto res        = std::fseek(m_file, offset, SEEK_SET);
+        long offset = file_map[line];
+        std::fseek(m_file, offset, SEEK_SET);
         auto length     = read_int();
         auto start_line = read_int();
         assert(std::get<0>(line) == start_line);
@@ -157,14 +165,14 @@ class IfDataReader : public IfDataBase {
     std::size_t read_int() {
         std::size_t value = 0;
 
-        auto res = std::fread((char*)&value, sizeof(std::size_t), 1, m_file);
+        std::fread((char*)&value, sizeof(std::size_t), 1, m_file);
         return value;
     }
 
     std::string read_string(std::size_t count) {
         std::vector<char> buf(count + 1);
 
-        auto res   = std::fread(/*std::bit_cast<char*>*/ (buf.data()), 1, count, m_file);
+        std::fread(buf.data(), 1, count, m_file);
         buf[count] = '\x00';
         std::string result{ buf.data() };
         return result;

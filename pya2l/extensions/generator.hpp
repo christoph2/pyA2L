@@ -77,7 +77,7 @@ struct Generator {
     */
     struct iterator {
         bool operator!=(const iterator& rhs) const noexcept {
-            return not m_h_ptr->done();
+            return !m_h_ptr->done();
         }
 
         iterator& operator++() noexcept {
