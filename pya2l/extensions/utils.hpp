@@ -126,4 +126,11 @@ inline auto split(const std::string &str, char delimiter) -> std::vector<std::st
     return { std::ranges::begin(range), std::ranges::end(range) };
 }
 
+inline void hex_dump(const char *p, std::size_t n) {
+    for (auto idx = 0; idx < n; ++idx) {
+        printf("%02X ", p[idx]);
+    }
+    printf("\n");
+}
+
 #endif  // __UTILS_HPP

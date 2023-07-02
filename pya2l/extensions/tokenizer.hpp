@@ -21,9 +21,10 @@
 
     s. FLOSS-EXCEPTION.txt
 */
-#if !defined(__tokenizer_hpp)
-    #define __tokenizer_hpp
+#if !defined(__TOKENIZER_HPP)
+    #define __TOKENIZER_HPP
 
+    #include "ctre.hpp"
     #include "generator.hpp"
     #include "line_numbers.hpp"
     #include "token_type.hpp"
@@ -60,18 +61,61 @@ enum class TokenClass : std::uint8_t {
     REGULAR,
     WHITESPACE,
     COMMENT,
+    STRING,
 };
 
 struct Token {
+    using enum TokenType;
+
     Token() = default;
 
     Token(TokenClass token_type, const LineNumbers& line_numbers, std::string_view payload) :
         m_token_class{ token_type }, m_line_numbers{ line_numbers }, m_payload{ payload } {
+        set_token_type();
     }
 
-    TokenClass  m_token_class;
-    LineNumbers m_line_numbers;
-    std::string m_payload;
+    Token& operator=(const Token&) = default;
+    Token(const Token&)            = default;
+    Token(Token&&)                 = default;
+
+    TokenClass    m_token_class;
+    std::uint16_t m_token_type{ std::bit_cast<std::uint16_t>(INVALID) };
+    LineNumbers   m_line_numbers;
+    std::string   m_payload;
+
+   private:
+
+    static constexpr auto PAT_FLOAT =
+        ctll::fixed_string{ "^[+\\-]?[0-9]+\\.[0-9]*([eE][+\\-]?[0-9]+)?|\\.[0-9]+([eE][+\\-]?[0-9]+)?|[0-9]+[eE][+\\-]?[0-9]+" };
+    static constexpr auto PAT_INT = ctll::fixed_string{ "^[+\\-]?[0-9]+$" };
+    static constexpr auto PAT_HEX = ctll::fixed_string{ "^0x[0-9a-fA-F]+$" };
+
+    void set_token_type() {
+        if (m_token_class == TokenClass::WHITESPACE) {
+            m_token_type = static_cast<std::uint16_t>(WS);
+        } else if (m_token_class == TokenClass::COMMENT) {
+            m_token_type = static_cast<std::uint16_t>(COMMENT);
+        } else if (m_token_class == TokenClass::STRING) {
+            m_token_type = static_cast<std::uint16_t>(STRING);
+        } else {
+            auto entry = A2L_KEYWORDS.find(m_payload);
+
+            if (entry != A2L_KEYWORDS.end()) {
+                m_token_type = static_cast<std::uint16_t>(entry->second);
+            } else {
+                if (ctre::match<PAT_FLOAT>(m_payload)) {
+                    m_token_type = static_cast<std::uint16_t>(FLOAT);
+                } else if (ctre::match<PAT_INT>(m_payload)) {
+                    m_token_type = static_cast<std::uint16_t>(INT);
+                } else if (ctre::match<PAT_HEX>(m_payload)) {
+                    m_token_type = static_cast<std::uint16_t>(HEX);
+                } else {
+                    // std::cout << "\tIDEN´T: " << m_payload << std::endl;
+                    m_token_type = static_cast<std::uint16_t>(IDENT);
+                }
+            }
+        }
+    }
 };
 
 using TokenizerReturnType = Token;
@@ -81,4 +125,4 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool 
 
 std::vector<Token> split_by_new_line(std::string_view line, std::size_t start_line, std::size_t start_column);
 
-#endif  // __tokenizer_hpp
+#endif  // __TOKENIZER_HPP

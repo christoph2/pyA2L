@@ -27,6 +27,14 @@
 #include <cstring>
 #include <iomanip>
 
+#if 0
+const std::regex RE_FLOAT{
+    "^[+-]?[0-9]+\\.[0-9]*([eE][+-]?[0-9]+)?|\\.[0-9]+([eE][+-]?[0-9]+)?|[0-9]+[eE][+-]?[0-9]+$"
+};
+const std::regex RE_INT{ "^[+-]?[0-9]+$" /*, std::regex_constants::extended | std::regex_constants::optimize */ };
+const std::regex RE_HEX{ "^0x[0-9a-fA-F]+$" /*, std::regex_constants::extended | std::regex_constants::optimize */ };
+#endif
+
 std::vector<Token> split_by_new_line(std::string_view line, std::size_t start_line, std::size_t start_column) {
     auto set_line_numbers = [](LineNumbers& l, std::size_t sl, std::size_t sc, std::size_t el, std::size_t ec) {
         l.start_line = sl;
@@ -151,6 +159,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool 
     std::size_t                column       = 0;
     std::size_t                start_line   = 1;
     std::size_t                start_column = 1;
+    bool                       string_class = false;
 
     const auto get_char_class = [](char ch) noexcept {
         return is_space(ch) ? CharClass::WHITESPACE : CharClass::REGULAR;
@@ -224,6 +233,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool 
             if (ch == DQUOTE) {
                 if (string_state == StringStateType::IDLE) {
                     string_state = StringStateType::IN_STRING;
+                    string_class = true;
                 } else if (string_state == StringStateType::IN_STRING) {
                     string_state = StringStateType::MAY_CLOSE;
                 } else {
@@ -278,8 +288,12 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool 
                         token[char_class_to_int(CharClass::WHITESPACE)].push_back(ch);
                         line_numbers = { start_line, start_column, line, column - 1 };
                         if (token[char_class_to_int(CharClass::REGULAR)] != "") {
-                            co_yield { Token(TokenClass::REGULAR, line_numbers, token[char_class_to_int(CharClass::REGULAR)]) };
+                            co_yield { Token(
+                                string_class ? TokenClass::STRING : TokenClass::REGULAR, line_numbers,
+                                token[char_class_to_int(CharClass::REGULAR)]
+                            ) };
                         }
+                        string_class = false;
                         token[char_class_to_int(CharClass::REGULAR)].clear();
                     }
                     start_line   = line;
@@ -296,6 +310,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char>& stream, bool 
                 throw std::runtime_error("Unterminated string.");
             }
             string_state = StringStateType::IDLE;  // Unterminated string?
+            string_class = false;
             if (comment_state == CommentStateType::SINGLE_LINE) {
                 comment_state = CommentStateType::IDLE;
 

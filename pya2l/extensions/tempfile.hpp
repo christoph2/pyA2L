@@ -25,6 +25,12 @@
 #if !defined(__TEMPFILE_HPP)
     #define __TEMPFILE_HPP
 
+    #include <filesystem>
+    #include <fstream>
+    #include <iostream>
+
+namespace fs = std::filesystem;
+
 /*
  * Create ofstream object and delete on d-tor (or using 'remove()').
  */
