@@ -25,6 +25,7 @@
 #if !defined(__IFDATA_HPP)
     #define __IFDATA_HPP
 
+    #define __STDC_WANT_LIB_EXT1__ (1)
     #include <cstdio>
 
     #include "tokenizer.hpp"
@@ -128,14 +129,14 @@ class IfDataReader : public IfDataBase {
 
     void open() {
     #if defined(_MSC_VER)
-        m_file = std::fopen(m_file_name.c_str(), "rb");
+        auto err = ::fopen_s(&m_file, m_file_name.c_str(), "rb");
     #else
-        m_file = std::fopen(m_file_name.c_str(), "rb");
+        m_file = : fopen(m_file_name.c_str(), "rb");
     #endif
     }
 
     void close() {
-        std::fclose(m_file);
+        ::fclose(m_file);
     }
 
     ~IfDataReader() {

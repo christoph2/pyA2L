@@ -298,6 +298,7 @@ FOOTER = """
 """
 
 TPs = (
+    ("INVALID", 0),
     ("BEGIN", 276),
     ("END", 277),
     ("IDENT", 278),
@@ -321,7 +322,7 @@ with open("token_type.hpp", "wt") as of:
             item = f'"{item}"'
         of.write(f"""    {{{item}, {idx}}},\n""")
     of.write("};\n\n")
-    of.write("enum class TOKEN_TYPES: std::uint16_t {\n")
+    of.write("enum class TokenType: std::uint16_t {\n")
     for idx in range(275):
         of.write(f"\tT__{idx}={idx + 1},\n")
     for n, v in TPs:
