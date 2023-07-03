@@ -103,12 +103,12 @@ struct Token {
             if (entry != A2L_KEYWORDS.end()) {
                 m_token_type = static_cast<std::uint16_t>(entry->second);
             } else {
-                if (ctre::match<PAT_FLOAT>(m_payload)) {
-                    m_token_type = static_cast<std::uint16_t>(FLOAT);
-                } else if (ctre::match<PAT_INT>(m_payload)) {
+                if (ctre::match<PAT_INT>(m_payload)) {
                     m_token_type = static_cast<std::uint16_t>(INT);
                 } else if (ctre::match<PAT_HEX>(m_payload)) {
                     m_token_type = static_cast<std::uint16_t>(HEX);
+                } else if (ctre::match<PAT_FLOAT>(m_payload)) {
+                    m_token_type = static_cast<std::uint16_t>(FLOAT);
                 } else {
                     // std::cout << "\tIDEN´T: " << m_payload << std::endl;
                     m_token_type = static_cast<std::uint16_t>(IDENT);
