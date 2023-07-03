@@ -127,7 +127,7 @@ class Preprocessor {
         }
 
         if (file.is_open()) {
-            std::cout << "[INFO (pya2l.Preprocessor)]: Preprocessing '" + filename + "'." << std::endl;
+            std::cout << "[INFO (pya2l.Preprocessor)]: Preprocessing and tokenizing '" + filename + "'." << std::endl;
             std::size_t end_line{ 0 };
 
             for (auto token : tokenizer(file)) {

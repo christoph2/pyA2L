@@ -25,8 +25,11 @@
 //  AUTOMATICALLY GENERATED FILE -- DO NOT MODIFY !!!
 //
 
-grammar a2l;
+parser grammar a2l;
 
+options {
+    tokenVocab=a2l;
+}
 
 a2lFile:
     asap2Version?
@@ -109,7 +112,7 @@ byteOrder:
 
 calibrationAccess:
      'CALIBRATION_ACCESS'
-
+    
     type_ =
     (
         'CALIBRATION' |
@@ -127,7 +130,7 @@ defaultValue:
 
 deposit:
      'DEPOSIT'
-
+    
     mode_ =
     (
         'ABSOLUTE' |
@@ -192,7 +195,7 @@ maxRefresh:
 
 monotony:
      'MONOTONY'
-
+    
     monotony_ =
     (
         'MON_DECREASE' |
@@ -367,7 +370,7 @@ characteristic:
     BEGIN 'CHARACTERISTIC'
     name = identifierValue
     longIdentifier = stringValue
-
+    
     type_ =
     (
         'ASCII' |
@@ -420,7 +423,7 @@ characteristic:
 
 axisDescr:
     BEGIN 'AXIS_DESCR'
-
+    
     attribute =
     (
         'CURVE_AXIS' |
@@ -526,7 +529,7 @@ compuMethod:
     BEGIN 'COMPU_METHOD'
     name = identifierValue
     longIdentifier = stringValue
-
+    
     conversionType =
     (
         'IDENTICAL' |
@@ -599,7 +602,7 @@ compuTab:
     BEGIN 'COMPU_TAB'
     name = identifierValue
     longIdentifier = stringValue
-
+    
     conversionType =
     (
         'TAB_INTP' |
@@ -626,7 +629,7 @@ compuVtab:
     BEGIN 'COMPU_VTAB'
     name = identifierValue
     longIdentifier = stringValue
-
+    
     conversionType =
         'TAB_VERB'
 
@@ -859,7 +862,7 @@ errorMask:
 
 layout:
      'LAYOUT'
-
+    
     indexMode =
     (
         'ROW_DIR' |
@@ -1000,7 +1003,7 @@ epk:
 
 memoryLayout:
     BEGIN 'MEMORY_LAYOUT'
-
+    
     prgType =
     (
         'PRG_CODE' |
@@ -1027,7 +1030,7 @@ memorySegment:
     BEGIN 'MEMORY_SEGMENT'
     name = identifierValue
     longIdentifier = stringValue
-
+    
     prgType =
     (
         'CALIBRATION_VARIABLES' |
@@ -1040,7 +1043,7 @@ memorySegment:
         'VARIABLES'
     )
 
-
+    
     memoryType =
     (
         'EEPROM' |
@@ -1051,7 +1054,7 @@ memorySegment:
         'REGISTER'
     )
 
-
+    
     attribute =
     (
         'INTERN' |
@@ -1315,7 +1318,7 @@ fncValues:
      'FNC_VALUES'
     position = integerValue
     datatype = dataType
-
+    
     indexMode =
     (
         'ALTERNATE_CURVES' |
@@ -1534,7 +1537,7 @@ typedefCharacteristic:
     BEGIN 'TYPEDEF_CHARACTERISTIC'
     name = identifierValue
     longIdentifier = stringValue
-
+    
     type_ =
     (
         'ASCII' |
@@ -1598,7 +1601,7 @@ unit:
     name = identifierValue
     longIdentifier = stringValue
     display = stringValue
-
+    
     type_ =
     (
         'DERIVED' |
@@ -1714,7 +1717,7 @@ varForbiddenComb:
 
 varNaming:
      'VAR_NAMING'
-
+    
     tag =
     (
         'NUMERIC' |
@@ -1775,69 +1778,4 @@ indexorder:
 
 linkType:
     v = 'SYMBOL_TYPE_LINK'
-    ;
-
-BEGIN:
-    '/begin'
-    ;
-
-END:
-    '/end'
-    ;
-
-IDENT: [a-zA-Z_][a-zA-Z_0-9.]*;
-
-fragment
-EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;
-
-FLOAT:
-   ('+' | '-')?
-    (
-        ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
-    |   '.' ('0'..'9')+ EXPONENT?
-    |   ('0'..'9')+ EXPONENT
-    )
-    ;
-
-INT: ('+' | '-')? '0'..'9'+
-    ;
-
-HEX:   '0'('x' | 'X') ('a' .. 'f' | 'A' .. 'F' | '0' .. '9')+
-    ;
-
-WS  :   (' ' | '\t' | '\r' | '\n') -> skip
-    ;
-
-
-STRING:
-    '"' ( ESC_SEQ | ~('\\'|'"'|'\n') )* '"'
-    ;
-
-fragment
-HEX_DIGIT : ('0'..'9'|'a'..'f'|'A'..'F') ;
-
-fragment
-ESC_SEQ
-    :   '\\'
-        (   // The standard escaped character set such as tab, newline, etc.
-            [btnfr"'\\]
-        |   // A Java style Unicode escape sequence
-            UNICODE_ESC
-        |   // Invalid escape
-            .
-        |   // Invalid escape at end of file
-            EOF
-        )
-    ;
-
-fragment
-UNICODE_ESC
-    :   'u' (HEX_DIGIT (HEX_DIGIT (HEX_DIGIT HEX_DIGIT?)?)?)?
-;
-
-fragment
-OCTAL_ESC:
-    '\\' ('0'..'3') ('0'..'7') ('0'..'7')
-    |   '\\' ('0'..'7') ('0'..'7')
-    |   '\\' ('0'..'7')
     ;
