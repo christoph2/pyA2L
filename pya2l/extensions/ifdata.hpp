@@ -146,7 +146,7 @@ class IfDataReader : public IfDataBase {
         if (!file_map.contains(line)) {
             return std::nullopt;
         }
-        long offset = file_map[line];
+        auto offset = file_map[line];
         std::fseek(m_file, offset, SEEK_SET);
         auto length     = read_int();
         auto start_line = read_int();

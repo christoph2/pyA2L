@@ -4,7 +4,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2022 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2022-2023 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -27,7 +27,7 @@ __copyright__ = """
 __author__ = "Christoph Schueler"
 
 from pya2l.aml.listener import AMLListener
-from pya2l.parserlib import ParserWrapper
+from pya2l.parserlib import ParserWrapper, CustomA2lParser
 from pya2l.a2l_listener import A2LListener
 from pya2l.if_data_parser import IfDataParser
 
@@ -37,8 +37,8 @@ def aml(debug: bool = False, prepro_result=None):
     return parser
 
 
-def a2l(debug: bool = False, prepro_result=None, start_production="a2lFile"):
-    parser = ParserWrapper("a2l", start_production, A2LListener, debug=debug, prepro_result=prepro_result)
+def a2l(debug: bool = False, prepro_result=None):
+    parser = CustomA2lParser(listener=A2LListener, debug=debug, prepro_result=prepro_result)
     return parser
 
 

@@ -32,10 +32,9 @@ BASE_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.txt")
 TEST_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.test.txt")
 ANTLR_VERSION = next(req.specs[0][1] for req in BASE_REQUIREMENTS if req.project_name == "antlr4-python3-runtime")
 
-INCLUDE_DIRS = subprocess.getoutput("pybind11-config --include")
+PB11_INCLUDE_DIRS = subprocess.getoutput("pybind11-config --include")
 
-PKG_NAME = "preprocessor"
-EXT_NAMES = ["pya2l.preprocessor"]
+EXT_NAMES = ["pya2l.preprocessor", "pya2l.tokenstream"]
 
 uname = platform.uname()
 if uname.system == "Linux":
@@ -46,9 +45,17 @@ else:
 ext_modules = [
     Pybind11Extension(
         EXT_NAMES[0],
-        include_dirs=[INCLUDE_DIRS],
+        include_dirs=[PB11_INCLUDE_DIRS, "pya2l/extensions/"],
         sources=["pya2l/preprocessor_wrapper.cpp", "pya2l/extensions/tokenizer.cpp"],
         define_macros=[("EXTENSION_NAME", EXT_NAMES[0])],
+        cxx_std=20,
+        extra_compile_args=extra_compile_args,
+    ),
+    Pybind11Extension(
+        EXT_NAMES[1],
+        include_dirs=[PB11_INCLUDE_DIRS, "pya2l/extensions/"],
+        sources=["pya2l/tokenstream_wrapper.cpp"],
+        define_macros=[("EXTENSION_NAME", EXT_NAMES[1])],
         cxx_std=20,
         extra_compile_args=extra_compile_args,
     ),
@@ -98,7 +105,8 @@ class AntlrAutogen(Command):
 
 def clean():
     """Remove unneeded files."""
-    tokens = ROOT_DIRPATH.joinpath("pya2l").glob("*tokens")
+    # tokens = ROOT_DIRPATH.joinpath("pya2l").glob("*tokens")
+    tokens = []
     interp = ROOT_DIRPATH.joinpath("pya2l").glob("*interp")
     listener = (
         list(ROOT_DIRPATH.joinpath("pya2l").glob(i + "Listener.py"))[0]

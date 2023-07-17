@@ -1,3 +1,5 @@
+#!/bin/env python
+
 literalNames = [
     "<INVALID>",
     "'ALIGNMENT_BYTE'",
@@ -310,9 +312,6 @@ TPs = (
     ("STRING", 284),
 )
 
-for idx, item in enumerate(literalNames):
-    print(f"{item} = {idx}")
-
 with open("token_type.hpp", "wt") as of:
     of.write(HEADER)
     of.write("const std::map<std::string, int> A2L_KEYWORDS {\n")
@@ -329,3 +328,13 @@ with open("token_type.hpp", "wt") as of:
         of.write(f"\t{n}={v},\n")
     of.write("};\n")
     of.write(FOOTER)
+
+with open("a2l.tokens", "wt") as of:
+    for idx in range(275):
+        of.write(f"T__{idx}={idx + 1}\n")
+    for n, v in TPs:
+        if v == 0:
+            continue
+        of.write(f"{n}={v}\n")
+    for idx, item in enumerate(literalNames):
+        of.write(f"""{item}={idx}\n""")
