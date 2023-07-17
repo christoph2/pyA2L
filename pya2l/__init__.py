@@ -131,14 +131,14 @@ class DB(object):
         filenames, line_map, ifdata_reader = prepro_result
         a2l_parser = parsers.a2l(debug=debug, prepro_result=prepro_result)
         self.logger.info("Parsing pre-processed data ...")
-        try:
-            TRACE = False
-            self.db, listener_result = a2l_parser.parseFromFile(
-                filename=filenames.a2l, dbname=str(self._dbfn), encoding=encoding, trace=TRACE
-            )
-        except UnicodeDecodeError:
-            self.logger.error(f"File cannot decoded as '{encoding}'. Try an encoding like 'latin-1'.")
-            sys.exit(2)
+        # try:
+        self.db, listener_result = a2l_parser.parseFromFile(
+            filename=filenames.a2l, dbname=str(self._dbfn), encoding=encoding, trace=debug
+        )
+        # except UnicodeDecodeError as e:
+        #    print(e)
+        #    self.logger.error(f"File cannot decoded as '{encoding}'. Try an encoding like 'latin-1'.")
+        #    sys.exit(2)
         self.session = self.db.session
         self.logger.info("Parsing AML section ...")
         aml_parser = parsers.aml(prepro_result=prepro_result)

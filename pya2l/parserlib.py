@@ -49,7 +49,7 @@ class MyErrorListener(ErrorListener):
         self.line_map = line_map
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        column = column + 1
+        # column = column + 1
         if self.line_map:
             file_name, line = self.line_map.lookup(line)
             print(
@@ -101,6 +101,9 @@ class ParserWrapper:
         parser.removeErrorListeners()
         parser.addErrorListener(MyErrorListener(self.line_map))
         parser.setTrace(trace)
+
+        parser._interp.debug = True
+
         meth = getattr(parser, self.startSymbol)
         self._syntaxErrors = parser._syntaxErrors
         tree = meth()
@@ -130,3 +133,58 @@ class ParserWrapper:
         return self._syntaxErrors
 
     numberOfSyntaxErrors = property(_getNumberOfSyntaxErrors)
+
+
+class CustomA2lParser:
+    def __init__(self, listener=None, debug=False, prepro_result=None):
+        self.debug = debug
+        self.startSymbol = "a2lFile"
+        filenames, line_map, ifdata_reader = prepro_result
+        self.line_map = line_map
+        self.prepro_result = prepro_result
+        self.parserModule, self.parserClass = self._load()
+        self.listener = listener
+
+    def _load(self):
+        module = importlib.import_module("pya2l.a2l")
+        klass = getattr(module, "a2l")  # noqa: B009
+        return (
+            module,
+            klass,
+        )
+
+    def parse(self, input, trace=False):
+        self.db = model.A2LDatabase(self.fnbase, debug=self.debug)
+
+        # lexer = self.lexerClass(input)
+        # lexer.removeErrorListeners()
+        # lexer.addErrorListener(MyErrorListener(self.line_map))
+        # tokenStream = antlr4.CommonTokenStream(lexer)
+        from pya2l.tokenstream import TokenReader
+
+        parser = self.parserClass(TokenReader(input))
+        parser.removeErrorListeners()
+        parser.addErrorListener(MyErrorListener(self.line_map))
+
+        parser._interp.debug = True
+        parser._interp.trace_atn_sim = True
+
+        parser.setTrace(trace)
+        meth = getattr(parser, self.startSymbol)
+        self._syntaxErrors = parser._syntaxErrors
+        tree = meth()
+        listener_result = None
+
+        self.listener.db = self.db
+        listener = self.listener(self.prepro_result)
+        walker = antlr4.ParseTreeWalker()
+        walker.walk(listener, tree)
+        listener_result = listener.result()
+
+        self.db.session.commit()
+        return ResultType(self.db, listener_result)
+
+    def parseFromFile(self, filename, encoding="latin-1", trace=False, dbname=":memory:"):
+        self.fnbase = dbname
+        # return self.parse(antlr4.FileStream(filename, encoding), trace)
+        return self.parse(filename, trace)
