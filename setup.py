@@ -54,7 +54,7 @@ ext_modules = [
     Pybind11Extension(
         EXT_NAMES[1],
         include_dirs=[PB11_INCLUDE_DIRS, "pya2l/extensions/"],
-        sources=["pya2l/tokenstream_wrapper.cpp"],
+        sources=["pya2l/tokenstream_wrapper.cpp", "pya2l/extensions/exceptions.cpp"],
         define_macros=[("EXTENSION_NAME", EXT_NAMES[1])],
         cxx_std=20,
         extra_compile_args=extra_compile_args,
