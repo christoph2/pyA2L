@@ -34,6 +34,7 @@ import sys
 
 import antlr4
 from antlr4.error.ErrorListener import ErrorListener
+from antlr4.atn.ParserATNSimulator import ParserATNSimulator
 
 from pya2l import model
 
@@ -164,12 +165,21 @@ class CustomA2lParser:
 
         parser = self.parserClass(TokenReader(input))
         parser.removeErrorListeners()
+
         parser.addErrorListener(MyErrorListener(self.line_map))
 
-        parser._interp.debug = True
-        parser._interp.trace_atn_sim = True
+        ParserATNSimulator.debug = True
+        ParserATNSimulator.debug_list_atn_decisions = True
+        ParserATNSimulator.dfa_debug = True
 
+        trace = True
         parser.setTrace(trace)
+        # parser._interp.debug = True
+        parser._interp.trace_atn_sim = True
+        parser._interp.debug_list_atn_decisions = True
+        parser._interp.dfa_debug = True
+        parser._interp.retry_debug = True
+
         meth = getattr(parser, self.startSymbol)
         self._syntaxErrors = parser._syntaxErrors
         tree = meth()

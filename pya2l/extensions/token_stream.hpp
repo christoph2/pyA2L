@@ -8,6 +8,8 @@
 
     #include "tempfile.hpp"
     #include "tokenizer.hpp"
+    #include "exceptions.hpp"
+
 
 template<typename Ty_>
 class FixedSizeStack {
@@ -81,55 +83,6 @@ class TokenWriter {
     std::ofstream& m_outf;
 };
 
-/*
-Lexer implements interface TokenSource, which specifies the core lexer function-
-ality: nextToken(), getLine(), and getCharPositionInLine(). Rolling our own lexer to use
-with an ANTLR parser grammar is not too much work. Let’s build a lexer that
-tokenizes simple identifiers and integers like the following input file:
-
-@Override
-public Token nextToken() {
-    while (true) {
-        if ( c==(char)CharStream.EOF ) return createToken(Token.EOF);
-        while ( Character.isWhitespace(c) ) consume(); // toss out whitespace
-        startCharIndex = input.index();
-        startLine = getLine();
-        startCharPositionInLine = getCharPositionInLine();
-        if ( c==';' ) {
-            consume();
-            return createToken(SEMI);
-        } else if ( c>='0' && c<='9' ) {
-            while ( c>='0' && c<='9' ) consume();
-            return createToken(INT);
-        } else if ( c>='a' && c<='z' ) { // VERY simple ID
-        while ( c>='a' && c<='z' ) consume();
-        return createToken(ID);
-    }
-    // error; consume and try again
-    consume();
-    }
-}
-
-protected Token createToken(int ttype) {
-    String text = null; // we use start..stop indexes in input
-    Pair<TokenSource, CharStream> source = new Pair<TokenSource, CharStream>(this, input);
-
-    return factory.create(source, ttype, text, Token.DEFAULT_CHANNEL, startCharIndex, input.index()-1, startLine,
-startCharPositionInLine);
-}
-
-protected void consume() {
-    if ( c=='\n' ) {
-        line++;
-        // \r comes back as a char, but \n means line++
-        charPositionInLine = 0;
-    }
-    if ( c!=(char)CharStream.EOF ) input.consume();
-    c = (char)input.LA(1);
-    charPositionInLine++;
- }
-
-*/
 
 class ANTLRToken {
    public:
@@ -261,89 +214,132 @@ class TokenSource {
     TokenFactory m_token_factory;
 };
 
+
 class TokenReader {
+    /*
+    ** Contains portions of ANTLR4's token stream code ('UnbufferedTokenStream.cpp').
+    */
    public:
 
     TokenReader(std::string_view fname) :
-        m_file_name(fname), m_idx(0), m_token{}, m_la2_token{}, m_la2_token_valid{ false }, m_stack{ 16 }, m_source{} {
+        m_file_name(fname), _p(0), _numMarkers{}, _currentTokenIndex{0}, _lastToken{}, _lastTokenBufferStart{nullptr} {
         open();
-        m_token = fetch_next();
-        update_tokens(m_token);
+        fill(1);
+        //m_token = fetch_next();
+        //update_tokens(m_token);
     }
 
     ~TokenReader() {
         close();
     }
 
-    std::optional<ANTLRToken> LT(std::int64_t k) {
-        std::cout << "\t\tLT(" << k << ")\n";
-        if (k == 1) {
-            std::cout << "\t\t\ttype: " << m_token.type() << "\n";
-            return m_token;
-        } else if (k == -1) {
-            if (m_idx > 0) {
-                std::cout << "\t\t\ttype: " << m_stack[1].type() << "\n";
-                return m_stack[1];
-            } else {
-                std::cout << "\t@the beginning!!!\n";
-                return std::nullopt;
-            }
-        } else {
-            std::cout << "\tCannot handle yet!!!\n";
+    ANTLRToken * LT(std::int64_t i) {
+        if (i == -1) {
+            return _lastToken;
         }
-        return std::nullopt;
+
+        sync(i);
+        std::int64_t index = static_cast<std::int64_t>(_p) + i - 1;
+        if (index < 0) {
+            throw IndexOutOfBoundsException(std::string("LT(") + std::to_string(i) + std::string(") gives negative index"));
+        }
+
+        if (index >= static_cast<std::int64_t>(_tokens.size())) {
+            //assert(_tokens.size() > 0 && _tokens.back()->type()) == EOF);
+            return _tokens.back().get();
+        }
+
+        return _tokens[static_cast<std::size_t>(index)].get();
     }
 
-    std::optional<ANTLRToken::token_t> LA(std::int64_t k) {
-        std::cout << "\t\tLA(" << k << ") ty: ";
-        if (k == 1) {
-            std::cout << m_token.type() << "\n";
-            return m_token.type();
-        } else if (k == 2) {
-            if (!m_la2_token_valid) {
-                m_la2_token       = fetch_next();
-                m_la2_token_valid = true;
-            }
-            std::cout << m_la2_token.type() << "\n";
-            return m_la2_token.type();
-        } else {
-            std::cout << "\t\t\tCould not satisfy!!!: " << k << "\n";
-            // throw std::runtime_error("\t\t\tCould not satisfy!!!\n");
-            return std::nullopt;
-        }
+    ANTLRToken::token_t LA(std::int64_t k) {
+        return LT(k)->type();
     }
 
     void consume() {
-        std::cout << "consume() " << m_la2_token_valid << "\n";
-
-        if (m_la2_token_valid) {
-            m_token = m_la2_token;
-        } else {
-            m_token = fetch_next();
+        if (LA(1) == EOF) {
+            throw IllegalStateException("cannot consume EOF");
         }
 
-        update_tokens(m_token);
-        m_la2_token_valid = false;
+        // buf always has at least tokens[p==0] in this method due to ctor
+        _lastToken = _tokens[_p].get(); // track last token for LT(-1)
+
+        // if we're at last token and no markers, opportunity to flush buffer
+        if (_p == _tokens.size() - 1 && _numMarkers == 0) {
+            _tokens.clear();
+            _p = 0;
+            _lastTokenBufferStart = _lastToken;
+        } else {
+            ++_p;
+        }
+
+        ++_currentTokenIndex;
+        sync(1);
     }
 
     std::size_t mark() {
-        std::cout << "mark()\n";
-        return m_idx;
+        if (_numMarkers == 0) {
+            _lastTokenBufferStart = _lastToken;
+        }
+
+        int mark = -_numMarkers - 1;
+        _numMarkers++;
+        return mark;
     }
 
-    void release(std::size_t k) {
-        std::cout << "mark(" << k << ")\n";
+    void release(std::size_t marker) {
+        std::size_t expectedMark = -_numMarkers;
+        if (marker != expectedMark) {
+            throw IllegalStateException("release() called with an invalid marker.");
+        }
+
+        _numMarkers--;
+        if (_numMarkers == 0) { // can we release buffer?
+            if (_p > 0) {
+                // Copy tokens[p]..tokens[n-1] to tokens[0]..tokens[(n-1)-p], reset ptrs
+                // p is last valid token; move nothing if p==n as we have no valid char
+                _tokens.erase(_tokens.begin(), _tokens.begin() + static_cast<std::size_t>(_p));
+                _p = 0;
+            }
+            _lastTokenBufferStart = _lastToken;
+        }
     }
 
     std::size_t getIndex() const {
-        std::cout << "getIndex(" << m_idx << ")\n";
-        return m_idx;
+        return _currentTokenIndex;
     }
 
-    void seek(std::size_t k) {
-        std::cout << "seek(" << k << ") !!!\n";
-        if (k != m_idx) {
-            std::cout << "\tk != idx !!!\n";
+    std::size_t getBufferStartIndex() const {
+        return _currentTokenIndex - _p;
+    }
+
+    void seek(std::size_t index) {
+        if (index == _currentTokenIndex) {
+            return;
+        }
+
+        if (index > _currentTokenIndex) {
+            sync(std::size_t(index - _currentTokenIndex));
+            index = std::min(index, getBufferStartIndex() + _tokens.size() - 1);
+        }
+
+        std::size_t bufferStartIndex = getBufferStartIndex();
+        if (bufferStartIndex > index) {
+            throw IllegalArgumentException(std::string("cannot seek to negative index ") + std::to_string(index));
+        }
+
+        std::size_t i = index - bufferStartIndex;
+        if (i >= _tokens.size()) {
+            throw UnsupportedOperationException(std::string("seek to index outside buffer: ") + std::to_string(index) +
+            " not in " + std::to_string(bufferStartIndex) + ".." + std::to_string(bufferStartIndex + _tokens.size()));
+        }
+
+        _p = i;
+        _currentTokenIndex = index;
+        if (_p == 0) {
+            _lastToken = _lastTokenBufferStart;
+        } else {
+            _lastToken = _tokens[_p - 1].get();
         }
     }
 
@@ -370,7 +366,28 @@ class TokenReader {
 
    protected:
 
-    ANTLRToken fetch_next() const {
+    size_t fill(std::size_t n) {
+        for (std::size_t i = 0; i < n; i++) {
+            if (_tokens.size() > 0 && _tokens.back()->type() == EOF) {
+            return i;
+            }
+            add(fetch_next());
+        }
+        return n;
+    }
+
+    void sync(std::size_t want) {
+        std::size_t need = (static_cast<std::size_t>(_p) + want - 1) - static_cast<std::size_t>(_tokens.size()) + 1;
+        if (need > 0) {
+            fill(static_cast<std::size_t>(need));
+        }
+    }
+
+    void add(std::unique_ptr<ANTLRToken> t) {
+        _tokens.push_back(std::move(t));
+    }
+
+    std::unique_ptr<ANTLRToken> fetch_next() const {
         auto length     = read_int();
         auto token_type = read_int();
         auto start_line = read_int();
@@ -384,15 +401,7 @@ class TokenReader {
             token_type = ANTLRToken::_EOF;
         }
 
-        auto token = ANTLRToken(m_idx, token_type, start_line, start_col, end_line, end_col, data);
-        std::cout << "\t" << token.to_string() << "\n";
-
-        return token;
-    }
-
-    void update_tokens(const ANTLRToken& token) {
-        m_idx++;
-        m_stack.push(token);
+        return std::make_unique<ANTLRToken>(ANTLRToken(_currentTokenIndex, token_type, start_line, start_col, end_line, end_col, data));
     }
 
     std::size_t read_int() const {
@@ -415,11 +424,23 @@ class TokenReader {
 
     std::string                m_file_name;
     std::FILE*                 m_file{ nullptr };
+    //////////////////////////////////////////////////////
+    std::vector<std::unique_ptr<ANTLRToken>> _tokens;
+    //std::vector<ANTLRToken> _tokens;
+    size_t _p;
+    int _numMarkers;
+    ANTLRToken  *  _lastToken;
+    ANTLRToken *_lastTokenBufferStart;
+    size_t _currentTokenIndex;
+
+#if 0
+    //////////////////////////////////////////////////////
     std::size_t                m_idx;
     ANTLRToken                 m_token;
     ANTLRToken                 m_la2_token;
     bool                       m_la2_token_valid;
     FixedSizeStack<ANTLRToken> m_stack;
+#endif
     TokenSource                m_source;
 };
 
