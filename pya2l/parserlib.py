@@ -154,13 +154,9 @@ class CustomA2lParser:
             klass,
         )
 
-    def parse(self, input, trace=False):
+    def parse(self, input, trace=False, encoding="latin-1"):
         self.db = model.A2LDatabase(self.fnbase, debug=self.debug)
 
-        # lexer = self.lexerClass(input)
-        # lexer.removeErrorListeners()
-        # lexer.addErrorListener(MyErrorListener(self.line_map))
-        # tokenStream = antlr4.CommonTokenStream(lexer)
         from pya2l.tokenstream import TokenReader
 
         parser = self.parserClass(TokenReader(input))
@@ -168,25 +164,13 @@ class CustomA2lParser:
 
         parser.addErrorListener(MyErrorListener(self.line_map))
 
-        ParserATNSimulator.debug = True
-        ParserATNSimulator.debug_list_atn_decisions = True
-        ParserATNSimulator.dfa_debug = True
-
-        trace = True
-        parser.setTrace(trace)
-        # parser._interp.debug = True
-        parser._interp.trace_atn_sim = True
-        parser._interp.debug_list_atn_decisions = True
-        parser._interp.dfa_debug = True
-        parser._interp.retry_debug = True
-
         meth = getattr(parser, self.startSymbol)
         self._syntaxErrors = parser._syntaxErrors
         tree = meth()
         listener_result = None
 
         self.listener.db = self.db
-        listener = self.listener(self.prepro_result)
+        listener = self.listener(self.prepro_result, encoding=encoding)
         walker = antlr4.ParseTreeWalker()
         walker.walk(listener, tree)
         listener_result = listener.result()
@@ -196,5 +180,4 @@ class CustomA2lParser:
 
     def parseFromFile(self, filename, encoding="latin-1", trace=False, dbname=":memory:"):
         self.fnbase = dbname
-        # return self.parse(antlr4.FileStream(filename, encoding), trace)
-        return self.parse(filename, trace)
+        return self.parse(filename, trace, encoding=encoding)

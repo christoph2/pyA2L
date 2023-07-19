@@ -61,8 +61,9 @@ class BaseListener(antlr4.ParseTreeListener):
 
     value = []
 
-    def __init__(self, prepro_result, loglevel="INFO", *args, **kws):
+    def __init__(self, prepro_result, loglevel="INFO", encoding="latin-1", *args, **kws):
         super(BaseListener, self).__init__(*args, **kws)
+        self.encoding = encoding
         filenames, line_map, ifdata_reader = prepro_result
         self.ifdata_reader = ifdata_reader
         self.ifdata_reader = ifdata_reader
@@ -97,9 +98,12 @@ class BaseListener(antlr4.ParseTreeListener):
             ctx.value = None
 
     def exitStringValue(self, ctx):
-        text = ctx.s.text.strip('"') if ctx.s else None
-        # if text:
-        #    text = re.sub(r'"', '""', text)
+        try:
+            text = ctx.s.text if ctx.s else None
+        except UnicodeDecodeError as e:
+            print(e)
+            print("Pos:", ctx.start.line, ctx.start.column)
+            text = "XXXX"
         ctx.value = text
 
     def exitIdentifierValue(self, ctx):
