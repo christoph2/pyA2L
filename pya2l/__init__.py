@@ -140,6 +140,7 @@ class DB(object):
         #    self.logger.error(f"File cannot decoded as '{encoding}'. Try an encoding like 'latin-1'.")
         #    sys.exit(2)
         self.session = self.db.session
+        """
         self.logger.info("Parsing AML section ...")
         aml_parser = parsers.aml(prepro_result=prepro_result)
         aml_result = aml_parser.parseFromFile(filename=filenames.aml, dbname=str(self._dbfn), encoding=encoding).listener_result
@@ -152,6 +153,7 @@ class DB(object):
             parsed_if_data = pickle.dumps(ip.parse(item.raw))
             item.parsed = parsed_if_data
             self.session.add(item)
+        """
         self.session.commit()
         self.logger.info("Done [Elapsed time {:.2f}s].".format(perf_counter() - start_time))
         return self.session

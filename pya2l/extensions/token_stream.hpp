@@ -86,11 +86,13 @@ public:
   static constexpr token_t INVALID_TYPE = 0;
   static constexpr token_t MIN_USER_TOKEN_TYPE = 1;
 
+  static std::string encoding;
+
   ANTLRToken() = default;
   ANTLRToken(const ANTLRToken &) = default;
 
   ANTLRToken(ANTLRToken &&other) {
-    std::cout << "ANTLRToken(ANTLRToken&&) -- move constructor\n";
+    // std::cout << "ANTLRToken(ANTLRToken&&) -- move constructor\n";
     m_idx = other.m_idx;
     m_token_type = other.m_token_type;
     m_start_line = other.m_start_line;
@@ -105,6 +107,7 @@ public:
   }
 
   ANTLRToken &operator=(const ANTLRToken &other) {
+    // std::cout << "ANTLRToken(ANTLRToken&&) -- copy assignment\n";
     m_idx = other.m_idx;
     m_token_type = other.m_token_type;
     m_start_line = other.m_start_line;
@@ -128,7 +131,6 @@ public:
         m_end_column(end_column), m_payload(payload) {}
 
   std::string to_string() const {
-    // [@0,0:12='ASAP2_VERSION',<49>,1:0]
     return "[@" + std::to_string(m_idx) + "='" + m_payload.data() + "',<" +
            std::to_string(m_token_type) + ">," + std::to_string(m_start_line) +
            ":" + std::to_string(m_start_column - 1) + "]";
@@ -147,6 +149,10 @@ public:
   auto getText() const { return m_payload; }
 
   std::string getSource() const { return ""; }
+
+  void set_encoding(std::string_view encoding) {
+    ANTLRToken::encoding = encoding;
+  }
 
   void setText(std::string_view payload) { m_payload = payload; }
 
@@ -193,29 +199,27 @@ class TokenReader {
 public:
   TokenReader(std::string_view fname)
       : m_file_name(fname), _p(0), _numMarkers{}, _currentTokenIndex{0},
-        _lastToken{nullptr}, _lastTokenBufferStart{nullptr} {
+        _lastToken{}, _lastTokenBufferStart{} {
     open();
     fill(1);
-    // m_token = fetch_next();
-    // update_tokens(m_token);
   }
 
   ~TokenReader() { close(); }
 
   void dump_tokens() const {
+    auto idx = 0;
     for (const auto &token : _tokens) {
-      std::cout << "\t" << token.get()->to_string() << std::endl;
+      std::cout << "\t" << idx << " [" << token.to_string() << "]" << std::endl;
+      idx++;
     }
   }
 
-  ANTLRToken *LT(std::int64_t i) {
+  ANTLRToken LT(std::int64_t i) {
     if (i == -1) {
       return _lastToken;
     }
 
     sync(i);
-
-    dump_tokens();
 
     std::int64_t index = static_cast<std::int64_t>(_p) + i - 1;
     if (index < 0) {
@@ -225,13 +229,13 @@ public:
 
     if (index >= static_cast<std::int64_t>(_tokens.size())) {
       // assert(_tokens.size() > 0 && _tokens.back()->type()) == EOF);
-      return _tokens.back().get();
+      return _tokens.back();
     }
 
-    return _tokens[static_cast<std::size_t>(index)].get();
+    return _tokens[static_cast<std::size_t>(index)];
   }
 
-  ANTLRToken::token_t LA(std::int64_t k) { return LT(k)->type(); }
+  ANTLRToken::token_t LA(std::int64_t k) { return LT(k).type(); }
 
   void consume() {
     if (LA(1) == ANTLRToken::_EOF) {
@@ -239,7 +243,7 @@ public:
     }
 
     // buf always has at least tokens[p==0] in this method due to ctor
-    _lastToken = _tokens[_p].get(); // track last token for LT(-1)
+    _lastToken = _tokens[_p]; // track last token for LT(-1)
 
     // if we're at last token and no markers, opportunity to flush buffer
     if (_p == _tokens.size() - 1 && _numMarkers == 0) {
@@ -318,7 +322,7 @@ public:
     if (_p == 0) {
       _lastToken = _lastTokenBufferStart;
     } else {
-      _lastToken = _tokens[_p - 1].get();
+      _lastToken = _tokens[_p - 1];
     }
   }
 
@@ -327,7 +331,6 @@ public:
   void open() {
 #if defined(_MSC_VER)
     auto err = ::fopen_s(&m_file, m_file_name.c_str(), "rb");
-    std::cout << "Err: " << err << "\n";
 #else
     m_file = ::fopen(m_file_name.c_str(), "rb");
 #endif
@@ -340,7 +343,7 @@ public:
 protected:
   size_t fill(std::size_t n) {
     for (std::size_t i = 0; i < n; i++) {
-      if (_tokens.size() > 0 && _tokens.back()->type() == ANTLRToken::_EOF) {
+      if (_tokens.size() > 0 && _tokens.back().type() == ANTLRToken::_EOF) {
         return i;
       }
       add(fetch_next());
@@ -356,9 +359,9 @@ protected:
     }
   }
 
-  void add(std::unique_ptr<ANTLRToken> t) { _tokens.push_back(std::move(t)); }
+  void add(const ANTLRToken &t) { _tokens.push_back(t); }
 
-  std::unique_ptr<ANTLRToken> fetch_next() const {
+  ANTLRToken fetch_next() const {
     auto length = read_int();
     auto token_type = read_int();
     auto start_line = read_int();
@@ -368,13 +371,11 @@ protected:
     auto data = read_string(length);
 
     if (eof()) {
-      std::cout << "\t*** EOF ***\n\n";
       token_type = ANTLRToken::_EOF;
     }
 
-    return std::make_unique<ANTLRToken>(
-        ANTLRToken(_currentTokenIndex, token_type, start_line, start_col,
-                   end_line, end_col, data));
+    return ANTLRToken(_currentTokenIndex, token_type, start_line, start_col,
+                      end_line, end_col, data);
   }
 
   std::size_t read_int() const {
@@ -394,26 +395,15 @@ protected:
   }
 
 private:
-  std::vector<std::unique_ptr<ANTLRToken>> _tokens;
+  std::vector<ANTLRToken> _tokens;
   std::string m_file_name;
   std::FILE *m_file{nullptr};
-  //////////////////////////////////////////////////////
-
-  // std::vector<ANTLRToken> _tokens;
   size_t _p;
   int _numMarkers;
-  ANTLRToken *_lastToken;
-  ANTLRToken *_lastTokenBufferStart;
+  ANTLRToken _lastToken;
+  ANTLRToken _lastTokenBufferStart;
   size_t _currentTokenIndex;
 
-#if 0
-    //////////////////////////////////////////////////////
-    std::size_t                m_idx;
-    ANTLRToken                 m_token;
-    ANTLRToken                 m_la2_token;
-    bool                       m_la2_token_valid;
-    FixedSizeStack<ANTLRToken> m_stack;
-#endif
   TokenSource m_source;
 };
 

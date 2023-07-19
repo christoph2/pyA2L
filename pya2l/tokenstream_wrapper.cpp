@@ -7,6 +7,15 @@
 
 namespace py = pybind11;
 
+#if 0
+m.def("return_bytes",
+    []() {
+        std::string s("\xba\xd0\xba\xd0");  // Not valid UTF-8
+        return py::bytes(s);  // Return the data without transcoding
+    }
+);
+#endif
+
 PYBIND11_MODULE(tokenstream, m) {
   py::class_<TokenReader>(m, "TokenReader")
       .def(py::init<const std::string &>())
@@ -34,10 +43,41 @@ PYBIND11_MODULE(tokenstream, m) {
       .def_property_readonly("start", &ANTLRToken::start)
       .def_property_readonly("stop", &ANTLRToken::stop)
       .def_property_readonly("source", &ANTLRToken::getSource)
-      .def_property("text", &ANTLRToken::getText, &ANTLRToken::setText)
-      .def_property_readonly("getText", &ANTLRToken::getText)
+      //.def_property("text", &ANTLRToken::getText, &ANTLRToken::setText)
+      .def_property_readonly("text", //&ANTLRToken::getText
+                             [](const ANTLRToken &self) {
+                               std::string s = self.getText();
+                               // py::handle py_s =
+                               // PyUnicode_DecodeLatin1(s.data(), s.length(),
+                               // nullptr);
+                               py::handle py_s = PyUnicode_Decode(
+                                   s.data(), s.length(),
+                                   ANTLRToken::encoding.data(), "strict");
+
+                               if (!py_s) {
+                                 throw py::error_already_set();
+                               }
+                               return py::reinterpret_steal<py::str>(py_s);
+                             })
       .def("__repr__", &ANTLRToken::to_string);
 
   py::class_<TokenFactory>(m, "TokenFactory")
       .def("create", &TokenFactory::create);
 }
+
+#if 0
+PyObject *PyUnicode_FromEncodedObject(PyObject *obj, const char *encoding, const char *errors);
+
+// This uses the Python C API to convert Latin-1 to Unicode
+m.def("str_output",
+[]() {
+std::string s = "Send your r\xe9sum\xe9 to Alice in HR"; // Latin-1
+py::handle py_s = PyUnicode_DecodeLatin1(s.data(), s.length(), nullptr);
+if (!py_s) {
+throw py::error_already_set();
+}
+return py::reinterpret_steal<py::str>(py_s);
+}
+);
+
+#endif
