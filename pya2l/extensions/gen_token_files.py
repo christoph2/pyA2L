@@ -281,6 +281,77 @@ literalNames = [
     "'/end'",
 ]
 
+
+############################
+############################
+############################
+MAY_KEYWORDS = {
+    "ABSOLUTE": [("DEPOSIT", 1)],
+    "ALTERNATE_CURVES": [("FNC_VALUES", 3)],
+    "ALTERNATE_WITH_X": [("FNC_VALUES", 3)],
+    "ALTERNATE_WITH_Y": [("FNC_VALUES", 3)],
+    "APLHA": [("VAR_NAMING", 1)],
+    "ASCII": [("CHARACTERISTIC", 3), ("TYPEDEF_CHARACTERISTIC", 3)],
+    "CALIBRATION": [("CALIBRATION_ACCESS", 1)],
+    "CALIBRATION_VARIABLES": [("MEMORY_SEGMENT", 3)],
+    "CODE": [("MEMORY_SEGMENT", 3)],
+    "COLUMN_DIR": [("FNC_VALUES", 3), ("LAYOUT", 1)],
+    "COM_AXIS": [("AXIS_DESCR", 1)],
+    "CUBE_4": [("CHARACTERISTIC", 3), ("TYPEDEF_CHARACTERISTIC", 3)],
+    "CUBE_5": [("CHARACTERISTIC", 3), ("TYPEDEF_CHARACTERISTIC", 3)],
+    "CUBOID": [("CHARACTERISTIC", 3), ("TYPEDEF_CHARACTERISTIC", 3)],
+    "CURVE": [("CHARACTERISTIC", 3), ("TYPEDEF_CHARACTERISTIC", 3)],
+    "CURVE_AXIS": [("AXIS_DESCR", 1)],
+    "DATA": [("MEMORY_SEGMENT", 3)],
+    "DERIVED": [("UNIT", 4)],
+    "DIFFERENCE": [("DEPOSIT", 1)],
+    "EEPROM": [("MEMORY_SEGMENT", 4)],
+    "EPROM": [("MEMORY_SEGMENT", 4)],
+    "EXCLUDE_FROM_FLASH": [("MEMORY_SEGMENT", 3)],
+    "EXTENDED_SI": [("UNIT", 4)],
+    "EXTERN": [("MEMORY_SEGMENT", 5)],
+    "FIX_AXIS": [("AXIS_DESCR", 1)],
+    "FLASH": [("MEMORY_SEGMENT", 4)],
+    "FORM": [("COMPU_METHOD", 3)],
+    "IDENTICAL": [("COMPU_METHOD", 3)],
+    "INTERN": [("MEMORY_SEGMENT", 5)],
+    "LINEAR": [("COMPU_METHOD", 3)],
+    "MAP": [("CHARACTERISTIC", 3), ("TYPEDEF_CHARACTERISTIC", 3)],
+    "MONOTONOUS": [("MONOTONY", 1)],
+    "MON_DECREASE": [("MONOTONY", 1)],
+    "MON_INCREASE": [("MONOTONY", 1)],
+    "NOT_IN_MCD_SYSTEM": [("CALIBRATION_ACCESS", 1)],
+    "NOT_MON": [("MONOTONY", 1)],
+    "NO_CALIBRATION": [("CALIBRATION_ACCESS", 1)],
+    "NUMERIC": [("VAR_NAMING", 1)],
+    "OFFLINE_CALIBRATION": [("CALIBRATION_ACCESS", 1)],
+    "OFFLINE_DATA": [("MEMORY_SEGMENT", 3)],
+    "PRG_CODE": [("MEMORY_LAYOUT", 1)],
+    "PRG_DATA": [("MEMORY_LAYOUT", 1)],
+    "PRG_RESERVED": [("MEMORY_LAYOUT", 1)],
+    "RAM": [("MEMORY_SEGMENT", 4)],
+    "RAT_FUNC": [("COMPU_METHOD", 3)],
+    "REGISTER": [("MEMORY_SEGMENT", 4)],
+    "RESERVED": [("MEMORY_SEGMENT", 3)],
+    "RES_AXIS": [("AXIS_DESCR", 1)],
+    "ROM": [("MEMORY_SEGMENT", 4)],
+    "ROW_DIR": [("FNC_VALUES", 3), ("LAYOUT", 1)],
+    "SERAM": [("MEMORY_SEGMENT", 3)],
+    "STD_AXIS": [("AXIS_DESCR", 1)],
+    "STRICT_DECREASE": [("MONOTONY", 1)],
+    "STRICT_INCREASE": [("MONOTONY", 1)],
+    "STRICT_MON": [("MONOTONY", 1)],
+    "TAB_INTP": [("COMPU_METHOD", 3), ("COMPU_TAB", 3)],
+    "TAB_NOINTP": [("COMPU_METHOD", 3), ("COMPU_TAB", 3)],
+    "TAB_VERB": [("COMPU_METHOD", 3), ("COMPU_VTAB", 3)],
+    "VALUE": [("CHARACTERISTIC", 3), ("TYPEDEF_CHARACTERISTIC", 3)],
+    "VAL_BLK": [("CHARACTERISTIC", 3), ("TYPEDEF_CHARACTERISTIC", 3)],
+    "VARIABLES": [("MEMORY_SEGMENT", 3)],
+}
+############################
+############################
+############################
+
 HEADER = """/*
 **
 **  !!! AUTOMATICALLY GENERATED FILE -- DO NOT EDIT !!!
