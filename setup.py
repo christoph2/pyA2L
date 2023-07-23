@@ -34,7 +34,7 @@ ANTLR_VERSION = next(req.specs[0][1] for req in BASE_REQUIREMENTS if req.project
 
 PB11_INCLUDE_DIRS = subprocess.getoutput("pybind11-config --include")
 
-EXT_NAMES = ["pya2l.preprocessor", "pya2l.tokenstream"]
+EXT_NAMES = ["pya2l.preprocessor", "pya2l.tokenstream", "a2lparser"]
 
 uname = platform.uname()
 if uname.system == "Linux":
@@ -56,6 +56,14 @@ ext_modules = [
         include_dirs=[PB11_INCLUDE_DIRS, "pya2l/extensions/"],
         sources=["pya2l/tokenstream_wrapper.cpp", "pya2l/extensions/exceptions.cpp", "pya2l/extensions/token_stream.cpp"],
         define_macros=[("EXTENSION_NAME", EXT_NAMES[1])],
+        cxx_std=20,
+        extra_compile_args=extra_compile_args,
+    ),
+    Pybind11Extension(
+        EXT_NAMES[2],
+        include_dirs=[PB11_INCLUDE_DIRS, "pya2l/extensions/", "pya2l/extensions/antlr4_runtime"],
+        sources=["pya2l/a2lparser_wrapper.cpp"],
+        define_macros=[("EXTENSION_NAME", EXT_NAMES[2])],
         cxx_std=20,
         extra_compile_args=extra_compile_args,
     ),
