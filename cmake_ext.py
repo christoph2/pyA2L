@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 
 from pybind11 import get_cmake_dir
+from pybind11.setup_helpers import Pybind11Extension
 from setuptools import Extension
 from setuptools.command.build_ext import build_ext
 
@@ -33,6 +34,7 @@ PLAT_TO_CMAKE = {
 # If you need multiple extensions, see scikit-build.
 class CMakeExtension(Extension):
     def __init__(self, name: str, sourcedir: str = "") -> None:
+        print("CMakeExtension:", name, sourcedir)
         super().__init__(name, sources=[])
         self.sourcedir = os.fspath(Path(sourcedir).resolve())
 
@@ -42,6 +44,12 @@ class CMakeBuild(build_ext):
         # Must be in this form due to bug in .resolve() only fixed in Python 3.10+
         ext_fullpath = Path.cwd() / self.get_ext_fullpath(ext.name)
         extdir = ext_fullpath.parent.resolve()
+        print("build_extension:", ext)
+
+        if not isinstance(ext, CMakeExtension):
+            super().build_extension(ext)
+            return
+        print("PFAD:", extdir)
 
         # Using this requires trailing slash for auto-detection & inclusion of
         # auxiliary "native" libs
@@ -49,33 +57,21 @@ class CMakeBuild(build_ext):
         debug = int(os.environ.get("DEBUG", 0)) if self.debug is None else self.debug
         cfg = "Debug" if debug else "Release"
 
-        # CMake lets you override the generator - we need to check this.
-        # Can be set with Conda-Build, for example.
         cmake_generator = os.environ.get("CMAKE_GENERATOR", "")
 
-        # Set Python_EXECUTABLE instead if you use PYBIND11_FINDPYTHON
-        # EXAMPLE_VERSION_INFO shows you how to pass a value into the C++ code
-        # from Python.
         cmake_args = [
             f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}{os.sep}",
             f"-DPYTHON_EXECUTABLE={sys.executable}",
             f"-DCMAKE_BUILD_TYPE={cfg}",  # not used on MSVC, but no harm
         ]
         build_args = []
-        # Adding CMake arguments set as environment variable
-        # (needed e.g. to build for ARM OSx on conda-forge)
+
         if "CMAKE_ARGS" in os.environ:
             cmake_args += [item for item in os.environ["CMAKE_ARGS"].split(" ") if item]
 
-        # In this example, we pass in the version to C++. You might not need to.
         cmake_args += [f"-DEXAMPLE_VERSION_INFO={self.distribution.get_version()}"]
 
         if self.compiler.compiler_type != "msvc":
-            # Using Ninja-build since it a) is available as a wheel and b)
-            # multithreads automatically. MSVC would require all variables be
-            # exported for Ninja to pick it up, which is a little tricky to do.
-            # Users can override the generator with CMAKE_GENERATOR in CMake
-            # 3.15+.
             if not cmake_generator or cmake_generator == "Ninja":
                 try:
                     import ninja
