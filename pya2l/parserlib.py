@@ -165,7 +165,6 @@ class CustomA2lParser:
         parser.addErrorListener(MyErrorListener(self.line_map))
 
         meth = getattr(parser, self.startSymbol)
-        self._syntaxErrors = parser._syntaxErrors
         tree = meth()
         listener_result = None
 

@@ -98,13 +98,7 @@ class BaseListener(antlr4.ParseTreeListener):
             ctx.value = None
 
     def exitStringValue(self, ctx):
-        try:
-            text = ctx.s.text if ctx.s else None
-        except UnicodeDecodeError as e:
-            print(e)
-            print("Pos:", ctx.start.line, ctx.start.column)
-            text = "XXXX"
-        ctx.value = text
+        ctx.value = ctx.s.text if ctx.s else None
 
     def exitIdentifierValue(self, ctx):
         text = ".".join(self.getList(ctx.i))
