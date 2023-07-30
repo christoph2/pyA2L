@@ -147,7 +147,7 @@ class CustomA2lParser:
         self.listener = listener
 
     def _load(self):
-        module = importlib.import_module("pya2l.a2l")
+        module = importlib.import_module("pya2l.a2lparser")
         klass = getattr(module, "a2l")  # noqa: B009
         return (
             module,
