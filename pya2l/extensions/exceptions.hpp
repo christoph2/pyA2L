@@ -11,7 +11,7 @@ class RuntimeException : public std::exception {
 
    public:
 
-    RuntimeException(const std::string& msg = "");
+    RuntimeException(std::string msg = "");
 
     const char* what() const noexcept override;
 };
@@ -23,7 +23,7 @@ class UnsupportedOperationException : public RuntimeException {
     }
 
     UnsupportedOperationException(UnsupportedOperationException const &) = default;
-    ~UnsupportedOperationException();
+    ~UnsupportedOperationException() override;
     UnsupportedOperationException& operator=(UnsupportedOperationException const &) = default;
 };
 
@@ -34,7 +34,7 @@ class IllegalStateException : public RuntimeException {
     }
 
     IllegalStateException(IllegalStateException const &) = default;
-    ~IllegalStateException();
+    ~IllegalStateException() override;
     IllegalStateException& operator=(IllegalStateException const &) = default;
 };
 
@@ -46,7 +46,7 @@ class IllegalArgumentException : public RuntimeException {
     IllegalArgumentException(const std::string& msg = "") : RuntimeException(msg) {
     }
 
-    ~IllegalArgumentException();
+    ~IllegalArgumentException() override;
     IllegalArgumentException& operator=(IllegalArgumentException const &) = default;
 };
 
@@ -57,7 +57,7 @@ class NullPointerException : public RuntimeException {
     }
 
     NullPointerException(NullPointerException const &) = default;
-    ~NullPointerException();
+    ~NullPointerException() override;
     NullPointerException& operator=(NullPointerException const &) = default;
 };
 
@@ -68,7 +68,7 @@ class IndexOutOfBoundsException : public RuntimeException {
     }
 
     IndexOutOfBoundsException(IndexOutOfBoundsException const &) = default;
-    ~IndexOutOfBoundsException();
+    ~IndexOutOfBoundsException() override;
     IndexOutOfBoundsException& operator=(IndexOutOfBoundsException const &) = default;
 };
 

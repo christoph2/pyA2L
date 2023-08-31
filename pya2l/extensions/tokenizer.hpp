@@ -37,12 +37,12 @@ enum class CharClass : std::int8_t {
     STRING     = 1,
 };
 
-const char SLASH   = '/';
-const char BSLASH  = '\\';
-const char ASTERIX = ' *';
-const char NL      = '\n';
-const char CR      = '\r';
-const char DQUOTE  = '"';
+constexpr char SLASH   = '/';
+constexpr char BSLASH  = '\\';
+constexpr char ASTERIX = '*';
+constexpr char NL      = '\n';
+constexpr char CR      = '\r';
+constexpr char DQUOTE  = '"';
 
 enum class StringStateType : std::uint8_t {
     IDLE,
@@ -94,10 +94,10 @@ struct Token {
 
    private:
 
-    static constexpr auto PAT_FLOAT = ctll::fixed_string{ "^[+\\-]?[0-9]+(\\.[0-9]*)?[eE][+\\-]?[0-9]+|\\.[0-9]+"
-                                                          "([eE][+\\-]?[0-9]+)?|[0-9]+[eE][+\\-]?[0-9]+" };
-    static constexpr auto PAT_INT   = ctll::fixed_string{ "^[+\\-]?[0-9]+$" };
-    static constexpr auto PAT_HEX   = ctll::fixed_string{ "^0x[0-9a-fA-F]+$" };
+    static constexpr auto PAT_FLOAT = ctll::fixed_string{ "^[+\\-]?(\\d+([.]\\d*)?([eE][+\\-]?\\d+)?|[.]\\d+([eE][+\\-]?\\d+)?)" };
+
+    static constexpr auto PAT_INT = ctll::fixed_string{ "^[+\\-]?[0-9]+$" };
+    static constexpr auto PAT_HEX = ctll::fixed_string{ "^0x[0-9a-fA-F]+$" };
 
     void set_token_type() {
         if (m_token_class == TokenClass::WHITESPACE) {
@@ -108,7 +108,7 @@ struct Token {
             m_token_type = static_cast<std::uint16_t>(STRING);
             trim(m_payload);
         } else {
-            auto entry = A2L_KEYWORDS.find(m_payload);
+            const auto entry = A2L_KEYWORDS.find(m_payload);
 
             if (entry != A2L_KEYWORDS.end()) {
                 m_token_type = static_cast<std::uint16_t>(entry->second);

@@ -143,29 +143,22 @@ class CustomA2lParser:
         filenames, line_map, ifdata_reader = prepro_result
         self.line_map = line_map
         self.prepro_result = prepro_result
-        self.parserModule, self.parserClass = self._load()
         self.listener = listener
 
-    def _load(self):
-        module = importlib.import_module("pya2l.a2lparser")
-        klass = getattr(module, "a2l")  # noqa: B009
-        return (
-            module,
-            klass,
-        )
-
-    def parse(self, input, trace=False, encoding="latin-1"):
+    def parse(self, filename, trace=False, encoding="latin-1"):
         self.db = model.A2LDatabase(self.fnbase, debug=self.debug)
 
-        from pya2l.tokenstream import TokenReader
+        from pya2l.a2lparser import parse
 
-        parser = self.parserClass(TokenReader(input))
-        parser.removeErrorListeners()
+        print("parsing: ", filename)
+        tree = parse(filename)
 
-        parser.addErrorListener(MyErrorListener(self.line_map))
+        # parser = self.parserClass(TokenReader(input))
+        # parser.removeErrorListeners()
+        # parser.addErrorListener(MyErrorListener(self.line_map))
+        # meth = getattr(parser, self.startSymbol)
+        # tree = meth()
 
-        meth = getattr(parser, self.startSymbol)
-        tree = meth()
         listener_result = None
 
         self.listener.db = self.db

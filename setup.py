@@ -48,7 +48,7 @@ ANTLR_RT_BASE = Path("./pya2l/extensions/antlr4_runtime")
 
 PB11_INCLUDE_DIRS = subprocess.getoutput("pybind11-config --include")
 
-EXT_NAMES = ["pya2l.preprocessor", "pya2l.tokenstream", "a2lparser"]
+EXT_NAMES = ["pya2l.preprocessor", "pya2l.tokenstream"]
 
 uname = platform.uname()
 if uname.system == "Linux":
@@ -65,14 +65,14 @@ ext_modules = [
         cxx_std=20,
         extra_compile_args=extra_compile_args,
     ),
-    Pybind11Extension(
-        EXT_NAMES[1],
-        include_dirs=[PB11_INCLUDE_DIRS, "pya2l/extensions/"],
-        sources=["pya2l/tokenstream_wrapper.cpp", "pya2l/extensions/exceptions.cpp", "pya2l/extensions/token_stream.cpp"],
-        define_macros=[("EXTENSION_NAME", EXT_NAMES[1])],
-        cxx_std=20,
-        extra_compile_args=extra_compile_args,
-    ),
+    #    Pybind11Extension(
+    #        EXT_NAMES[1],
+    #        include_dirs=[PB11_INCLUDE_DIRS, "pya2l/extensions/"],
+    #        sources=["pya2l/tokenstream_wrapper.cpp", "pya2l/extensions/exceptions.cpp", "pya2l/extensions/token_stream.cpp"],
+    #        define_macros=[("EXTENSION_NAME", EXT_NAMES[1])],
+    #        cxx_std=20,
+    #        extra_compile_args=extra_compile_args,
+    #    ),
 ]
 
 
@@ -101,8 +101,8 @@ class A2LParser(Command):
         # ext_fullpath = Path.cwd() # / self.get_ext_fullpath(ext.name)
         # extdir = ext_fullpath.parent.resolve()
 
-        sourcedir = Path.cwd() / "pya2l" / "extensions/"
-        extdir = sourcedir / "build/"
+        self.sourcedir = Path.cwd() / "pya2l" / "extensions/"
+        self.extdir = self.sourcedir / "build/"
 
         debug = int(os.environ.get("DEBUG", 0)) if self.debug is None else self.debug
         cfg = "Debug" if debug else "Release"
@@ -110,11 +110,11 @@ class A2LParser(Command):
         cmake_generator = os.environ.get("CMAKE_GENERATOR", "")
 
         cmake_args = [
-            f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}{os.sep}",
+            f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={self.extdir}{os.sep}",
             f"-DPYTHON_EXECUTABLE={sys.executable}",
             f"-DCMAKE_BUILD_TYPE={cfg}",  # not used on MSVC, but no harm
         ]
-        build_args = []
+        self.build_args = []
         if "CMAKE_ARGS" in os.environ:
             cmake_args += [item for item in os.environ["CMAKE_ARGS"].split(" ") if item]
         cmake_args += [f"-DEXAMPLE_VERSION_INFO={self.distribution.get_version()}"]
@@ -143,18 +143,19 @@ class A2LParser(Command):
             single_config = any(x in cmake_generator for x in {"NMake", "Ninja"})
 
             # CMake allows an arch-in-generator style for backward compatibility
-            contains_arch = any(x in cmake_generator for x in {"ARM", "Win64"})
+            # contains_arch = any(x in cmake_generator for x in {"ARM", "Win64"})
 
             # Specify the arch if using MSVC generator, but only if it doesn't
             # contain a backward-compatibility arch spec already in the
             # generator name.
-            if not single_config and not contains_arch:
-                cmake_args += ["-A", PLAT_TO_CMAKE[sys.platform]]
+
+            # if not single_config and not contains_arch:
+            #     cmake_args += ["-A", PLAT_TO_CMAKE[sys.platform]]
 
             # Multi-config generators have a different way to specify configs
             if not single_config:
-                cmake_args += [f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{cfg.upper()}={extdir}"]
-                build_args += ["--config", cfg]
+                cmake_args += [f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{cfg.upper()}={self.extdir}"]
+                self.build_args += ["--config", cfg]
 
         if sys.platform.startswith("darwin"):
             # Cross-compile support for macOS - respect ARCHFLAGS if set
@@ -169,7 +170,7 @@ class A2LParser(Command):
             # using -j in the build_ext call, not supported by pip or PyPA-build.
             if hasattr(self, "parallel") and self.parallel:
                 # CMake 3.12+ only.
-                build_args += [f"-j{self.parallel}"]
+                self.build_args += [f"-j{self.parallel}"]
 
         self.cmake_args = cmake_args
         self.build_temp = Path("./build")
@@ -177,19 +178,18 @@ class A2LParser(Command):
         if not self.build_temp.exists():
             self.build_temp.mkdir(parents=True)
 
-        subprocess.run(["cmake", sourcedir, *self.cmake_args], cwd=self.build_temp, check=True, env=self.env)
-        # subprocess.run(["cmake", "--build", ".", *self.build_args], cwd=self.build_temp, check=True, env=self.env)
-
-    """
-    [ '_ensure_stringlike', '_ensure_tested_string', 'announce', 'command_consumes_arguments', 'copy_file', 'copy_tree', 'debug',
-    'debug_print', 'distribution', 'dump_options', 'ensure_dirname', 'ensure_filename', 'ensure_finalized', 'ensure_string',
-    'ensure_string_list', 'execute', 'finalize_options', 'get_command_name', 'get_finalized_command', 'get_sub_commands',
-    'initialize_options', 'make_archive', 'make_file', 'mkpath', 'move_file', 'reinitialize_command', 'run', 'run_command',
-    'set_undefined_options', 'spawn', 'sub_commands', 'warn']
-    """
-
     def run(self):
+        from glob import glob
+        from shutil import move, copy
+
         print("AntlrParser: run", self.build_temp, self.cmake_args)
+
+        subprocess.run(["cmake", str(self.sourcedir), *self.cmake_args], cwd=self.build_temp, check=True, env=self.env)
+        subprocess.run(["cmake", "--build", ".", *self.build_args], cwd=self.build_temp, check=True, env=self.env)
+
+        for fname in glob(str(self.extdir / "a2lparser*.pyd")):  # We don't know the exact extension name.
+            print(f"Moving '{fname}'", " to", Path.cwd() / "pya2l" / Path(fname).name)
+            copy(fname, Path.cwd() / "pya2l" / Path(fname).name)
 
 
 class AntlrAutogen(Command):
@@ -208,12 +208,14 @@ class AntlrAutogen(Command):
 
     def finalize_options(self):
         """Post-process options."""
-        a2lGrammar = str(ROOT_DIRPATH / "pya2l" / "a2l.g4")
+        # a2lGrammar = str(ROOT_DIRPATH / "pya2l" / "a2l.g4")
         a2llgGrammar = str(ROOT_DIRPATH / "pya2l" / "a2llg.g4")
         amlGrammar = str(ROOT_DIRPATH / "pya2l" / "aml.g4")
         # distutils.cmd.Command should not have __init__().
         # pylint: disable=W0201
-        self.arguments = [a2lGrammar, a2llgGrammar, amlGrammar, "-Dlanguage=Python3"]
+
+        # self.arguments = [a2lGrammar, a2llgGrammar, amlGrammar, "-Dlanguage=Python3"]
+        self.arguments = [a2llgGrammar, amlGrammar, "-Dlanguage=Python3"]
 
         if self.target_dir is not None:
             self.arguments.extend(["-o", self.target_dir])
@@ -230,7 +232,7 @@ class AntlrAutogen(Command):
         antlrCmd = ["java", "-Xmx500M", "-cp", antlrJar, "org.antlr.v4.Tool"]
         self.announce(" ".join(antlrCmd + self.arguments))
         subprocess.check_call(antlrCmd + self.arguments)
-        clean()
+        # clean()
 
 
 def clean():
@@ -289,7 +291,7 @@ setup(
         "build_ext": build_ext,
         "develop": CustomDevelop,
     },
-    ext_modules=ext_modules,
+    # ext_modules=ext_modules,
     packages=find_namespace_packages(where=str(ROOT_DIRPATH)),
     package_dir={"pya2l": str(ROOT_DIRPATH / "pya2l")},
     install_requires=list(map(str, BASE_REQUIREMENTS)),

@@ -15,13 +15,14 @@
     #include "tokenizer.hpp"
 
     #pragma warning(disable: 4251 4273)
-    #include "antlr4-runtime.h"
+
+// #include "antlr4-runtime.h"
 
 template<typename Ty_>
 class FixedSizeStack {
    public:
 
-    FixedSizeStack(std::size_t size) : m_stack{}, m_size(size) {
+    explicit FixedSizeStack(std::size_t size) : m_size(size) {
     }
 
     FixedSizeStack(const FixedSizeStack &)            = delete;
@@ -29,8 +30,7 @@ class FixedSizeStack {
     FixedSizeStack(FixedSizeStack &&)                 = delete;
     FixedSizeStack &operator=(FixedSizeStack &&)      = delete;
 
-    ~FixedSizeStack() {
-    }
+    ~FixedSizeStack() = default;
 
     void push(const Ty_ &value) noexcept {
         m_stack.push_front(value);
@@ -45,18 +45,18 @@ class FixedSizeStack {
 
    private:
 
-    std::deque<Ty_> m_stack;
+    std::deque<Ty_> m_stack{};
     std::size_t     m_size;
 };
 
 class TokenWriter {
    public:
 
-    const std::size_t HEADER_SIZE = sizeof(std::size_t) * (6);
+    const std::size_t HEADER_SIZE = sizeof(std::size_t) * 6;
 
     TokenWriter() = delete;
 
-    TokenWriter(TempFile &outf) : m_outf(outf.handle()) {
+    explicit TokenWriter(TempFile &outf) : m_outf(outf.handle()) {
     }
 
     void operator<<(const Token &token) {
@@ -72,15 +72,15 @@ class TokenWriter {
         }
     }
 
-    void write_int(std::size_t value) {
-        std::size_t before = m_outf.tellp();
-        m_outf.write(std::bit_cast<const char *>(&value), sizeof std::size_t);
-        std::size_t after   = m_outf.tellp();
-        std::size_t correct = before + 8;
+    void write_int(std::size_t value) const {
+        const std::size_t before = m_outf.tellp();
+        m_outf.write(std::bit_cast<const char *>(&value), sizeof(std::size_t));
+        const std::size_t after   = m_outf.tellp();
+        const std::size_t correct = before + 8;
         assert(correct == after);
     }
 
-    void write_string(std::string_view text) {
+    void write_string(std::string_view text) const {
         m_outf.write(text.data(), std::size(text));
     }
 
@@ -89,19 +89,26 @@ class TokenWriter {
     std::ofstream &m_outf;
 };
 
-class ANTLRToken : public antlr4::Token {
+class ANTLRToken /*: public antlr4::Token*/ {
    public:
 
     using token_t = unsigned long long;
     static std::string encoding;
 
+    static constexpr size_t INVALID_TYPE           = 0;
+    static constexpr size_t EPSILON                = std::numeric_limits<size_t>::max() - 1;
+    static constexpr size_t MIN_USER_TOKEN_TYPE    = 1;
+    static constexpr size_t _EOF                   = std::numeric_limits<size_t>::max();
+    static constexpr size_t DEFAULT_CHANNEL        = 0;
+    static constexpr size_t HIDDEN_CHANNEL         = 1;
+    static constexpr size_t MIN_USER_CHANNEL_VALUE = 2;
+
     ANTLRToken()                   = default;
     ANTLRToken(const ANTLRToken &) = default;
 
-    ~ANTLRToken() override {
-    }
+    ~ANTLRToken() = default;
 
-    ANTLRToken(ANTLRToken &&other) {
+    ANTLRToken(ANTLRToken &&other) noexcept {
         // std::cout << "ANTLRToken(ANTLRToken&&) -- move constructor\n";
         m_idx          = other.m_idx;
         m_token_type   = other.m_token_type;
@@ -111,7 +118,7 @@ class ANTLRToken : public antlr4::Token {
         m_end_column   = other.m_end_column;
         // m_payload      = std::move(other.m_payload);
 
-        std::copy(other.m_payload.begin(), other.m_payload.end(), std::back_inserter(m_payload));
+        std::ranges::copy(other.m_payload, std::back_inserter(m_payload));
         // other.m_payload = nullptr;
     }
 
@@ -141,7 +148,7 @@ class ANTLRToken : public antlr4::Token {
         m_payload(payload) {
     }
 
-    std::string toString() const override {
+    std::string toString() const {
         return "[@" + std::to_string(m_idx) + "='" + m_payload.data() + "',<" + std::to_string(m_token_type) + ">," +
                std::to_string(m_start_line) + ":" + std::to_string(m_start_column - 1) + "]";
     }
@@ -154,7 +161,7 @@ class ANTLRToken : public antlr4::Token {
         return m_idx;
     }
 
-    size_t getTokenIndex() const override {
+    size_t getTokenIndex() const {
         return m_idx;
     }
 
@@ -162,7 +169,7 @@ class ANTLRToken : public antlr4::Token {
         return m_start_line;
     }
 
-    std::size_t getLine() const override {
+    std::size_t getLine() const {
         return m_start_line;
     }
 
@@ -170,15 +177,11 @@ class ANTLRToken : public antlr4::Token {
         return m_start_column - 1;
     }
 
-    std::size_t getCharPositionInLine() const override {
+    std::size_t getCharPositionInLine() const {
         return m_start_column - 1;
     }
 
-    antlr4::TokenSource *getTokenSource() const override {
-        throw UnsupportedOperationException("getTokenSource() operation not supported.");
-    }
-
-    std::size_t getChannel() const override {
+    std::size_t getChannel() const {
         return DEFAULT_CHANNEL;
     }
 
@@ -186,11 +189,11 @@ class ANTLRToken : public antlr4::Token {
         return m_token_type;
     }
 
-    std::size_t getType() const override {
+    std::size_t getType() const {
         return m_token_type;
     }
 
-    std::string getText() const override {
+    std::string getText() const {
         return m_payload;
     }
 
@@ -198,24 +201,12 @@ class ANTLRToken : public antlr4::Token {
         return "";
     }
 
-    void set_encoding(std::string_view encoding) {
-        ANTLRToken::encoding = encoding;
+    void set_encoding(std::string_view enc) {
+        ANTLRToken::encoding = enc;
     }
 
     void setText(std::string_view payload) {
         m_payload = payload;
-    }
-
-    std::size_t getStartIndex() const override {
-        return INVALID_INDEX;
-    }
-
-    std::size_t getStopIndex() const override {
-        return INVALID_INDEX;
-    }
-
-    antlr4::CharStream *getInputStream() const override {
-        return nullptr;
     }
 
    private:
@@ -229,15 +220,15 @@ class ANTLRToken : public antlr4::Token {
     std::string m_payload{};
 };
 
-class TokenFactory : public antlr4::TokenFactory<ANTLRToken> {
+class TokenFactory /*: public antlr4::TokenFactory<ANTLRToken>*/ {
    public:
 
     TokenFactory()           = default;
     ~TokenFactory() noexcept = default;
 
     std::unique_ptr<ANTLRToken> create(
-        std::pair<antlr4::TokenSource *, antlr4::CharStream *> source, std::size_t type, const std::string &text,
-        std::size_t channel, std::size_t start, std::size_t stop, std::size_t line, std::size_t column
+        std::string source, std::size_t type, const std::string &text, std::size_t channel, std::size_t start, std::size_t stop,
+        std::size_t line, std::size_t column
     ) {
         return std::make_unique<ANTLRToken>(ANTLRToken(0, type, line, column, line, column, text));
     }
@@ -263,11 +254,10 @@ class TokenSource {
     TokenFactory m_token_factory;
 };
 
-class TokenReader : public antlr4::TokenStream {
+class TokenReader {
    public:
 
-    TokenReader(std::string_view fname) :
-        m_file_name(fname), _p(0), _numMarkers{}, _currentTokenIndex{ 0 }, _lastToken{}, _lastTokenBufferStart{} {
+    TokenReader(std::string_view fname) : m_file_name(fname), _p(0), _numMarkers{}, _currentTokenIndex{ 0 } {
         open();
         fill(1);
     }
@@ -284,7 +274,7 @@ class TokenReader : public antlr4::TokenStream {
         }
     }
 
-    ANTLRToken *LT(std::int64_t i) override {
+    ANTLRToken *LT(std::int64_t i) {
         if (i == -1) {
             return &_lastToken;
         }
@@ -304,12 +294,12 @@ class TokenReader : public antlr4::TokenStream {
         return &_tokens[static_cast<std::size_t>(index)];
     }
 
-    ANTLRToken::token_t LA(std::int64_t k) override {
+    ANTLRToken::token_t LA(std::int64_t k) {
         return LT(k)->type();
     }
 
-    void consume() override {
-        if (LA(1) == ANTLRToken::EOF) {
+    void consume() {
+        if (LA(1) == ANTLRToken::_EOF) {
             throw IllegalStateException("cannot consume EOF");
         }
 
@@ -329,7 +319,7 @@ class TokenReader : public antlr4::TokenStream {
         sync(1);
     }
 
-    ssize_t mark() override {
+    std::size_t mark() {
         if (_numMarkers == 0) {
             _lastTokenBufferStart = _lastToken;
         }
@@ -339,8 +329,8 @@ class TokenReader : public antlr4::TokenStream {
         return mark;
     }
 
-    void release(ssize_t marker) override {
-        std::size_t expectedMark = -_numMarkers;
+    void release(std::size_t marker) {
+        const std::size_t expectedMark = -_numMarkers;
         if (marker != expectedMark) {
             throw IllegalStateException("release() called with an invalid marker.");
         }
@@ -357,7 +347,7 @@ class TokenReader : public antlr4::TokenStream {
         }
     }
 
-    std::size_t index() override {
+    std::size_t index() const {
         return _currentTokenIndex;
     }
 
@@ -365,15 +355,15 @@ class TokenReader : public antlr4::TokenStream {
         return _currentTokenIndex - _p;
     }
 
-    std::size_t size() override {
+    std::size_t size() const {
         throw UnsupportedOperationException("Size of stream is not known.");
     }
 
-    antlr4::Token *get(size_t index) const override {
+    ANTLRToken *get(size_t index) const {
         throw UnsupportedOperationException("get() operation not supported.");
     }
 
-    antlr4::TokenSource *getTokenSource() const override {
+    TokenSource *getTokenSource() const {
         throw UnsupportedOperationException("getTokenSource() operation not supported.");
     }
 
@@ -425,31 +415,11 @@ class TokenReader : public antlr4::TokenStream {
         ::fclose(m_file);
     }
 
-    std::string getText(const antlr4::misc::Interval &interval) override {
-        throw UnsupportedOperationException("TokenStream::getText()");
-    }
-
-    std::string getText() override {
-        throw UnsupportedOperationException("TokenStream::getText()");
-    }
-
-    std::string getText(antlr4::RuleContext *ctx) override {
-        throw UnsupportedOperationException("TokenStream::getText()");
-    }
-
-    std::string getText(antlr4::Token *start, antlr4::Token *stop) override {
-        throw UnsupportedOperationException("TokenStream::getText()");
-    }
-
-    std::string getSourceName() const override {
-        return "<UNKNOWN>";
-    }
-
    protected:
 
     size_t fill(std::size_t n) {
         for (std::size_t i = 0; i < n; i++) {
-            if (_tokens.size() > 0 && _tokens.back().type() == ANTLRToken::EOF) {
+            if (_tokens.size() > 0 && _tokens.back().type() == ANTLRToken::_EOF) {
                 return i;
             }
             add(fetch_next());
@@ -478,7 +448,7 @@ class TokenReader : public antlr4::TokenStream {
         auto data       = read_string(length);
 
         if (eof()) {
-            token_type = ANTLRToken::EOF;
+            token_type = ANTLRToken::_EOF;
         }
 
         return ANTLRToken(_currentTokenIndex, token_type, start_line, start_col, end_line, end_col, data);
