@@ -99,7 +99,7 @@ inline std::string test_escape_string(std::string &line) {
     std::string result;
 
     escape_string(line);
-    std::copy(line.begin(), line.end(), std::back_inserter(result));
+    std::ranges::copy(line, std::back_inserter(result));
 
     return result;
 }

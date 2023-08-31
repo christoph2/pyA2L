@@ -370,6 +370,24 @@ FOOTER = """
 #endif  // __TOKEN_TYPE_HPP
 """
 
+HEADER2 = """/*
+**
+**  !!! AUTOMATICALLY GENERATED FILE -- DO NOT EDIT !!!
+**
+*/
+#if !defined(__A2LTOKEN_HPP)
+#define __A2LTOKEN_HPP
+
+#include <map>
+#include <string>
+#include <cstdint>
+
+"""
+
+FOOTER2 = """
+#endif  // __A2LTOKEN_HPP
+"""
+
 TPs = (
     ("INVALID", 0),
     ("BEGIN", 276),
@@ -399,6 +417,30 @@ with open("token_type.hpp", "wt") as of:
         of.write(f"\t{n}={v},\n")
     of.write("};\n")
     of.write(FOOTER)
+
+with open("a2ltoken.hpp", "wt") as of:
+    of.write(HEADER2)
+    of.write("enum class A2LTokenType: std::uint16_t {\n")
+
+    li = [(idx, item) for idx, item in enumerate(literalNames)]
+    li.extend([(v, k) for k, v in TPs])
+    for idx, item in sorted(li):
+        item = item.replace("'", "")
+        if item in ("/begin", "/end", "<INVALID>"):
+            continue
+        if item == ".":
+            item = "DOT"
+        elif item == "[":
+            item = "BRO"
+        elif item == "]":  #
+            item = "BRC"
+
+        # if not item.startswith('"'):
+        #    item = f'"{item}"'
+        of.write(f"""    {item} = {idx},\n""")
+    of.write("};\n\n")
+    of.write(FOOTER2)
+
 
 with open("a2l.tokens", "wt") as of:
     for idx in range(275):
