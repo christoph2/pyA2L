@@ -1,300 +1,406 @@
-/*
-**
-**  !!! AUTOMATICALLY GENERATED FILE -- DO NOT EDIT !!!
-**
-*/
+
 #if !defined(__A2LPARSER_HPP)
     #define __A2LPARSER_HPP
 
+    #include <algorithm>
+    #include <array>
     #include <cstdint>
-    #include <string>
+    #include <cstdlib>
+    #include <fstream>
+    #include <iostream>
+    #include <limits>
+    #include <map>
+    #include <set>
+    #include <sstream>
+    #include <stack>
+    #include <unordered_map>
+    #include <unordered_set>
+    #include <vector>
 
-enum class TokenType : std::uint16_t {
-    INVALID                      = 0,
-    ALIGNMENT_BYTE               = 1,
-    ALIGNMENT_FLOAT16_IEEE       = 2,
-    ALIGNMENT_FLOAT32_IEEE       = 3,
-    ALIGNMENT_FLOAT64_IEEE       = 4,
-    ALIGNMENT_INT64              = 5,
-    ALIGNMENT_LONG               = 6,
-    ALIGNMENT_WORD               = 7,
-    ANNOTATION                   = 8,
-    ANNOTATION_LABEL             = 9,
-    ANNOTATION_ORIGIN            = 10,
-    ANNOTATION_TEXT              = 11,
-    BIT_MASK                     = 12,
-    BYTE_ORDER                   = 13,
-    CALIBRATION_ACCESS           = 14,
-    CALIBRATION                  = 15,
-    NO_CALIBRATION               = 16,
-    NOT_IN_MCD_SYSTEM            = 17,
-    OFFLINE_CALIBRATION          = 18,
-    DEFAULT_VALUE                = 19,
-    DEPOSIT                      = 20,
-    ABSOLUTE                     = 21,
-    DIFFERENCE                   = 22,
-    DISCRETE                     = 23,
-    DISPLAY_IDENTIFIER           = 24,
-    ECU_ADDRESS_EXTENSION        = 25,
-    EXTENDED_LIMITS              = 26,
-    FORMAT                       = 27,
-    FUNCTION_LIST                = 28,
-    GUARD_RAILS                  = 29,
-    IF_DATA                      = 30,
-    MATRIX_DIM                   = 31,
-    MAX_REFRESH                  = 32,
-    MONOTONY                     = 33,
-    MON_DECREASE                 = 34,
-    MON_INCREASE                 = 35,
-    STRICT_DECREASE              = 36,
-    STRICT_INCREASE              = 37,
-    MONOTONOUS                   = 38,
-    STRICT_MON                   = 39,
-    NOT_MON                      = 40,
-    PHYS_UNIT                    = 41,
-    READ_ONLY                    = 42,
-    REF_CHARACTERISTIC           = 43,
-    REF_MEMORY_SEGMENT           = 44,
-    REF_UNIT                     = 45,
-    STEP_SIZE                    = 46,
-    SYMBOL_LINK                  = 47,
-    VERSION                      = 48,
-    ASAP2_VERSION                = 49,
-    A2ML_VERSION                 = 50,
-    PROJECT                      = 51,
-    HEADER                       = 52,
-    PROJECT_NO                   = 53,
-    MODULE                       = 54,
-    A2ML                         = 55,
-    AXIS_PTS                     = 56,
-    CHARACTERISTIC               = 57,
-    ASCII                        = 58,
-    CURVE                        = 59,
-    MAP                          = 60,
-    CUBOID                       = 61,
-    CUBE_4                       = 62,
-    CUBE_5                       = 63,
-    VAL_BLK                      = 64,
-    VALUE                        = 65,
-    AXIS_DESCR                   = 66,
-    CURVE_AXIS                   = 67,
-    COM_AXIS                     = 68,
-    FIX_AXIS                     = 69,
-    RES_AXIS                     = 70,
-    STD_AXIS                     = 71,
-    AXIS_PTS_REF                 = 72,
-    CURVE_AXIS_REF               = 73,
-    FIX_AXIS_PAR                 = 74,
-    FIX_AXIS_PAR_DIST            = 75,
-    FIX_AXIS_PAR_LIST            = 76,
-    MAX_GRAD                     = 77,
-    COMPARISON_QUANTITY          = 78,
-    DEPENDENT_CHARACTERISTIC     = 79,
-    MAP_LIST                     = 80,
-    NUMBER                       = 81,
-    VIRTUAL_CHARACTERISTIC       = 82,
-    COMPU_METHOD                 = 83,
-    IDENTICAL                    = 84,
-    FORM                         = 85,
-    LINEAR                       = 86,
-    RAT_FUNC                     = 87,
-    TAB_INTP                     = 88,
-    TAB_NOINTP                   = 89,
-    TAB_VERB                     = 90,
-    COEFFS                       = 91,
-    COEFFS_LINEAR                = 92,
-    COMPU_TAB_REF                = 93,
-    FORMULA                      = 94,
-    FORMULA_INV                  = 95,
-    STATUS_STRING_REF            = 96,
-    COMPU_TAB                    = 97,
-    DEFAULT_VALUE_NUMERIC        = 98,
-    COMPU_VTAB                   = 99,
-    COMPU_VTAB_RANGE             = 100,
-    FRAME                        = 101,
-    FRAME_MEASUREMENT            = 102,
-    FUNCTION                     = 103,
-    DEF_CHARACTERISTIC           = 104,
-    FUNCTION_VERSION             = 105,
-    IN_MEASUREMENT               = 106,
-    LOC_MEASUREMENT              = 107,
-    OUT_MEASUREMENT              = 108,
-    SUB_FUNCTION                 = 109,
-    GROUP                        = 110,
-    REF_MEASUREMENT              = 111,
-    ROOT                         = 112,
-    SUB_GROUP                    = 113,
-    INSTANCE                     = 114,
-    MEASUREMENT                  = 115,
-    ARRAY_SIZE                   = 116,
-    BIT_OPERATION                = 117,
-    LEFT_SHIFT                   = 118,
-    RIGHT_SHIFT                  = 119,
-    SIGN_EXTEND                  = 120,
-    ECU_ADDRESS                  = 121,
-    ERROR_MASK                   = 122,
-    LAYOUT                       = 123,
-    ROW_DIR                      = 124,
-    COLUMN_DIR                   = 125,
-    READ_WRITE                   = 126,
-    VIRTUAL                      = 127,
-    MOD_COMMON                   = 128,
-    DATA_SIZE                    = 129,
-    S_REC_LAYOUT                 = 130,
-    MOD_PAR                      = 131,
-    ADDR_EPK                     = 132,
-    CALIBRATION_METHOD           = 133,
-    CALIBRATION_HANDLE           = 134,
-    CALIBRATION_HANDLE_TEXT      = 135,
-    CPU_TYPE                     = 136,
-    CUSTOMER                     = 137,
-    CUSTOMER_NO                  = 138,
-    ECU                          = 139,
-    ECU_CALIBRATION_OFFSET       = 140,
-    EPK                          = 141,
-    MEMORY_LAYOUT                = 142,
-    PRG_CODE                     = 143,
-    PRG_DATA                     = 144,
-    PRG_RESERVED                 = 145,
-    MEMORY_SEGMENT               = 146,
-    CALIBRATION_VARIABLES        = 147,
-    CODE                         = 148,
-    DATA                         = 149,
-    EXCLUDE_FROM_FLASH           = 150,
-    OFFLINE_DATA                 = 151,
-    RESERVED                     = 152,
-    SERAM                        = 153,
-    VARIABLES                    = 154,
-    EEPROM                       = 155,
-    EPROM                        = 156,
-    FLASH                        = 157,
-    RAM                          = 158,
-    ROM                          = 159,
-    REGISTER                     = 160,
-    INTERN                       = 161,
-    EXTERN                       = 162,
-    NO_OF_INTERFACES             = 163,
-    PHONE_NO                     = 164,
-    SUPPLIER                     = 165,
-    SYSTEM_CONSTANT              = 166,
-    USER                         = 167,
-    RECORD_LAYOUT                = 168,
-    AXIS_PTS_X                   = 169,
-    AXIS_PTS_Y                   = 170,
-    AXIS_PTS_Z                   = 171,
-    AXIS_PTS_4                   = 172,
-    AXIS_PTS_5                   = 173,
-    AXIS_RESCALE_X               = 174,
-    AXIS_RESCALE_Y               = 175,
-    AXIS_RESCALE_Z               = 176,
-    AXIS_RESCALE_4               = 177,
-    AXIS_RESCALE_5               = 178,
-    DIST_OP_X                    = 179,
-    DIST_OP_Y                    = 180,
-    DIST_OP_Z                    = 181,
-    DIST_OP_4                    = 182,
-    DIST_OP_5                    = 183,
-    FIX_NO_AXIS_PTS_X            = 184,
-    FIX_NO_AXIS_PTS_Y            = 185,
-    FIX_NO_AXIS_PTS_Z            = 186,
-    FIX_NO_AXIS_PTS_4            = 187,
-    FIX_NO_AXIS_PTS_5            = 188,
-    FNC_VALUES                   = 189,
-    ALTERNATE_CURVES             = 190,
-    ALTERNATE_WITH_X             = 191,
-    ALTERNATE_WITH_Y             = 192,
-    IDENTIFICATION               = 193,
-    NO_AXIS_PTS_X                = 194,
-    NO_AXIS_PTS_Y                = 195,
-    NO_AXIS_PTS_Z                = 196,
-    NO_AXIS_PTS_4                = 197,
-    NO_AXIS_PTS_5                = 198,
-    STATIC_RECORD_LAYOUT         = 199,
-    NO_RESCALE_X                 = 200,
-    NO_RESCALE_Y                 = 201,
-    NO_RESCALE_Z                 = 202,
-    NO_RESCALE_4                 = 203,
-    NO_RESCALE_5                 = 204,
-    OFFSET_X                     = 205,
-    OFFSET_Y                     = 206,
-    OFFSET_Z                     = 207,
-    OFFSET_4                     = 208,
-    OFFSET_5                     = 209,
-    RIP_ADDR_W                   = 210,
-    RIP_ADDR_X                   = 211,
-    RIP_ADDR_Y                   = 212,
-    RIP_ADDR_Z                   = 213,
-    RIP_ADDR_4                   = 214,
-    RIP_ADDR_5                   = 215,
-    SHIFT_OP_X                   = 216,
-    SHIFT_OP_Y                   = 217,
-    SHIFT_OP_Z                   = 218,
-    SHIFT_OP_4                   = 219,
-    SHIFT_OP_5                   = 220,
-    SRC_ADDR_X                   = 221,
-    SRC_ADDR_Y                   = 222,
-    SRC_ADDR_Z                   = 223,
-    SRC_ADDR_4                   = 224,
-    SRC_ADDR_5                   = 225,
-    TYPEDEF_CHARACTERISTIC       = 226,
-    TYPEDEF_MEASUREMENT          = 227,
-    TYPEDEF_STRUCTURE            = 228,
-    STRUCTURE_COMPONENT          = 229,
-    UNIT                         = 230,
-    DERIVED                      = 231,
-    EXTENDED_SI                  = 232,
-    SI_EXPONENTS                 = 233,
-    UNIT_CONVERSION              = 234,
-    USER_RIGHTS                  = 235,
-    REF_GROUP                    = 236,
-    VARIANT_CODING               = 237,
-    VAR_CHARACTERISTIC           = 238,
-    VAR_ADDRESS                  = 239,
-    VAR_CRITERION                = 240,
-    VAR_MEASUREMENT              = 241,
-    VAR_SELECTION_CHARACTERISTIC = 242,
-    VAR_FORBIDDEN_COMB           = 243,
-    VAR_NAMING                   = 244,
-    NUMERIC                      = 245,
-    APLHA                        = 246,
-    VAR_SEPARATOR                = 247,
-    DOT                          = 248,
-    BRO                          = 249,
-    BRC                          = 250,
-    UBYTE                        = 251,
-    SBYTE                        = 252,
-    UWORD                        = 253,
-    SWORD                        = 254,
-    ULONG                        = 255,
-    SLONG                        = 256,
-    A_UINT64                     = 257,
-    A_INT64                      = 258,
-    FLOAT16_IEEE                 = 259,
-    FLOAT32_IEEE                 = 260,
-    FLOAT64_IEEE                 = 261,
-    BYTE                         = 262,
-    WORD                         = 263,
-    LONG                         = 264,
-    PBYTE                        = 265,
-    PWORD                        = 266,
-    PLONG                        = 267,
-    DIRECT                       = 268,
-    LITTLE_ENDIAN                = 269,
-    BIG_ENDIAN                   = 270,
-    MSB_LAST                     = 271,
-    MSB_FIRST                    = 272,
-    INDEX_INCR                   = 273,
-    INDEX_DECR                   = 274,
-    SYMBOL_TYPE_LINK             = 275,
-    BEGIN                        = 276,
-    END                          = 277,
-    IDENT                        = 278,
-    FLOAT                        = 279,
-    INT                          = 280,
-    HEX                          = 281,
-    COMMENT                      = 282,
-    WS                           = 283,
-    STRING                       = 284,
+    #include "a2ltoken.hpp"
+    #include "asam_types.hpp"
+    #include "token_stream.hpp"
+
+class Parameter {
+   public:
+
+    using type_t = enum class ParameterType : std::uint8_t {
+        INTEGRAL,
+        ENUMERATION,
+        TUPLE
+    };
+
+    using tuple_element_t = std::tuple<PredefinedType const &, std::string>;
+
+    // Integral types and the like.
+    Parameter(PredefinedType type, std::string_view name, bool multiple = false) :
+        m_type(type), m_name(name), m_multiple(multiple), m_tuple{ false } {
+    }
+
+    // Enumerations.
+    Parameter(PredefinedType type, std::string_view name, const std::set<std::string>& values) :
+        m_type(type), m_name(name), m_multiple(false), m_tuple{ false }, m_value_stack{ values } {
+    }
+
+    // Tuples.
+    Parameter(const tuple_element_t& counter, const std::vector< tuple_element_t>& elements) :
+        m_tuple{ true }, m_counter{ counter }, m_tuple_elements{ elements } {
+        std::cout << "TUPLE!!!\n";
+    }
+
+    bool validate(const ANTLRToken* token) const {
+        bool result{ false };
+
+        if (std::size(m_value_stack) == 0) {
+            const auto entry = SPRUNG_TABELLE[std::bit_cast<std::uint16_t>(m_type) - 1];
+            result           = entry->validate(token->getText());
+            return result;
+        } else {
+            result = m_value_stack.contains(token->getText());
+            assert(result == true, "Invalid Enumerator!!!");
+            return result;
+        }
+    }
+
+    bool expected_token(const ANTLRToken* token) const {
+        const auto entry = SPRUNG_TABELLE[std::bit_cast<std::uint16_t>(m_type) - 1];
+        return entry->m_valid_tokens.contains(static_cast<A2LTokenType>(token->getType()));
+    }
+
+    // private:
+   public:
+
+    PredefinedType                 m_type;
+    std::string                    m_name;
+    bool                           m_multiple;
+    bool                           m_tuple;
+    std::set<std::string>          m_value_stack;
+    std::optional<tuple_element_t> m_counter;
+    std::vector< tuple_element_t>  m_tuple_elements{};
 };
 
+class Keyword {
+   public:
+
+    using map_t = std::vector<Keyword>;
+
+    Keyword(
+        A2LTokenType token, std::string_view name, std::string_view class_name, bool block, bool multiple,
+        const std::vector<Parameter>& parameters, const map_t& keywords
+    ) :
+        m_token(token), m_name(name), m_class_name(class_name), m_block(block), m_multiple(multiple), m_parameters(parameters) {
+        for (const auto& kw : keywords) {
+            m_keywords.insert({ kw.m_token, kw });
+        }
+    }
+
+    Keyword()               = default;
+    Keyword(const Keyword&) = default;
+
+    bool contains(std::size_t token) const {
+        return contains(static_cast<A2LTokenType>(token));
+    }
+
+    bool contains(A2LTokenType token) const {
+        return m_keywords.contains(token);
+    }
+
+    auto get(std::size_t token) const -> Keyword {
+        return get(static_cast<A2LTokenType>(token));
+    }
+
+    auto get(A2LTokenType token) const -> Keyword {
+        return m_keywords.find(token)->second;
+    }
+
+    // private:
+
+    A2LTokenType                    m_token;
+    std::string                     m_name;
+    std::string                     m_class_name;
+    bool                            m_block;
+    bool                            m_multiple;
+    std::vector<Parameter>          m_parameters;
+    std::map<A2LTokenType, Keyword> m_keywords;
+};
+
+class ValueContainer {
+   public:
+
+    using key_value_t      = std::tuple<std::string, std::variant<std::string, unsigned long long, long double>>;
+    using key_value_list_t = std::vector< key_value_t>;
+
+    using container_type      = ValueContainer;
+    using container_list_type = std::vector<container_type>;
+
+    ValueContainer() = default;
+
+    explicit ValueContainer(std::string_view name) :
+        m_name(name),
+        m_parameters(),
+        m_keywords(){
+
+        };
+
+    explicit ValueContainer(const ValueContainer& other) {
+        m_name       = other.m_name;
+        m_parameters = other.m_parameters;
+        m_keywords   = other.m_keywords;
+
+        // std::ranges::copy(other.m_parameters.begin(), other.m_parameters.end(), std::back_inserter(m_parameters));
+        // std::ranges::copy(other.m_keywords.begin(), other.m_keywords.end(), std::back_inserter(m_keywords));
+    }
+
+    void set_parameters(key_value_list_t&& parameters) noexcept {
+        m_parameters = std::move(parameters);
+    }
+
+    void set_parameters(const key_value_list_t& parameters) noexcept {
+        m_parameters = parameters;
+    }
+
+    auto& add_keyword(/*const*/ container_type& kw) noexcept {
+        return m_keywords.emplace_back(kw);
+    }
+
+    auto& add_keyword(container_type&& kw) noexcept {
+        return m_keywords.emplace_back(kw);
+    }
+
+    const auto& get_name() const noexcept {
+        return m_name;
+    }
+
+    const auto& get_keywords() const noexcept {
+        return m_keywords;
+    }
+
+    const auto& get_parameters() const noexcept {
+        return m_parameters;
+    }
+
+    #if 0
+    void add_parameter(key_value_t&& parameter) {
+        m_parameters.emplace_back(std::move(parameter));
+    }
+    #endif
+
+    ~ValueContainer() = default;
+
+   private:
+
+    std::string         m_name;
+    key_value_list_t    m_parameters;
+    container_list_type m_keywords;
+};
+
+    #include "parser_table.hpp"
+
+class Parser {
+   public:
+
+    explicit Parser(/*std::string_view*/ const std::string& file_name, Keyword& table) :
+        m_reader("A2L.tmp"), m_table(table), m_root("root") {
+        std::cout << "Parsing file: " << file_name << std::endl;
+        m_kw_stack.push(m_table);
+        m_value_stack.push(&m_root);
+    }
+
+    Parser(const Parser&) = delete;
+
+    void parse() {
+        auto idx = 0;
+
+        while (true) {
+            const auto token = m_reader.LT(1);
+            // auto block = kw_tos().m_block;
+
+            if (token_type() == A2LTokenType::BEGIN) {
+                m_reader.consume();
+                if (kw_tos().contains(token_type())) {
+                    // std::cout << "Token: " << m_reader.LT(1)->kw_tos() << std::endl;
+                }
+                // m_kw_stack.push(m_table);
+                // m_table = m_table.get(tt);
+                // idx++;
+
+                // std::cout << "Unexpected token: " << token << ". expected /'begin'." << std::endl;
+            }
+            // TODO:  Factor out.
+            if (token_type() == A2LTokenType::END) {
+                m_reader.consume();
+                auto glied = m_reader.LT(1);
+                // std::cout << "\t/END " << glied->getText() << "\n";
+                assert(kw_tos().m_name == glied->getText());
+                if (kw_tos().m_name == glied->getText()) {
+                    m_kw_stack.pop();
+                    m_value_stack.pop();
+                }
+                m_reader.consume();
+                continue;
+            }
+
+            if (token->getType() == ANTLRToken::_EOF) {
+                if (std::size(m_kw_stack) > 1) {
+                    std::cout << "Premature end of file!!!\n";
+                } else {
+                    std::cout << "OK, done.\n";
+                }
+                break;
+            }
+
+            if (kw_tos().contains(token->getType())) {
+                // std::cout << idx++ << ": " << token->getText() << std::endl;
+                const auto xxx = kw_tos().get(token->type());
+                m_kw_stack.push(xxx);
+                auto& vref = value_tos().add_keyword(ValueContainer(xxx.m_class_name));
+                m_value_stack.push(&vref);
+            } else {
+                std::cout << "Huch!!!\n";
+                throw std::runtime_error("Invalid token");
+            }
+            m_reader.consume();
+            idx++;
+
+    #if 0
+            if (token_type() == ANTLRToken::_EOF) {
+                // std::numeric_limits<size_t>::max()
+                std::cout << idx / 1000 << "k tokens processed." << std::endl;
+                break;
+            }
+    #endif
+            auto kw = ValueContainer(kw_tos().m_name);
+
+            value_tos().set_parameters(do_parameters());
+
+            if (kw_tos().m_block == false) {
+                m_kw_stack.pop();
+                m_value_stack.pop();
+            }
+            if (token_type() == A2LTokenType::END) {
+                m_reader.consume();
+                auto glied = m_reader.LT(1);
+                assert(kw_tos().m_name == glied->getText());
+                if (kw_tos().m_name == glied->getText()) {
+                    m_kw_stack.pop();
+                    m_value_stack.pop();
+                }
+                m_reader.consume();
+            }
+        }
+    }
+
+    const ValueContainer& get_values() const {
+        return m_root;
+    }
+
+   protected:
+
+    ValueContainer::key_value_list_t do_parameters() {
+        auto done           = false;
+        auto parameter_list = ValueContainer::key_value_list_t{};
+
+        for (const auto& parameter : kw_tos().m_parameters) {
+            done    = !parameter.m_multiple;
+            auto tp = parameter.m_type;
+            do {
+                auto token = m_reader.LT(1);
+
+                if (parameter.m_tuple) {
+                    auto       counter_tp  = parameter.m_counter;
+                    auto       tuple_tp    = parameter.m_tuple_elements;
+                    const auto tuple_n     = std::size(parameter.m_tuple_elements);
+                    auto       column      = 0;
+                    auto       idx         = 0;
+                    auto       tuple_count = 0;
+                    tuple_count            = std::atoi(token->getText().c_str());
+                    const auto token_count = tuple_count * tuple_n;
+                    m_reader.consume();
+                    while (idx < token_count) {
+                        token = m_reader.LT(1);
+                        // std::cout << "\t" << token->getText();
+                        column++;
+                        if (column == tuple_n) {
+                            column = 0;
+                            // std::cout << std::endl;
+                        }
+                        idx++;
+                        // if (idx >= token_count) {
+                        //     break;
+                        // }
+                        m_reader.consume();
+                    }
+                } else {
+                    // std::cout << "\tParameter: " << parameter.m_name << R"( M? )" << parameter.m_multiple << std::endl;
+                    // std::cout << "\tValue: " << token->getText() << std::endl;
+
+                    parameter_list.emplace_back(parameter.m_name, token->getText());
+
+                    const auto expected = parameter.expected_token(token);
+                    if ((parameter.m_multiple == true) && (!expected)) {
+                        done = true;
+                        continue;  // TODO: maybe break?
+                    }
+                    const auto valid = parameter.validate(token);
+                    if (!expected) {
+                        // std::cout << "Unexpected token!!!\n";
+                    }
+                    if (!valid) {
+                        std::cout << "Invalid param!!!\n";
+                    }
+                    m_reader.consume();
+                }
+            } while (!done);
+        }
+        return parameter_list;
+    }
+
+    Keyword& kw_tos() {
+        return m_kw_stack.top();
+    }
+
+    ValueContainer& value_tos() {
+        return *m_value_stack.top();
+    }
+
+    A2LTokenType token_type(int k = 1) {
+        return static_cast<A2LTokenType>(m_reader.LT(k)->getType());
+    }
+
+   private:
+
+    TokenReader                 m_reader;
+    std::stack<Keyword>         m_kw_stack;
+    std::stack<ValueContainer*> m_value_stack;
+    Keyword&                    m_table;
+    ValueContainer              m_root;
+};
+
+// helper function to print a tuple of any size
+template<class Tuple, std::size_t N>
+struct TuplePrinter {
+    static void print(const Tuple& t) {
+        TuplePrinter<Tuple, N - 1>::print(t);
+        std::cout << ", " << std::get<N - 1>(t);
+    }
+};
+
+template<class Tuple>
+struct TuplePrinter<Tuple, 1> {
+    static void print(const Tuple& t) {
+        std::cout << std::get<0>(t);
+    }
+};
+
+template<typename... Args, std::enable_if_t<sizeof...(Args) == 0, int> = 0>
+void print(const std::tuple<Args...>& t) {
+    std::cout << "()\n";
+}
+
+template<typename... Args, std::enable_if_t<sizeof...(Args) != 0, int> = 0>
+void print(const std::tuple<Args...>& t) {
+    std::cout << "(";
+    TuplePrinter<decltype(t), sizeof...(Args)>::print(t);
+    std::cout << ")\n";
+}
 #endif  // __A2LPARSER_HPP

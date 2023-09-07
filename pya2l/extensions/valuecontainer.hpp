@@ -1,0 +1,5 @@
+
+#if !defined __VALUECONTAINER_HPP
+    #define __VALUECONTAINER_HPP
+
+#endif  // __VALUECONTAINER_HPP
