@@ -19,180 +19,12 @@
 
     #include "a2ltoken.hpp"
     #include "asam_types.hpp"
+    #include "keyword.hpp"
+    #include "parameter.hpp"
     #include "token_stream.hpp"
+    #include "valuecontainer.hpp"
 
-class Parameter {
-   public:
-
-    using type_t = enum class ParameterType : std::uint8_t {
-        INTEGRAL,
-        ENUMERATION,
-        TUPLE
-    };
-
-    using tuple_element_t = std::tuple<PredefinedType const &, std::string>;
-
-    // Integral types and the like.
-    Parameter(PredefinedType type, std::string_view name, bool multiple = false) :
-        m_type(type), m_name(name), m_multiple(multiple), m_tuple{ false } {
-    }
-
-    // Enumerations.
-    Parameter(PredefinedType type, std::string_view name, const std::set<std::string>& values) :
-        m_type(type), m_name(name), m_multiple(false), m_tuple{ false }, m_value_stack{ values } {
-    }
-
-    // Tuples.
-    Parameter(const tuple_element_t& counter, const std::vector< tuple_element_t>& elements) :
-        m_tuple{ true }, m_counter{ counter }, m_tuple_elements{ elements } {
-        std::cout << "TUPLE!!!\n";
-    }
-
-    bool validate(const ANTLRToken* token) const {
-        bool result{ false };
-
-        if (std::size(m_value_stack) == 0) {
-            const auto entry = SPRUNG_TABELLE[std::bit_cast<std::uint16_t>(m_type) - 1];
-            result           = entry->validate(token->getText());
-            return result;
-        } else {
-            result = m_value_stack.contains(token->getText());
-            assert(result == true, "Invalid Enumerator!!!");
-            return result;
-        }
-    }
-
-    bool expected_token(const ANTLRToken* token) const {
-        const auto entry = SPRUNG_TABELLE[std::bit_cast<std::uint16_t>(m_type) - 1];
-        return entry->m_valid_tokens.contains(static_cast<A2LTokenType>(token->getType()));
-    }
-
-    // private:
-   public:
-
-    PredefinedType                 m_type;
-    std::string                    m_name;
-    bool                           m_multiple;
-    bool                           m_tuple;
-    std::set<std::string>          m_value_stack;
-    std::optional<tuple_element_t> m_counter;
-    std::vector< tuple_element_t>  m_tuple_elements{};
-};
-
-class Keyword {
-   public:
-
-    using map_t = std::vector<Keyword>;
-
-    Keyword(
-        A2LTokenType token, std::string_view name, std::string_view class_name, bool block, bool multiple,
-        const std::vector<Parameter>& parameters, const map_t& keywords
-    ) :
-        m_token(token), m_name(name), m_class_name(class_name), m_block(block), m_multiple(multiple), m_parameters(parameters) {
-        for (const auto& kw : keywords) {
-            m_keywords.insert({ kw.m_token, kw });
-        }
-    }
-
-    Keyword()               = default;
-    Keyword(const Keyword&) = default;
-
-    bool contains(std::size_t token) const {
-        return contains(static_cast<A2LTokenType>(token));
-    }
-
-    bool contains(A2LTokenType token) const {
-        return m_keywords.contains(token);
-    }
-
-    auto get(std::size_t token) const -> Keyword {
-        return get(static_cast<A2LTokenType>(token));
-    }
-
-    auto get(A2LTokenType token) const -> Keyword {
-        return m_keywords.find(token)->second;
-    }
-
-    // private:
-
-    A2LTokenType                    m_token;
-    std::string                     m_name;
-    std::string                     m_class_name;
-    bool                            m_block;
-    bool                            m_multiple;
-    std::vector<Parameter>          m_parameters;
-    std::map<A2LTokenType, Keyword> m_keywords;
-};
-
-class ValueContainer {
-   public:
-
-    using key_value_t      = std::tuple<std::string, std::variant<std::string, unsigned long long, long double>>;
-    using key_value_list_t = std::vector< key_value_t>;
-
-    using container_type      = ValueContainer;
-    using container_list_type = std::vector<container_type>;
-
-    ValueContainer() = default;
-
-    explicit ValueContainer(std::string_view name) :
-        m_name(name),
-        m_parameters(),
-        m_keywords(){
-
-        };
-
-    explicit ValueContainer(const ValueContainer& other) {
-        m_name       = other.m_name;
-        m_parameters = other.m_parameters;
-        m_keywords   = other.m_keywords;
-
-        // std::ranges::copy(other.m_parameters.begin(), other.m_parameters.end(), std::back_inserter(m_parameters));
-        // std::ranges::copy(other.m_keywords.begin(), other.m_keywords.end(), std::back_inserter(m_keywords));
-    }
-
-    void set_parameters(key_value_list_t&& parameters) noexcept {
-        m_parameters = std::move(parameters);
-    }
-
-    void set_parameters(const key_value_list_t& parameters) noexcept {
-        m_parameters = parameters;
-    }
-
-    auto& add_keyword(/*const*/ container_type& kw) noexcept {
-        return m_keywords.emplace_back(kw);
-    }
-
-    auto& add_keyword(container_type&& kw) noexcept {
-        return m_keywords.emplace_back(kw);
-    }
-
-    const auto& get_name() const noexcept {
-        return m_name;
-    }
-
-    const auto& get_keywords() const noexcept {
-        return m_keywords;
-    }
-
-    const auto& get_parameters() const noexcept {
-        return m_parameters;
-    }
-
-    #if 0
-    void add_parameter(key_value_t&& parameter) {
-        m_parameters.emplace_back(std::move(parameter));
-    }
-    #endif
-
-    ~ValueContainer() = default;
-
-   private:
-
-    std::string         m_name;
-    key_value_list_t    m_parameters;
-    container_list_type m_keywords;
-};
+///
 
     #include "parser_table.hpp"
 
@@ -334,7 +166,7 @@ class Parser {
                     // std::cout << "\tParameter: " << parameter.m_name << R"( M? )" << parameter.m_multiple << std::endl;
                     // std::cout << "\tValue: " << token->getText() << std::endl;
 
-                    parameter_list.emplace_back(parameter.m_name, token->getText());
+                    parameter_list.emplace_back(token->getText());  // TODO: type conversion!!!
 
                     const auto expected = parameter.expected_token(token);
                     if ((parameter.m_multiple == true) && (!expected)) {

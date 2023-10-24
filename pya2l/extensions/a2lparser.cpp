@@ -17,5 +17,7 @@ int main() {
     auto parser = Parser("test.a2l", PARSER_TABLE);
     parser.parse();
 
+    const auto& tree = parser.get_values();
+
     return 0;
 }
