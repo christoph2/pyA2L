@@ -30,7 +30,7 @@ class FixedSizeStack {
     FixedSizeStack(FixedSizeStack &&)                 = delete;
     FixedSizeStack &operator=(FixedSizeStack &&)      = delete;
 
-    ~FixedSizeStack() = default;
+    //~FixedSizeStack() = default;
 
     void push(const Ty_ &value) noexcept {
         m_stack.push_front(value);
@@ -106,7 +106,7 @@ class ANTLRToken /*: public antlr4::Token*/ {
     ANTLRToken()                   = default;
     ANTLRToken(const ANTLRToken &) = default;
 
-    ~ANTLRToken() = default;
+    //~ANTLRToken() = default;
 
     ANTLRToken(ANTLRToken &&other) noexcept {
         // std::cout << "ANTLRToken(ANTLRToken&&) -- move constructor\n";
@@ -223,17 +223,18 @@ class ANTLRToken /*: public antlr4::Token*/ {
 class TokenFactory /*: public antlr4::TokenFactory<ANTLRToken>*/ {
    public:
 
-    TokenFactory()           = default;
-    ~TokenFactory() noexcept = default;
+    TokenFactory() = default;
+
+    //~TokenFactory() noexcept = default;
 
     std::unique_ptr<ANTLRToken> create(
         std::string source, std::size_t type, const std::string &text, std::size_t channel, std::size_t start, std::size_t stop,
         std::size_t line, std::size_t column
-    ) {
+    ) noexcept {
         return std::make_unique<ANTLRToken>(ANTLRToken(0, type, line, column, line, column, text));
     }
 
-    std::unique_ptr<ANTLRToken> create(size_t type, const std::string &text) {
+    std::unique_ptr<ANTLRToken> create(size_t type, const std::string &text) noexcept {
         return std::make_unique<ANTLRToken>(ANTLRToken(0, type, 0, 0, 0, 0, text));
     }
 };
@@ -245,7 +246,7 @@ class TokenSource {
         m_token_factory = TokenFactory();
     }
 
-    const TokenFactory &getFactory() const {
+    const TokenFactory &getFactory() const noexcept {
         return m_token_factory;
     }
 
@@ -266,7 +267,7 @@ class TokenReader {
         close();
     }
 
-    void dump_tokens() const {
+    void dump_tokens() const noexcept {
         auto idx = 0;
         for (const auto &token : _tokens) {
             std::cout << "\t" << idx << " [" << token.toString() << "]" << std::endl;
@@ -294,7 +295,7 @@ class TokenReader {
         return &_tokens[static_cast<std::size_t>(index)];
     }
 
-    ANTLRToken::token_t LA(std::int64_t k) {
+    ANTLRToken::token_t LA(std::int64_t k) noexcept {
         return LT(k)->type();
     }
 
@@ -319,7 +320,7 @@ class TokenReader {
         sync(1);
     }
 
-    std::size_t mark() {
+    std::size_t mark() noexcept {
         if (_numMarkers == 0) {
             _lastTokenBufferStart = _lastToken;
         }
@@ -347,11 +348,11 @@ class TokenReader {
         }
     }
 
-    std::size_t index() const {
+    std::size_t index() const noexcept {
         return _currentTokenIndex;
     }
 
-    std::size_t getBufferStartIndex() const {
+    std::size_t getBufferStartIndex() const noexcept {
         return _currentTokenIndex - _p;
     }
 
@@ -399,11 +400,11 @@ class TokenReader {
         }
     }
 
-    bool eof() const {
+    bool eof() const noexcept {
         return ::feof(m_file) != 0;
     }
 
-    void open() {
+    void open() noexcept {
     #if defined(_MSC_VER)
         auto err = ::fopen_s(&m_file, m_file_name.c_str(), "rb");
     #else
@@ -411,7 +412,7 @@ class TokenReader {
     #endif
     }
 
-    void close() {
+    void close() noexcept {
         ::fclose(m_file);
     }
 

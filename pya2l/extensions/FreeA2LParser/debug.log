@@ -1,0 +1,922 @@
+[0822/144109.108:WARNING:chrome_browser_cloud_management_controller.cc(87)] Could not create policy manager as CBCM is not enabled.
+[0822/144117.124:ERROR:cert_verify_proc_builtin.cc(677)] CertVerifyProcBuiltin for 127.0.0.1 failed:
+----- Certificate i=0 (CN=kubernetes.docker.internal) -----
+ERROR: No matching issuer found
+
+
+[0822/144117.124:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144117.711:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144117.711:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144117.736:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144117.753:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144117.758:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144117.776:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144117.789:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144117.815:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144117.824:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144117.839:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144117.839:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144117.876:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144117.886:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144117.902:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144117.918:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144117.918:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144120.082:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144120.163:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:59712/assets/zigzag.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:59712/vendor-626047.js (1)
+[0822/144120.201:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:59712/assets/no-connection-to-server.192x192.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7 (0)
+[0822/144120.201:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:59712/assets/no-connection-to-server.192x192.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7 (0)
+[0822/144120.202:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:59712/assets/no-connection-to-server.192x192.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7 (0)
+[0822/144128.788:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:59712/assets/analysis_types/GSP_Hotspots.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7 (0)
+[0822/144128.789:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:59712/assets/analysis_types/GSP_UA.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7 (0)
+[0822/144128.789:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:59712/assets/analysis_types/GSP_Mem.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7 (0)
+[0822/144128.789:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:59712/assets/analysis_types/GSP_Threading.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7 (0)
+[0822/144128.789:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:59712/assets/analysis_types/GSP_HPC.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7 (0)
+[0822/144128.790:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:59712/assets/analysis_types/GSP_GO.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:59712/extension-ui/Session-1-1692708076869?passphrase=28bd1a84-645b-9fec-2b64-f0ff394846b7 (0)
+[0822/144128.805:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144128.820:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144128.832:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144128.843:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144128.858:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144128.875:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144128.894:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144128.910:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144128.924:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144128.945:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144128.963:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144128.976:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144128.991:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.016:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.030:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.044:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.058:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.081:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.103:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.115:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.127:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.141:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.161:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.172:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.182:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.224:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.238:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.260:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.266:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.287:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.305:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.321:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/144129.353:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0822/165426.693:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/165426.759:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/165426.790:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/165431.777:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/165431.810:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/165441.800:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/165441.833:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/165501.815:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/165501.842:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/204525.708:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/204525.776:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/204627.284:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/204627.296:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/204627.349:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/204632.298:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/204632.363:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/204642.307:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/204642.373:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/204702.323:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/204702.388:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/205840.138:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/205840.180:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/205845.153:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/205845.203:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/205855.171:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/205855.221:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/205915.190:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/205915.240:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/210633.061:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/210633.102:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/210739.879:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/210739.906:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/210740.075:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/210740.140:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/210745.085:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/210745.152:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/212827.182:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/212827.216:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/212845.153:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/212845.154:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/212907.698:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/212907.737:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/212952.757:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/212952.831:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/212957.769:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/212957.848:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213007.788:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213007.864:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213110.254:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213110.259:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213110.300:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213115.265:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213115.316:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213125.282:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213125.329:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213202.463:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213202.471:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213207.481:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213207.481:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213254.171:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213254.181:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213308.135:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213308.150:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213313.151:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213313.164:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213435.372:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213435.389:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213440.383:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213440.400:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213450.404:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213450.419:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213510.421:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213510.437:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213912.871:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213912.889:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213917.896:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213917.919:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213927.911:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213927.940:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213947.969:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/213947.978:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/214113.648:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/214113.693:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/214113.708:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/214118.718:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/214118.732:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/214128.729:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/214128.745:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/214148.750:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/214148.766:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215018.502:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215018.520:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215041.976:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215042.010:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215056.608:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215056.793:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215056.811:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215702.599:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215702.616:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215737.537:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215737.578:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215742.558:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215742.590:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215752.578:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215752.612:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215812.599:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215812.631:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215952.041:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215952.094:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215952.120:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215957.118:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/215957.134:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/220007.135:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/220007.151:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/220027.152:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/220027.171:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/220346.245:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/220346.261:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/220351.257:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/220351.270:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/220401.272:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/220401.286:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/220421.294:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/220421.310:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/232140.528:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/232140.571:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/232605.939:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/232605.988:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/232610.952:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/232611.017:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/232620.971:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/232621.035:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/232640.981:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/232641.062:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/233311.118:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/233311.172:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/233311.195:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/233316.188:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/233316.222:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/233326.203:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/233326.236:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/233346.228:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0822/233346.260:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/031814.832:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/031814.863:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/031814.916:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/031819.851:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/031819.933:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/031829.869:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/031829.952:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/031849.889:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/031849.972:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/053117.425:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/053117.474:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/053122.447:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/053122.494:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/053132.465:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/053132.515:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/053148.930:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/053148.949:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/053153.952:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/053153.966:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/053203.967:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/053203.986:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/053223.978:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/053224.008:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/063717.917:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/063717.969:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/063718.021:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090724.156:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090724.177:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090729.170:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090729.199:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090741.569:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090741.657:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090741.934:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090741.953:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090746.951:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090746.965:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090754.986:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090755.050:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090755.231:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090755.234:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090850.193:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090850.205:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090850.253:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090855.220:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090855.267:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090905.241:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090905.289:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090925.260:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/090925.310:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091041.255:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091041.260:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091046.276:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091046.277:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091056.287:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091056.287:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091116.308:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091116.314:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091234.036:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091234.052:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091239.049:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091239.065:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091249.058:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091249.076:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091309.078:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091309.095:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091529.950:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091529.995:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091534.966:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091535.012:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091933.920:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091933.936:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091938.939:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/091938.957:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/092434.363:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/092434.378:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/092439.388:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/092439.389:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/092539.228:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/092539.254:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/092539.278:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/124247.641:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/124247.668:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/124252.660:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/124252.688:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/124302.676:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/124302.705:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/124322.691:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/124322.721:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/125718.337:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/125718.362:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/125723.350:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/125723.389:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/125733.366:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/125733.413:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/125753.387:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/125753.436:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/164516.275:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/164516.285:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/164521.280:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/164521.296:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/164532.053:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/164532.117:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/164532.234:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/164532.250:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/171550.419:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/171550.442:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/171550.507:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/171550.561:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/171555.453:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/171555.568:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/171605.471:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/171605.581:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/171625.485:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/171625.595:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/195555.340:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/195555.365:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/195555.394:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/195600.378:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/195600.409:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205635.032:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205635.088:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205635.120:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205640.100:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205640.131:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205650.589:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205650.676:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205655.610:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205655.688:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205707.706:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205707.717:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205712.715:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205712.739:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205754.577:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205754.582:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205759.592:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/205759.594:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210209.293:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210209.357:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210209.372:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210214.362:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210214.378:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210224.379:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210224.395:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210349.022:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210349.073:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210354.034:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210354.081:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210404.055:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210404.103:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210424.066:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210424.113:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210742.065:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210742.093:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210747.074:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/210747.104:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/211948.617:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/211948.625:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/211953.627:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/211953.627:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/212003.659:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/212003.662:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/212043.886:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/212043.946:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/212043.952:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/212053.374:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/212053.452:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/212058.396:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/212058.459:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/212116.692:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/212116.755:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/212116.949:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/212116.967:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/212121.959:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/212121.975:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213131.575:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213131.602:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213136.599:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213136.607:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213146.620:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213146.628:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213206.628:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213206.644:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213736.171:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213736.184:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213741.177:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213741.192:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213751.188:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213751.203:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213811.212:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213811.212:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213856.212:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213856.243:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213901.235:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213901.260:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213912.989:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/213913.005:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214231.276:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214231.304:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214236.282:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214236.314:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214246.314:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214246.338:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214306.324:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214306.356:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214657.391:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214657.443:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214657.553:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214657.569:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214702.564:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214702.580:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214712.589:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214712.604:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214722.684:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214722.712:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214727.716:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214727.732:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214823.743:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214823.822:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214828.755:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214828.833:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214846.642:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214846.658:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214846.771:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214846.789:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214851.792:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214851.798:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214907.844:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214907.844:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214908.142:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214908.205:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214913.148:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214913.211:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214925.886:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214925.965:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214926.165:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214926.200:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214931.185:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214931.216:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214940.769:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214940.771:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214940.986:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214941.029:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214945.996:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214946.032:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214956.004:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/214956.066:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215016.015:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215016.078:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215156.676:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215156.702:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215201.688:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215201.704:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215211.697:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215211.728:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215221.032:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215221.063:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215226.050:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215226.066:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215236.083:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215236.083:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215256.097:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215256.097:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215329.323:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215329.363:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215334.327:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215334.374:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215428.472:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215428.472:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215433.481:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215433.481:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215443.489:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215443.505:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215503.507:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215503.523:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215633.798:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215633.814:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215638.816:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/215638.831:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220338.400:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220338.432:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220348.478:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220348.486:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220507.275:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220507.290:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220512.282:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220512.297:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220527.472:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220527.513:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220527.689:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220527.711:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220532.702:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220532.718:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220542.725:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220542.741:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220602.741:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220602.757:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220626.200:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220626.209:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220631.209:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220631.225:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220643.899:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220643.915:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220643.961:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220652.995:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220653.108:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220653.122:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220658.114:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220658.130:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220707.308:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220707.371:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220707.516:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220707.552:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220712.531:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220712.574:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220726.100:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220726.446:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220726.456:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220731.464:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220731.464:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220741.485:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220741.485:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220947.524:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220947.562:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220952.538:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/220952.574:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221007.468:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221007.594:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221007.594:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221012.606:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221012.606:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221022.629:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221022.629:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221036.334:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221036.350:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221046.491:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221046.648:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221046.664:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221051.667:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221051.683:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221103.493:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221103.556:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221104.144:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221104.192:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221113.157:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221113.447:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221113.463:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221118.459:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221118.490:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221133.170:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221133.186:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221133.398:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221133.398:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221138.414:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221138.414:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221148.443:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221148.443:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221209.681:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221209.711:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221209.815:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221209.815:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221214.816:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221214.832:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221224.826:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221224.857:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221241.478:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221241.509:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221246.496:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221246.527:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221255.356:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221255.374:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221256.179:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221256.208:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221304.008:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221304.133:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221313.982:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221313.994:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221318.986:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221319.002:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221331.496:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221331.512:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221336.507:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221336.539:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221346.516:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221346.547:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221406.539:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/221406.570:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224029.569:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224029.591:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224034.575:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224034.607:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224044.598:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224044.629:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224104.616:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224104.647:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224146.256:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224146.271:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224147.646:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224147.677:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224157.011:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224157.043:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224212.619:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224212.635:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224217.637:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224217.653:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224227.662:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/224227.662:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/225029.474:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/225029.512:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/225304.784:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/225304.801:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/225309.809:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/225309.809:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/225319.814:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/225319.830:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/225339.839:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0823/225339.855:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0824/000008.758:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:59712/intel.analyzers.vtune.gui.js (2)
+[0824/000008.759:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:59712/intel.analyzers.vtune.gui.js (2)
+[0824/000008.833:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:59712/intel.analyzers.vtune.gui.js (2)
+[0824/000008.907:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:59712/intel.analyzers.vtune.gui.js (2)
+[0824/000010.605:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0907/141554.509:WARNING:chrome_browser_cloud_management_controller.cc(87)] Could not create policy manager as CBCM is not enabled.
+[0907/141601.016:ERROR:cert_verify_proc_builtin.cc(677)] CertVerifyProcBuiltin for 127.0.0.1 failed:
+----- Certificate i=0 (CN=kubernetes.docker.internal) -----
+ERROR: No matching issuer found
+
+
+[0907/141601.016:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141601.149:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141601.149:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141601.153:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141601.166:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141601.170:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141601.174:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141601.179:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141601.189:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141601.196:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141601.200:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141601.200:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141601.200:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141601.215:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141601.228:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141601.234:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141601.244:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141602.131:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141602.161:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/zigzag.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/141602.192:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/no-connection-to-server.192x192.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/141602.192:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/no-connection-to-server.192x192.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/141602.192:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/no-connection-to-server.192x192.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/141607.253:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_Hotspots.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/141607.253:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_UA.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/141607.254:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_Mem.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/141607.254:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_Threading.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/141607.254:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_HPC.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/141607.254:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_GO.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/141611.851:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_Hotspots.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/141611.857:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_UA.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/141611.859:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_Mem.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/141611.862:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_Threading.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/141611.864:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_HPC.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/141611.868:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_GO.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/141708.789:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141708.805:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141708.901:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141720.491:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141722.305:INFO:CONSOLE(135)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/zigzag-on-bottom.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/htmlutil/htmlutil-626047.js (135)
+[0907/141722.366:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141722.372:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141722.382:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141722.396:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141722.400:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/141722.413:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150240.738:ERROR:cert_verify_proc_builtin.cc(677)] CertVerifyProcBuiltin for 127.0.0.1 failed:
+----- Certificate i=0 (CN=kubernetes.docker.internal) -----
+ERROR: No matching issuer found
+
+
+[0907/150240.738:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150240.739:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150240.749:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150240.872:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150240.920:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150240.931:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150240.954:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150241.023:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150241.040:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150241.091:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150241.116:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150241.145:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150244.533:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/dataovertime.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/150244.536:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/dataovertime.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/150245.008:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/dataovertime.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/150245.009:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/dataovertime.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/150245.025:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/interval.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/150245.027:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/sample.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-1-1694088958110?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/150254.998:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150255.046:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150257.045:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150259.617:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150259.628:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150259.638:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150310.971:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150311.176:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150322.841:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150322.843:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150322.887:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150322.888:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150322.899:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150323.095:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150336.833:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150336.871:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150343.323:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/150343.336:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151252.206:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151300.945:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151305.546:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151305.547:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151305.560:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151305.600:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151305.600:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151305.615:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151305.624:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151305.636:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151305.647:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151305.661:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151305.679:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151305.693:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151305.743:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151305.755:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151305.772:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151305.782:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151306.761:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151306.836:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/zigzag.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/151306.878:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/no-connection-to-server.192x192.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151306.878:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/no-connection-to-server.192x192.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151306.878:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/no-connection-to-server.192x192.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151313.499:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_Hotspots.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151313.499:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_UA.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151313.500:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_Mem.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151313.500:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_Threading.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151313.501:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_HPC.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151313.502:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_GO.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-2-1694092385397?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151524.879:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151524.920:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151524.924:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151524.938:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151524.952:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151524.964:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151524.976:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151524.993:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151525.009:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151525.021:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151525.033:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151525.047:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151525.068:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151525.082:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151525.095:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151525.107:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151525.121:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151525.923:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151525.972:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/zigzag.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/151525.999:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/no-connection-to-server.192x192.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151526.000:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/no-connection-to-server.192x192.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151526.000:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/no-connection-to-server.192x192.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151531.520:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_Hotspots.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151531.521:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_UA.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151531.522:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_Mem.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151531.522:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_Threading.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151531.522:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_HPC.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151531.523:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_GO.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151537.781:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151538.294:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151538.296:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151538.320:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151538.336:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151538.348:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151539.015:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_Hotspots.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/151539.020:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_UA.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/151539.021:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_Mem.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/151539.025:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_Threading.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/151539.028:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_HPC.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/151539.034:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/analysis_types/GSP_GO.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/151645.799:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151645.801:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151645.850:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151645.930:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151645.947:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151645.964:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151704.560:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151704.639:INFO:CONSOLE(135)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/zigzag-on-bottom.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/htmlutil/htmlutil-626047.js (135)
+[0907/151704.723:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151704.733:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151704.750:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151704.760:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151704.773:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151704.786:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151733.400:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151733.401:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151733.413:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151733.504:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151733.534:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151733.545:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151733.557:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151733.586:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151736.840:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/dataovertime.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151736.843:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/dataovertime.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151737.286:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/dataovertime.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/151737.288:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/dataovertime.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/vendor-626047.js (1)
+[0907/151737.308:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/interval.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151737.310:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:55428/assets/sample.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:55428/extension-ui/Session-3-1694092524840?passphrase=3c30483b-95f0-ca17-5b9c-c87e6248c9ef (0)
+[0907/151753.492:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151753.534:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151753.628:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151754.841:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151800.614:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151812.523:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151822.437:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/151822.439:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/182023.506:ERROR:cert_verify_proc_builtin.cc(677)] CertVerifyProcBuiltin for 127.0.0.1 failed:
+----- Certificate i=0 (CN=kubernetes.docker.internal) -----
+ERROR: No matching issuer found
+
+
+[0907/182023.522:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0907/182625.374:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -100
+[0907/182625.796:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -100
+[0907/191724.596:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -100
+[0907/191724.813:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -100
+[0907/205049.225:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -100
+[0907/205717.246:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -100
+[0907/205719.858:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -100
+[0907/205719.860:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -100
+[0907/205719.860:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -100
+[0907/205724.977:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -100
+[0907/205737.842:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -100
+[0907/205738.972:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -100
+[0908/090543.045:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0908/090543.076:WARNING:dns_config_service_win.cc(583)] Failed to read DnsConfig.
+[0917/141357.569:WARNING:chrome_browser_cloud_management_controller.cc(87)] Could not create policy manager as CBCM is not enabled.
+[0917/141404.524:ERROR:cert_verify_proc_builtin.cc(677)] CertVerifyProcBuiltin for 127.0.0.1 failed:
+----- Certificate i=0 (CN=kubernetes.docker.internal) -----
+ERROR: No matching issuer found
+
+
+[0917/141404.524:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141404.890:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141404.890:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141404.914:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141404.925:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141404.941:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141404.942:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141404.958:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141404.973:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141404.989:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141405.005:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141405.020:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141405.020:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141405.052:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141405.067:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141405.067:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141405.083:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141407.045:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141407.137:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:41361/assets/zigzag.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:41361/vendor-626047.js (1)
+[0917/141407.181:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:41361/assets/no-connection-to-server.192x192.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0 (0)
+[0917/141407.181:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:41361/assets/no-connection-to-server.192x192.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0 (0)
+[0917/141407.181:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:41361/assets/no-connection-to-server.192x192.svg'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0 (0)
+[0917/141415.591:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:41361/assets/analysis_types/GSP_Hotspots.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0 (0)
+[0917/141415.592:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:41361/assets/analysis_types/GSP_UA.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0 (0)
+[0917/141415.592:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:41361/assets/analysis_types/GSP_Mem.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0 (0)
+[0917/141415.592:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:41361/assets/analysis_types/GSP_Threading.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0 (0)
+[0917/141415.593:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:41361/assets/analysis_types/GSP_HPC.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0 (0)
+[0917/141415.593:INFO:CONSOLE(0)] "Mixed Content: The page at 'https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:41361/assets/analysis_types/GSP_GO.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0 (0)
+[0917/141415.607:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.623:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.635:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.646:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.660:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.676:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.689:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.701:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.712:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.733:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.745:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.758:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.770:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.782:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.793:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.805:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.816:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141415.835:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141420.111:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:41361/assets/analysis_types/GSP_Hotspots.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:41361/vendor-626047.js (1)
+[0917/141420.117:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:41361/assets/analysis_types/GSP_UA.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:41361/vendor-626047.js (1)
+[0917/141420.119:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:41361/assets/analysis_types/GSP_Mem.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:41361/vendor-626047.js (1)
+[0917/141420.123:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:41361/assets/analysis_types/GSP_Threading.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:41361/vendor-626047.js (1)
+[0917/141420.124:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:41361/assets/analysis_types/GSP_HPC.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:41361/vendor-626047.js (1)
+[0917/141420.129:INFO:CONSOLE(1)] "Mixed Content: The page at 'https://127.0.0.1:41361/extension-ui/Session-1-1694952844346?passphrase=cb48ade6-6c33-a79b-f211-df1bb92aaeb0' was loaded over HTTPS, but requested an insecure element 'https://127.0.0.1:41361/assets/analysis_types/GSP_GO.png'. This request was not upgraded to HTTPS because its URL's host is an IP address.", source: https://127.0.0.1:41361/vendor-626047.js (1)
+[0917/141552.634:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141552.634:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141554.449:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141554.449:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141554.568:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/141609.397:ERROR:ssl_client_socket_impl.cc(992)] handshake failed; returned -1, SSL error code 1, net_error -202
+[0917/233010.804:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:41361/intel.analyzers.vtune.gui.js (2)
+[0917/233010.812:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:41361/intel.analyzers.vtune.gui.js (2)
+[0917/233010.953:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:41361/intel.analyzers.vtune.gui.js (2)
+[0917/233011.150:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:41361/intel.analyzers.vtune.gui.js (2)
+[0917/233013.599:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:41361/intel.analyzers.vtune.gui.js (2)
+[0917/233013.950:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:41361/intel.analyzers.vtune.gui.js (2)
+[0917/233014.273:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:41361/intel.analyzers.vtune.gui.js (2)
+[0917/233016.141:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:41361/intel.analyzers.vtune.gui.js (2)
+[0917/233019.233:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:41361/intel.analyzers.vtune.gui.js (2)
+[0917/233019.531:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:41361/intel.analyzers.vtune.gui.js (2)
