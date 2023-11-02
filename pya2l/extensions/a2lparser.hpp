@@ -15,7 +15,10 @@
     #include <stack>
     #include <unordered_map>
     #include <unordered_set>
+    #include <variant>
     #include <vector>
+
+using AsamVariantType = std::variant<std::string, unsigned long long, signed long long, long double>;
 
     #include "a2ltoken.hpp"
     #include "asam_types.hpp"
@@ -133,20 +136,20 @@ class Parser {
         auto parameter_list = ValueContainer::key_value_list_t{};
 
         for (const auto& parameter : kw_tos().m_parameters) {
-            done    = !parameter.m_multiple;
-            auto tp = parameter.m_type;
+            done = !parameter.m_multiple;
+            // auto tp = parameter.m_type;
             do {
                 auto token = m_reader.LT(1);
 
                 if (parameter.m_tuple) {
-                    auto       counter_tp  = parameter.m_counter;
-                    auto       tuple_tp    = parameter.m_tuple_elements;
-                    const auto tuple_n     = std::size(parameter.m_tuple_elements);
-                    auto       column      = 0;
-                    auto       idx         = 0;
-                    auto       tuple_count = 0;
-                    tuple_count            = std::atoi(token->getText().c_str());
-                    const auto token_count = tuple_count * tuple_n;
+                    const auto& counter_tp  = parameter.m_counter;
+                    const auto& tuple_tp    = parameter.m_tuple_elements;
+                    const auto  tuple_n     = std::size(parameter.m_tuple_elements);
+                    auto        column      = 0;
+                    auto        idx         = 0;
+                    auto        tuple_count = 0;
+                    tuple_count             = std::atoi(token->getText().c_str());
+                    const auto token_count  = tuple_count * tuple_n;
                     m_reader.consume();
                     while (idx < token_count) {
                         token = m_reader.LT(1);
@@ -166,19 +169,21 @@ class Parser {
                     // std::cout << "\tParameter: " << parameter.m_name << R"( M? )" << parameter.m_multiple << std::endl;
                     // std::cout << "\tValue: " << token->getText() << std::endl;
 
-                    parameter_list.emplace_back(token->getText());  // TODO: type conversion!!!
+                    auto value = parameter.convert(token->getText());
+                    parameter_list.emplace_back(value);
 
                     const auto expected = parameter.expected_token(token);
                     if ((parameter.m_multiple == true) && (!expected)) {
                         done = true;
                         continue;  // TODO: maybe break?
                     }
-                    const auto valid = parameter.validate(token);
+                    const auto valid = parameter.validate(token, value);
                     if (!expected) {
                         // std::cout << "Unexpected token!!!\n";
                     }
                     if (!valid) {
-                        std::cout << "Invalid param!!!\n";
+                        std::cout << "Invalid param!!!"
+                                  << "\n ";
                     }
                     m_reader.consume();
                 }

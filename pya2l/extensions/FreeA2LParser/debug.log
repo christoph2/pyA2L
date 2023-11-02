@@ -920,3 +920,171 @@ ERROR: No matching issuer found
 [0917/233016.141:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:41361/intel.analyzers.vtune.gui.js (2)
 [0917/233019.233:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:41361/intel.analyzers.vtune.gui.js (2)
 [0917/233019.531:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:41361/intel.analyzers.vtune.gui.js (2)
+[1026/105913.845:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105915.460:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105915.460:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105915.479:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105915.500:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105915.518:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105915.535:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105915.554:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105915.579:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105915.695:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105915.710:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105915.733:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105915.810:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105915.830:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105915.846:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105915.867:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105919.774:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105936.955:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105936.971:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105936.986:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105937.006:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/105937.042:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/110017.742:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/110018.233:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/110018.249:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/110018.757:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/110018.761:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/110018.780:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/110036.831:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/110036.836:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/110054.080:ERROR:gpu_init.cc(453)] Passthrough is not supported, GL is disabled, ANGLE is 
+[1026/110428.545:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1026/110428.571:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1028/093955.351:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1028/093955.383:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1028/093955.461:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1028/094002.192:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1028/094002.235:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1028/094003.570:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1028/094003.600:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1028/121119.639:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1028/121119.644:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1029/050006.256:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1029/050006.272:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1029/050006.299:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1101/124340.750:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124341.581:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124341.586:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124341.602:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124341.617:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124341.627:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124341.662:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124341.685:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124341.724:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124341.736:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124341.748:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124341.750:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124341.771:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124341.782:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124343.920:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124353.476:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124353.488:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124353.503:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124353.522:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124353.538:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124353.554:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124353.581:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124353.597:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124353.620:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124353.637:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124353.653:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124353.671:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124353.684:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124359.362:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124359.366:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/124528.524:ERROR:gpu_init.cc(453)] Passthrough is not supported, GL is disabled, ANGLE is 
+[1101/132909.530:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/132909.537:ERROR:ssl_client_socket_impl.cc(981)] handshake failed; returned -1, SSL error code 1, net_error -202
+[1101/133705.522:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133705.522:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133705.522:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133705.772:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133708.074:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133708.339:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133710.598:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133710.869:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133713.157:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133713.435:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133715.700:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133715.986:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133718.289:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133718.575:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133718.835:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133720.850:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133723.400:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133723.651:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133725.973:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133726.241:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133728.569:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133728.832:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133731.119:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133731.399:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133733.788:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133734.035:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133736.386:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133736.656:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133739.109:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133739.375:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133742.174:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133742.439:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133745.392:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133745.658:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133750.260:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133750.515:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133756.556:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133756.806:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133803.663:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133803.933:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133809.880:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133810.128:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133814.480:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133814.716:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133821.922:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133822.173:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133827.609:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133827.859:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133832.029:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133832.282:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133838.451:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133838.736:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133843.834:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133844.084:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133847.749:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133848.014:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133855.062:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133855.342:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133902.548:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133902.827:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133910.095:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133910.357:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133916.591:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133916.872:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133924.045:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133924.281:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133931.265:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133931.530:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133935.946:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133936.227:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133940.755:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133941.017:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133947.278:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133947.528:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133954.000:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/133954.264:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/134000.702:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/134000.966:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/134005.642:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/134005.891:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/134012.322:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/134012.588:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/134019.652:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/134019.934:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/134024.434:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/134024.701:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/134030.948:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/134031.215:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/134037.580:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)
+[1101/134037.831:INFO:CONSOLE(2)] "Failed to send log TypeError: Failed to fetch", source: https://127.0.0.1:51923/intel.analyzers.vtune.gui.js (2)

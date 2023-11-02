@@ -3,6 +3,7 @@
     #define __ASAM_TYPES_HPP
 
 using toke_type = std::size_t;
+// using AsamVariantType = std::variant<std::string, unsigned long long, signed long long,long double>;
 
 enum class PredefinedType : std::uint16_t {
     Int        = 1,
@@ -23,8 +24,8 @@ enum class PredefinedType : std::uint16_t {
 };
 
 struct AsamType {
-    virtual ~AsamType()                                 = default;
-    virtual bool validate(std::string_view value) const = 0;
+    virtual ~AsamType()                                       = default;
+    virtual bool validate(const AsamVariantType& value) const = 0;
 
     virtual std::string valid_range() const = 0;
 
@@ -32,7 +33,7 @@ struct AsamType {
 };
 
 struct DummyEnum : public AsamType {
-    bool validate(std::string_view value) const override {
+    bool validate(const AsamVariantType& value) const override {
         return true;
     }
 
@@ -41,33 +42,38 @@ struct DummyEnum : public AsamType {
     }
 };
 
+const std::string valid_enumerators(const std::set<std::string>& enumerators) {
+    auto        idx   = 0;
+    const auto  count = std::size(enumerators);
+    std::string result;
+
+    for (const auto& e : enumerators) {
+        result.append('\'' + e + '\'');
+        idx++;
+        if (idx < count) {
+            result.append(", ");
+        }
+    }
+    return result;
+}
+
 struct Enum : public AsamType {
     using value_t = const std::set<std::string>;
 
-    explicit Enum(std::string_view n, value_t e) : name{ n }, enumerators(std::move(e)) {
+    explicit Enum(std::string_view n, value_t e) : name{ n }, m_enumerators(std::move(e)) {
     }
 
-    bool validate(std::string_view text_value) const override {
-        return enumerators.contains(text_value.data());
+    bool validate(const AsamVariantType& value) const override {
+        auto text_value = std::get<std::string>(value);
+        return m_enumerators.contains(text_value.data());
     }
 
     std::string valid_range() const override {
-        auto        idx   = 0;
-        const auto  count = std::size(enumerators);
-        std::string result;
-
-        for (const auto& e : enumerators) {
-            result.append('"' + e + '"');
-            idx++;
-            if (idx < count) {
-                result.append(", ");
-            }
-        }
-        return result;
+        return valid_enumerators(m_enumerators);
     }
 
     std::string                 name;
-    const std::set<std::string> enumerators{};
+    const std::set<std::string> m_enumerators{};
 };
 
 struct Ident : public AsamType {
@@ -75,7 +81,7 @@ struct Ident : public AsamType {
         m_valid_tokens = { A2LTokenType::IDENT };
     }
 
-    bool validate(std::string_view text_value) const override {
+    bool validate(const AsamVariantType& value) const override {
         return true;
     }
 
@@ -89,7 +95,7 @@ struct String : public AsamType {
         m_valid_tokens = { A2LTokenType::STRING };
     }
 
-    bool validate(std::string_view text_value) const override {
+    bool validate(const AsamVariantType& value) const override {
         return true;
     }
 
@@ -104,13 +110,14 @@ struct IntegralType : public AsamType {
         m_valid_tokens = { A2LTokenType::INT, A2LTokenType::HEX };
     }
 
-    bool validate(std::string_view text_value) const override {
-        auto value = toint(text_value);
-        return (value < m_limits.min() || value > m_limits.max()) ? false : true;
-    }
-
-    long long toint(std::string_view text_value, std::uint8_t radix = 10) const {
-        return std::strtoll(text_value.data(), nullptr, radix);
+    bool validate(const AsamVariantType& value) const override {
+        if constexpr (std::is_signed_v<Ty> == true) {
+            auto int_value = std::get<signed long long>(value);
+            return (int_value < m_limits.min() || int_value > m_limits.max()) ? false : true;
+        } else {
+            auto int_value = std::get<unsigned long long>(value);
+            return (int_value < m_limits.min() || int_value > m_limits.max()) ? false : true;
+        }
     }
 
     std::string valid_range() const override {
@@ -118,6 +125,7 @@ struct IntegralType : public AsamType {
     }
 
     std::numeric_limits<Ty> m_limits;
+    const bool              is_signed = std::is_signed_v<Ty>;
 };
 
 struct Int : IntegralType<std::int16_t> {};
@@ -133,8 +141,8 @@ struct Float : public AsamType {
         m_valid_tokens = { A2LTokenType::FLOAT };
     }
 
-    bool validate(std::string_view text_value) const override {
-        auto value = tofloat(text_value);
+    bool validate(const AsamVariantType& value) const override {
+        auto fl_value = std::get<long double>(value);
         return true;
         // return (value < m_limits.min() || value > m_limits.max()) ? false : true;
     }
@@ -198,10 +206,10 @@ struct Linktype : public Enum {
 
 std::ostream& operator<<(std::ostream& os, const Enum& en) {
     std::string result;
-    const auto  count = std::size(en.enumerators);
+    const auto  count = std::size(en.m_enumerators);
     std::size_t idx   = 0;
 
-    for (const auto& e : en.enumerators) {
+    for (const auto& e : en.m_enumerators) {
         result.append('"' + e + '"');
         idx++;
         if (idx < count) {
