@@ -5,9 +5,7 @@
 class ValueContainer {
    public:
 
-    //    using key_value_t      = std::tuple<std::string, std::variant<std::string, unsigned long long, long double>>;
-    using key_value_t      = std::variant<std::string, unsigned long long, long double>;
-    using key_value_list_t = std::vector< key_value_t>;
+    using key_value_list_t = std::vector<AsamVariantType>;
 
     using container_type      = ValueContainer;
     using container_list_type = std::vector<container_type>;
@@ -51,7 +49,7 @@ class ValueContainer {
     }
 
     #if 0
-    void add_parameter(key_value_t&& parameter) {
+    void add_parameter(AsamVariantType&& parameter) {
         m_parameters.emplace_back(std::move(parameter));
     }
     #endif
