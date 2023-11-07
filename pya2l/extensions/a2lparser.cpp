@@ -14,10 +14,14 @@ int main() {
     n                                      = 42;
     print(t2);
 
-    auto parser = Parser("test.a2l", PARSER_TABLE);
+    auto parser = A2LParser("test.a2l");
     parser.parse();
 
     const auto& tree = parser.get_values();
+
+    // std::cout << tree.to_string();
+
+    const auto& tables = parser.get_tables();
 
     return 0;
 }

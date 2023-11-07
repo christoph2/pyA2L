@@ -663,7 +663,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                 Parameter(PredefinedType::Enum, "ConversionType", { "TAB_VERB", "" }),
                                 Parameter(
                                     { PredefinedType::Uint, "NumberValuePairs" },
-                                    { { PredefinedType::Float, "InVal" }, { PredefinedType::Float, "OutVal" } }
+                                    { { PredefinedType::Float, "InVal" }, { PredefinedType::String, "OutVal" } }
                                 ),
                             },
                             {

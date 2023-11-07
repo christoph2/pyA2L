@@ -31,17 +31,21 @@ using AsamVariantType = std::variant<std::string, unsigned long long, signed lon
 
     #include "parser_table.hpp"
 
-class Parser {
+class A2LParser {
    public:
 
-    explicit Parser(/*std::string_view*/ const std::string& file_name, Keyword& table) :
-        m_reader("A2L.tmp"), m_table(table), m_root("root") {
+    using value_table_t = std::tuple<std::string, std::string, std::vector<std::vector<AsamVariantType>>>;
+
+    explicit A2LParser(const std::string& file_name, const std::string& encoding) :
+        m_reader("A2L.tmp"), m_table(PARSER_TABLE), m_root("root") {
+        ValueContainer::set_encoding(encoding);
         std::cout << "Parsing file: " << file_name << std::endl;
         m_kw_stack.push(m_table);
         m_value_stack.push(&m_root);
+        m_table_count = 0;
     }
 
-    Parser(const Parser&) = delete;
+    A2LParser(const A2LParser&) = delete;
 
     void parse() {
         auto idx = 0;
@@ -99,7 +103,6 @@ class Parser {
 
     #if 0
             if (token_type() == ANTLRToken::_EOF) {
-                // std::numeric_limits<size_t>::max()
                 std::cout << idx / 1000 << "k tokens processed." << std::endl;
                 break;
             }
@@ -125,6 +128,10 @@ class Parser {
         }
     }
 
+    const std::vector<value_table_t>& get_tables() const {
+        return m_tables;
+    }
+
     const ValueContainer& get_values() const {
         return m_root;
     }
@@ -136,54 +143,37 @@ class Parser {
         auto parameter_list = ValueContainer::key_value_list_t{};
 
         for (const auto& parameter : kw_tos().m_parameters) {
-            done = !parameter.m_multiple;
-            // auto tp = parameter.m_type;
+            done = !parameter.is_multiple();
             do {
                 auto token = m_reader.LT(1);
 
-                if (parameter.m_tuple) {
-                    const auto& counter_tp  = parameter.m_counter;
-                    const auto& tuple_tp    = parameter.m_tuple_elements;
-                    const auto  tuple_n     = std::size(parameter.m_tuple_elements);
-                    auto        column      = 0;
-                    auto        idx         = 0;
-                    auto        tuple_count = 0;
-                    tuple_count             = std::atoi(token->getText().c_str());
-                    const auto token_count  = tuple_count * tuple_n;
+                if (parameter.is_tuple()) {
+                    auto tuple_parser = ParameterTupleParser(parameter);
+                    tuple_parser.feed(token);
                     m_reader.consume();
-                    while (idx < token_count) {
+                    while (true) {  // TODO: check for \end.
                         token = m_reader.LT(1);
-                        // std::cout << "\t" << token->getText();
-                        column++;
-                        if (column == tuple_n) {
-                            column = 0;
-                            // std::cout << std::endl;
+                        tuple_parser.feed(token);
+                        if (tuple_parser.get_state() == ParameterTupleParser::StateType::FINISHED) {
+                            m_tables.push_back({ value_tos().get_name(), std::get<std::string>(parameter_list[0]),
+                                                 std::move(tuple_parser.get_table()) });
+                            m_reader.consume();
+                            break;
                         }
-                        idx++;
-                        // if (idx >= token_count) {
-                        //     break;
-                        // }
                         m_reader.consume();
                     }
                 } else {
-                    // std::cout << "\tParameter: " << parameter.m_name << R"( M? )" << parameter.m_multiple << std::endl;
-                    // std::cout << "\tValue: " << token->getText() << std::endl;
-
-                    auto value = parameter.convert(token->getText());
+                    if ((parameter.is_multiple() == true) && (token_type() == A2LTokenType::END)) {
+                        done = true;
+                        continue;
+                    }
+                    auto value = convert(parameter.get_type(), token->getText());
                     parameter_list.emplace_back(value);
 
-                    const auto expected = parameter.expected_token(token);
-                    if ((parameter.m_multiple == true) && (!expected)) {
-                        done = true;
-                        continue;  // TODO: maybe break?
-                    }
-                    const auto valid = parameter.validate(token, value);
-                    if (!expected) {
-                        // std::cout << "Unexpected token!!!\n";
-                    }
+                    const auto valid = validate(parameter, token, value);
                     if (!valid) {
-                        std::cout << "Invalid param!!!"
-                                  << "\n ";
+                        auto f = 10;
+                        // std::cout << "Invalid param!!!" << "\n ";
                     }
                     m_reader.consume();
                 }
@@ -211,6 +201,8 @@ class Parser {
     std::stack<ValueContainer*> m_value_stack;
     Keyword&                    m_table;
     ValueContainer              m_root;
+    std::vector<value_table_t>  m_tables;
+    std::size_t                 m_table_count{ 0 };
 };
 
 // helper function to print a tuple of any size
