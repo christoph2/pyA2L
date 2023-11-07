@@ -26,77 +26,44 @@ class Parameter {
     }
 
     // Tuples.
-    Parameter(const tuple_element_t& counter, const std::vector< tuple_element_t>& elements) :
+    Parameter(const tuple_element_t& counter, const std::vector<tuple_element_t>& elements) :
         m_type(PredefinedType::Tuple), m_multiple(false), m_tuple{ true }, m_counter{ counter }, m_tuple_elements{ elements } {
-        std::cout << "TUPLE!!!\n";
     }
 
     ~Parameter() noexcept = default;
 
-    bool validate(const ANTLRToken* token, const AsamVariantType& value) const {
-        bool ok{ false };
-
-        if (std::size(m_enumerators) == 0) {
-            const auto entry = SPRUNG_TABELLE[std::bit_cast<std::uint16_t>(m_type) - 1];
-            ok               = entry->validate(value);
-            return ok;
-        } else {
-            ok = m_enumerators.contains(std::get<std::string>(value));
-            if (!ok) {
-                std::cout << token->line() << ":" << token->column() << ": error : "
-                          << "Enumeration '" + m_name + "' must be one of: " << valid_enumerators(m_enumerators) << " -- got: '"
-                          << std::get<std::string>(value) << "'." << std::endl;
-            }
-            return ok;
-        }
+    PredefinedType get_type() const noexcept {
+        return m_type;
     }
 
-    bool expected_token(const ANTLRToken* token) const {
-        const auto entry = SPRUNG_TABELLE[std::bit_cast<std::uint16_t>(m_type) - 1];
-        return entry->m_valid_tokens.contains(static_cast<A2LTokenType>(token->getType()));
+    const std::string& get_name() const noexcept {
+        return m_name;
     }
 
-    AsamVariantType convert(std::string_view text) const {
-        unsigned long long res_u{ 0 };
-        signed long long   res_s{ 0 };
-        switch (m_type) {
-            case PredefinedType::Int:
-            case PredefinedType::Long:
-                if ((text.length() > 2) && ((text[0] == '0') && (text[1] == 'x'))) {
-                    return static_cast<signed long long>(std::strtoll(text.data(), nullptr, 16));
-                } else {
-                    return static_cast<signed long long>(std::strtoll(text.data(), nullptr, 10));
-                }
-            case PredefinedType::Uint:
-            case PredefinedType::Ulong:
-                if ((text.length() > 2) && ((text[0] == '0') && (text[1] == 'x'))) {
-                    return static_cast<unsigned long long>(std::strtoll(text.data(), nullptr, 16));
-                } else {
-                    return static_cast<unsigned long long>(std::strtoll(text.data(), nullptr, 10));
-                }
-            case PredefinedType::Float:
-                return std::strtold(text.data(), nullptr);
-            default:
-                return text.data();
-        }
-    #if 0
-
-
-    String     = 6,
-    Enum       = 7,
-    Ident      = 8,
-    Datatype   = 9,
-    Indexorder = 10,
-    Addrtype   = 11,
-    Byteorder  = 12,
-    Datasize   = 13,
-    Linktype   = 14,
-    Tuple      = 15,
-    #endif
+    bool is_multiple() const noexcept {
+        return m_multiple;
     }
 
-    // private:
-   public:
+    bool is_tuple() const noexcept {
+        return m_tuple;
+    }
+
+    const std::optional<tuple_element_t> get_counter() const noexcept {
+        return m_counter;
+    }
+
+    const std::vector<tuple_element_t>& get_tuple_elements() const noexcept {
+        return m_tuple_elements;
+    }
+
+    const std::set<std::string>& get_enumerators() const noexcept {
+        return m_enumerators;
+    }
+
+    friend bool            validate(const Parameter& p, const ANTLRToken* token, const AsamVariantType& value);
+    friend AsamVariantType convert(const Parameter& p, std::string_view text);
+
+   private:
 
     PredefinedType                 m_type;
     std::string                    m_name;
@@ -104,7 +71,124 @@ class Parameter {
     bool                           m_tuple;
     std::set<std::string>          m_enumerators;
     std::optional<tuple_element_t> m_counter;
-    std::vector< tuple_element_t>  m_tuple_elements{};
+    std::vector<tuple_element_t>   m_tuple_elements{};
+};
+
+bool validate(const Parameter& p, const ANTLRToken* token, const AsamVariantType& value) {
+    bool ok{ false };
+
+    if (std::size(p.get_enumerators()) == 0) {
+        const auto entry = ASAM_TYPES[std::bit_cast<std::uint16_t>(p.m_type) - 1];
+        // const Enum*       en_xx = dynamic_cast< const Enum*>(entry);
+        ok              = entry->validate(value);
+        auto valid_type = entry->m_valid_tokens.contains(static_cast<A2LTokenType>(token->getType()));
+        return ok && valid_type;
+    } else {
+        ok              = p.get_enumerators().contains(std::get<std::string>(value));
+        auto token_type = static_cast<A2LTokenType>(token->getType());
+        if (!ok) {
+            std::cout << token->line() << ":" << token->column() << ": error : "
+                      << "Enumeration '" + p.m_name + "' must be one of: " << valid_enumerators(p.m_enumerators) << " -- got: '"
+                      << std::get<std::string>(value) << "'." << std::endl;
+        }
+        return ok;
+    }
+}
+
+AsamVariantType convert(PredefinedType type, std::string_view text) {
+    unsigned long long res_u{ 0 };
+    signed long long   res_s{ 0 };
+
+    switch (type) {
+        case PredefinedType::Int:
+        case PredefinedType::Long:
+            if ((text.length() > 2) && ((text[0] == '0') && (text[1] == 'x'))) {
+                return static_cast<signed long long>(std::strtoll(text.data(), nullptr, 16));
+            } else {
+                return static_cast<signed long long>(std::strtoll(text.data(), nullptr, 10));
+            }
+        case PredefinedType::Uint:
+        case PredefinedType::Ulong:
+            if ((text.length() > 2) && ((text[0] == '0') && (text[1] == 'x'))) {
+                return static_cast<unsigned long long>(std::strtoll(text.data(), nullptr, 16));
+            } else {
+                return static_cast<unsigned long long>(std::strtoll(text.data(), nullptr, 10));
+            }
+        case PredefinedType::Float:
+            return std::strtold(text.data(), nullptr);
+        default:
+            return text.data();
+    }
+}
+
+class ParameterTupleParser {
+   public:
+
+    enum class StateType : std::uint8_t {
+        IDLE = 0,
+        COLLECTING,
+        EXCESS_TOKENS,
+        FINISHED,
+    };
+
+    using table_t = std::vector<std::vector<AsamVariantType>>;
+
+    explicit ParameterTupleParser(const Parameter& parameter) :
+        m_parameter(parameter),
+        m_tuple_elements(parameter.get_tuple_elements()),
+        m_state(StateType::IDLE),
+        m_idx(0),
+        m_column(0),
+        m_tuple_size(0),
+        m_started(false),
+        m_token_count(0) {
+    }
+
+    void feed(const ANTLRToken* token) noexcept {
+        if (!m_started) {
+            auto [tp, name]  = m_parameter.get_counter().value();
+            auto tuple_count = std::get<unsigned long long>(convert(tp, token->getText()));
+            m_tuple_size     = std::size(m_parameter.get_tuple_elements());
+            m_row.resize(m_tuple_size);
+            m_token_count = tuple_count * m_tuple_size;
+            m_started     = true;
+            m_state       = StateType::COLLECTING;
+        } else {
+            auto type       = std::get<0>(m_tuple_elements[m_column]);
+            m_row[m_column] = convert(type, token->getText());
+            m_column++;
+            if (m_column == m_tuple_size) {
+                m_column = 0;
+                m_rows.emplace_back(m_row);
+            }
+            m_idx++;
+            if (m_idx >= m_token_count) {
+                // std::cout << "Tp finished\n";
+                m_state = StateType::FINISHED;
+            }
+        }
+    }
+
+    StateType get_state() const noexcept {
+        return m_state;
+    }
+
+    table_t get_table() const noexcept {
+        return m_rows;
+    }
+
+   private:
+
+    const Parameter&                               m_parameter;
+    const std::vector<Parameter::tuple_element_t>& m_tuple_elements;
+    StateType                                      m_state;
+    std::size_t                                    m_idx;
+    std::size_t                                    m_column;
+    std::size_t                                    m_tuple_size;
+    bool                                           m_started;
+    std::size_t                                    m_token_count;
+    std::vector<AsamVariantType>                   m_row;
+    table_t                                        m_rows;
 };
 
 #endif  // __PARAMETER_HPP

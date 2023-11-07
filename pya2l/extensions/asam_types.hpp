@@ -234,9 +234,9 @@ const auto asam_byteorder  = Byteorder();
 const auto asam_datasize   = Datasize();
 const auto asam_link       = Linktype();
 
-constexpr std::array<AsamType const * const, 14> SPRUNG_TABELLE = {
-    &asam_int,   &asam_uint,     &asam_long,       &asam_ulong,    &asam_float,     &asam_string,   &asam_enum,
-    &asam_ident, &asam_datatype, &asam_indexorder, &asam_addrtype, &asam_byteorder, &asam_datasize, &asam_link
-};
+constexpr std::array<AsamType const * const, 14> ASAM_TYPES = { &asam_int,      &asam_uint,       &asam_long,     &asam_ulong,
+                                                                &asam_float,    &asam_string,     &asam_enum,     &asam_ident,
+                                                                &asam_datatype, &asam_indexorder, &asam_addrtype, &asam_byteorder,
+                                                                &asam_datasize, &asam_link };
 
 #endif  // __ASAM_TYPES_HPP

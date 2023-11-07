@@ -2,6 +2,24 @@
 #if !defined __VALUECONTAINER_HPP
     #define __VALUECONTAINER_HPP
 
+const std::string as_string(const AsamVariantType& v) {
+    std::ostringstream os;
+
+    os << "Value(";
+    if (std::holds_alternative<std::string>(v)) {
+        os << std::get<std::string>(v);
+    } else if (std::holds_alternative<unsigned long long>(v)) {
+        os << std::to_string(std::get<unsigned long long>(v));
+    } else if (std::holds_alternative<signed long long>(v)) {
+        os << std::to_string(std::get<signed long long>(v));
+    } else if (std::holds_alternative<long double>(v)) {
+        os << std::to_string(std::get<long double>(v));
+    }
+    os << ")";
+
+    return os.str();
+}
+
 class ValueContainer {
    public:
 
@@ -48,17 +66,37 @@ class ValueContainer {
         return m_parameters;
     }
 
-    #if 0
-    void add_parameter(AsamVariantType&& parameter) {
-        m_parameters.emplace_back(std::move(parameter));
+    const std::string to_string() const {
+        std::ostringstream os;
+
+        os << "ValueContainer(name: '" << get_name() << "'";
+
+        for (const auto& param : get_parameters()) {
+            os << "\t: " << as_string(param) << "; " << std::endl;
+        }
+
+        for (const auto& kw : get_keywords()) {
+            os << "\t: " << kw.to_string() << std::endl;
+        }
+
+        os << ");" << std::endl;
+        return os.str();
     }
-    #endif
+
+    static void set_encoding(std::string_view encoding) {
+        s_encoding = encoding;
+    }
+
+    static std::string get_encoding() {
+        return s_encoding;
+    }
 
    private:
 
     std::string         m_name;
     key_value_list_t    m_parameters;
     container_list_type m_keywords;
+    static std::string  s_encoding;
 };
 
 #endif  // __VALUECONTAINER_HPP

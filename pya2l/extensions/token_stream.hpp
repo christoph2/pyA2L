@@ -16,8 +16,6 @@
 
     #pragma warning(disable: 4251 4273)
 
-// #include "antlr4-runtime.h"
-
 template<typename Ty_>
 class FixedSizeStack {
    public:
@@ -59,7 +57,7 @@ class TokenWriter {
     explicit TokenWriter(TempFile &outf) : m_outf(outf.handle()) {
     }
 
-    void operator<<(const Token &token) {
+    void operator<<(const Token &token) const {
         if ((token.m_token_class == TokenClass::REGULAR) || (token.m_token_class == TokenClass::STRING)) {
             write_int(std::size(token.m_payload));
             write_int(token.m_token_type);
@@ -331,8 +329,7 @@ class TokenReader {
     }
 
     void release(std::size_t marker) {
-        const std::size_t expectedMark = -_numMarkers;
-        if (marker != expectedMark) {
+        if (const std::size_t expectedMark = -_numMarkers; marker != expectedMark) {
             throw IllegalStateException("release() called with an invalid marker.");
         }
 
@@ -341,7 +338,7 @@ class TokenReader {
             if (_p > 0) {
                 // Copy tokens[p]..tokens[n-1] to tokens[0]..tokens[(n-1)-p], reset ptrs
                 // p is last valid token; move nothing if p==n as we have no valid char
-                _tokens.erase(_tokens.begin(), _tokens.begin() + static_cast<std::size_t>(_p));
+                _tokens.erase(_tokens.begin(), _tokens.begin() + _p);
                 _p = 0;
             }
             _lastTokenBufferStart = _lastToken;
@@ -356,15 +353,15 @@ class TokenReader {
         return _currentTokenIndex - _p;
     }
 
-    std::size_t size() const {
+    [[noreturn]] std::size_t size() const {
         throw UnsupportedOperationException("Size of stream is not known.");
     }
 
-    ANTLRToken *get(size_t index) const {
+    [[noreturn]] ANTLRToken *get(size_t index) const {
         throw UnsupportedOperationException("get() operation not supported.");
     }
 
-    TokenSource *getTokenSource() const {
+    [[noreturn]] TokenSource *getTokenSource() const {
         throw UnsupportedOperationException("getTokenSource() operation not supported.");
     }
 
@@ -404,11 +401,18 @@ class TokenReader {
         return ::feof(m_file) != 0;
     }
 
-    void open() noexcept {
+    void open() {
     #if defined(_MSC_VER)
         auto err = ::fopen_s(&m_file, m_file_name.c_str(), "rb");
+        if (err != 0) {
+            throw std::runtime_error("Could not open file '" + m_file_name + "'.\n");
+        }
+
     #else
         m_file = ::fopen(m_file_name.c_str(), "rb");
+        if (m_file == nullptr) {
+            throw std::runtime_error("Could not open file '" + m_file_name + "'.\n");
+        }
     #endif
     }
 

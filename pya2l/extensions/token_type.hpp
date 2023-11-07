@@ -10,7 +10,7 @@
     #include <map>
     #include <string>
 
-const std::map<std::string, int> A2L_KEYWORDS{
+const std::map<std::string, int, std::less<>> A2L_KEYWORDS{
     {"<INVALID>",                     0  },
     { "ALIGNMENT_BYTE",               1  },
     { "ALIGNMENT_FLOAT16_IEEE",       2  },
