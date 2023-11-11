@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 __copyright__ = """
@@ -30,6 +29,8 @@ import pathlib
 import sys
 
 from pya2l import DB
+
+import os
 
 
 def main():
