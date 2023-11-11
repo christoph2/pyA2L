@@ -18,7 +18,7 @@ struct Overload : Ts... {
 
 #if 0
 auto ItemGetter = Overload {
-	[](std::string elem) {
+	[](const std::string& elem) {
 		auto raw_value = std::get<std::string>(elem);
 
 		py::handle py_s = PyUnicode_Decode(raw_value.data(), raw_value.length(), ValueContainer::get_encoding().c_str(), "strict");
@@ -27,9 +27,9 @@ auto ItemGetter = Overload {
 		}
 		return py::reinterpret_steal<py::str>(py_s);
 	},
-	[](unsigned long long elem) {},
-	[](signed long long elem) {},
-	[](long double elem) {},
+	[](const unsigned long long& elem) { return elem; },
+	[](const signed long long& elem) { return elem; },
+	[](const long double& elem) { return elem; },
 	[](auto elem) {
 		return elem;
 	},
