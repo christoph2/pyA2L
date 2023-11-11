@@ -10,6 +10,10 @@
     #include <map>
     #include <string>
 
+    #if defined(__APPLE__)
+        #undef BYTE_ORDER
+    #endif
+
 enum class A2LTokenType : std::uint16_t {
     INVALID                      = 0,
     ALIGNMENT_BYTE               = 1,
