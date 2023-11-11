@@ -41,7 +41,7 @@ class A2LParser {
 
     using value_table_t = std::tuple<std::string, std::string, std::vector<std::vector<AsamVariantType>>>;
 
-    explicit A2LParser() : m_table(PARSER_TABLE), m_keyword_counter(0), m_root("root") {
+    explicit A2LParser() : m_keyword_counter(0), m_table(PARSER_TABLE), m_root("root") {
         m_kw_stack.push(m_table);
         m_value_stack.push(&m_root);
         m_table_count = 0;
@@ -163,7 +163,7 @@ class A2LParser {
                         tuple_parser.feed(token);
                         if (tuple_parser.get_state() == ParameterTupleParser::StateType::FINISHED) {
                             m_tables.push_back({ value_tos().get_name(), std::get<std::string>(parameter_list[0]),
-                                                 std::move(tuple_parser.get_table()) });
+                                                 tuple_parser.get_table() });
                             m_reader->consume();
                             break;
                         }

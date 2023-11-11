@@ -12,6 +12,8 @@
 
     #if defined(__APPLE__)
         #undef BYTE_ORDER
+        #undef LITTLE_ENDIAN
+        #undef BIG_ENDIAN
     #endif
 
 enum class A2LTokenType : std::uint16_t {
