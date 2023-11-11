@@ -13,8 +13,9 @@
     #include "exceptions.hpp"
     #include "tempfile.hpp"
     #include "tokenizer.hpp"
-
-    #pragma warning(disable: 4251 4273)
+    #if defined(_WIN32)
+        #pragma warning(disable: 4251 4273)
+    #endif
 
 template<typename Ty_>
 class FixedSizeStack {
@@ -71,7 +72,7 @@ class TokenWriter {
     }
 
     void write_int(std::size_t value) const {
-        const std::size_t before = m_outf.tellp();
+        // const std::size_t before = m_outf.tellp();
         m_outf.write(std::bit_cast<const char *>(&value), sizeof(std::size_t));
     #if 0
 // Testing code.

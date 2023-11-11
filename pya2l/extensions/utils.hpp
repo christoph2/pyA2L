@@ -127,7 +127,7 @@ inline auto split(const std::string &str, char delimiter) -> std::vector<std::st
 }
 
 inline void hex_dump(const char *p, std::size_t n) {
-    for (auto idx = 0; idx < n; ++idx) {
+    for (std::size_t idx = 0; idx < n; ++idx) {
         printf("%02X ", p[idx]);
     }
     printf("\n");

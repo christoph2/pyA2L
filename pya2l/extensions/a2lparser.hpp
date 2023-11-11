@@ -179,7 +179,7 @@ class A2LParser {
 
                     const auto valid = validate(parameter, token, value);
                     if (!valid) {
-                        auto f = 10;
+                        // auto f = 10;
                         // std::cout << "Invalid param!!!" << "\n ";
                     }
                     m_reader->consume();

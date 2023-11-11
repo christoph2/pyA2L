@@ -43,8 +43,8 @@ struct DummyEnum : public AsamType {
 };
 
 const std::string valid_enumerators(const std::set<std::string>& enumerators) {
-    auto        idx   = 0;
     const auto  count = std::size(enumerators);
+    std::size_t idx   = 0;
     std::string result;
 
     for (const auto& e : enumerators) {
@@ -142,7 +142,7 @@ struct Float : public AsamType {
     }
 
     bool validate(const AsamVariantType& value) const override {
-        auto fl_value = std::get<long double>(value);
+        // auto fl_value = std::get<long double>(value);
         return true;
         // return (value < m_limits.min() || value > m_limits.max()) ? false : true;
     }

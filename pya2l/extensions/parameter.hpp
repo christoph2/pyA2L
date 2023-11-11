@@ -84,8 +84,8 @@ bool validate(const Parameter& p, const ANTLRToken* token, const AsamVariantType
         auto valid_type = entry->m_valid_tokens.contains(static_cast<A2LTokenType>(token->getType()));
         return ok && valid_type;
     } else {
-        ok              = p.get_enumerators().contains(std::get<std::string>(value));
-        auto token_type = static_cast<A2LTokenType>(token->getType());
+        ok = p.get_enumerators().contains(std::get<std::string>(value));
+        // auto token_type = static_cast<A2LTokenType>(token->getType());
         if (!ok) {
             std::cout << token->line() << ":" << token->column() << ": error : "
                       << "Enumeration '" + p.m_name + "' must be one of: " << valid_enumerators(p.m_enumerators) << " -- got: '"
@@ -96,9 +96,6 @@ bool validate(const Parameter& p, const ANTLRToken* token, const AsamVariantType
 }
 
 AsamVariantType convert(PredefinedType type, std::string_view text) {
-    unsigned long long res_u{ 0 };
-    signed long long   res_s{ 0 };
-
     switch (type) {
         case PredefinedType::Int:
         case PredefinedType::Long:
