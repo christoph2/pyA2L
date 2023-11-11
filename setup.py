@@ -38,6 +38,9 @@ EXT_NAMES = ["pya2l.preprocessor", "pya2l.a2lparser_ext"]
 uname = platform.uname()
 if uname.system == "Linux":
     extra_compile_args = ["-fcoroutines"]  # At least required on Raspberry PIs.
+elif uname.system == "Darwin":
+    os.environ["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
+    extra_compile_args = []
 else:
     extra_compile_args = []
 

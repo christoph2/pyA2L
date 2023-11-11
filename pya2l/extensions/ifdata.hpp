@@ -131,7 +131,7 @@ class IfDataReader : public IfDataBase {
     #if defined(_MSC_VER)
         auto err = ::fopen_s(&m_file, m_file_name.c_str(), "rb");
     #else
-        m_file = : fopen(m_file_name.c_str(), "rb");
+        m_file = ::fopen(m_file_name.c_str(), "rb");
     #endif
     }
 
