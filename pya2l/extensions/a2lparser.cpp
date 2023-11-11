@@ -1,6 +1,8 @@
 
 #include "a2lparser.hpp"
 
+std::string ValueContainer::s_encoding{ "ascii" };
+
 int main() {
     std::cout << asam_int.valid_range() << std::endl;
     std::cout << asam_uint.valid_range() << std::endl;
@@ -14,8 +16,8 @@ int main() {
     n                                      = 42;
     print(t2);
 
-    auto parser = A2LParser("test.a2l");
-    parser.parse();
+    auto parser = A2LParser();
+    parser.parse("test.a2l", "latin1");
 
     const auto& tree = parser.get_values();
 
