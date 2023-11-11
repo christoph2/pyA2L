@@ -27,8 +27,8 @@ __copyright__ = """
 __author__ = "Christoph Schueler"
 
 from pya2l.aml.listener import AMLListener
-from pya2l.parserlib import ParserWrapper, CustomA2lParser
-from pya2l.a2l_listener import A2LListener
+from pya2l.parserlib import ParserWrapper
+from pya2l.a2lparser import A2LParser
 from pya2l.if_data_parser import IfDataParser
 
 
@@ -38,7 +38,7 @@ def aml(debug: bool = False, prepro_result=None):
 
 
 def a2l(debug: bool = False, prepro_result=None):
-    parser = CustomA2lParser(listener=A2LListener, debug=debug, prepro_result=prepro_result)
+    parser = A2LParser()
     return parser
 
 

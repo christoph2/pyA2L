@@ -28,7 +28,6 @@ __author__ = "Christoph Schueler"
 __version__ = "0.1.0"
 
 from collections import namedtuple
-import os
 import importlib
 import sys
 
@@ -145,7 +144,7 @@ class CustomA2lParser:
         self.prepro_result = prepro_result
         self.listener = listener
 
-    def parse(self, filename, trace=False, encoding="latin-1"):
+    def parse(self, filename, encoding="latin-1"):
         self.db = model.A2LDatabase(self.fnbase, debug=self.debug)
 
         from pya2l.a2lparser import parse
@@ -170,6 +169,6 @@ class CustomA2lParser:
         self.db.session.commit()
         return ResultType(self.db, listener_result)
 
-    def parseFromFile(self, filename, encoding="latin-1", trace=False, dbname=":memory:"):
+    def parseFromFile(self, filename, encoding="latin-1", dbname=":memory:"):
         self.fnbase = dbname
-        return self.parse(filename, trace, encoding=encoding)
+        return self.parse(filename, encoding=encoding)

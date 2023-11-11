@@ -240,9 +240,9 @@ def detect_encoding(file_name: str = None, text: str = None) -> str:
         raise ValueError("`file_name` and `text` are mutual exclusive.")
     detector = UniversalDetector()
     if file_name:
-        if isinstance(file_name, pathlib.WindowsPath):
-            file_name = str(file_name)
-        obj = open(file_name, "rb")
+        if isinstance(file_name, str):
+            file_name = pathlib.Path(file_name)
+        obj = file_name.open("rb")
     else:
         obj = iter(text.splitlines())
     for line in obj:

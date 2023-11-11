@@ -36,11 +36,14 @@ from time import perf_counter
 from pathlib import Path
 import warnings
 
+from rich.traceback import install
 
 import pya2l.model as model
 from pya2l.logger import Logger
 from pya2l.templates import doTemplateFromText
 from pya2l.utils import detect_encoding
+
+install(show_locals=True, max_frames=3)  # Install custom exception handler.
 
 
 class InvalidA2LDatabase(Exception):
@@ -103,13 +106,17 @@ class DB(object):
         ----
         ``AML`` and ``IF_DATA`` sections are currently not processed.
         """
+
+        print("Enter importer...")
+
         from os import unlink
 
-        from pya2l.a2l_listener import A2LListener
+        # from pya2l.a2l_listener import A2LListener
         from pya2l import parsers
 
-        # from pya2l.preprocessor import Preprocessor
-        from pya2l.a2lparser import Preprocessor
+        from pya2l.preprocessor import Preprocessor
+
+        # from pya2l.a2lparser import Preprocessor
         from pya2l.aml.db import Importer
 
         start_time = perf_counter()
@@ -125,18 +132,21 @@ class DB(object):
                     pass
             elif self._dbfn.exists():
                 raise OSError("file '{}' already exists.".format(self._dbfn))  # Use 'open_create()' or 'open_existing()'.--
+
+        print("Enter pre-processor...")
+
         prepro = Preprocessor(loglevel=loglevel)
 
-        encoding = encoding or detect_encoding(file_name=self._a2lfn)
+        if encoding is None:
+            self.logger.info("Detecting encoding...")
+            encoding = detect_encoding(file_name=self._a2lfn)
         prepro_result = prepro.process(str(self._a2lfn), encoding=encoding)
         prepro.finalize()
         filenames, line_map, ifdata_reader = prepro_result
         a2l_parser = parsers.a2l(debug=debug, prepro_result=prepro_result)
         self.logger.info("Parsing pre-processed data ...")
         # try:
-        self.db, listener_result = a2l_parser.parseFromFile(
-            filename=filenames.a2l, dbname=str(self._dbfn), encoding=encoding, trace=debug
-        )
+        self.db, listener_result = a2l_parser.parse(filename=filenames.a2l, dbname=str(self._dbfn), encoding=encoding)
         # except UnicodeDecodeError as e:
         #    print(e)
         #    self.logger.error(f"File cannot decoded as '{encoding}'. Try an encoding like 'latin-1'.")

@@ -31,15 +31,17 @@ using AsamVariantType = std::variant<std::string, unsigned long long, signed lon
 
     #include "parser_table.hpp"
 
+    #if 0
+[INFO (pya2l.Preprocessor)]: Preprocessing and tokenizing '..\..\examples\HAXNR4000000.a2l'.
+[INFO (pya2l.DB)]: Parsing pre-processed data ...
+    #endif
+
 class A2LParser {
    public:
 
     using value_table_t = std::tuple<std::string, std::string, std::vector<std::vector<AsamVariantType>>>;
 
-    explicit A2LParser(const std::string& file_name, const std::string& encoding) :
-        m_reader("A2L.tmp"), m_table(PARSER_TABLE), m_root("root") {
-        ValueContainer::set_encoding(encoding);
-        std::cout << "Parsing file: " << file_name << std::endl;
+    explicit A2LParser() : m_table(PARSER_TABLE), m_keyword_counter(0), m_root("root") {
         m_kw_stack.push(m_table);
         m_value_stack.push(&m_root);
         m_table_count = 0;
@@ -47,35 +49,36 @@ class A2LParser {
 
     A2LParser(const A2LParser&) = delete;
 
-    void parse() {
-        auto idx = 0;
+    void parse(const std::string& file_name, const std::string& encoding) {
+        ValueContainer::set_encoding(encoding);
+        m_reader = std::make_unique<TokenReader>(file_name);
 
         while (true) {
-            const auto token = m_reader.LT(1);
+            const auto token = m_reader->LT(1);
             // auto block = kw_tos().m_block;
 
             if (token_type() == A2LTokenType::BEGIN) {
-                m_reader.consume();
+                m_reader->consume();
                 if (kw_tos().contains(token_type())) {
-                    // std::cout << "Token: " << m_reader.LT(1)->kw_tos() << std::endl;
+                    // std::cout << "Token: " << m_reader->LT(1)->kw_tos() << std::endl;
                 }
                 // m_kw_stack.push(m_table);
                 // m_table = m_table.get(tt);
-                // idx++;
+                // m_keyword_counter++;
 
                 // std::cout << "Unexpected token: " << token << ". expected /'begin'." << std::endl;
             }
             // TODO:  Factor out.
             if (token_type() == A2LTokenType::END) {
-                m_reader.consume();
-                auto glied = m_reader.LT(1);
+                m_reader->consume();
+                auto glied = m_reader->LT(1);
                 // std::cout << "\t/END " << glied->getText() << "\n";
                 assert(kw_tos().m_name == glied->getText());
                 if (kw_tos().m_name == glied->getText()) {
                     m_kw_stack.pop();
                     m_value_stack.pop();
                 }
-                m_reader.consume();
+                m_reader->consume();
                 continue;
             }
 
@@ -89,7 +92,7 @@ class A2LParser {
             }
 
             if (kw_tos().contains(token->getType())) {
-                // std::cout << idx++ << ": " << token->getText() << std::endl;
+                // std::cout << m_keyword_counter++ << ": " << token->getText() << std::endl;
                 const auto xxx = kw_tos().get(token->type());
                 m_kw_stack.push(xxx);
                 auto& vref = value_tos().add_keyword(ValueContainer(xxx.m_class_name));
@@ -98,12 +101,12 @@ class A2LParser {
                 std::cout << "Huch!!!\n";
                 throw std::runtime_error("Invalid token");
             }
-            m_reader.consume();
-            idx++;
+            m_reader->consume();
+            m_keyword_counter++;
 
     #if 0
             if (token_type() == ANTLRToken::_EOF) {
-                std::cout << idx / 1000 << "k tokens processed." << std::endl;
+                std::cout << m_keyword_counter / 1000 << "k tokens processed." << std::endl;
                 break;
             }
     #endif
@@ -116,14 +119,14 @@ class A2LParser {
                 m_value_stack.pop();
             }
             if (token_type() == A2LTokenType::END) {
-                m_reader.consume();
-                auto glied = m_reader.LT(1);
+                m_reader->consume();
+                auto glied = m_reader->LT(1);
                 assert(kw_tos().m_name == glied->getText());
                 if (kw_tos().m_name == glied->getText()) {
                     m_kw_stack.pop();
                     m_value_stack.pop();
                 }
-                m_reader.consume();
+                m_reader->consume();
             }
         }
     }
@@ -136,6 +139,10 @@ class A2LParser {
         return m_root;
     }
 
+    std::size_t get_keyword_counter() const {
+        return m_keyword_counter;
+    }
+
    protected:
 
     ValueContainer::key_value_list_t do_parameters() {
@@ -145,22 +152,22 @@ class A2LParser {
         for (const auto& parameter : kw_tos().m_parameters) {
             done = !parameter.is_multiple();
             do {
-                auto token = m_reader.LT(1);
+                auto token = m_reader->LT(1);
 
                 if (parameter.is_tuple()) {
                     auto tuple_parser = ParameterTupleParser(parameter);
                     tuple_parser.feed(token);
-                    m_reader.consume();
+                    m_reader->consume();
                     while (true) {  // TODO: check for \end.
-                        token = m_reader.LT(1);
+                        token = m_reader->LT(1);
                         tuple_parser.feed(token);
                         if (tuple_parser.get_state() == ParameterTupleParser::StateType::FINISHED) {
                             m_tables.push_back({ value_tos().get_name(), std::get<std::string>(parameter_list[0]),
                                                  std::move(tuple_parser.get_table()) });
-                            m_reader.consume();
+                            m_reader->consume();
                             break;
                         }
-                        m_reader.consume();
+                        m_reader->consume();
                     }
                 } else {
                     if ((parameter.is_multiple() == true) && (token_type() == A2LTokenType::END)) {
@@ -175,7 +182,7 @@ class A2LParser {
                         auto f = 10;
                         // std::cout << "Invalid param!!!" << "\n ";
                     }
-                    m_reader.consume();
+                    m_reader->consume();
                 }
             } while (!done);
         }
@@ -191,18 +198,20 @@ class A2LParser {
     }
 
     A2LTokenType token_type(int k = 1) {
-        return static_cast<A2LTokenType>(m_reader.LT(k)->getType());
+        return static_cast<A2LTokenType>(m_reader->LT(k)->getType());
     }
 
    private:
 
-    TokenReader                 m_reader;
-    std::stack<Keyword>         m_kw_stack;
-    std::stack<ValueContainer*> m_value_stack;
-    Keyword&                    m_table;
-    ValueContainer              m_root;
-    std::vector<value_table_t>  m_tables;
-    std::size_t                 m_table_count{ 0 };
+    std::string                  m_encoding;
+    std::unique_ptr<TokenReader> m_reader;
+    std::size_t                  m_keyword_counter;
+    std::stack<Keyword>          m_kw_stack;
+    std::stack<ValueContainer*>  m_value_stack;
+    Keyword&                     m_table;
+    ValueContainer               m_root;
+    std::vector<value_table_t>   m_tables;
+    std::size_t                  m_table_count{ 0 };
 };
 
 // helper function to print a tuple of any size

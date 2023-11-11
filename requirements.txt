@@ -4,3 +4,6 @@ antlr4-python3-runtime==4.13.0
 chardet
 Mako
 SQLAlchemy
+numpy
+scipy
+rich

@@ -29,6 +29,7 @@ dependencies = [
     "SQLAlchemy",
     "numpy",
     "scipy",
+    "rich",
 ]
 version = "0.12.93"
 description = ""
