@@ -17,7 +17,7 @@ int main() {
     print(t2);
 
     auto parser = A2LParser();
-    parser.parse("test.a2l", "latin1");
+    parser.parse("A2L.TMP", "latin1");
 
     const auto& tree = parser.get_values();
 

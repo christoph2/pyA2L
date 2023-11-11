@@ -11,10 +11,20 @@ namespace py = pybind11;
 
 std::string ValueContainer::s_encoding{ "ascii" };
 
+#if 0
 template<typename... Ts>
 struct Overload : Ts... {
     using Ts::operator()...;
 };
+#endif
+
+template<class... Ts>
+struct Overload : Ts... {
+    using Ts::operator()...;
+};
+// explicit deduction guide (not needed as of C++20)
+template<class... Ts>
+Overload(Ts...) -> Overload<Ts...>;
 
 #if 0
 auto ItemGetter = Overload {
