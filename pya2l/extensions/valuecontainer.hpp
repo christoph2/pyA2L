@@ -84,11 +84,10 @@ class ValueContainer {
     }
 
     static void set_encoding(std::string_view encoding) {
-        std::cout << "set_encoding: " << encoding << std::endl;
         s_encoding = encoding;
     }
 
-    static std::string get_encoding() {
+    static const std::string& get_encoding() {
         // std::cout << "get_encoding: " << s_encoding << std::endl;
         return s_encoding;
     }

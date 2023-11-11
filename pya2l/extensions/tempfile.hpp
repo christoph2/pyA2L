@@ -69,7 +69,7 @@ class TempFile {
     }
 
     void to_stdout() {
-        m_file.set_rdbuf(std::cout.rdbuf());
+        // m_file.rdbuf(std::cout.rdbuf());
     }
 
     std::ofstream& handle() noexcept {

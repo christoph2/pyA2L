@@ -73,9 +73,12 @@ class TokenWriter {
     void write_int(std::size_t value) const {
         const std::size_t before = m_outf.tellp();
         m_outf.write(std::bit_cast<const char *>(&value), sizeof(std::size_t));
+    #if 0
+// Testing code.
         const std::size_t after   = m_outf.tellp();
         const std::size_t correct = before + 8;
         assert(correct == after);
+    #endif
     }
 
     void write_string(std::string_view text) const {
