@@ -3,6 +3,7 @@
     #define __EXCEPTIONS_HPP
 
     #include <stdexcept>
+    #include <string>
 
 class RuntimeException : public std::exception {
    private:
