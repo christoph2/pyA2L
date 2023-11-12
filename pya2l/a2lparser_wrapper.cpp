@@ -11,40 +11,10 @@ namespace py = pybind11;
 
 std::string ValueContainer::s_encoding{ "ascii" };
 
-#if 0
 template<typename... Ts>
 struct Overload : Ts... {
     using Ts::operator()...;
 };
-#endif
-
-template<class... Ts>
-struct Overload : Ts... {
-    using Ts::operator()...;
-};
-// explicit deduction guide (not needed as of C++20)
-template<class... Ts>
-Overload(Ts...) -> Overload<Ts...>;
-
-#if 0
-auto ItemGetter = Overload {
-	[](const std::string& elem) {
-		auto raw_value = std::get<std::string>(elem);
-
-		py::handle py_s = PyUnicode_Decode(raw_value.data(), raw_value.length(), ValueContainer::get_encoding().c_str(), "strict");
-		if (!py_s) {
-			throw py::error_already_set();
-		}
-		return py::reinterpret_steal<py::str>(py_s);
-	},
-	[](const unsigned long long& elem) { return elem; },
-	[](const signed long long& elem) { return elem; },
-	[](const long double& elem) { return elem; },
-	[](auto elem) {
-		return elem;
-	},
-};
-#endif
 
 PYBIND11_MODULE(a2lparser_ext, m) {
     py::class_<ValueContainer>(m, "ValueContainer")
@@ -57,8 +27,8 @@ PYBIND11_MODULE(a2lparser_ext, m) {
 
             auto encoding = ValueContainer::get_encoding().c_str();
 
-            auto ItemGetter = Overload{
-
+            auto ItemGetter = Overload {
+#if !defined(__APPLE__)
                 [&result, encoding](std::string value) {
                     py::handle py_s = PyUnicode_Decode(value.data(), value.length(), encoding, "strict");
                     if (!py_s) {
@@ -66,29 +36,29 @@ PYBIND11_MODULE(a2lparser_ext, m) {
                     }
                     result.append(py::reinterpret_steal<py::str>(py_s));
                 },
-                [&result](auto value) { result.append(value); },
-
+                    [&result](auto value) { result.append(value); },
             };
-
-            for (const auto& elem : self.get_parameters()) {
-#if 0
-					if (std::holds_alternative<std::string>(elem)) {
-						auto raw_value = std::get<std::string>(elem);
-
-						py::handle py_s = PyUnicode_Decode(raw_value.data(), raw_value.length(), ValueContainer::get_encoding().c_str(), "strict");
-						if (!py_s) {
-							throw py::error_already_set();
-						}
-						result.append(py::reinterpret_steal<py::str>(py_s));
-					} else if (std::holds_alternative<unsigned long long>(elem)) {
-						result.append(std::get<unsigned long long>(elem));
-					} else if (std::holds_alternative<signed long long>(elem)) {
-						result.append(std::get<signed long long>(elem));
-					} else if (std::holds_alternative<long double>(elem)) {
-						result.append(std::get<long double>(elem));
-					}
 #endif
-                std::visit(ItemGetter, elem);
+            for (const auto& value : self.get_parameters()) {
+#if defined(__APPLE__)
+                if (std::holds_alternative<std::string>(value)) {
+                    auto raw_value = std::get<std::string>(value);
+
+                    py::handle py_s = PyUnicode_Decode(value.data(), value.length(), encoding, "strict");
+                    if (!py_s) {
+                        throw py::error_already_set();
+                    }
+                    result.append(py::reinterpret_steal<py::str>(py_s));
+                } else if (std::holds_alternative<unsigned long long>(value)) {
+                    result.append(std::get<unsigned long long>(value));
+                } else if (std::holds_alternative<signed long long>(value)) {
+                    result.append(std::get<signed long long>(value));
+                } else if (std::holds_alternative<long double>(value)) {
+                    result.append(std::get<long double>(value));
+                }
+#else
+                std::visit(ItemGetter, value);
+#endif
             }
             return result;
         });

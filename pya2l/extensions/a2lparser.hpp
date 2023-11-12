@@ -175,6 +175,11 @@ class A2LParser {
                         continue;
                     }
                     auto value = convert(parameter.get_type(), token->getText());
+
+                    if (parameter.is_multiple() == true) {
+                        std::cout << "\t" << std::get<std::string>(value) << std::endl;
+                    }
+
                     parameter_list.emplace_back(value);
 
                     const auto valid = validate(parameter, token, value);
