@@ -44,7 +44,7 @@ PYBIND11_MODULE(a2lparser_ext, m) {
                 if (std::holds_alternative<std::string>(value)) {
                     auto raw_value = std::get<std::string>(value);
 
-                    py::handle py_s = PyUnicode_Decode(value.data(), value.length(), encoding, "strict");
+                    py::handle py_s = PyUnicode_Decode(raw_value.data(), raw_value.length(), encoding, "strict");
                     if (!py_s) {
                         throw py::error_already_set();
                     }
