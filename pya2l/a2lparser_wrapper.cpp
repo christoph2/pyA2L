@@ -26,9 +26,9 @@ PYBIND11_MODULE(a2lparser_ext, m) {
             py::list result;
 
             auto encoding = ValueContainer::get_encoding().c_str();
-
-            auto ItemGetter = Overload {
 #if !defined(__APPLE__)
+            auto ItemGetter = Overload{
+
                 [&result, encoding](std::string value) {
                     py::handle py_s = PyUnicode_Decode(value.data(), value.length(), encoding, "strict");
                     if (!py_s) {
@@ -36,7 +36,7 @@ PYBIND11_MODULE(a2lparser_ext, m) {
                     }
                     result.append(py::reinterpret_steal<py::str>(py_s));
                 },
-                    [&result](auto value) { result.append(value); },
+                [&result](auto value) { result.append(value); },
             };
 #endif
             for (const auto& value : self.get_parameters()) {
