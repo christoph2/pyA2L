@@ -12,6 +12,7 @@ from rich.progress import TimeElapsedColumn
 from rich.progress import TimeRemainingColumn
 
 import pya2l.a2lparser_ext as ext
+from pya2l import classes
 from pya2l import model
 
 # from  .a2lparser_ext import A2LParser as A2LParser_ext
@@ -208,19 +209,54 @@ KW_MAP = {
 }
 
 
-def assoc_name(param):
+def assoc_name(param) -> str:
     return param.keyword_name.lower()
+
+
+def lower_first(text: str) -> str:
+    return f"{text[0].lower()}{text[1:]}"
 
 
 def make_zipper(kw) -> typing.Callable[[typing.Container[typing.Any]], typing.Dict[str, typing.Any]]:
     if hasattr(kw, "__required_parameters__"):
+        table_name = kw.__tablename__.upper()
+        if table_name == "IFDATA":
+            table_name = "IF_DATA"  # Needs to be fixed elsewhere.
+        klass = classes.KEYWORD_MAP.get(table_name)
+        has_multiple = [a for a in klass.attrs if len(a) > 2 and a[2] is classes.MULTIPLE]
+        if has_multiple:
+            if len(klass.attrs) == 1:
 
-        def zipper(values):
-            return dict(zip([p.name for p in kw.__required_parameters__], values))
+                def zipper(values, mult_values: list[typing.Any]):
+                    # There's a single parameter of list type.
+                    result = {}
+                    result[lower_first(klass.attrs[0][1])] = mult_values
+                    return result
+
+            else:
+                MULT_COLUMN = {
+                    "VAR_CHARACTERISTIC": "criterionName",
+                    "DEPENDENT_CHARACTERISTIC": "characteristic_id",
+                    "VIRTUAL_CHARACTERISTIC": "characteristic_id",
+                    "VAR_CRITERION": "value",
+                }
+
+                def zipper(values, mult_values: list[typing.Any]):
+                    # Scalars, the final value is a list.
+                    result = dict(zip([p.name for p in kw.__required_parameters__[:-1]], values))
+                    result[MULT_COLUMN[table_name]] = mult_values
+                    return result
+
+        else:
+
+            def zipper(values, mult_values: list[typing.Any]):
+                # Standard case -- all scalar values.
+                return dict(zip([p.name for p in kw.__required_parameters__], values))
 
     else:
 
-        def zipper(values):
+        def zipper(values, mult_values: list[typing.Any]):
+            # No values at all (Currently DISCRETE, GUARD_RAILS, and READ_ONLY).
             return {}
 
     return zipper
@@ -272,103 +308,6 @@ def update_tables(session, parser):
         session.add(inst)
 
 
-"""
-p=a.A2LParser("latin-1")
-start = perf_counter()
-
-p.parse("A2L.tmp")
-print("ETA:", perf_counter() - start)
-v=p.get_values()
-print("Keyword counter:", p.keyword_counter)
-print(v)
-print(v.get_name())
-
-
-counter = 0
-
-def traverse(progress_bar, root, parent, attr, multiple, level=0):
-    global counter
-    counter += 1
-    inst = None
-    space = "    " * level
-    name = root.get_name()
-
-    if counter % 1000 == 0:
-        db.session.flush()
-        progress_bar.update(task, advance=1000)
-        #db.session.commit()
-
-    # print("TABLE ==> ", name, parent, multiple)
-    if name != "root":
-        table = KW_MAP[name]
-        zipper = ZIPPER_MAP[name]
-        try:
-            params = root.parameters
-        except UnicodeDecodeError as e:
-            print(e)
-            params = {}
-        values = zipper(params)
-        # print(values)
-        if name not in ("ReadOnly", ):
-            inst = table(**values)
-            #db.session.add(inst)
-        else:
-            inst = True
-        if multiple:
-            if getattr(parent, attr) is None:
-                setattr(parent, attr, [inst])
-            else:
-                getattr(parent, attr).append(inst)
-        else:
-            setattr(parent, attr, inst)
-#
-    for kw in root.get_keywords():
-        if name != "root":
-            elem = ASSOC_MAP[name][kw.get_name()]
-            attr, mult = elem
-        else:
-            inst = FakeRoot()
-            attr = "fake"
-            mult = False
-            an="root"
-        # print("Assoc_name: ", an, end = " ")
-        traverse(progress_bar, kw, inst, attr, mult, level + 1)
-    if name != "root" and not isinstance(inst, bool):
-        db.session.add(inst)
-    #db.session.flush()
-
-fr = FakeRoot()
-start = perf_counter()
-db.session.begin()
-
-progress_columns = (
-    SpinnerColumn(),
-    "[progress.description]{task.description}",
-    BarColumn(),
-    TaskProgressColumn(),
-    "Elapsed:",
-    TimeElapsedColumn(),
-    "Remaining:",
-    TimeRemainingColumn(),
-)
-
-with Progress(*progress_columns) as progress_bar:
-    task = progress_bar.add_task("[blue]writing to DB...", total=p.keyword_counter)
-    traverse(progress_bar, v, fr, None, False)
-
-
-print("ETA/Trv.:", perf_counter() - start)
-start = perf_counter()
-db.session.commit()
-db.session.begin()
-update_tables(db.session, p)
-db.session.commit()
-print("ETA/Commit:", perf_counter() - start)
-db.close()
-print(f"{counter} rows.")
-"""
-
-
 class A2LParser:
     def __init__(self):
         self.parser = ext.A2LParser()
@@ -411,10 +350,6 @@ class A2LParser:
         name = tree.get_name()
 
         # print("TABLE ==> ", name, parent, multiple)
-        if name == "DependentCharacteristic":
-            dump_it = True
-        else:
-            dump_it = False
 
         if self.counter % self.advance == 0:
             self.db.session.flush()
@@ -425,19 +360,16 @@ class A2LParser:
             zipper = ZIPPER_MAP[name]
             try:
                 params = tree.parameters
+                mult = tree.get_multiple_values()
             except UnicodeDecodeError as e:
                 print(e)
                 params = {}
-            values = zipper(params)
-            if dump_it:
-                print("DMP:", values)
-                print("INSY", table(**values))
+            values = zipper(params, mult)
             if name not in ("ReadOnly", "GuardRails", "Discrete"):
                 inst = table(**values)
                 # db.session.add(inst)
             else:
                 inst = True
-
             if name == "DependentCharacteristic":
                 print(values, inst)
             if multiple:

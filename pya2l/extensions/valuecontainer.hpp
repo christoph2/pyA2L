@@ -30,7 +30,7 @@ class ValueContainer {
 
     ~ValueContainer() noexcept = default;
 
-    explicit ValueContainer(std::string_view name) : m_name(name), m_parameters(), m_keywords() {
+    explicit ValueContainer(std::string_view name) : m_name(name), m_parameters(), m_keywords(), m_multiple_values() {
     }
 
     ValueContainer(const ValueContainer& other) noexcept            = default;
@@ -42,8 +42,8 @@ class ValueContainer {
         m_parameters = std::move(parameters);
     }
 
-    void set_parameters(const key_value_list_t& parameters) noexcept {
-        m_parameters = parameters;
+    void set_multiple_values(std::vector<AsamVariantType>&& multiple_values) noexcept {
+        m_multiple_values = std::move(multiple_values);
     }
 
     auto& add_keyword(/*const*/ container_type& kw) noexcept {
@@ -64,6 +64,10 @@ class ValueContainer {
 
     const auto& get_parameters() const noexcept {
         return m_parameters;
+    }
+
+    const auto& get_multiple_values() const noexcept {
+        return m_multiple_values;
     }
 
     const std::string to_string() const {
@@ -88,16 +92,17 @@ class ValueContainer {
     }
 
     static const std::string& get_encoding() {
-        // std::cout << "get_encoding: " << s_encoding << std::endl;
         return s_encoding;
     }
 
    private:
 
-    std::string         m_name;
-    key_value_list_t    m_parameters;
-    container_list_type m_keywords;
-    static std::string  s_encoding;
+    std::string                  m_name;
+    key_value_list_t             m_parameters;
+    container_list_type          m_keywords;
+    std::vector<AsamVariantType> m_multiple_values;
+
+    static std::string s_encoding;
 };
 
 #endif  // __VALUECONTAINER_HPP

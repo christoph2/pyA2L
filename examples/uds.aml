@@ -1,3 +1,5 @@
+
+/begin A2ML
 /******************************************************************************/
 /*                                                                            */
 /*   ASAP2-Meta-Description for measurment and calibration devices            */
@@ -636,7 +638,7 @@ block "TP_BLOB" struct
 /*_________________________END TP_BLOB________________________________________*/
 }; /* end ASAP1B_Diagnostic_Services */
 
-
+/end A2ML
 
 
 

@@ -95,9 +95,10 @@ class AntlrAutogen(Command):
         pwd = Path(os.environ.get("PWD", "."))
         antlrJar = pwd / Path("antlr-{}-complete.jar".format(ANTLR_VERSION))
         if not antlrJar.exists():
+            # https://www.antlr.org/download/antlr4-cpp-runtime-4.13.1-source.zip
             os.system("curl -O -C - -L https://www.antlr.org/download/antlr-{}-complete.jar".format(ANTLR_VERSION))
             # print(f"{antlrJar} not found in '{pwd}'")
-            sys.exit(2)
+            # sys.exit(2)
         antlrJar = str(antlrJar)
         antlrCmd = ["java", "-Xmx500M", "-cp", antlrJar, "org.antlr.v4.Tool"]
         self.announce(" ".join(antlrCmd + self.arguments))

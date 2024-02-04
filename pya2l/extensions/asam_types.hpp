@@ -138,7 +138,7 @@ struct ULong : public IntegralType<std::uint32_t> {};
 
 struct Float : public AsamType {
     Float() {
-        m_valid_tokens = { A2LTokenType::FLOAT };
+        m_valid_tokens = { A2LTokenType::FLOAT, A2LTokenType::INT, A2LTokenType::HEX };
     }
 
     bool validate(const AsamVariantType& value) const override {
@@ -158,52 +158,6 @@ struct Float : public AsamType {
     std::numeric_limits<double> m_limits;
 };
 
-struct Datatype : public Enum {
-    explicit Datatype() :
-        Enum(
-            "DATATYPE",
-            {
-                "UBYTE",
-                "SBYTE",
-                "UWORD",
-                "SWORD",
-                "ULONG",
-                "SLONG",
-                "A_UINT64",
-                "A_INT64",
-                "FLOAT16_IEEE",
-                "FLOAT32_IEEE",
-                "FLOAT64_IEEE",
-            }
-        ) {
-    }
-};
-
-struct Indexorder : public Enum {
-    explicit Indexorder() : Enum("INDEXORDER", { "INDEX_INCR", "INDEX_DECR" }) {
-    }
-};
-
-struct Addrtype : public Enum {
-    explicit Addrtype() : Enum("ADDTYPE", { "PBYTE", "PWORD", "PLONG", "DIRECT" }) {
-    }
-};
-
-struct Byteorder : public Enum {
-    explicit Byteorder() : Enum("BYTEORDER", { "LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }) {
-    }
-};
-
-struct Datasize : public Enum {
-    explicit Datasize() : Enum("DATASIZE", { "BYTE", "WORD", "LONG" }) {
-    }
-};
-
-struct Linktype : public Enum {
-    explicit Linktype() : Enum("LINKTYPE", { "SYMBOL_TYPE_LINK" }) {
-    }
-};
-
 std::ostream& operator<<(std::ostream& os, const Enum& en) {
     std::string result;
     const auto  count = std::size(en.m_enumerators);
@@ -219,24 +173,17 @@ std::ostream& operator<<(std::ostream& os, const Enum& en) {
     return os << result;
 }
 
-const auto asam_int        = Int();
-const auto asam_uint       = UInt();
-const auto asam_long       = Long();
-const auto asam_ulong      = ULong();
-const auto asam_float      = Float();
-const auto asam_string     = String();
-const auto asam_enum       = DummyEnum();
-const auto asam_ident      = Ident();
-const auto asam_datatype   = Datatype();
-const auto asam_indexorder = Indexorder();
-const auto asam_addrtype   = Addrtype();
-const auto asam_byteorder  = Byteorder();
-const auto asam_datasize   = Datasize();
-const auto asam_link       = Linktype();
+const auto asam_int    = Int();
+const auto asam_uint   = UInt();
+const auto asam_long   = Long();
+const auto asam_ulong  = ULong();
+const auto asam_float  = Float();
+const auto asam_string = String();
+const auto asam_enum   = DummyEnum();
+const auto asam_ident  = Ident();
 
-constexpr std::array<AsamType const * const, 14> ASAM_TYPES = { &asam_int,      &asam_uint,       &asam_long,     &asam_ulong,
-                                                                &asam_float,    &asam_string,     &asam_enum,     &asam_ident,
-                                                                &asam_datatype, &asam_indexorder, &asam_addrtype, &asam_byteorder,
-                                                                &asam_datasize, &asam_link };
+constexpr std::array<AsamType const * const, 14> ASAM_TYPES = {
+    &asam_int, &asam_uint, &asam_long, &asam_ulong, &asam_float, &asam_string, &asam_enum, &asam_ident,
+};
 
 #endif  // __ASAM_TYPES_HPP
