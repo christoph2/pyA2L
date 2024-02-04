@@ -22,6 +22,7 @@ PYBIND11_MODULE(a2lparser_ext, m) {
         .def("get_name", &ValueContainer::get_name)
         .def("get_keywords", &ValueContainer::get_keywords)
         .def("get_parameters", &ValueContainer::get_parameters)
+        .def("get_multiple_values", &ValueContainer::get_multiple_values)
         .def_property_readonly("parameters", [](const ValueContainer& self) {
             py::list result;
 

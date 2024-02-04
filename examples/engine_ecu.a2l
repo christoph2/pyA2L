@@ -1,8 +1,7 @@
 ASAP2_VERSION 1 61
 /begin PROJECT ENGINE_ECU ""
 
-/begin MODULE  DIM  "Com
-ment on module"    
+/begin MODULE  DIM  "Com ment on module"    
            /* Detailed description of a device */ 
  
     /include "supp1_if.aml"   /* Specification of the interface-specific 

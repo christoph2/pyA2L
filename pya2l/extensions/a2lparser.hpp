@@ -53,6 +53,8 @@ class A2LParser {
         ValueContainer::set_encoding(encoding);
         m_reader = std::make_unique<TokenReader>(file_name);
 
+        ANTLRToken* current_token = nullptr;
+
         while (true) {
             const auto token = m_reader->LT(1);
             // auto block = kw_tos().m_block;
@@ -93,9 +95,10 @@ class A2LParser {
 
             if (kw_tos().contains(token->getType())) {
                 // std::cout << m_keyword_counter++ << ": " << token->getText() << std::endl;
-                const auto xxx = kw_tos().get(token->type());
-                m_kw_stack.push(xxx);
-                auto& vref = value_tos().add_keyword(ValueContainer(xxx.m_class_name));
+                const auto ttype = kw_tos().get(token->type());
+                current_token    = token;
+                m_kw_stack.push(ttype);
+                auto& vref = value_tos().add_keyword(ValueContainer(ttype.m_class_name));
                 m_value_stack.push(&vref);
             } else {
                 std::cout << "Huch!!!\n";
@@ -112,7 +115,9 @@ class A2LParser {
     #endif
             auto kw = ValueContainer(kw_tos().m_name);
 
-            value_tos().set_parameters(do_parameters());
+            auto [p, m] = do_parameters();
+            value_tos().set_parameters(std::move(p));
+            value_tos().set_multiple_values(std::move(m));
 
             if (kw_tos().m_block == false) {
                 m_kw_stack.pop();
@@ -145,14 +150,48 @@ class A2LParser {
 
    protected:
 
-    ValueContainer::key_value_list_t do_parameters() {
-        auto done           = false;
-        auto parameter_list = ValueContainer::key_value_list_t{};
+    auto do_parameters() -> std::tuple<ValueContainer::key_value_list_t, std::vector<AsamVariantType>>
+
+    {
+        auto                         done           = false;
+        auto                         parameter_list = ValueContainer::key_value_list_t{};
+        std::vector<AsamVariantType> m_multiple_values;
+        auto                         param_count = 0;
 
         for (const auto& parameter : kw_tos().m_parameters) {
             done = !parameter.is_multiple();
             do {
                 auto token = m_reader->LT(1);
+
+                if (kw_tos().contains(token->getType())) {
+                    // Not all parameters are present.
+                    std::cerr << kw_tos().m_name << " is missing one or more required parameters:" << std::endl;
+
+                    for (auto idx = param_count; idx < std::size(kw_tos().m_parameters); ++idx) {
+                        auto p = kw_tos().m_parameters[idx];
+
+                        std::cerr << "\t" << p.get_name() << std::endl;
+
+                        switch (p.get_type()) {
+                            case PredefinedType::Int:
+                            case PredefinedType::Uint:
+                            case PredefinedType::Long:
+                            case PredefinedType::Ulong:
+                                parameter_list.push_back(0);
+                                break;
+
+                            case PredefinedType::Float:
+                                parameter_list.push_back(0.0);
+                                break;
+
+                            default:
+                                parameter_list.push_back("");
+                                break;
+                        }
+                    }
+                    return { parameter_list, m_multiple_values };
+                }
+                param_count++;
 
                 if (parameter.is_tuple()) {
                     auto tuple_parser = ParameterTupleParser(parameter);
@@ -176,22 +215,22 @@ class A2LParser {
                     }
                     auto value = convert(parameter.get_type(), token->getText());
 
-                    if (parameter.is_multiple() == true) {
-                        std::cout << "\t" << std::get<std::string>(value) << std::endl;
-                    }
-
-                    parameter_list.emplace_back(value);
-
                     const auto valid = validate(parameter, token, value);
                     if (!valid) {
-                        // auto f = 10;
-                        // std::cout << "Invalid param!!!" << "\n ";
+                        std::cout << "Invalid param!!!"
+                                  << "\n ";
+                    }
+
+                    if (parameter.is_multiple() == true) {
+                        m_multiple_values.emplace_back(value);
+                    } else {
+                        parameter_list.emplace_back(value);
                     }
                     m_reader->consume();
                 }
             } while (!done);
         }
-        return parameter_list;
+        return { parameter_list, m_multiple_values };
     }
 
     Keyword& kw_tos() {
