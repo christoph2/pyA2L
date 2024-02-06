@@ -7,6 +7,10 @@
 
 #include "a2lparser.hpp"
 
+//#include "ifdata.hpp"
+//#include "line_map.hpp"
+#include "preprocessor.hpp"
+
 namespace py = pybind11;
 
 std::string ValueContainer::s_encoding{ "ascii" };
@@ -15,6 +19,7 @@ template<typename... Ts>
 struct Overload : Ts... {
     using Ts::operator()...;
 };
+
 
 PYBIND11_MODULE(a2lparser_ext, m) {
     py::class_<ValueContainer>(m, "ValueContainer")
@@ -65,7 +70,7 @@ PYBIND11_MODULE(a2lparser_ext, m) {
         });
 
     py::class_<A2LParser>(m, "A2LParser")
-        .def(py::init<>())
+        .def(py::init<std::optional<preprocessor_result_t>>())
         .def("parse", &A2LParser::parse)
         .def("get_values", &A2LParser::get_values, py::return_value_policy::move)
         .def("get_tables", &A2LParser::get_tables, py::return_value_policy::move)

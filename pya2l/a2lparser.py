@@ -309,18 +309,17 @@ def update_tables(session, parser):
 
 
 class A2LParser:
-    def __init__(self):
-        self.parser = ext.A2LParser()
+    def __init__(self, prepro_result):
+        self.parser = ext.A2LParser(prepro_result)
 
     def parse(self, filename: str, encoding: str = "latin-1", dbname: str = ":memory:"):
         self.debug = False
         start = perf_counter()
         self.db = model.A2LDatabase(dbname, debug=self.debug)
-        print(f"Parsing: '{filename}' -- DB : '{dbname}' [{encoding}]")
+        print(f"Parsing: '{filename}' [{encoding}] ==> DB '{dbname}'.")
         self.parser.parse(filename, encoding)
-        print("ETA:", perf_counter() - start)
         values = self.parser.get_values()
-        print("Keyword counter:", self.parser.keyword_counter, end="\n\n")
+        print(f"Keyword counter: {self.parser.keyword_counter} -- Elapsed Time: {perf_counter() - start:.2f}s.", end="\n\n")
         self.counter = 0
 
         progress_columns = (
@@ -341,6 +340,7 @@ class A2LParser:
             self.traverse(values, fr, None, False)
         self.db.session.commit()
         self.db.close()
+        print()
         return (self.db, ())
 
     def traverse(self, tree, parent, attr, multiple, level=0):
@@ -370,8 +370,8 @@ class A2LParser:
                 # db.session.add(inst)
             else:
                 inst = True
-            if name == "DependentCharacteristic":
-                print(values, inst)
+            # if name == "DependentCharacteristic":
+            #     print(values, inst)
             if multiple:
                 if getattr(parent, attr) is None:
                     setattr(parent, attr, [inst])

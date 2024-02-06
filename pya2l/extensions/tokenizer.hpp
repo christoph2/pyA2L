@@ -24,6 +24,8 @@
 #if !defined(__TOKENIZER_HPP)
     #define __TOKENIZER_HPP
 
+    #include <sstream>
+
     #include "ctre.hpp"
     #include "generator.hpp"
     #include "line_numbers.hpp"
@@ -126,6 +128,18 @@ struct Token {
             }
         }
     }
+
+    std::string to_string() {
+        std::stringstream ss;
+
+        ss << "Token(payload='";
+        ss << m_payload << "' @";
+        ss << m_line_numbers.to_string() << "[" << std::to_string(m_token_type) << "]";
+        ss << ")";
+        return ss.str();
+    }
+
+
 };
 
 using TokenizerReturnType = Token;
