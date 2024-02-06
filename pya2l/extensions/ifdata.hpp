@@ -1,7 +1,7 @@
 /*
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-    (C) 2023 by Christoph Schueler <cpu12.gems.googlemail.com>
+    (C) 2024 by Christoph Schueler <cpu12.gems.googlemail.com>
 
     All Rights Reserved
 
@@ -31,7 +31,7 @@
     #include "tokenizer.hpp"
 
 struct IfDataBase {
-    using line_type               = std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>;
+    using line_type = std::tuple < std::size_t, std::size_t>;
     using map_type                = std::map<line_type, std::size_t>;
     const std::size_t HEADER_SIZE = sizeof(std::size_t) * (4 + 1);
 };
@@ -66,9 +66,8 @@ class IfDataBuilder : public IfDataBase {
             write_string(elem.m_payload);
         }
 
-        file_map[std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>(
-            m_line_numbers.start_line, m_line_numbers.start_col, m_line_numbers.end_line, m_line_numbers.end_col
-        )] = m_offset;
+        file_map[std::tuple<std::size_t, std::size_t>(m_line_numbers.start_line, m_line_numbers.start_col)] = m_offset;
+
         m_offset += (HEADER_SIZE + m_length);
         // assert(m_out.tellp() == m_offset);
         m_tokens.clear();
@@ -82,9 +81,20 @@ class IfDataBuilder : public IfDataBase {
    private:
 
     void set_line_numbers() noexcept {
+        std::uint64_t start_line = 0;
+        std::uint64_t start_col = 0;
+
+        for (auto tk : m_tokens) {
+            if ((tk.m_token_class == TokenClass::REGULAR) && (tk.m_payload == "IF_DATA")) {
+                start_line = tk.m_line_numbers.start_line;
+                start_col = tk.m_line_numbers.start_col;
+                break;
+            }
+        }
+
         auto start     = m_tokens[0].m_line_numbers;
         auto end       = m_tokens[m_tokens.size() - 1].m_line_numbers;
-        m_line_numbers = LineNumbers(start.start_line, start.start_col, end.end_line, end.end_col);
+        m_line_numbers = LineNumbers(start_line, start_col, end.end_line, end.end_col);
     }
 
     void write_int(std::size_t value) {
@@ -147,17 +157,24 @@ class IfDataReader : public IfDataBase {
             return std::nullopt;
         }
         auto offset = static_cast<long>(file_map[line]);
-        std::fseek(m_file, offset, SEEK_SET);
+
+        if (m_file == nullptr) {
+            open();
+        }
+
+        ::fseek(m_file, offset, SEEK_SET);
+
         auto length     = read_int();
         auto start_line = read_int();
-        assert(std::get<0>(line) == start_line);
+        //assert(std::get<0>(line) == start_line);
         auto start_col = read_int();
-        assert(std::get<1>(line) == start_col);
+        //assert(std::get<1>(line) == start_col);
         auto end_line = read_int();
-        assert(std::get<2>(line) == end_line);
+        //assert(std::get<2>(line) == end_line);
         auto end_col = read_int();
-        assert(std::get<3>(line) == end_col);
+        //assert(std::get<3>(line) == end_col);
         auto ifdata = read_string(length);
+
         return ifdata;
     }
 
@@ -166,14 +183,14 @@ class IfDataReader : public IfDataBase {
     std::size_t read_int() {
         std::size_t value = 0;
 
-        std::fread((char*)&value, sizeof(std::size_t), 1, m_file);
+        ::fread((char*)&value, sizeof(std::size_t), 1, m_file);
         return value;
     }
 
     std::string read_string(std::size_t count) {
         std::vector<char> buf(count + 1);
 
-        std::fread(buf.data(), 1, count, m_file);
+        ::fread(buf.data(), 1, count, m_file);
         buf[count] = '\x00';
         std::string result{ buf.data() };
         return result;

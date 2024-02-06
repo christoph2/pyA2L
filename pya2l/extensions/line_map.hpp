@@ -40,7 +40,7 @@ class LineMap {
         m_start_offsets(other.m_start_offsets), m_last_line_no(other.m_last_line_no), m_items(other.m_items), m_keys(other.m_keys) {
     }
 
-    LineMap(LineMap&& other) = delete;
+    LineMap(LineMap&& other) = default;
 
     int contains(const std::string& key) const noexcept {
         return m_keys.contains(key);

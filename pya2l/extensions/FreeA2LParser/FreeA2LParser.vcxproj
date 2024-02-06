@@ -136,6 +136,7 @@
   <ItemGroup>
     <ClInclude Include="..\a2lparser.hpp" />
     <ClInclude Include="..\exceptions.hpp" />
+    <ClInclude Include="..\ifdata.hpp" />
     <ClInclude Include="..\keyword.hpp" />
     <ClInclude Include="..\parameter.hpp" />
     <ClInclude Include="..\parser_table.hpp" />

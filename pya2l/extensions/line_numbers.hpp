@@ -42,6 +42,14 @@ struct LineNumbers {
         return std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>(start_line, start_col, end_line, end_col);
     }
 
+    std::string to_string() {
+        std::stringstream ss;
+
+        ss << std::to_string(start_line) << ":" << std::to_string(start_col) << ";" << std::to_string(end_line) << ":" << std::to_string(end_col);
+
+        return ss.str();
+    }
+
     std::size_t start_line, start_col;
     std::size_t end_line, end_col;
 };

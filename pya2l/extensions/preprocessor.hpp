@@ -43,12 +43,12 @@
 
 namespace fs = std::filesystem;
 
-    #include "ifdata.hpp"
-    #include "line_map.hpp"
-    #include "tempfile.hpp"
-    #include "token_stream.hpp"
-    #include "tokenizer.hpp"
-    #include "utils.hpp"
+    #include "extensions/ifdata.hpp"
+    #include "extensions/line_map.hpp"
+    #include "extensions/tempfile.hpp"
+    #include "extensions/token_stream.hpp"
+    #include "extensions/tokenizer.hpp"
+    #include "extensions/utils.hpp"
 
 struct Filenames {
     Filenames()                  = default;
@@ -63,6 +63,8 @@ struct Filenames {
     std::string aml;
     std::string ifdata;
 };
+
+using preprocessor_result_t = std::tuple<Filenames, LineMap, IfDataReader>;
 
 class Preprocessor {
    public:
@@ -89,7 +91,7 @@ class Preprocessor {
     ~Preprocessor() {
     }
 
-    std::tuple<Filenames, LineMap, IfDataReader> process(const std::string &filename, const std::string &encoding) {
+    /*std::tuple<Filenames, LineMap, IfDataReader>*/preprocessor_result_t process(const std::string& filename, const std::string& encoding) {
         _process_file(filename);
         return {
             m_filenames, line_map, IfDataReader{m_filenames.ifdata, ifdata_builder}
@@ -97,6 +99,7 @@ class Preprocessor {
     }
 
     void finalize() {
+        std::cout << "Preprocessor::finalize()\n";
         tmp_a2l.close();
         tmp_aml.close();
         tmp_ifdata.close();

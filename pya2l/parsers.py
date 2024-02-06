@@ -38,7 +38,7 @@ def aml(debug: bool = False, prepro_result=None):
 
 
 def a2l(debug: bool = False, prepro_result=None):
-    parser = A2LParser()
+    parser = A2LParser(prepro_result)
     return parser
 
 

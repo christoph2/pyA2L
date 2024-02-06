@@ -27,21 +27,16 @@ using AsamVariantType = std::variant<std::string, unsigned long long, signed lon
     #include "token_stream.hpp"
     #include "valuecontainer.hpp"
 
-///
+    #include "preprocessor.hpp"
 
     #include "parser_table.hpp"
-
-    #if 0
-[INFO (pya2l.Preprocessor)]: Preprocessing and tokenizing '..\..\examples\HAXNR4000000.a2l'.
-[INFO (pya2l.DB)]: Parsing pre-processed data ...
-    #endif
 
 class A2LParser {
    public:
 
     using value_table_t = std::tuple<std::string, std::string, std::vector<std::vector<AsamVariantType>>>;
 
-    explicit A2LParser() : m_keyword_counter(0), m_table(PARSER_TABLE), m_root("root") {
+    explicit A2LParser(std::optional<preprocessor_result_t> prepro_result) : m_prepro_result(prepro_result), m_keyword_counter(0), m_table(PARSER_TABLE), m_root("root") {
         m_kw_stack.push(m_table);
         m_value_stack.push(&m_root);
         m_table_count = 0;
@@ -53,7 +48,11 @@ class A2LParser {
         ValueContainer::set_encoding(encoding);
         m_reader = std::make_unique<TokenReader>(file_name);
 
-        ANTLRToken* current_token = nullptr;
+        if (m_prepro_result) {
+            auto idr = std::get<2>(m_prepro_result.value());
+            idr.open();
+        }
+
 
         while (true) {
             const auto token = m_reader->LT(1);
@@ -62,14 +61,9 @@ class A2LParser {
             if (token_type() == A2LTokenType::BEGIN) {
                 m_reader->consume();
                 if (kw_tos().contains(token_type())) {
-                    // std::cout << "Token: " << m_reader->LT(1)->kw_tos() << std::endl;
                 }
-                // m_kw_stack.push(m_table);
-                // m_table = m_table.get(tt);
-                // m_keyword_counter++;
-
-                // std::cout << "Unexpected token: " << token << ". expected /'begin'." << std::endl;
             }
+
             // TODO:  Factor out.
             if (token_type() == A2LTokenType::END) {
                 m_reader->consume();
@@ -94,15 +88,29 @@ class A2LParser {
             }
 
             if (kw_tos().contains(token->getType())) {
-                // std::cout << m_keyword_counter++ << ": " << token->getText() << std::endl;
+                // std::cout << v++ << ": " << token->getText() << std::endl;
                 const auto ttype = kw_tos().get(token->type());
-                current_token    = token;
                 m_kw_stack.push(ttype);
                 auto& vref = value_tos().add_keyword(ValueContainer(ttype.m_class_name));
                 m_value_stack.push(&vref);
             } else {
-                std::cout << "Huch!!!\n";
-                throw std::runtime_error("Invalid token");
+                //
+                // TODO: Addressmapper
+                //auto msg {"[INFO (pya2l.parser)]"};
+                auto msg {""};
+                throw std::runtime_error("Invalid token" + std::to_string(token->getLine()) + std::to_string(token->column()) + std::to_string(token->getType()));
+            }
+            if (token->getText() == "IF_DATA") {
+                std::cout << "\tID: " << token->getLine() << ":" << token->column() << std::endl;
+                if (m_prepro_result) {
+                    auto idr = std::get<2>(m_prepro_result.value());
+//#if 0
+                    auto res = idr.get({token->getLine(), token->column() + 1});
+                    if (res) {
+                        std::cout << "\t FOUND IF_DATA!!!\n";
+                    }
+//#endif
+                }
             }
             m_reader->consume();
             m_keyword_counter++;
@@ -246,7 +254,7 @@ class A2LParser {
     }
 
    private:
-
+    std::optional<preprocessor_result_t> m_prepro_result;
     std::string                  m_encoding;
     std::unique_ptr<TokenReader> m_reader;
     std::size_t                  m_keyword_counter;
