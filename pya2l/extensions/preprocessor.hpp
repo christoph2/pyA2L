@@ -43,12 +43,12 @@
 
 namespace fs = std::filesystem;
 
-    #include "extensions/ifdata.hpp"
-    #include "extensions/line_map.hpp"
-    #include "extensions/tempfile.hpp"
-    #include "extensions/token_stream.hpp"
-    #include "extensions/tokenizer.hpp"
-    #include "extensions/utils.hpp"
+    #include "ifdata.hpp"
+    #include "line_map.hpp"
+    #include "tempfile.hpp"
+    #include "token_stream.hpp"
+    #include "tokenizer.hpp"
+    #include "utils.hpp"
 
 struct Filenames {
     Filenames()                  = default;
