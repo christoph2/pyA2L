@@ -26,13 +26,25 @@
     #define __IFDATA_HPP
 
     #define __STDC_WANT_LIB_EXT1__ (1)
+
+    #include <sys/stat.h>
+
     #include <cstdio>
 
     #include "tokenizer.hpp"
 
+using line_type = std::tuple< std::size_t, std::size_t>;
+
+template<>
+struct std::hash<line_type> {
+    std::size_t operator()(const line_type& o) const noexcept {
+        auto [l, r] = o;
+        return std::hash<unsigned long long>{}(l) ^ std::hash<unsigned long long>{}(r);
+    }
+};
+
 struct IfDataBase {
-    using line_type = std::tuple < std::size_t, std::size_t>;
-    using map_type                = std::map<line_type, std::size_t>;
+    using map_type                = std::unordered_map<line_type, std::size_t>;
     const std::size_t HEADER_SIZE = sizeof(std::size_t) * (4 + 1);
 };
 
@@ -82,12 +94,12 @@ class IfDataBuilder : public IfDataBase {
 
     void set_line_numbers() noexcept {
         std::uint64_t start_line = 0;
-        std::uint64_t start_col = 0;
+        std::uint64_t start_col  = 0;
 
         for (auto tk : m_tokens) {
             if ((tk.m_token_class == TokenClass::REGULAR) && (tk.m_payload == "IF_DATA")) {
                 start_line = tk.m_line_numbers.start_line;
-                start_col = tk.m_line_numbers.start_col;
+                start_col  = tk.m_line_numbers.start_col;
                 break;
             }
         }
@@ -143,6 +155,10 @@ class IfDataReader : public IfDataBase {
     #else
         m_file = ::fopen(m_file_name.c_str(), "rb");
     #endif
+
+        struct stat stat_buf;
+        int         rc = stat(m_file_name.c_str(), &stat_buf);
+        m_size         = rc == 0 ? stat_buf.st_size : -1;
     }
 
     void close() {
@@ -162,17 +178,25 @@ class IfDataReader : public IfDataBase {
             open();
         }
 
+        if (offset >= m_size) {
+            std::cerr << "file offset " << offset << " is out of range of file size " << m_size << std::endl;
+            return std::nullopt;
+        } else {
+            // std::cout << "file offset: " << offset << std::endl;
+        }
+
         ::fseek(m_file, offset, SEEK_SET);
+        // std::cout << "\t\tOK\n";
 
         auto length     = read_int();
         auto start_line = read_int();
-        //assert(std::get<0>(line) == start_line);
+        // assert(std::get<0>(line) == start_line);
         auto start_col = read_int();
-        //assert(std::get<1>(line) == start_col);
+        // assert(std::get<1>(line) == start_col);
         auto end_line = read_int();
-        //assert(std::get<2>(line) == end_line);
+        // assert(std::get<2>(line) == end_line);
         auto end_col = read_int();
-        //assert(std::get<3>(line) == end_col);
+        // assert(std::get<3>(line) == end_col);
         auto ifdata = read_string(length);
 
         return ifdata;
@@ -199,6 +223,7 @@ class IfDataReader : public IfDataBase {
     std::string m_file_name;
     std::FILE*  m_file{ nullptr };
     map_type    file_map;
+    std::size_t m_size{ 0 };
 };
 
 #endif  // __IFDATA_HPP

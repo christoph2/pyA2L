@@ -91,7 +91,7 @@ class Preprocessor {
     ~Preprocessor() {
     }
 
-    /*std::tuple<Filenames, LineMap, IfDataReader>*/preprocessor_result_t process(const std::string& filename, const std::string& encoding) {
+    preprocessor_result_t process(const std::string &filename, const std::string &encoding) {
         _process_file(filename);
         return {
             m_filenames, line_map, IfDataReader{m_filenames.ifdata, ifdata_builder}
@@ -99,7 +99,7 @@ class Preprocessor {
     }
 
     void finalize() {
-        std::cout << "Preprocessor::finalize()\n";
+        // std::cout << "Preprocessor::finalize()\n";
         tmp_a2l.close();
         tmp_aml.close();
         tmp_ifdata.close();
@@ -108,6 +108,15 @@ class Preprocessor {
     LineMap line_map{};
 
    protected:
+
+    void skip_bom(auto& fs) {
+        const unsigned char boms[]{ 0xef, 0xbb, 0xbf };
+        bool have_bom{ true };
+        for(const auto& c : boms) {
+            if((unsigned char)fs.get() != c) have_bom = false;
+        }
+        if(!have_bom) fs.seekg(0);
+    }
 
     void _process_file(const std::string &filename) {
         std::uint64_t      start_line_number = 1;
@@ -135,6 +144,9 @@ class Preprocessor {
         if (file.is_open()) {
             std::cout << "[INFO (pya2l.Preprocessor)]: Preprocessing and tokenizing '" + filename + "'." << std::endl;
             std::size_t end_line{ 0 };
+
+            // skip UTF-BOM
+            skip_bom(file);
 
             for (auto token : tokenizer(file)) {
                 if (skip_tokens > 0) {
@@ -206,7 +218,7 @@ class Preprocessor {
                         }
                     }
                     if (include == true) {
-                        auto _fn = token.m_payload.substr(1, token.m_payload.length() - 2);
+                        auto _fn = token.m_payload;
 
                         if (auto incl_file = locate_file(_fn, path.parent_path().string()); incl_file.has_value()) {
                             auto length = (end_line - start_line_number);

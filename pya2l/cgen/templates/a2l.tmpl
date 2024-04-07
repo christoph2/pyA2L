@@ -133,7 +133,7 @@ project = session.query(model.Project).first()
                             %if if_data:
                     %for entry4 in if_data:
                         /begin IF_DATA
-                            ${entry4.name}  /* name */
+                            "${entry4.raw}"  /* raw */
                         /end IF_DATA
                     %endfor
                     %endif
@@ -383,7 +383,7 @@ project = session.query(model.Project).first()
                             %if if_data:
                     %for entry4 in if_data:
                         /begin IF_DATA
-                            ${entry4.name}  /* name */
+                            "${entry4.raw}"  /* raw */
                         /end IF_DATA
                     %endfor
                     %endif
@@ -568,7 +568,7 @@ project = session.query(model.Project).first()
                     %if if_data:
                     %for entry4 in if_data:
                         /begin IF_DATA
-                            ${entry4.name}  /* name */
+                            "${entry4.raw}"  /* raw */
                         /end IF_DATA
                     %endfor
                     %endif
@@ -618,7 +618,7 @@ project = session.query(model.Project).first()
                             %if if_data:
                     %for entry4 in if_data:
                         /begin IF_DATA
-                            ${entry4.name}  /* name */
+                            "${entry4.raw}"  /* raw */
                         /end IF_DATA
                     %endfor
                     %endif
@@ -694,7 +694,7 @@ project = session.query(model.Project).first()
                             %if if_data:
                     %for entry4 in if_data:
                         /begin IF_DATA
-                            ${entry4.name}  /* name */
+                            "${entry4.raw}"  /* raw */
                         /end IF_DATA
                     %endfor
                     %endif
@@ -727,7 +727,7 @@ project = session.query(model.Project).first()
                     %if if_data:
             %for entry3 in if_data:
                 /begin IF_DATA
-                    ${entry3.name}  /* name */
+                    "${entry3.raw}"  /* raw */
                 /end IF_DATA
             %endfor
             %endif
@@ -743,7 +743,7 @@ project = session.query(model.Project).first()
                             %if if_data:
                     %for entry4 in if_data:
                         /begin IF_DATA
-                            ${entry4.name}  /* name */
+                            "${entry4.raw}"  /* raw */
                         /end IF_DATA
                     %endfor
                     %endif
@@ -863,7 +863,7 @@ project = session.query(model.Project).first()
                             %if if_data:
                     %for entry4 in if_data:
                         /begin IF_DATA
-                            ${entry4.name}  /* name */
+                            "${entry4.raw}"  /* raw */
                         /end IF_DATA
                     %endfor
                     %endif
@@ -1055,7 +1055,7 @@ project = session.query(model.Project).first()
                                       %if if_data:
                               %for entry5 in if_data:
                                   /begin IF_DATA
-                                      ${entry5.name}  /* name */
+                                      "${entry5.raw}"  /* raw */
                                   /end IF_DATA
                               %endfor
                               %endif
@@ -1082,7 +1082,7 @@ project = session.query(model.Project).first()
                                       %if if_data:
                               %for entry5 in if_data:
                                   /begin IF_DATA
-                                      ${entry5.name}  /* name */
+                                      "${entry5.raw}"  /* raw */
                                   /end IF_DATA
                               %endfor
                               %endif

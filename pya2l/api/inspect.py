@@ -177,10 +177,12 @@ def _annotations(session, refs):
 
     """
     items = []
+    if refs is None:
+        return items
     for anno in refs:
         entry = {}
-        entry["label"] = anno.annotation_label.label
-        entry["origin"] = anno.annotation_origin.origin
+        entry["label"] = anno.annotation_label.label if anno.annotation_label else None
+        entry["origin"] = anno.annotation_origin.origin if anno.annotation_origin else None
         lines = []
         for line in anno.annotation_text._text:
             lines.append(line.text)
@@ -583,21 +585,27 @@ class ModCommon(CachedBase):
         self.alignment = {
             "BYTE": self.modcommon.alignment_byte.alignmentBorder if self.modcommon.alignment_byte else NATURAL_ALIGNMENTS["BYTE"],
             "WORD": self.modcommon.alignment_word.alignmentBorder if self.modcommon.alignment_word else NATURAL_ALIGNMENTS["WORD"],
-            "DWORD": self.modcommon.alignment_long.alignmentBorder
-            if self.modcommon.alignment_long
-            else NATURAL_ALIGNMENTS["DWORD"],
-            "QWORD": self.modcommon.alignment_int64.alignmentBorder
-            if self.modcommon.alignment_int64
-            else NATURAL_ALIGNMENTS["QWORD"],
-            "FLOAT16": self.modcommon.alignment_float16_ieee.alignmentBorder
-            if self.modcommon.alignment_float16_ieee
-            else NATURAL_ALIGNMENTS["FLOAT16"],
-            "FLOAT32": self.modcommon.alignment_float32_ieee.alignmentBorder
-            if self.modcommon.alignment_float32_ieee
-            else NATURAL_ALIGNMENTS["FLOAT32"],
-            "FLOAT64": self.modcommon.alignment_float64_ieee.alignmentBorder
-            if self.modcommon.alignment_float64_ieee
-            else NATURAL_ALIGNMENTS["FLOAT64"],
+            "DWORD": (
+                self.modcommon.alignment_long.alignmentBorder if self.modcommon.alignment_long else NATURAL_ALIGNMENTS["DWORD"]
+            ),
+            "QWORD": (
+                self.modcommon.alignment_int64.alignmentBorder if self.modcommon.alignment_int64 else NATURAL_ALIGNMENTS["QWORD"]
+            ),
+            "FLOAT16": (
+                self.modcommon.alignment_float16_ieee.alignmentBorder
+                if self.modcommon.alignment_float16_ieee
+                else NATURAL_ALIGNMENTS["FLOAT16"]
+            ),
+            "FLOAT32": (
+                self.modcommon.alignment_float32_ieee.alignmentBorder
+                if self.modcommon.alignment_float32_ieee
+                else NATURAL_ALIGNMENTS["FLOAT32"]
+            ),
+            "FLOAT64": (
+                self.modcommon.alignment_float64_ieee.alignmentBorder
+                if self.modcommon.alignment_float64_ieee
+                else NATURAL_ALIGNMENTS["FLOAT64"]
+            ),
         }
         self.byteOrder = self.modcommon.byte_order.byteOrder if self.modcommon.byte_order else None
         self.dataSize = self.modcommon.data_size.size if self.modcommon.data_size else None
@@ -1041,7 +1049,7 @@ class Characteristic(CachedBase):
                 result["y"] = md["y"]
                 result["z"] = md["z"]
             else:
-                num = self.number   # Deprecated -- The use of NUMBER  should be replaced by MATRIX_DIM
+                num = self.number  # Deprecated -- The use of NUMBER  should be replaced by MATRIX_DIM
                 # TODO: Errorhandling.
                 result["x"] = num
         else:
@@ -1780,27 +1788,33 @@ class RecordLayout(CachedBase):
         self._mod_common = ModCommon.get(session)
         self.name = name
         self.alignment = {
-            "BYTE": self.layout.alignment_byte.alignmentBorder
-            if self.layout.alignment_byte
-            else self._mod_common.alignment["BYTE"],
-            "WORD": self.layout.alignment_word.alignmentBorder
-            if self.layout.alignment_word
-            else self._mod_common.alignment["WORD"],
-            "DWORD": self.layout.alignment_long.alignmentBorder
-            if self.layout.alignment_long
-            else self._mod_common.alignment["DWORD"],
-            "QWORD": self.layout.alignment_int64.alignmentBorder
-            if self.layout.alignment_int64
-            else self._mod_common.alignment["QWORD"],
-            "FLOAT16": self.layout.alignment_float16_ieee.alignmentBorder
-            if self.layout.alignment_float16_ieee
-            else self._mod_common.alignment["FLOAT16"],
-            "FLOAT32": self.layout.alignment_float32_ieee.alignmentBorder
-            if self.layout.alignment_float32_ieee
-            else self._mod_common.alignment["FLOAT32"],
-            "FLOAT64": self.layout.alignment_float64_ieee.alignmentBorder
-            if self.layout.alignment_float64_ieee
-            else self._mod_common.alignment["FLOAT64"],
+            "BYTE": (
+                self.layout.alignment_byte.alignmentBorder if self.layout.alignment_byte else self._mod_common.alignment["BYTE"]
+            ),
+            "WORD": (
+                self.layout.alignment_word.alignmentBorder if self.layout.alignment_word else self._mod_common.alignment["WORD"]
+            ),
+            "DWORD": (
+                self.layout.alignment_long.alignmentBorder if self.layout.alignment_long else self._mod_common.alignment["DWORD"]
+            ),
+            "QWORD": (
+                self.layout.alignment_int64.alignmentBorder if self.layout.alignment_int64 else self._mod_common.alignment["QWORD"]
+            ),
+            "FLOAT16": (
+                self.layout.alignment_float16_ieee.alignmentBorder
+                if self.layout.alignment_float16_ieee
+                else self._mod_common.alignment["FLOAT16"]
+            ),
+            "FLOAT32": (
+                self.layout.alignment_float32_ieee.alignmentBorder
+                if self.layout.alignment_float32_ieee
+                else self._mod_common.alignment["FLOAT32"]
+            ),
+            "FLOAT64": (
+                self.layout.alignment_float64_ieee.alignmentBorder
+                if self.layout.alignment_float64_ieee
+                else self._mod_common.alignment["FLOAT64"]
+            ),
         }
         self.axisPts = {
             "x": self._dissect_axis_pts(self.layout.axis_pts_x),
