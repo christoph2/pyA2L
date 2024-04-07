@@ -977,7 +977,7 @@ class IF_DATA(Keyword):
     multiple = True
     block = True
     attrs = [
-        (Ident, "name"),
+        (String, "raw"),
     ]
     """
         Data record to describe interface specific data. The parameters associated with this

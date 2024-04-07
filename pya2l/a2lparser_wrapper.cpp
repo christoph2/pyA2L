@@ -28,6 +28,24 @@ PYBIND11_MODULE(a2lparser_ext, m) {
         .def("get_keywords", &ValueContainer::get_keywords)
         .def("get_parameters", &ValueContainer::get_parameters)
         .def("get_multiple_values", &ValueContainer::get_multiple_values)
+        .def("get_if_data", &ValueContainer::get_if_data)
+		.def_property_readonly("if_data", [](const ValueContainer& self) {
+            auto encoding = ValueContainer::get_encoding().c_str();
+			std::string value;
+			auto if_data = self.get_if_data();
+
+			if (if_data) {
+				py::handle py_s = PyUnicode_Decode((*if_data).data(), (*if_data).length(), encoding, "strict");
+
+				if (!py_s) {
+					throw py::error_already_set();
+				}
+
+				return py::reinterpret_steal<py::str>(py_s);
+			} else {
+				return py::str{""};
+			}
+		})
         .def_property_readonly("parameters", [](const ValueContainer& self) {
             py::list result;
 
@@ -35,7 +53,7 @@ PYBIND11_MODULE(a2lparser_ext, m) {
 #if !defined(__APPLE__)
             auto ItemGetter = Overload{
 
-                [&result, encoding](std::string value) {
+                [&result, encoding](const std::string& value) {
                     py::handle py_s = PyUnicode_Decode(value.data(), value.length(), encoding, "strict");
                     if (!py_s) {
                         throw py::error_already_set();

@@ -579,4 +579,6 @@ enum class TokenType : std::uint16_t {
     STRING  = 284,
 };
 
+constexpr std::uint16_t DATA_TYPE_MIN = static_cast<std::uint16_t>(TokenType::IDENT);
+
 #endif  // __TOKEN_TYPE_HPP

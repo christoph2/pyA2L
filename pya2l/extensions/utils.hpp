@@ -119,8 +119,6 @@ inline bool is_space(char ch) {
 }
 
 inline auto split(const std::string &str, char delimiter) -> std::vector<std::string> {
-    auto result = std::vector<std::string>{};
-
     auto range = str | std::ranges::views::split(delimiter) | std::ranges::views::transform(to_string);
 
     return { std::ranges::begin(range), std::ranges::end(range) };

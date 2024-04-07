@@ -24,6 +24,7 @@
 #if !defined(__TOKENIZER_HPP)
     #define __TOKENIZER_HPP
 
+    #include <bit>
     #include <sstream>
 
     #include "ctre.hpp"
@@ -98,7 +99,7 @@ struct Token {
 
     static constexpr auto PAT_FLOAT = ctll::fixed_string{ "^[+\\-]?(\\d+([.]\\d*)?([eE][+\\-]?\\d+)?|[.]\\d+([eE][+\\-]?\\d+)?)" };
 
-    static constexpr auto PAT_INT = ctll::fixed_string{ "^[+\\-]?[0-9]+$" };
+    static constexpr auto PAT_INT = ctll::fixed_string{ "^(?:[+\\-])?[0-9]+$" };
     static constexpr auto PAT_HEX = ctll::fixed_string{ "^0x[0-9a-fA-F]+$" };
 
     void set_token_type() {
@@ -138,8 +139,6 @@ struct Token {
         ss << ")";
         return ss.str();
     }
-
-
 };
 
 using TokenizerReturnType = Token;

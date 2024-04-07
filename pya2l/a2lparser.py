@@ -1,4 +1,5 @@
 import os
+import re
 import typing
 from collections import defaultdict
 from pprint import pprint
@@ -17,12 +18,14 @@ from pya2l import model
 
 # from  .a2lparser_ext import A2LParser as A2LParser_ext
 
+IFD_HEADER = re.compile(r"/begin\s+IF_DATA\s+(\w+)", re.DOTALL | re.MULTILINE)
 
 KW_MAP = {
     "A2ml": model.A2ml,
     "A2mlVersion": model.A2mlVersion,
     "AddrEpk": model.AddrEpk,
     "AlignmentByte": model.AlignmentByte,
+    "AlignmentFloat16Ieee": model.AlignmentFloat16Ieee,
     "AlignmentFloat32Ieee": model.AlignmentFloat32Ieee,
     "AlignmentFloat32Ieee": model.AlignmentFloat32Ieee,
     "AlignmentFloat64Ieee": model.AlignmentFloat64Ieee,
@@ -334,7 +337,7 @@ class A2LParser:
         )
         self.progress_bar = Progress(*progress_columns)
         self.task = self.progress_bar.add_task("[blue]writing to DB...", total=self.parser.keyword_counter)
-        self.advance = self.parser.keyword_counter // 100
+        self.advance = self.parser.keyword_counter // 100 if self.parser.keyword_counter >= 100 else 1
         fr = FakeRoot()
         with self.progress_bar:
             self.traverse(values, fr, None, False)
@@ -346,11 +349,11 @@ class A2LParser:
     def traverse(self, tree, parent, attr, multiple, level=0):
         self.counter += 1
         inst = None
+        mult: list = []
         space = "    " * level
         name = tree.get_name()
 
         # print("TABLE ==> ", name, parent, multiple)
-
         if self.counter % self.advance == 0:
             self.db.session.flush()
             self.progress_bar.update(self.task, advance=self.advance)
@@ -360,13 +363,29 @@ class A2LParser:
             zipper = ZIPPER_MAP[name]
             try:
                 params = tree.parameters
-                mult = tree.get_multiple_values()
+
             except UnicodeDecodeError as e:
-                print(e)
+                print(e, "***", tree, name, table)
                 params = {}
+                # if_data = []
+            mult = tree.get_multiple_values()
+            if_data = tree.if_data
+
             values = zipper(params, mult)
             if name not in ("ReadOnly", "GuardRails", "Discrete"):
                 inst = table(**values)
+
+                if if_data:
+                    #    print(parent, table, params, if_data)
+                    if parent.if_data is None:
+                        parent.if_data = []
+
+                    ma = IFD_HEADER.search(if_data)
+                    if ma:
+                        ifd_name = ma.group(1)
+
+                    ifd = model.IfData(raw=if_data)
+                    parent.if_data.append(ifd)
                 # db.session.add(inst)
             else:
                 inst = True

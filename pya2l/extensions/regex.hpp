@@ -30,7 +30,7 @@
 class RegExp {
    public:
 
-    RegExp(const std::regex& pattern) noexcept : m_pattern(pattern), m_match{} {
+    explicit RegExp(const std::regex& pattern) noexcept : m_pattern(pattern), m_match{} {
     }
 
     bool operator()(/*std::string_view*/ const std::string& text) noexcept {

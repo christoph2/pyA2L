@@ -37,7 +37,7 @@ namespace fs = std::filesystem;
 class TempFile {
    public:
 
-    TempFile(const std::string& path, bool binary = false) noexcept :
+    explicit TempFile(const std::string& path, bool binary = false) noexcept :
         m_path(fs::path(path)), m_file(path, std::ios::trunc | std::ios::out | (binary ? std::ios::binary : std::ios::out)) {
     }
 

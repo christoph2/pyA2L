@@ -60,7 +60,7 @@ const std::string valid_enumerators(const std::set<std::string>& enumerators) {
 struct Enum : public AsamType {
     using value_t = const std::set<std::string>;
 
-    explicit Enum(std::string_view n, value_t e) : name{ n }, m_enumerators(std::move(e)) {
+    explicit Enum(std::string_view n, value_t&& e) : name{ n }, m_enumerators(std::move(e)) {
     }
 
     bool validate(const AsamVariantType& value) const override {

@@ -5,6 +5,13 @@
     #include "a2ltoken.hpp"
     #include "parameter.hpp"
 
+template<>
+struct std::hash<A2LTokenType> {
+    std::size_t operator()(const A2LTokenType& s) const noexcept {
+        return std::hash<std::uint16_t>{}(static_cast<std::uint16_t>(s));
+    }
+};
+
 class Keyword {
    public:
 
@@ -41,13 +48,14 @@ class Keyword {
 
     // private:
 
-    A2LTokenType                    m_token;
-    std::string                     m_name;
-    std::string                     m_class_name;
-    bool                            m_block;
-    bool                            m_multiple;
-    std::vector<Parameter>          m_parameters;
-    std::map<A2LTokenType, Keyword> m_keywords;
+    A2LTokenType                              m_token;
+    std::string                               m_name;
+    std::string                               m_class_name;
+    bool                                      m_block;
+    bool                                      m_multiple;
+    std::vector<Parameter>                    m_parameters;
+    std::unordered_map<A2LTokenType, Keyword> m_keywords;
+    // std::map<A2LTokenType, Keyword> m_keywords;
 };
 
 #endif  // __KEYWORD_HPP
