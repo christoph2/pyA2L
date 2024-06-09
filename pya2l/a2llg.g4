@@ -37,6 +37,8 @@ FLOAT:
         ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
     |   '.' ('0'..'9')+ EXPONENT?
     |   ('0'..'9')+ EXPONENT
+    | 'NaN'
+    | 'INF'
     )
     ;
 
