@@ -111,12 +111,8 @@ class DB(object):
 
         from os import unlink
 
-        # from pya2l.a2l_listener import A2LListener
         from pya2l import parsers
-
         from pya2l.preprocessor import Preprocessor
-
-        # from pya2l.a2lparser import Preprocessor
         from pya2l.aml.db import Importer
 
         start_time = perf_counter()

@@ -79,7 +79,7 @@ class ValueContainer {
     }
 
     const std::string to_string() const {
-        std::ostringstream os;k
+        std::ostringstream os;
 
         os << "ValueContainer(name: '" << get_name() << "'";
 

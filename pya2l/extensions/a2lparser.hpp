@@ -181,34 +181,35 @@ class A2LParser {
                 auto token = m_reader->LT(1);
 
                 if ((kw_tos().contains(token->getType())) || (kw_tos(1).contains(token->getType())) ||
-                    (token_type() == A2LTokenType::BEGIN) || ((token_type() == A2LTokenType::END) && (parameter.is_multiple() == false))) {
+                    (token_type() == A2LTokenType::BEGIN) ||
+                    ((token_type() == A2LTokenType::END) && (parameter.is_multiple() == false))) {
                     // Not all parameters are present.
 
-                        std::cerr << kw_tos().m_name << " is missing one or more required parameters: " << std::endl;
-                        // std::cerr << token->toString() << std::endl;
+                    std::cerr << kw_tos().m_name << " is missing one or more required parameters: " << std::endl;
+                    // std::cerr << token->toString() << std::endl;
 
-                        for (auto idx = param_count; idx < std::size(kw_tos().m_parameters); ++idx) {
-                            auto p = kw_tos().m_parameters[idx];
+                    for (auto idx = param_count; idx < std::size(kw_tos().m_parameters); ++idx) {
+                        auto p = kw_tos().m_parameters[idx];
 
-                            std::cerr << "\t" << p.get_name() << std::endl;
+                        std::cerr << "\t" << p.get_name() << std::endl;
 
-                            switch (p.get_type()) {
-                                case PredefinedType::Int:
-                                case PredefinedType::Uint:
-                                case PredefinedType::Long:
-                                case PredefinedType::Ulong:
-                                    parameter_list.push_back(0);
-                                    break;
+                        switch (p.get_type()) {
+                            case PredefinedType::Int:
+                            case PredefinedType::Uint:
+                            case PredefinedType::Long:
+                            case PredefinedType::Ulong:
+                                parameter_list.push_back(0);
+                                break;
 
-                                case PredefinedType::Float:
-                                    parameter_list.push_back(0.0);
-                                    break;
+                            case PredefinedType::Float:
+                                parameter_list.push_back(0.0);
+                                break;
 
-                                default:
-                                    parameter_list.push_back("");
-                                    break;
-                            }
+                            default:
+                                parameter_list.push_back("");
+                                break;
                         }
+                    }
                     return { parameter_list, m_multiple_values };
                 }
                 param_count++;

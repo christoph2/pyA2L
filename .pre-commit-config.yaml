@@ -67,12 +67,12 @@ repos:
     language: python
     types_or: [c, c++, python]
     stages: [commit]
-  - id: reorder-python-imports
-    name: reorder-python-imports
-    entry: reorder-python-imports
-    language: python
-    types: [python]
-    stages: [commit]
+    #- id: reorder-python-imports
+    #name: reorder-python-imports
+    #entry: reorder-python-imports
+    #language: python
+    #types: [python]
+    #stages: [commit]
   - id: black
     name: black
     entry: black

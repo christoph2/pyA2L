@@ -6,15 +6,15 @@
     #include <string>
 
 class RuntimeException : public std::exception {
-
    public:
 
     explicit RuntimeException(std::string msg = "");
 
     const char* what() const noexcept override;
 
-    private:
-     std::string _message;
+   private:
+
+    std::string _message;
 };
 
 class UnsupportedOperationException : public RuntimeException {
