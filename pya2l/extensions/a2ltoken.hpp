@@ -10,12 +10,6 @@
     #include <map>
     #include <string>
 
-    #if defined(__APPLE__)
-        #undef BYTE_ORDER
-        #undef LITTLE_ENDIAN
-        #undef BIG_ENDIAN
-    #endif
-
 enum class A2LTokenType : std::uint16_t {
     INVALID                      = 0,
     ALIGNMENT_BYTE               = 1,
@@ -30,7 +24,7 @@ enum class A2LTokenType : std::uint16_t {
     ANNOTATION_ORIGIN            = 10,
     ANNOTATION_TEXT              = 11,
     BIT_MASK                     = 12,
-    BYTE_ORDER                   = 13,
+    _BYTE_ORDER                  = 13,
     CALIBRATION_ACCESS           = 14,
     CALIBRATION                  = 15,
     NO_CALIBRATION               = 16,

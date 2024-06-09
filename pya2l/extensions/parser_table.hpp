@@ -98,7 +98,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                     }
                                 ),
                                 Keyword(
-                                    A2LTokenType::BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
+                                    A2LTokenType::_BYTE_ORDER, "_BYTE_ORDER", "ByteOrder", false, false,
                                     {
                                         Parameter(
                                             PredefinedType::Enum, "Byteorder",
@@ -305,7 +305,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                             {}
                                         ),
                                         Keyword(
-                                            A2LTokenType::BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
+                                            A2LTokenType::_BYTE_ORDER, "_BYTE_ORDER", "ByteOrder", false, false,
                                             {
                                                 Parameter(
                                                     PredefinedType::Enum, "Byteorder",
@@ -411,7 +411,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                     {}
                                 ),
                                 Keyword(
-                                    A2LTokenType::BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
+                                    A2LTokenType::_BYTE_ORDER, "_BYTE_ORDER", "ByteOrder", false, false,
                                     {
                                         Parameter(
                                             PredefinedType::Enum, "Byteorder",
@@ -1001,7 +1001,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                     }
                                 ),
                                 Keyword(
-                                    A2LTokenType::BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
+                                    A2LTokenType::_BYTE_ORDER, "_BYTE_ORDER", "ByteOrder", false, false,
                                     {
                                         Parameter(
                                             PredefinedType::Enum, "Byteorder",
@@ -1176,7 +1176,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                     {}
                                 ),
                                 Keyword(
-                                    A2LTokenType::BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
+                                    A2LTokenType::_BYTE_ORDER, "_BYTE_ORDER", "ByteOrder", false, false,
                                     {
                                         Parameter(
                                             PredefinedType::Enum, "Byteorder",
