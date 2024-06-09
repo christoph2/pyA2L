@@ -102,7 +102,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                     {
                                         Parameter(
                                             PredefinedType::Enum, "Byteorder",
-                                            { "LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
                                         ),
                                     },
                                     {}
@@ -309,7 +309,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                             {
                                                 Parameter(
                                                     PredefinedType::Enum, "Byteorder",
-                                                    { "LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                                    { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
                                                 ),
                                             },
                                             {}
@@ -415,7 +415,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                     {
                                         Parameter(
                                             PredefinedType::Enum, "Byteorder",
-                                            { "LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
                                         ),
                                     },
                                     {}
@@ -1005,7 +1005,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                     {
                                         Parameter(
                                             PredefinedType::Enum, "Byteorder",
-                                            { "LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
                                         ),
                                     },
                                     {}
@@ -1180,7 +1180,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                     {
                                         Parameter(
                                             PredefinedType::Enum, "Byteorder",
-                                            { "LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
                                         ),
                                     },
                                     {}
