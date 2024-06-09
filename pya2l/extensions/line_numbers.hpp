@@ -32,7 +32,7 @@ struct LineNumbers {
         start_line(sl), start_col(sc), end_line(el), end_col(ec) {
     }
 
-    LineNumbers(const LineNumbers&) = default;
+    LineNumbers(const LineNumbers &) = default;
 
     LineNumbers(std::tuple< std::size_t, std::size_t> start, std::tuple< std::size_t, std::size_t> end) noexcept :
         start_line(std::get<0>(start)), start_col(std::get<1>(start)), end_line(std::get<0>(end)), end_col(std::get<1>(end)) {
@@ -45,7 +45,8 @@ struct LineNumbers {
     std::string to_string() {
         std::stringstream ss;
 
-        ss << std::to_string(start_line) << ":" << std::to_string(start_col) << ";" << std::to_string(end_line) << ":" << std::to_string(end_col);
+        ss << std::to_string(start_line) << ":" << std::to_string(start_col) << ";" << std::to_string(end_line) << ":"
+           << std::to_string(end_col);
 
         return ss.str();
     }

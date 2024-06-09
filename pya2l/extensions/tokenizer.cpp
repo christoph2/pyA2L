@@ -148,11 +148,12 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
     CharClass                  current{ CharClass::NONE };
     CharClass                  previous{ CharClass::NONE };
     std::array<std::string, 2> token;
-    std::size_t                line         = 1;
-    std::size_t                column       = 0;
-    std::size_t                start_line   = 1;
-    std::size_t                start_column = 1;
-    bool                       string_class = false;
+    std::size_t                line              = 1;
+    std::size_t                column            = 0;
+    std::size_t                start_line        = 1;
+    std::size_t                start_column      = 1;
+    bool                       string_class      = false;
+    bool                       multi_line_string = false;
 
     const auto get_char_class = [](char ch) noexcept {
         return is_space(ch) ? CharClass::WHITESPACE : CharClass::REGULAR;
@@ -235,7 +236,8 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
                     tk[tk.length() - 1] = '\\';
                 }
             } else if (string_state == StringStateType::MAY_CLOSE) {
-                string_state = StringStateType::IDLE;
+                multi_line_string = false;
+                string_state      = StringStateType::IDLE;
             }
         }
         if (previous == CharClass::NONE) {
@@ -300,11 +302,14 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
             line++;
             column = 0;
 
-            if ((string_state == StringStateType::IN_STRING) || (string_state == StringStateType::MAY_CLOSE)) {
-                throw std::runtime_error("Unterminated string.");
+            if ((multi_line_string == false) &&
+                ((string_state == StringStateType::IN_STRING) || (string_state == StringStateType::MAY_CLOSE))) {
+                std::cout << "[WARNING (pya2l.Preprocessor)]: Multiline string @ line: " << line - 1 << std::endl;
+                multi_line_string = true;
             }
-            string_state = StringStateType::IDLE;  // Unterminated string?
-            string_class = false;
+
+            // string_state = StringStateType::IDLE;  // Unterminated string?
+            // string_class = false;
             if (comment_state == CommentStateType::SINGLE_LINE) {
                 comment_state = CommentStateType::IDLE;
 

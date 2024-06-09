@@ -100,7 +100,10 @@ inline Keyword PARSER_TABLE = Keyword(
                                 Keyword(
                                     A2LTokenType::BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
                                     {
-                                        Parameter(PredefinedType::Enum, "Byteorder", { "LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Byteorder",
+                                            { "LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -304,7 +307,10 @@ inline Keyword PARSER_TABLE = Keyword(
                                         Keyword(
                                             A2LTokenType::BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
                                             {
-                                                Parameter(PredefinedType::Enum, "Byteorder", { "LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }),
+                                                Parameter(
+                                                    PredefinedType::Enum, "Byteorder",
+                                                    { "LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                                ),
                                             },
                                             {}
                                         ),
@@ -407,7 +413,10 @@ inline Keyword PARSER_TABLE = Keyword(
                                 Keyword(
                                     A2LTokenType::BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
                                     {
-                                        Parameter(PredefinedType::Enum, "Byteorder", { "LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Byteorder",
+                                            { "LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -919,8 +928,11 @@ inline Keyword PARSER_TABLE = Keyword(
                             {
                                 Parameter(PredefinedType::Ident, "Name"),
                                 Parameter(PredefinedType::String, "LongIdentifier"),
-                                Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                Parameter(
+                                    PredefinedType::Enum, "Datatype",
+                                    { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE",
+                                      "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                ),
                                 Parameter(PredefinedType::Ident, "Conversion"),
                                 Parameter(PredefinedType::Uint, "Resolution"),
                                 Parameter(PredefinedType::Float, "Accuracy"),
@@ -991,7 +1003,10 @@ inline Keyword PARSER_TABLE = Keyword(
                                 Keyword(
                                     A2LTokenType::BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
                                     {
-                                        Parameter(PredefinedType::Enum, "Byteorder", { "LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Byteorder",
+                                            { "LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1163,7 +1178,10 @@ inline Keyword PARSER_TABLE = Keyword(
                                 Keyword(
                                     A2LTokenType::BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
                                     {
-                                        Parameter(PredefinedType::Enum, "Byteorder", { "LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Byteorder",
+                                            { "LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1433,8 +1451,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::AXIS_PTS_X, "AXIS_PTS_X", "AxisPtsX", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
                                         Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
                                     },
@@ -1444,8 +1465,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::AXIS_PTS_Y, "AXIS_PTS_Y", "AxisPtsY", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
                                         Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
                                     },
@@ -1455,8 +1479,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::AXIS_PTS_Z, "AXIS_PTS_Z", "AxisPtsZ", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
                                         Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
                                     },
@@ -1466,8 +1493,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::AXIS_PTS_4, "AXIS_PTS_4", "AxisPts4", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
                                         Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
                                     },
@@ -1477,8 +1507,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::AXIS_PTS_5, "AXIS_PTS_5", "AxisPts5", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
                                         Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
                                     },
@@ -1488,8 +1521,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::AXIS_RESCALE_X, "AXIS_RESCALE_X", "AxisRescaleX", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                         Parameter(PredefinedType::Uint, "MaxNumberOfRescalePairs"),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
                                         Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
@@ -1500,8 +1536,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::AXIS_RESCALE_Y, "AXIS_RESCALE_Y", "AxisRescaleY", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                         Parameter(PredefinedType::Uint, "MaxNumberOfRescalePairs"),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
                                         Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
@@ -1512,8 +1551,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::AXIS_RESCALE_Z, "AXIS_RESCALE_Z", "AxisRescaleZ", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                         Parameter(PredefinedType::Uint, "MaxNumberOfRescalePairs"),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
                                         Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
@@ -1524,8 +1566,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::AXIS_RESCALE_4, "AXIS_RESCALE_4", "AxisRescale4", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                         Parameter(PredefinedType::Uint, "MaxNumberOfRescalePairs"),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
                                         Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
@@ -1536,8 +1581,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::AXIS_RESCALE_5, "AXIS_RESCALE_5", "AxisRescale5", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                         Parameter(PredefinedType::Uint, "MaxNumberOfRescalePairs"),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
                                         Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
@@ -1548,8 +1596,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::DIST_OP_X, "DIST_OP_X", "DistOpX", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1557,8 +1608,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::DIST_OP_Y, "DIST_OP_Y", "DistOpY", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1566,8 +1620,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::DIST_OP_Z, "DIST_OP_Z", "DistOpZ", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1575,8 +1632,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::DIST_OP_4, "DIST_OP_4", "DistOp4", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1584,8 +1644,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::DIST_OP_5, "DIST_OP_5", "DistOp5", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1628,8 +1691,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::FNC_VALUES, "FNC_VALUES", "FncValues", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                         Parameter(
                                             PredefinedType::Enum, "IndexMode",
                                             { "ALTERNATE_CURVES", "ALTERNATE_WITH_X", "ALTERNATE_WITH_Y", "COLUMN_DIR", "ROW_DIR" }
@@ -1642,8 +1708,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::IDENTIFICATION, "IDENTIFICATION", "Identification", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1651,8 +1720,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::NO_AXIS_PTS_X, "NO_AXIS_PTS_X", "NoAxisPtsX", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1660,8 +1732,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::NO_AXIS_PTS_Y, "NO_AXIS_PTS_Y", "NoAxisPtsY", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1669,8 +1744,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::NO_AXIS_PTS_Z, "NO_AXIS_PTS_Z", "NoAxisPtsZ", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1678,8 +1756,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::NO_AXIS_PTS_4, "NO_AXIS_PTS_4", "NoAxisPts4", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1687,8 +1768,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::NO_AXIS_PTS_5, "NO_AXIS_PTS_5", "NoAxisPts5", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1700,8 +1784,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::NO_RESCALE_X, "NO_RESCALE_X", "NoRescaleX", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1709,8 +1796,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::NO_RESCALE_Y, "NO_RESCALE_Y", "NoRescaleY", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1718,8 +1808,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::NO_RESCALE_Z, "NO_RESCALE_Z", "NoRescaleZ", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1727,8 +1820,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::NO_RESCALE_4, "NO_RESCALE_4", "NoRescale4", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1736,8 +1832,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::NO_RESCALE_5, "NO_RESCALE_5", "NoRescale5", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1745,8 +1844,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::OFFSET_X, "OFFSET_X", "OffsetX", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1754,8 +1856,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::OFFSET_Y, "OFFSET_Y", "OffsetY", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1763,8 +1868,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::OFFSET_Z, "OFFSET_Z", "OffsetZ", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1772,8 +1880,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::OFFSET_4, "OFFSET_4", "Offset4", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1781,8 +1892,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::OFFSET_5, "OFFSET_5", "Offset5", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1798,8 +1912,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::RIP_ADDR_W, "RIP_ADDR_W", "RipAddrW", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1807,8 +1924,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::RIP_ADDR_X, "RIP_ADDR_X", "RipAddrX", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1816,8 +1936,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::RIP_ADDR_Y, "RIP_ADDR_Y", "RipAddrY", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1825,8 +1948,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::RIP_ADDR_Z, "RIP_ADDR_Z", "RipAddrZ", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1834,8 +1960,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::RIP_ADDR_4, "RIP_ADDR_4", "RipAddr4", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1843,8 +1972,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::RIP_ADDR_5, "RIP_ADDR_5", "RipAddr5", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1852,8 +1984,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::SHIFT_OP_X, "SHIFT_OP_X", "ShiftOpX", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1861,8 +1996,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::SHIFT_OP_Y, "SHIFT_OP_Y", "ShiftOpY", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1870,8 +2008,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::SHIFT_OP_Z, "SHIFT_OP_Z", "ShiftOpZ", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1879,8 +2020,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::SHIFT_OP_4, "SHIFT_OP_4", "ShiftOp4", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1888,8 +2032,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::SHIFT_OP_5, "SHIFT_OP_5", "ShiftOp5", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1897,8 +2044,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::SRC_ADDR_X, "SRC_ADDR_X", "SrcAddrX", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1906,8 +2056,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::SRC_ADDR_Y, "SRC_ADDR_Y", "SrcAddrY", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1915,8 +2068,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::SRC_ADDR_Z, "SRC_ADDR_Z", "SrcAddrZ", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1924,8 +2080,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::SRC_ADDR_4, "SRC_ADDR_4", "SrcAddr4", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1933,8 +2092,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     A2LTokenType::SRC_ADDR_5, "SRC_ADDR_5", "SrcAddr5", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Position"),
-                                        Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                        Parameter(
+                                            PredefinedType::Enum, "Datatype",
+                                            { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64",
+                                              "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -1962,8 +2124,11 @@ inline Keyword PARSER_TABLE = Keyword(
                             {
                                 Parameter(PredefinedType::Ident, "Name"),
                                 Parameter(PredefinedType::String, "LongIdentifier"),
-                                Parameter(PredefinedType::Enum, "Datatype", {"UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG",
-                                    "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }),
+                                Parameter(
+                                    PredefinedType::Enum, "Datatype",
+                                    { "UBYTE", "SBYTE", "UWORD", "SWORD", "ULONG", "SLONG", "A_UINT64", "A_INT64", "FLOAT16_IEEE",
+                                      "FLOAT32_IEEE", "FLOAT64_IEEE" }
+                                ),
                                 Parameter(PredefinedType::Ident, "Conversion"),
                                 Parameter(PredefinedType::Uint, "Resolution"),
                                 Parameter(PredefinedType::Float, "Accuracy"),
@@ -1978,7 +2143,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                 Parameter(PredefinedType::Ident, "Name"),
                                 Parameter(PredefinedType::String, "LongIdentifier"),
                                 Parameter(PredefinedType::Ulong, "Size"),
-                                Parameter(PredefinedType::Enum, "Linktype", { "SYMBOL_TYPE_LINK", ""}),
+                                Parameter(PredefinedType::Enum, "Linktype", { "SYMBOL_TYPE_LINK", "" }),
                                 Parameter(PredefinedType::String, "Symbol"),
                             },
                             {
@@ -1988,7 +2153,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                         Parameter(PredefinedType::Ident, "Name"),
                                         Parameter(PredefinedType::Ident, "Deposit"),
                                         Parameter(PredefinedType::Ulong, "Offset"),
-                                        Parameter(PredefinedType::Enum, "Linktype", { "SYMBOL_TYPE_LINK", ""}),
+                                        Parameter(PredefinedType::Enum, "Linktype", { "SYMBOL_TYPE_LINK", "" }),
                                         Parameter(PredefinedType::String, "Symbol"),
                                     },
                                     {}

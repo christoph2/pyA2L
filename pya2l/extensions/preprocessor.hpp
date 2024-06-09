@@ -94,7 +94,7 @@ class Preprocessor {
     preprocessor_result_t process(const std::string &filename, const std::string &encoding) {
         _process_file(filename);
         return {
-            m_filenames, line_map, IfDataReader{m_filenames.ifdata, ifdata_builder}
+            m_filenames, line_map, IfDataReader{ m_filenames.ifdata, ifdata_builder }
         };
     }
 
@@ -109,13 +109,15 @@ class Preprocessor {
 
    protected:
 
-    void skip_bom(auto& fs) {
+    void skip_bom(auto &fs) {
         const unsigned char boms[]{ 0xef, 0xbb, 0xbf };
-        bool have_bom{ true };
-        for(const auto& c : boms) {
-            if((unsigned char)fs.get() != c) have_bom = false;
+        bool                have_bom{ true };
+        for (const auto &c : boms) {
+            if ((unsigned char)fs.get() != c)
+                have_bom = false;
         }
-        if(!have_bom) fs.seekg(0);
+        if (!have_bom)
+            fs.seekg(0);
     }
 
     void _process_file(const std::string &filename) {
@@ -203,7 +205,12 @@ class Preprocessor {
                         end     = false;
                     }
                     if (a2ml == true) {
-                        tmp_aml() << token.m_payload;
+                        if (token.m_token_type == TokenClass::STRING) {
+                            tmp_aml() << "\"" << token.m_payload << "\"";
+                        }
+                        else {
+                            tmp_aml() << token.m_payload;
+                        }
                         if (token.m_payload == "/end") {
                             end = true;
                             collected_tokens.push_back(token);

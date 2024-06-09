@@ -2,13 +2,13 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-//#include <iostream>
+// #include <iostream>
 #include <sstream>
 
 #include "a2lparser.hpp"
 
-//#include "ifdata.hpp"
-//#include "line_map.hpp"
+// #include "ifdata.hpp"
+// #include "line_map.hpp"
 #include "preprocessor.hpp"
 
 namespace py = pybind11;
@@ -20,7 +20,6 @@ struct Overload : Ts... {
     using Ts::operator()...;
 };
 
-
 PYBIND11_MODULE(a2lparser_ext, m) {
     py::class_<ValueContainer>(m, "ValueContainer")
         .def(py::init<std::string_view>(), py::arg("name"))
@@ -29,23 +28,26 @@ PYBIND11_MODULE(a2lparser_ext, m) {
         .def("get_parameters", &ValueContainer::get_parameters)
         .def("get_multiple_values", &ValueContainer::get_multiple_values)
         .def("get_if_data", &ValueContainer::get_if_data)
-		.def_property_readonly("if_data", [](const ValueContainer& self) {
-            auto encoding = ValueContainer::get_encoding().c_str();
-			std::string value;
-			auto if_data = self.get_if_data();
+        .def_property_readonly(
+            "if_data",
+            [](const ValueContainer& self) {
+                auto        encoding = ValueContainer::get_encoding().c_str();
+                std::string value;
+                auto        if_data = self.get_if_data();
 
-			if (if_data) {
-				py::handle py_s = PyUnicode_Decode((*if_data).data(), (*if_data).length(), encoding, "strict");
+                if (if_data) {
+                    py::handle py_s = PyUnicode_Decode((*if_data).data(), (*if_data).length(), encoding, "strict");
 
-				if (!py_s) {
-					throw py::error_already_set();
-				}
+                    if (!py_s) {
+                        throw py::error_already_set();
+                    }
 
-				return py::reinterpret_steal<py::str>(py_s);
-			} else {
-				return py::str{""};
-			}
-		})
+                    return py::reinterpret_steal<py::str>(py_s);
+                } else {
+                    return py::str{ "" };
+                }
+            }
+        )
         .def_property_readonly("parameters", [](const ValueContainer& self) {
             py::list result;
 
