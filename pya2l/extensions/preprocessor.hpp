@@ -205,7 +205,7 @@ class Preprocessor {
                         end     = false;
                     }
                     if (a2ml == true) {
-                        if (token.m_token_type == TokenClass::STRING) {
+                        if (token.m_token_class == TokenClass::STRING) {
                             tmp_aml() << "\"" << token.m_payload << "\"";
                         }
                         else {
