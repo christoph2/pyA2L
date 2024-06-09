@@ -25,6 +25,8 @@
 #if !defined(__UTILS_HPP)
     #define __UTILS_HPP
 
+    #include <algorithm>
+
     #include <ranges>
 
 enum class State : std::uint8_t {
