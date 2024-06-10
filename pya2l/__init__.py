@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
@@ -28,13 +27,11 @@ __author__ = "Christoph Schueler"
 __version__ = "0.10.2"
 
 
-import logging
-import pickle
+import pickle  # nosec
 import pkgutil
 import sys
-from time import perf_counter
 from pathlib import Path
-import warnings
+from time import perf_counter
 
 from rich.traceback import install
 
@@ -42,6 +39,7 @@ import pya2l.model as model
 from pya2l.logger import Logger
 from pya2l.templates import doTemplateFromText
 from pya2l.utils import detect_encoding
+
 
 install(show_locals=True, max_frames=3)  # Install custom exception handler.
 
@@ -52,7 +50,7 @@ class InvalidA2LDatabase(Exception):
     pass
 
 
-class DB(object):
+class DB:
     """"""
 
     A2L_TEMPLATE = pkgutil.get_data("pya2l.cgen.templates", "a2l.tmpl")
@@ -112,8 +110,9 @@ class DB(object):
         from os import unlink
 
         from pya2l import parsers
+
+        # from pya2l.aml.db import Importer
         from pya2l.preprocessor import Preprocessor
-        from pya2l.aml.db import Importer
 
         start_time = perf_counter()
         self.logger = Logger(self.__class__.__name__, loglevel)
@@ -125,9 +124,9 @@ class DB(object):
                 try:
                     unlink(str(self._dbfn))
                 except Exception:
-                    pass
+                    pass  # nosec
             elif self._dbfn.exists():
-                raise OSError("file '{}' already exists.".format(self._dbfn))  # Use 'open_create()' or 'open_existing()'.--
+                raise OSError(f"file '{self._dbfn}' already exists.")  # Use 'open_create()' or 'open_existing()'.--
 
         print("Enter pre-processor...")
 
@@ -143,14 +142,16 @@ class DB(object):
         self.logger.info("Parsing pre-processed data ...")
         self.db, listener_result = a2l_parser.parse(filename=filenames.a2l, dbname=str(self._dbfn), encoding=encoding)
         self.session = self.db.session
-        """
+
         self.logger.info("Parsing AML section ...")
         aml_parser = parsers.aml(prepro_result=prepro_result)
         aml_result = aml_parser.parseFromFile(filename=filenames.aml, dbname=str(self._dbfn), encoding=encoding).listener_result
         aml_parsed = pickle.dumps(aml_result)
         aml_text = open(filenames.aml).read()
+        """
         self.session.add(model.AMLSection(text=aml_text, parsed=aml_parsed))
         self.logger.info("Parsing IF_DATA sections ...")
+
         ip = parsers.if_data(aml_result)
         for item in self.session.query(model.IfData).all():
             parsed_if_data = pickle.dumps(ip.parse(item.raw))
@@ -158,7 +159,11 @@ class DB(object):
             self.session.add(item)
         """
         self.session.commit()
-        self.logger.info("Done [Elapsed time {:.2f}s].".format(perf_counter() - start_time))
+
+        self.session.add(model.AMLSection(text=aml_text, parsed=aml_parsed))
+
+        # self.session.commit()
+        self.logger.info(f"Done [Elapsed time {perf_counter() - start_time:.2f}s].")
         return self.session
 
     def export_a2l(self, file_name=sys.stdout, encoding="utf-8"):
@@ -207,7 +212,7 @@ class DB(object):
         self.in_memory = False
         self._set_path_components(file_name)
         if not self._dbfn.exists():
-            raise OSError("file '{}' does not exists.".format(self._dbfn))
+            raise OSError(f"file '{self._dbfn}' does not exists.")
         else:
             self.db = model.A2LDatabase(str(self._dbfn))
             self.session = self.db.session
