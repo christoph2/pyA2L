@@ -1,5 +1,4 @@
 
-/begin A2ML
 block "IF_DATA" taggedunion if_data {
 /***************************************************************************/
 /*                                                                         */
@@ -1073,5 +1072,3 @@ block "TP_BLOB" struct {
 };
 
 };
-/end A2ML
-
