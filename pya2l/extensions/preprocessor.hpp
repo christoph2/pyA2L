@@ -24,7 +24,7 @@
 
 #if !defined(__PREPROCESSOR_HPP)
     #define __PREPROCESSOR_HPP
-    #define __STDC_WANT_LIB_EXT1__ (1)
+    // #define __STDC_WANT_LIB_EXT1__ (1)
     #define _CRT_SECURE_NO_WARNINGS
     #include <algorithm>
     #include <cassert>

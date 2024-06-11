@@ -25,8 +25,9 @@
 #if !defined(__IFDATA_HPP)
     #define __IFDATA_HPP
 
-    #define __STDC_WANT_LIB_EXT1__ (1)
+    // #define __STDC_WANT_LIB_EXT1__ (1)
 
+    #include <bit>
     #include <sys/stat.h>
 
     #include <cstdio>
