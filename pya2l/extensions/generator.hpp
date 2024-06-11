@@ -32,7 +32,7 @@
     #include <fstream>
     #include <future>
     #include <iostream>
-    #include <strstream>
+    #include <sstream>
     #include <tuple>
     #include <variant>
     #include <vector>
