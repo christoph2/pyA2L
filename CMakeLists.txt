@@ -1,39 +1,96 @@
 
-cmake_minimum_required(VERSION 3.7...3.18)
-project(cmake_example)
+cmake_minimum_required(VERSION 3.7...3.29)
+project(pya2l_extensions LANGUAGES C CXX)
 
 find_package(Python COMPONENTS Interpreter Development)
+message("Python executable: " ${PYTHON_EXECUTABLE})
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/antlr_cmake)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/pybind11)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/pybind11)
-message("modules: " ${CMAKE_MODULE_PATH})
-# find_package(pybind11 CONFIG REQUIRED PATHS ${CMAKE_CURRENT_SOURCE_DIR}/pybind11)
+
 message( STATUS "Found pybind11 v${pybind11_VERSION} ${pybind11_VERSION_TYPE}: ${pybind11_INCLUDE_DIRS}")
 set(ANTLR4_TAG 4.13.1)
 
+SET(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dist")
-# set(pybind11_DIR $CACHE{pybind11_DIR})
-# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../extensions)
 
-# required if linking to static library
+
+# find_package (Git)
+# if (GIT_FOUND)
+#       message("git found: ${GIT_EXECUTABLE} in version ${GIT_VERSION_STRING}")
+# endif (GIT_FOUND)
+
+SET(GCC_N_CLANG_BASE_OPTIONS "-Wall -Wextra -Wpedantic -Warray-bounds -mtune=native -fexceptions")
+SET(MSVC_BASE_OPTIONS "/EHsc /bigobj")
+
+
+#########
+#########
+#########
+SET(GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
+SET(GCC_COVERAGE_LINK_FLAGS    "-lgcov")
+
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
+#########
+#########
+#########
+
+set(ANTLR_EXECUTABLE ${CMAKE_CURRENT_SOURCE_DIR}/antlr-tool/antlr-${ANTLR4_TAG}-complete.jar)
+
+if(NOT EXISTS "${ANTLR_EXECUTABLE}")
+    message ("ANTLR .jar \"${ANTLR_EXECUTABLE}\" does not exist!")
+    message("Downloading "  "https://www.antlr.org/download/antlr-${ANTLR4_TAG}-complete.jar")
+    file(DOWNLOAD "https://www.antlr.org/download/antlr-${ANTLR4_TAG}-complete.jar" "${ANTLR_EXECUTABLE}")
+endif()
+
+
+if (CMAKE_SYSTEM_NAME STREQUAL  "Darwin")
+    set(ENV{MACOSX_DEPLOYMENT_TARGET}  "11.0")
+	SET(GCC_N_CLANG_EXTRA_OPTIONS "-stdlib=libc++")
+	message("Platform is Darwin")
+elseif (CMAKE_SYSTEM_NAME STREQUAL  "Windows")
+	message("Platform is WINDOWS")
+elseif (CMAKE_SYSTEM_NAME STREQUAL  "Linux")
+	SET(GCC_N_CLANG_EXTRA_OPTIONS "-fcoroutines -visibility=hidden -g0")
+	message("Platform is LINUX")
+endif()
+
+
+IF (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+
+ELSEIF (CMAKE_C_COMPILER_ID MATCHES "Clang")
+
+ELSEIF (CMAKE_C_COMPILER_ID MATCHES "MSVC")
+
+ELSE ()
+
+ENDIF ()
+
+IF (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
+ELSEIF (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+
+ELSEIF (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+
+ELSE ()
+
+
+ENDIF ()
+
+message("Compiling C with: " ${CMAKE_C_COMPILER_ID})
+message("Compiling Cpp with: " ${CMAKE_CXX_COMPILER_ID})
+
+
 add_definitions(-DANTLR4CPP_STATIC)
-
-# using /MD flag for antlr4_runtime (for Visual C++ compilers only)
 set(ANTLR4_WITH_STATIC_CRT OFF)
-
-# add external build for antlrcpp
 include(ExternalAntlr4Cpp)
-
-# add antrl4cpp artifacts to project environment
 include_directories(${ANTLR4_INCLUDE_DIRS})
-
-# set variable pointing to the antlr tool that supports C++
-# this is not required if the jar file can be found under PATH environment
-set(ANTLR_EXECUTABLE ${CMAKE_CURRENT_SOURCE_DIR}/antlr-${ANTLR4_TAG}-complete.jar)
-# add macros to generate ANTLR Cpp code from grammar
 find_package(ANTLR REQUIRED)
+
+# target_compile_features(hello PUBLIC cxx_std_17)
 
 # Call macro to add lexer and grammar to your build dependencies.
 antlr_target(pyA2LLexer ./pya2l/a2llg.g4 LEXER PACKAGE antlrcpptest)
@@ -58,6 +115,10 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/pya2l/extensions)
 
 pybind11_add_module(preprocessor pya2l/preprocessor_wrapper.cpp pya2l/extensions/tokenizer.cpp)
 pybind11_add_module(a2lparser_ext pya2l/a2lparser_wrapper.cpp pya2l/extensions/exceptions.cpp)
+
+target_compile_options(preprocessor PUBLIC "-DEXTENSION_NAME=preprocessor")
+target_compile_options(a2lparser_ext PUBLIC "-DEXTENSION_NAME=a2lparser_ext")
+
 # target_include_directories(preprocessor PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/pya2l/extensions>)
 # target_link_libraries(preprocessor pybind11::headers)
 # set_target_properties(preprocessor PROPERTIES INTERPROCEDURAL_OPTIMIZATION ON CXX_VISIBILITY_PRESET ON VISIBILITY_INLINES_HIDDEN ON)
