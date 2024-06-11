@@ -1,2 +1,4 @@
 assert_used:
   skips: ["*/test_*.py"]
+  exclude_dirs: [".venv", "tests"]
+  # skips: ["B307", "B404", "B605", "B607", "B603"]
