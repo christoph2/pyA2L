@@ -7,7 +7,6 @@ import subprocess  # nosec
 import sys
 from pathlib import Path
 
-from pkg_resources import parse_requirements
 from setuptools import Distribution, Extension
 
 from pybind11.setup_helpers import build_ext
@@ -37,21 +36,6 @@ def most_recent_tag(repo: str) -> str | None:
     tags = fetch_tags(repo)
     return tags[-1] if tags else None
 
-
-EXT_NAMES = ["pya2l.preprocessor", "pya2l.a2lparser_ext"]
-
-
-def _parse_requirements(filepath):
-    print("FP:", filepath, filepath.absolute())
-    with filepath.open() as text_io:
-        requirements = list(parse_requirements(text_io))
-
-    return requirements
-
-
-#################################################################
-#################################################################
-#################################################################
 
 # Convert distutils Windows platform specifiers to CMake -A arguments
 PLAT_TO_CMAKE = {
