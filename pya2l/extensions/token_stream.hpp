@@ -2,7 +2,7 @@
 #if !defined(__TOKEN_STREAM_HPP)
     #define __TOKEN_STREAM_HPP
 
-    #define __STDC_WANT_LIB_EXT1__ (1)
+    // #define __STDC_WANT_LIB_EXT1__ (1)
     #include <sys/types.h>
 
     #include <algorithm>
