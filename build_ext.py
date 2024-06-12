@@ -70,7 +70,7 @@ def build_extension(debug: bool = False) -> None:
             cmake_args += ["-DCMAKE_OSX_ARCHITECTURES={}".format(";".join(archs))]
 
     build_temp = Path(TemporaryDirectory(suffix=".build-temp").name) / "extension_it_in"
-    print("build-dir:", build_temp, "top:", str(TOP_DIR))
+    print("cwd:", os.getcwd(), "build-dir:", build_temp, "top:", str(TOP_DIR))
     print("PHILEZ:", os.listdir(TOP_DIR))
     if not build_temp.exists():
         build_temp.mkdir(parents=True)
