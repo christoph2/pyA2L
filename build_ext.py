@@ -39,6 +39,12 @@ def most_recent_tag(repo: str) -> str | None:
     return tags[-1] if tags else None
 
 
+def banner(msg: str) -> None:
+    print("=" * 80)
+    print(str.center(msg, 80))
+    print("=" * 80)
+
+
 def build_extension(debug: bool = False) -> None:
     print("CMakeBuild::build_extension()")
 
@@ -68,14 +74,18 @@ def build_extension(debug: bool = False) -> None:
     if not build_temp.exists():
         build_temp.mkdir(parents=True)
 
-    print("Running CMake:", cmake_args)
+    banner("Step #1: Configuring")
     subprocess.run(["cmake", str(TOP_DIR), *cmake_args], cwd=build_temp, check=True)  # nosec
 
     cmake_args += [f"--parallel {mp.cpu_count()}"]
 
-    subprocess.run(["cmake", "--build", ".", *build_args], cwd=build_temp, check=True)  # nosec
+    banner("Step #2: Build")
+    # subprocess.run(["cmake", "--build", ".", *build_args], cwd=build_temp, check=True)  # nosec
+    subprocess.run(["cmake", "--build", build_temp, *build_args], cwd=TOP_DIR, check=True)  # nosec
 
-    subprocess.run(["cmake", "--install", "."], cwd=build_temp, check=True)  # nosec
+    banner("Step #3: Install")
+    # subprocess.run(["cmake", "--install", "."], cwd=build_temp, check=True)  # nosec
+    subprocess.run(["cmake", "--install", build_temp], cwd=TOP_DIR, check=True)  # nosec
 
 
 if __name__ == "__main__":
