@@ -23,6 +23,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dist")
 # endif (GIT_FOUND)
 
 SET(GCC_N_CLANG_BASE_OPTIONS "-Wall -Wextra -Wpedantic -Warray-bounds -mtune=native -fexceptions")
+# target_link_options(${PROJECT_NAME} PUBLIC -flto=auto)
+
 SET(MSVC_BASE_OPTIONS "/EHsc /bigobj")
 
 
