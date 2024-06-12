@@ -5,9 +5,9 @@ name: pyA2L
 
 on:
   push:
-    branches: [master, develop]
+    branches: [master, develop, preprocessor]
   pull_request:
-    branches: [master, develop]
+    branches: [master, develop, preprocessor]
 
 jobs:
   build_wheels:
