@@ -22,7 +22,6 @@ build = "build_ext.py"
 include = [
     { path = "pya2l/*.so", format = "wheel" },
     { path = "pya2l/*.pyd", format = "wheel" },
-	{ path = "pya2l/cgen/templates/*.tmpl", format = "wheel" },
 ]
 packages = [
     { include = "pya2l" }
@@ -52,7 +51,7 @@ pre-commit-hooks = "^4.6.0"
 
 pyupgrade = "^3.16.0"
 [build-system]
-requires = ["poetry-core>=1.6.0", "wheel", "ninja", "cmake>=3.12"]
+requires = ["poetry-core>=1.6.0", "wheel", "cmake>=3.12"]
 build-backend = "poetry.core.masonry.api"
 
 
@@ -160,7 +159,7 @@ environment = { CLASSPATH="%PWD%/antlr-4.13.1-complete.jar" }
 build-verbosity = 3
 build = "cp3{8,9,10,11,12,13}-*"
 #test-command = "pytest -svv"
-#build-frontend = "build"
+build-frontend = "build"
 #build-frontend = "pip"
 before-build = [
     "python install_antlr.py"
