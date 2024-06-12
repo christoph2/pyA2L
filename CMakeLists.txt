@@ -17,11 +17,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dist")
 
 
-# find_package (Git)
-# if (GIT_FOUND)
-#       message("git found: ${GIT_EXECUTABLE} in version ${GIT_VERSION_STRING}")
-# endif (GIT_FOUND)
-
 SET(GCC_N_CLANG_BASE_OPTIONS "-Wall -Wextra -Wpedantic -Warray-bounds -mtune=native -fexceptions")
 # target_link_options(${PROJECT_NAME} PUBLIC -flto=auto)
 
@@ -31,11 +26,11 @@ SET(MSVC_BASE_OPTIONS "/EHsc /bigobj")
 #########
 #########
 #########
-SET(GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
-SET(GCC_COVERAGE_LINK_FLAGS    "-lgcov")
+# SET(GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
+# SET(GCC_COVERAGE_LINK_FLAGS    "-lgcov")
 
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
-SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
+# SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+# SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
 #########
 #########
 #########
@@ -55,6 +50,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL  "Darwin")
 	message("Platform is Darwin")
 elseif (CMAKE_SYSTEM_NAME STREQUAL  "Windows")
 	message("Platform is WINDOWS")
+	SET(MSVC_EXTRA_OPTIONS "")
 elseif (CMAKE_SYSTEM_NAME STREQUAL  "Linux")
 	SET(GCC_N_CLANG_EXTRA_OPTIONS "-fcoroutines -visibility=hidden -g0")
 	message("Platform is LINUX")
@@ -120,6 +116,14 @@ pybind11_add_module(a2lparser_ext pya2l/a2lparser_wrapper.cpp pya2l/extensions/e
 
 target_compile_options(preprocessor PUBLIC "-DEXTENSION_NAME=preprocessor")
 target_compile_options(a2lparser_ext PUBLIC "-DEXTENSION_NAME=a2lparser_ext")
+
+IF (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+	SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_N_CLANG_BASE_OPTIONS} ${GCC_N_CLANG_EXTRA_OPTIONS}")
+	target_link_options(preprocessor PUBLIC -flto=auto)
+	target_link_options(a2lparser_ext PUBLIC -flto=auto)
+ELSEIF (CMAKE_C_COMPILER_ID MATCHES "MSVC")
+	SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${MSVC_BASE_OPTIONS} ${MSVC_EXTRA_OPTIONS}")
+ENDIF()
 
 # target_include_directories(preprocessor PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/pya2l/extensions>)
 # target_link_libraries(preprocessor pybind11::headers)
