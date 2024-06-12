@@ -20,7 +20,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dist")
 SET(GCC_N_CLANG_BASE_OPTIONS "-Wall -Wextra -Wpedantic -Warray-bounds -mtune=native -fexceptions")
 # target_link_options(${PROJECT_NAME} PUBLIC -flto=auto)
 
-SET(MSVC_BASE_OPTIONS "/EHsc /bigobj")
+SET(MSVC_BASE_OPTIONS "/Wall /EHsc /bigobj")
 
 
 #########
@@ -43,6 +43,12 @@ if(NOT EXISTS "${ANTLR_EXECUTABLE}")
     file(DOWNLOAD "https://www.antlr.org/download/antlr-${ANTLR4_TAG}-complete.jar" "${ANTLR_EXECUTABLE}")
 endif()
 
+if (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Od /fsanitize=address /Zi")
+else ()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Ox /GL ")
+endif ()
+
 
 if (CMAKE_SYSTEM_NAME STREQUAL  "Darwin")
     set(ENV{MACOSX_DEPLOYMENT_TARGET}  "11.0")
@@ -52,9 +58,12 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL  "Windows")
 	message("Platform is WINDOWS")
 	SET(MSVC_EXTRA_OPTIONS "")
 elseif (CMAKE_SYSTEM_NAME STREQUAL  "Linux")
-	SET(GCC_N_CLANG_EXTRA_OPTIONS "-fcoroutines -visibility=hidden -g0")
+	SET(GCC_N_CLANG_EXTRA_OPTIONS "-fcoroutines -fvisibility=hidden -g0")
 	message("Platform is LINUX")
 endif()
+
+
+
 
 
 IF (CMAKE_C_COMPILER_ID STREQUAL "GNU")

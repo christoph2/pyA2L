@@ -97,16 +97,8 @@ class A2LParser {
                 //
                 // TODO: Addressmapper
                 // auto msg {"[INFO (pya2l.parser)]"};
-                auto msg{ "" };
 
                 std::cerr << "Invalid token: " << token->toString() << std::endl;
-    #if 0
-                throw std::runtime_error(
-                    //"Invalid token: " + std::to_string(token->getType()) + " -- line: " + std::to_string(token->getLine()) +
-                    //" column: " + std::to_string(token->column())
-                    "Invalid token: " + token->toString()
-                );
-    #endif
             }
 
             if (token->getText() == "IF_DATA") {
@@ -188,7 +180,7 @@ class A2LParser {
                     std::cerr << kw_tos().m_name << " is missing one or more required parameters: " << std::endl;
                     // std::cerr << token->toString() << std::endl;
 
-                    for (auto idx = param_count; idx < std::size(kw_tos().m_parameters); ++idx) {
+                    for (std::size_t idx = param_count; idx < std::size(kw_tos().m_parameters); ++idx) {
                         auto p = kw_tos().m_parameters[idx];
 
                         std::cerr << "\t" << p.get_name() << std::endl;
