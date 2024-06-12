@@ -7,7 +7,8 @@ import re
 import subprocess  # nosec
 import sys
 from pathlib import Path
-from pprint import pprint
+
+# from pprint import pprint
 from tempfile import TemporaryDirectory
 
 
@@ -72,9 +73,7 @@ def build_extension(debug: bool = False) -> None:
 
     build_temp = Path(TemporaryDirectory(suffix=".build-temp").name) / "extension_it_in"
     print("cwd:", os.getcwd(), "build-dir:", build_temp, "top:", str(TOP_DIR))
-    print("PHILEZ:", os.listdir(TOP_DIR))
-    pprint(os.environ)
-    print(sys.argv)
+    # print("PHILEZ:", os.listdir(TOP_DIR))
     if not build_temp.exists():
         build_temp.mkdir(parents=True)
 
@@ -94,4 +93,7 @@ def build_extension(debug: bool = False) -> None:
 
 
 if __name__ == "__main__":
-    build_extension()
+    cm = Path("CMakeLists.txt").exists()
+    print("CMakeLists.txt vorhanden?", cm)
+    if cm:
+        build_extension()
