@@ -70,11 +70,12 @@ def build_extension(debug: bool = False) -> None:
             cmake_args += ["-DCMAKE_OSX_ARCHITECTURES={}".format(";".join(archs))]
 
     build_temp = Path(TemporaryDirectory(suffix=".build-temp").name) / "extension_it_in"
-    print("build-dir:", build_temp)
+    print("build-dir:", build_temp, "top:", str(TOP_DIR))
     if not build_temp.exists():
         build_temp.mkdir(parents=True)
 
-    banner("Step #1: Configuring")
+    banner("Step #1: Configure")
+    print("aufruf:", ["cmake", str(TOP_DIR), *cmake_args])
     subprocess.run(["cmake", str(TOP_DIR), *cmake_args], cwd=build_temp, check=True)  # nosec
 
     cmake_args += [f"--parallel {mp.cpu_count()}"]
