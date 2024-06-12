@@ -74,6 +74,7 @@ def build_extension(debug: bool = False) -> None:
     print("cwd:", os.getcwd(), "build-dir:", build_temp, "top:", str(TOP_DIR))
     print("PHILEZ:", os.listdir(TOP_DIR))
     pprint(os.environ)
+    print(sys.argv)
     if not build_temp.exists():
         build_temp.mkdir(parents=True)
 
