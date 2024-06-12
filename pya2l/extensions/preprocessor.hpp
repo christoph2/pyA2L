@@ -73,7 +73,7 @@ public:
     const std::string AML_TMP = "AML.tmp";
     const std::string IFDATA_TMP = "IFDATA.tmp";
 
-    Preprocessor(const std::string& loglevel) :
+    Preprocessor(const std::string& loglevel) : m_loglevel(loglevel),
         tmp_a2l(A2L_TMP, true),
         tmp_aml(AML_TMP),
         tmp_ifdata(IFDATA_TMP, true),
@@ -84,8 +84,6 @@ public:
         m_filenames.a2l = tmp_a2l.abs_path();
         m_filenames.aml = tmp_aml.abs_path();
         m_filenames.ifdata = tmp_ifdata.abs_path();
-
-        auto tw = TokenWriter(tmp_a2l);
     }
 
     ~Preprocessor() {
@@ -378,6 +376,7 @@ protected:
 
 private:
 
+    std::string              m_loglevel
     TempFile                 tmp_a2l;
     TempFile                 tmp_aml;
     TempFile                 tmp_ifdata;
