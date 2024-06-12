@@ -148,13 +148,13 @@ exclude_dirs = [".venv", "tests"]
 skips = ["B307", "B404", "B605", "B607", "B603"]
 
 [tool.cibuildwheel.linux]
-environment = { CLASSPATH="$PWD/antlr-4.11.1-complete.jar" }
+environment = { CLASSPATH="$PWD/antlr-4.13.1-complete.jar" }
 
 [tool.cibuildwheel.macos]
-environment = { CLASSPATH="$PWD/antlr-4.11.1-complete.jar" }
+environment = { CLASSPATH="$PWD/antlr-4.13.1-complete.jar" }
 
 [tool.cibuildwheel.windows]
-environment = { CLASSPATH="%PWD%/antlr-4.11.1-complete.jar" }
+environment = { CLASSPATH="%PWD%/antlr-4.13.1-complete.jar" }
 
 [tool.cibuildwheel]
 build-verbosity = 3
