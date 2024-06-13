@@ -376,7 +376,7 @@ protected:
 
 private:
 
-    std::string              m_loglevel
+    std::string              m_loglevel;
     TempFile                 tmp_a2l;
     TempFile                 tmp_aml;
     TempFile                 tmp_ifdata;
