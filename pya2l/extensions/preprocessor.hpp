@@ -51,11 +51,11 @@ namespace fs = std::filesystem;
     #include "utils.hpp"
 
 struct Filenames {
-    Filenames()                  = default;
-    Filenames(const Filenames &) = default;
-    Filenames(Filenames &&)      = default;
+    Filenames()                 = default;
+    Filenames(const Filenames&) = default;
+    Filenames(Filenames&&)      = default;
 
-    Filenames(const std::string &_a2l, const std::string &_aml, const std::string &_ifdata) :
+    Filenames(const std::string& _a2l, const std::string& _aml, const std::string& _ifdata) :
         a2l(_a2l), aml(_aml), ifdata(_ifdata) {
     }
 
@@ -67,13 +67,14 @@ struct Filenames {
 using preprocessor_result_t = std::tuple<Filenames, LineMap, IfDataReader>;
 
 class Preprocessor {
-public:
+   public:
 
-    const std::string A2L_TMP = "A2L.tmp";
-    const std::string AML_TMP = "AML.tmp";
+    const std::string A2L_TMP    = "A2L.tmp";
+    const std::string AML_TMP    = "AML.tmp";
     const std::string IFDATA_TMP = "IFDATA.tmp";
 
-    Preprocessor(const std::string& loglevel) : m_loglevel(loglevel),
+    Preprocessor(const std::string& loglevel) :
+        m_loglevel(loglevel),
         tmp_a2l(A2L_TMP, true),
         tmp_aml(AML_TMP),
         tmp_ifdata(IFDATA_TMP, true),
@@ -81,8 +82,8 @@ public:
         ifdata_builder{ tmp_ifdata.handle() } {
         get_include_paths_from_env();
         // tmp_a2l.to_stdout();
-        m_filenames.a2l = tmp_a2l.abs_path();
-        m_filenames.aml = tmp_aml.abs_path();
+        m_filenames.a2l    = tmp_a2l.abs_path();
+        m_filenames.aml    = tmp_aml.abs_path();
         m_filenames.ifdata = tmp_ifdata.abs_path();
     }
 
@@ -105,7 +106,7 @@ public:
 
     LineMap line_map{};
 
-protected:
+   protected:
 
     void skip_bom(auto& fs) {
         const unsigned char boms[]{ 0xef, 0xbb, 0xbf };
@@ -123,12 +124,12 @@ protected:
         fs::path           path{ filename };
         auto               abs_pth = fs::absolute(path);
         std::ifstream      file(abs_pth, std::ios::binary);
-        bool               begin = false;
-        bool               end = false;
-        bool               ifdata = false;
+        bool               begin       = false;
+        bool               end         = false;
+        bool               ifdata      = false;
         bool               ifdata_name = false;
         bool               collect{ false };
-        bool               include = false;
+        bool               include     = false;
         std::uint8_t       skip_tokens = 0;
         std::vector<Token> collected_tokens{};
 
@@ -152,12 +153,11 @@ protected:
                     if (token.m_token_class != TokenClass::COMMENT) {
                         skip_tokens--;
                     }
-                }
-                else {
+                } else {
                     end_line = token.m_line_numbers.end_line;
                 }
                 if (token.m_token_class == TokenClass::COMMENT) {
-                    auto lines = split(token.m_payload, '\n');
+                    auto lines      = split(token.m_payload, '\n');
                     auto line_count = lines.size();
                     for (const auto& line : lines) {
                         // tmp_a2l() << std::string(line.length(), ' ');
@@ -171,18 +171,16 @@ protected:
                             }
                         }
                     }
-                }
-                else if ((token.m_token_class == TokenClass::REGULAR) || (token.m_token_class == TokenClass::STRING)) {
+                } else if ((token.m_token_class == TokenClass::REGULAR) || (token.m_token_class == TokenClass::STRING)) {
                     if (end == true) {
                         if (token.m_payload == "A2ML") {
                             a2ml = false;
-       //                     tmp_aml() << token.m_payload;
+                            //                     tmp_aml() << token.m_payload;
                             for (const auto& item : collected_tokens) {
                                 // tmp_a2l() << item.m_payload;
                                 a2l_token_writer << item;
                             }
-                        }
-                        else if (token.m_payload == "IF_DATA") {
+                        } else if (token.m_payload == "IF_DATA") {
                             ifdata = false;
                             ifdata_builder.add_token(token);
                             ifdata_builder.finalize();
@@ -190,13 +188,11 @@ protected:
                                 // tmp_a2l() << item.m_payload;
                                 a2l_token_writer << item;
                             }
-                        }
-                        else {
+                        } else {
                             for (const auto& item : collected_tokens) {
                                 if (item.m_token_class == TokenClass::REGULAR) {
                                     // tmp_a2l() << std::string(item.m_payload.length(), ' ');
-                                }
-                                else if (item.m_token_class == TokenClass::WHITESPACE) {
+                                } else if (item.m_token_class == TokenClass::WHITESPACE) {
                                     // tmp_a2l() << item.m_payload;
                                     // a2l_token_writer << item;
                                 }
@@ -204,13 +200,12 @@ protected:
                         }
                         collected_tokens.clear();
                         collect = false;
-                        end = false;
+                        end     = false;
                     }
                     if (a2ml == true) {
                         if (token.m_token_class == TokenClass::STRING) {
                             tmp_aml() << "\"" << token.m_payload << "\"";
-                        }
-                        else {
+                        } else {
                             tmp_aml() << token.m_payload;
                         }
                         if (token.m_payload == "/end") {
@@ -218,13 +213,12 @@ protected:
                             collected_tokens.push_back(token);
                             collect = true;
                         }
-                    }
-                    else if (ifdata == true) {
+                    } else if (ifdata == true) {
                         ifdata_builder.add_token(token);
                         if (token.m_payload == "/end") {
                             collected_tokens.push_back(token);
                             collect = true;
-                            end = true;
+                            end     = true;
                         }
                     }
                     if (include == true) {
@@ -236,10 +230,9 @@ protected:
                             line_offset += length;
 
                             std::cout << "[INFO (pya2l.Preprocessor)]: Including '" + incl_file.value().string() + "'."
-                                << std::endl;
+                                      << std::endl;
                             _process_file(incl_file.value().string());
-                        }
-                        else {
+                        } else {
                             throw std::runtime_error(
                                 "[ERROR (pya2l.Preprocessor)]: Could "
                                 "not locate include file '" +
@@ -249,7 +242,7 @@ protected:
                         include = false;
                         line_offset++;
                         start_line_number = token.m_line_numbers.end_line + 1;
-                        skip_tokens = 2;
+                        skip_tokens       = 2;
                     }
                     if (token.m_payload == "/include") {
                         include = true;
@@ -260,20 +253,18 @@ protected:
                                 // tmp_a2l() << token.m_payload;
                                 a2l_token_writer << token;
                                 ifdata_name = false;
-                            }
-                            else {
+                            } else {
                                 // tmp_a2l() << std::string(token.m_payload.length(), ' ');
                             }
                         }
-                    }
-                    else {
+                    } else {
                         if ((include == false) && (skip_tokens == 0)) {
                             // tmp_a2l() << token.m_payload;
                             a2l_token_writer << token;
                         }
                     }
                     if (begin) {
-                        begin = false;
+                        begin   = false;
                         collect = false;
                         collected_tokens.push_back(token);
                         if (token.m_payload == "A2ML") {
@@ -281,9 +272,8 @@ protected:
                             for (const auto& item : collected_tokens) {
                                 tmp_aml() << item.m_payload;
                             }
-                        }
-                        else if (token.m_payload == "IF_DATA") {
-                            ifdata = true;
+                        } else if (token.m_payload == "IF_DATA") {
+                            ifdata      = true;
                             ifdata_name = true;
                             for (const auto& item : collected_tokens) {
                                 ifdata_builder.add_token(item);
@@ -292,12 +282,11 @@ protected:
                         collected_tokens.clear();
                     }
                     if ((token.m_payload == "/begin") && (ifdata == false)) {
-                        begin = true;
+                        begin   = true;
                         collect = true;
                         collected_tokens.push_back(token);
                     }
-                }
-                else if (token.m_token_class == TokenClass::WHITESPACE) {
+                } else if (token.m_token_class == TokenClass::WHITESPACE) {
                     if ((end == false) && (include == false) && (skip_tokens == 0)) {
                         // tmp_a2l() << token.m_payload;
                         // a2l_token_writer << token;
@@ -307,8 +296,7 @@ protected:
                     }
                     if (a2ml == true) {
                         tmp_aml() << token.m_payload;
-                    }
-                    else if (ifdata == true) {
+                    } else if (ifdata == true) {
                         ifdata_builder.add_token(token);
                     }
                 }
@@ -316,8 +304,7 @@ protected:
             auto length = (end_line - start_line_number);
             update_line_map(abs_pth, line_offset, line_offset + length, start_line_number, end_line);
             line_offset += length;
-        }
-        else {
+        } else {
             throw std::runtime_error("Could not open file: '" + abs_pth.string() + "'");
         }
     }
@@ -325,8 +312,7 @@ protected:
     std::string shorten_file_name(fs::path file_name) {
         if (file_name.parent_path() == fs::current_path()) {
             return file_name.filename().string();
-        }
-        else {
+        } else {
             return file_name.string();
         }
     }
@@ -339,11 +325,14 @@ protected:
     }
 
     void get_include_paths_from_env() {
-#if defined(_WIN32)
+        auto var      = get_env_var("ASAP_INCLUDE");
+        include_paths = split_path(var);
+    #if 0
+        #if defined(_WIN32)
         const char delimiter = ';';
-#else
+        #else
         const char delimiter = ':';
-#endif
+        #endif
         char* asap_include = std::getenv("ASAP_INCLUDE");
 
         if (asap_include == NULL) {
@@ -356,6 +345,7 @@ protected:
             include_paths.push_back(ptr);
             ptr = strtok(NULL, &delimiter);
         }
+    #endif
     }
 
     std::optional<fs::path> locate_file(const std::string& file_name, const std::string& additional_path) {
@@ -374,7 +364,7 @@ protected:
         return std::nullopt;
     }
 
-private:
+   private:
 
     std::string              m_loglevel;
     TempFile                 tmp_a2l;
@@ -385,7 +375,7 @@ private:
     Filenames                m_filenames{};
     std::vector<std::string> include_paths{};
     std::size_t              line_offset{ 1 };
-    bool                     a2ml {false};
+    bool                     a2ml{ false };
 };
 
 #endif  // __PREPROCESSOR_HPP

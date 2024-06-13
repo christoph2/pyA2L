@@ -26,8 +26,10 @@
     #define __UTILS_HPP
 
     #include <algorithm>
-
+    #include <optional>
     #include <ranges>
+    #include <string>
+    #include <vector>
 
 enum class State : std::uint8_t {
     IDLE,
@@ -124,6 +126,56 @@ inline auto split(const std::string &str, char delimiter) -> std::vector<std::st
     auto range = str | std::ranges::views::split(delimiter) | std::ranges::views::transform(to_string);
 
     return { std::ranges::begin(range), std::ranges::end(range) };
+}
+
+    #if defined(_MSC_VER)
+inline std::optional<std::string> get_env_var(const std::string &var) {
+    char       *c_ptr;
+    std::size_t len;
+
+    ::errno_t err = _dupenv_s(&c_ptr, &len, var.c_str());
+    if ((err == -1) || (len == 0)) {
+        return std::nullopt;
+    }
+    std::string result{ c_ptr };
+
+    ::free(c_ptr);
+    return result;
+}
+    #else
+inline std::optional<std::string> get_env_var(const std::string &var) {
+    auto res = secure_getenv(var.c_str());
+
+    if (res == nullptr) {
+        return std::nullopt;
+    }
+    return res;
+}
+    #endif
+
+inline std::vector<std::string> split_path(std::optional<std::string> pth) {
+    using std::operator""sv;
+    #if defined(_WIN32)
+    constexpr auto DELIM{ ";"sv };
+    #else
+    constexpr auto DELIM{ ":"sv };
+    #endif
+
+    if (!pth) {
+        return {};
+    }
+
+    std::vector<std::string> result{};
+
+    std::size_t pos = 0;
+    std::string token;
+    std::string str{ *pth };
+    while ((pos = str.find(DELIM)) != std::string::npos) {
+        token = str.substr(0, pos);
+        result.emplace_back(token);
+        str.erase(0, pos + DELIM.length());
+    }
+    return result;
 }
 
 inline void hex_dump(const char *p, std::size_t n) {
