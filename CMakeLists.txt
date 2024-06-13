@@ -22,6 +22,8 @@ SET(GCC_N_CLANG_BASE_OPTIONS "-Wall -Wextra -Wpedantic -Warray-bounds -mtune=nat
 
 SET(MSVC_BASE_OPTIONS "/W3 /EHsc /bigobj /std:c++latest")
 
+message("Debugging? " $ENV{DEBUG_BUILD})
+
 # /std:clatest  /std:c++latest
 
 
