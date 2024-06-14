@@ -77,8 +77,6 @@ def build_extension(debug: bool = False) -> None:
     if not build_temp.exists():
         build_temp.mkdir(parents=True)
 
-    cmake_args += ["-v"]
-
     banner("Step #1: Configure")
     print("aufruf:", ["cmake", str(TOP_DIR), *cmake_args])
     subprocess.run(["cmake", str(TOP_DIR), *cmake_args], cwd=build_temp, check=True)  # nosec
