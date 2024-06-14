@@ -31,6 +31,9 @@
     #include <string>
     #include <vector>
 
+#define PP_UNREFERENCED_PARAMETER(p)  ((p) = (p))
+
+
 enum class State : std::uint8_t {
     IDLE,
     IN_STRING,
