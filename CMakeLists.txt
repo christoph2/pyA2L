@@ -122,7 +122,7 @@ include_directories(${ANTLR_pyA2LLexer_OUTPUT_DIR})
 include_directories(${ANTLR_AMLParser_OUTPUT_DIR})
 
 message("PROJ " ${PROJECT_SOURCE_DIR})
-message("AML-Output: " ${ANTLR_AMLParser_OUTPUT_DIR})
+message("AML-Output: " ${ANTLR_AMLParser_OUTPUTS} " cxx: " ${ANTLR_AMLParser_CXX_OUTPUTS})
 
 
 # add generated grammar to demo binary target
@@ -153,5 +153,5 @@ ENDIF()
 install(TARGETS preprocessor LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
 install(TARGETS a2lparser_ext LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
 
-# install(FILES ${ANTLR_AMLParser_OUTPUT_DIR} LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/libs)
+install(FILES ${ANTLR_AMLParser_CXX_OUTPUTS} LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/pya2l/libs)
 # install(TARGETS AMLParser LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
