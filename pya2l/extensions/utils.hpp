@@ -148,7 +148,7 @@ inline std::optional<std::string> get_env_var(const std::string &var) {
     #else
 inline std::optional<std::string> get_env_var(const std::string &var) {
 
-    #if defined (__APPLE__)
+    #if (defined (__APPLE__) || defined(_WIN32))
     auto res = getenv(var.c_str());
     #else
     auto res = secure_getenv(var.c_str());

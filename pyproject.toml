@@ -26,6 +26,7 @@ include = [
 packages = [
     { include = "pya2l" }
 ]
+# package_data={"": "CMakeLists.txt"}
 
 
 [tool.poetry.dependencies]
@@ -51,7 +52,7 @@ pre-commit-hooks = "^4.6.0"
 
 pyupgrade = "^3.16.0"
 [build-system]
-requires = ["poetry-core>=1.6.0", "wheel", "cmake>=3.12"]
+requires = ["poetry-core>=1.6.0", "wheel", "cmake>=3.12", "ninja"]
 build-backend = "poetry.core.masonry.api"
 
 

@@ -58,8 +58,10 @@ def build_extension(debug: bool = False) -> None:
     # from Python.
     cmake_args = [
         # f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}{os.sep}",
+        "-G Ninja",
         f"-DPYTHON_EXECUTABLE={sys.executable}",
         f"-DCMAKE_BUILD_TYPE={cfg}",  # not used on MSVC, but no harm
+        "-DBUILD_OK=1",
     ]
     build_args = []
     # Adding CMake arguments set as environment variable
