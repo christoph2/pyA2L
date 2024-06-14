@@ -104,10 +104,15 @@ find_package(ANTLR REQUIRED)
 # target_compile_features(hello PUBLIC cxx_std_17)
 
 # Call macro to add lexer and grammar to your build dependencies.
-antlr_target(pyA2LLexer ./pya2l/a2llg.g4 LEXER PACKAGE antlrcpptest)
+antlr_target(pyA2LLexer ./pya2l/a2llg.g4 LEXER
+			# PACKAGE antlrcpptest
+			OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libs/
+			)
 
 antlr_target(AMLParser ./pya2l/aml.g4 LEXER PARSER LISTENER
-              PACKAGE antlrcpptest
+              # PACKAGE antlrcpptest
+			  VISITOR
+			  OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libs/
               # DEPENDS_ANTLR pyA2LLexer
               # COMPILE_FLAGS -lib ${ANTLR_AMLParser_OUTPUT_DIR}
 			  )
@@ -115,6 +120,9 @@ antlr_target(AMLParser ./pya2l/aml.g4 LEXER PARSER LISTENER
 # include generated files in project environment
 include_directories(${ANTLR_pyA2LLexer_OUTPUT_DIR})
 include_directories(${ANTLR_AMLParser_OUTPUT_DIR})
+
+message("AML-Output: " ${ANTLR_AMLParser_OUTPUT_DIR})
+
 
 # add generated grammar to demo binary target
 # add_executable(demo SHARED a2llg_lexer.cpp ${ANTLR_pyA2LLexer_CXX_OUTPUTS})
