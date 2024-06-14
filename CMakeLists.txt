@@ -2,6 +2,8 @@
 cmake_minimum_required(VERSION 3.7...3.29)
 project(pya2l_extensions LANGUAGES C CXX)
 
+message("BUILD_OK? " ${BUILD_OK})
+
 find_package(Python COMPONENTS Interpreter Development)
 message("Python executable: " ${PYTHON_EXECUTABLE})
 
@@ -17,7 +19,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dist")
 
 
-SET(GCC_N_CLANG_BASE_OPTIONS "-Wall -Wextra -Wpedantic -Warray-bounds -mtune=native -fexceptions")
+SET(GCC_N_CLANG_BASE_OPTIONS "-std=c++23 -Wall -Wextra -Wpedantic -Warray-bounds -mtune=native -fexceptions")
 # target_link_options(${PROJECT_NAME} PUBLIC -flto=auto)
 
 SET(MSVC_BASE_OPTIONS "/W3 /EHsc /bigobj /std:c++latest")
@@ -153,5 +155,5 @@ ENDIF()
 install(TARGETS preprocessor LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
 install(TARGETS a2lparser_ext LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
 
-install(FILES ${ANTLR_AMLParser_CXX_OUTPUTS} LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/pya2l/libs)
+# install(FILES ${ANTLR_AMLParser_CXX_OUTPUTS} LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/pya2l/libs)
 # install(TARGETS AMLParser LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
