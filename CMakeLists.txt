@@ -105,15 +105,15 @@ find_package(ANTLR REQUIRED)
 
 # Call macro to add lexer and grammar to your build dependencies.
 antlr_target(pyA2LLexer ./pya2l/a2llg.g4 LEXER
-			# PACKAGE antlrcpptest
-			OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libs/
+			PACKAGE pya2l_extensions
+			OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/libs/
 			)
 
 antlr_target(AMLParser ./pya2l/aml.g4 LEXER PARSER LISTENER
-              # PACKAGE antlrcpptest
+              PACKAGE pya2l_extensions
 			  VISITOR
-			  OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libs/
-              # DEPENDS_ANTLR pyA2LLexer
+			  OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/libs/
+              DEPENDS_ANTLR pyA2LLexer
               # COMPILE_FLAGS -lib ${ANTLR_AMLParser_OUTPUT_DIR}
 			  )
 
@@ -121,6 +121,7 @@ antlr_target(AMLParser ./pya2l/aml.g4 LEXER PARSER LISTENER
 include_directories(${ANTLR_pyA2LLexer_OUTPUT_DIR})
 include_directories(${ANTLR_AMLParser_OUTPUT_DIR})
 
+message("PROJ " ${PROJECT_SOURCE_DIR})
 message("AML-Output: " ${ANTLR_AMLParser_OUTPUT_DIR})
 
 
@@ -152,5 +153,5 @@ ENDIF()
 install(TARGETS preprocessor LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
 install(TARGETS a2lparser_ext LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
 
-install(TARGETS ${Antlr4_GeneratedTargets} LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
+# install(FILES ${ANTLR_AMLParser_OUTPUT_DIR} LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/libs)
 # install(TARGETS AMLParser LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
