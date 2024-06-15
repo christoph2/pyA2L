@@ -2,44 +2,19 @@
 cmake_minimum_required(VERSION 3.7...3.29)
 project(pya2l_extensions LANGUAGES C CXX)
 
-message("BUILD_OK? " ${BUILD_OK})
-
 find_package(Python COMPONENTS Interpreter Development)
-message("Python executable: " ${PYTHON_EXECUTABLE})
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/antlr_cmake)
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/pybind11)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/pybind11)
-
-message( STATUS "Found pybind11 v${pybind11_VERSION} ${pybind11_VERSION_TYPE}: ${pybind11_INCLUDE_DIRS}")
 set(ANTLR4_TAG 4.13.1)
 
 SET(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dist")
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/antlr_cmake)
 
+add_definitions(-DANTLR4CPP_STATIC)
+set(ANTLR4_WITH_STATIC_CRT OFF)
+include(ExternalAntlr4Cpp)
 
-SET(GCC_N_CLANG_BASE_OPTIONS "-std=c++23 -Wall -Wextra -Wpedantic -Warray-bounds -mtune=native -fexceptions")
-# target_link_options(${PROJECT_NAME} PUBLIC -flto=auto)
-
-SET(MSVC_BASE_OPTIONS "/W3 /EHsc /bigobj /std:c++latest")
-
-message("Debugging? " $ENV{DEBUG_BUILD})
-
-# /std:clatest  /std:c++latest
-
-
-#########
-#########
-#########
-# SET(GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
-# SET(GCC_COVERAGE_LINK_FLAGS    "-lgcov")
-
-# SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
-# SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
-#########
-#########
-#########
+include_directories(SYSTEM ${ANTLR4_INCLUDE_DIRS})
 
 set(ANTLR_EXECUTABLE ${CMAKE_CURRENT_SOURCE_DIR}/antlr-tool/antlr-${ANTLR4_TAG}-complete.jar)
 
@@ -49,10 +24,26 @@ if(NOT EXISTS "${ANTLR_EXECUTABLE}")
     file(DOWNLOAD "https://www.antlr.org/download/antlr-${ANTLR4_TAG}-complete.jar" "${ANTLR_EXECUTABLE}")
 endif()
 
+find_package(ANTLR REQUIRED)
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/pybind11)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/pybind11)
+
+message( STATUS "Found pybind11 v${pybind11_VERSION} ${pybind11_VERSION_TYPE}: ${pybind11_INCLUDE_DIRS}")
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dist")
+
+
+SET(GCC_N_CLANG_BASE_OPTIONS "-std=c++23 -Wall -Wextra -Wpedantic -Warray-bounds -mtune=native -fexceptions")
+# target_link_options(${PROJECT_NAME} PUBLIC -flto=auto)
+
+SET(MSVC_BASE_OPTIONS "/W3 /permissive- /EHsc /bigobj /std:c++latest")
+
+
 if (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Od /fsanitize=address /Zi")
 else ()
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Ox /GL ")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Ox ")	# /GL
 endif ()
 
 
@@ -67,9 +58,6 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL  "Linux")
 	SET(GCC_N_CLANG_EXTRA_OPTIONS "-fcoroutines -fvisibility=hidden -g0")
 	message("Platform is LINUX")
 endif()
-
-
-
 
 
 IF (CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -97,34 +85,38 @@ message("Compiling C with: " ${CMAKE_C_COMPILER_ID})
 message("Compiling Cpp with: " ${CMAKE_CXX_COMPILER_ID})
 
 
-add_definitions(-DANTLR4CPP_STATIC)
-set(ANTLR4_WITH_STATIC_CRT OFF)
-include(ExternalAntlr4Cpp)
-include_directories(${ANTLR4_INCLUDE_DIRS})
-find_package(ANTLR REQUIRED)
-
 # target_compile_features(hello PUBLIC cxx_std_17)
 
 # Call macro to add lexer and grammar to your build dependencies.
 antlr_target(pyA2LLexer ./pya2l/a2llg.g4 LEXER
-			PACKAGE pya2l_extensions
-			OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/libs/
+			PACKAGE pya2l
+			OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
 			)
 
-antlr_target(AMLParser ./pya2l/aml.g4 LEXER PARSER LISTENER
-              PACKAGE pya2l_extensions
+antlr_target(AMLParser ./pya2l/aml.g4 LEXER PARSER
+              PACKAGE pya2l
 			  VISITOR
-			  OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/libs/
+			  OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
               DEPENDS_ANTLR pyA2LLexer
               # COMPILE_FLAGS -lib ${ANTLR_AMLParser_OUTPUT_DIR}
 			  )
+
+add_executable(aml_tester ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml_parser.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/aml_visitor.cpp
+	${ANTLR_AMLParser_CXX_OUTPUTS}
+)
+
+target_link_libraries(aml_tester antlr4_static ${SYSTEM_LIBS})
+
+# target_include_directories(aml_tester PUBLIC $<BUILD_INTERFACE:${ANTLR4_INCLUDE_DIRS})
+target_include_directories(aml_tester PUBLIC ${ANTLR4_INCLUDE_DIRS})
 
 # include generated files in project environment
 include_directories(${ANTLR_pyA2LLexer_OUTPUT_DIR})
 include_directories(${ANTLR_AMLParser_OUTPUT_DIR})
 
-message("PROJ " ${PROJECT_SOURCE_DIR})
-message("AML-Output: " ${ANTLR_AMLParser_OUTPUTS} " cxx: " ${ANTLR_AMLParser_CXX_OUTPUTS})
+# message("PROJ " ${PROJECT_SOURCE_DIR})
+# message("AML-Output: " ${ANTLR_AMLParser_OUTPUTS} " cxx: " ${ANTLR_AMLParser_CXX_OUTPUTS})
 
 
 # add generated grammar to demo binary target
@@ -157,6 +149,7 @@ ENDIF()
 
 install(TARGETS preprocessor LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
 install(TARGETS a2lparser_ext LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
+# install(TARGETS aml_tester LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
 
 # install(FILES ${ANTLR_AMLParser_CXX_OUTPUTS} LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/pya2l/libs)
 # install(TARGETS AMLParser LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)

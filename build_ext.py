@@ -61,7 +61,6 @@ def build_extension(debug: bool = False) -> None:
         # "-G Ninja",
         f"-DPYTHON_EXECUTABLE={sys.executable}",
         f"-DCMAKE_BUILD_TYPE={cfg}",  # not used on MSVC, but no harm
-        "-DBUILD_OK=1",
     ]
     build_args = ["--config Release"]
     # Adding CMake arguments set as environment variable
@@ -74,12 +73,14 @@ def build_extension(debug: bool = False) -> None:
             cmake_args += ["-DCMAKE_OSX_ARCHITECTURES={}".format(";".join(archs))]
 
     build_temp = Path(TemporaryDirectory(suffix=".build-temp").name) / "extension_it_in"
+    # build_temp = Path(".") / "build"
     print("cwd:", os.getcwd(), "build-dir:", build_temp, "top:", str(TOP_DIR))
     # print("PHILEZ:", os.listdir(TOP_DIR))
     if not build_temp.exists():
         build_temp.mkdir(parents=True)
 
     banner("Step #1: Configure")
+    # cmake_args += ["--debug-output"]
     print("aufruf:", ["cmake", str(TOP_DIR), *cmake_args])
     subprocess.run(["cmake", str(TOP_DIR), *cmake_args], cwd=build_temp, check=True)  # nosec
 
