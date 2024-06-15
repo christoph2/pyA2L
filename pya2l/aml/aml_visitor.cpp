@@ -54,33 +54,14 @@ inline std::string trim_copy(std::string s) {
 }
 
 ///////////////////////////
-std::string strip(const std::string& str, const std::string& chr = "\"")
+std::string strip(std::string str, char chr = '"')
 {
-    const auto strBegin = str.find_first_not_of(chr);
-    if (strBegin == std::string::npos)
-        return ""; // no content
+    str.erase(0, str.find_first_not_of(chr));
+    str.erase(str.find_last_not_of(chr) + 1);
 
-    const auto strEnd = str.find_last_not_of(chr);
-    const auto strRange = strEnd - strBegin + 1;
-
-    return str.substr(strBegin, strRange);
+    return str;
 }
 
-
-///////////////////////////
-
-
-#if 0
-std::string strip() {
-        char char_to_strip = 'x';
-
-    // Strip from beginning
-    str.erase(0, str.find_first_not_of(char_to_strip));
-
-    // Strip from end
-    str.erase(str.find_last_not_of(char_to_strip) + 1);
-}
-#endif
 
 using string_opt_t = std::optional<std::string>;
 using numeric_t = std::variant<std::monostate, std::uint64_t, long double>;
@@ -188,7 +169,7 @@ using numeric_t = std::variant<std::monostate, std::uint64_t, long double>;
     string_opt_t result{std::nullopt};
 
     if (ctx_s) {
-        auto text = trim_copy(ctx_s->getText());
+        auto text = strip(trim_copy(ctx_s->getText()));
 
         std::cout << "STR: " << text << ":" << text;
         result = text;
@@ -198,10 +179,29 @@ using numeric_t = std::variant<std::monostate, std::uint64_t, long double>;
   }
 
    std::any AmlVisitor::visitTagValue(amlParser::TagValueContext *ctx)  {
-    //std::replace( s.begin(), s.end(), 'x', 'y');
-    return visitChildren(ctx);
+    auto ctx_s = ctx->s;
+    string_opt_t result{std::nullopt};
+
+    if (ctx_s) {
+        auto text = strip(trim_copy(ctx_s->getText()));
+
+        std::cout << "TAG: " << text << ":" << text;
+        result = text;
+    }
+
+    return result;
   }
 
    std::any AmlVisitor::visitIdentifierValue(amlParser::IdentifierValueContext *ctx)  {
-    return visitChildren(ctx);
+    auto ctx_i = ctx->i;
+    string_opt_t result{std::nullopt};
+
+    if (ctx_i) {
+        auto text = strip(trim_copy(ctx_i->getText()));
+
+        std::cout << "ID: " << text << ":" << text;
+        result = text;
+    }
+
+    return result;
   }

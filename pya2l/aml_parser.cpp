@@ -9,8 +9,12 @@ using namespace antlr4;
 
 int main(int argc, const char* argv[]) {
 	std::ifstream stream;
-    stream.open("C:/csProjects/pyA2L/examples/ASAP2_Demo_V161.aml");
 
+    if (argc == 2) {
+        stream.open(argv[1]);
+    } else {
+        stream.open("C:/csProjects/pyA2L/examples/ASAP2_Demo_V161.aml");
+    }
 
     ANTLRInputStream input(stream);
 
