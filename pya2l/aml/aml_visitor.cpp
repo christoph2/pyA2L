@@ -55,6 +55,18 @@ inline std::string trim_copy(std::string s) {
 ///////////////////////////
 
 
+#if 0
+std::string strip() {
+        char char_to_strip = 'x';
+
+    // Strip from beginning
+    str.erase(0, str.find_first_not_of(char_to_strip));
+
+    // Strip from end
+    str.erase(str.find_last_not_of(char_to_strip) + 1);
+}
+#endif
+
 using string_opt_t = std::optional<std::string>;
 using numeric_t = std::variant<std::monostate, std::uint64_t, long double>;
 
