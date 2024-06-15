@@ -161,9 +161,9 @@ using numeric_t = std::variant<std::monostate, std::uint64_t, long double>;
     string_opt_t result{std::nullopt};
 
     if (ctx_s) {
-        auto text = trim(ctx_s->getText());
+        auto text = trim_copy(ctx_s->getText());
 
-        std::cout << "STR: " << text << ":" << std::replace(text.begin(), text.end(), '"', '');
+        std::cout << "STR: " << text << ":" << text;
         result = text;
     }
 

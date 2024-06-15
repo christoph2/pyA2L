@@ -2,10 +2,11 @@
 #if !defined(__AML_VISITOR_H)
 #define __AML_VISITOR_H
 
+
+#include "amlParser.h"
 #include "amlBaseVisitor.h"
 
-using namespace antlr4;
-using namespace pya2l;
+
 
 class  AmlVisitor : public amlBaseVisitor {
 public:
