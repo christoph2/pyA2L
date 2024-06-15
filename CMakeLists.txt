@@ -115,6 +115,9 @@ target_include_directories(aml_tester PUBLIC ${ANTLR4_INCLUDE_DIRS})
 include_directories(${ANTLR_pyA2LLexer_OUTPUT_DIR})
 include_directories(${ANTLR_AMLParser_OUTPUT_DIR})
 
+message("AML output: " ${ANTLR_AMLParser_OUTPUT_DIR})
+message("LXR output: " ${ANTLR_pyA2LLexer_OUTPUT_DIR})
+
 # message("PROJ " ${PROJECT_SOURCE_DIR})
 # message("AML-Output: " ${ANTLR_AMLParser_OUTPUTS} " cxx: " ${ANTLR_AMLParser_CXX_OUTPUTS})
 
