@@ -52,6 +52,21 @@ inline std::string trim_copy(std::string s) {
     trim(s);
     return s;
 }
+
+///////////////////////////
+std::string strip(const std::string& str, const std::string& chr = "\"")
+{
+    const auto strBegin = str.find_first_not_of(chr);
+    if (strBegin == std::string::npos)
+        return ""; // no content
+
+    const auto strEnd = str.find_last_not_of(chr);
+    const auto strRange = strEnd - strBegin + 1;
+
+    return str.substr(strBegin, strRange);
+}
+
+
 ///////////////////////////
 
 
