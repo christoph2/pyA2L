@@ -90,13 +90,13 @@ message("Compiling Cpp with: " ${CMAKE_CXX_COMPILER_ID})
 # Call macro to add lexer and grammar to your build dependencies.
 antlr_target(pyA2LLexer ./pya2l/a2llg.g4 LEXER
 			# PACKAGE pya2l
-			OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
+			#OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
 			)
 
 antlr_target(AMLParser ./pya2l/aml.g4 LEXER PARSER
               # PACKAGE pya2l
 			  VISITOR
-			  OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
+			  #OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
               DEPENDS_ANTLR pyA2LLexer
               # COMPILE_FLAGS -lib ${ANTLR_AMLParser_OUTPUT_DIR}
 			  )
@@ -109,7 +109,7 @@ add_executable(aml_tester ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml_parser.cpp
 target_link_libraries(aml_tester antlr4_static ${SYSTEM_LIBS})
 
 # target_include_directories(aml_tester PUBLIC $<BUILD_INTERFACE:${ANTLR4_INCLUDE_DIRS})
-target_include_directories(aml_tester PUBLIC ${ANTLR4_INCLUDE_DIRS})
+ target_include_directories(aml_tester PUBLIC ${ANTLR4_INCLUDE_DIRS} ${ANTLR_AMLPaser_OUTPUT_DIR}/pya2l ${PROJECT_SOURCE_DIR}/pya2l/aml)
 
 # include generated files in project environment
 include_directories(${ANTLR_pyA2LLexer_OUTPUT_DIR})
