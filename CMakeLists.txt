@@ -90,13 +90,13 @@ message("Compiling Cpp with: " ${CMAKE_CXX_COMPILER_ID})
 # Call macro to add lexer and grammar to your build dependencies.
 antlr_target(pyA2LLexer ./pya2l/a2llg.g4 LEXER
 			# PACKAGE pya2l
-			#OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
+			OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
 			)
 
 antlr_target(AMLParser ./pya2l/aml.g4 LEXER PARSER
               # PACKAGE pya2l
 			  VISITOR
-			  #OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
+			  OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
               DEPENDS_ANTLR pyA2LLexer
               # COMPILE_FLAGS -lib ${ANTLR_AMLParser_OUTPUT_DIR}
 			  )
@@ -119,6 +119,7 @@ include_directories(${ANTLR_AMLParser_OUTPUT_DIR}/pya2l)
 message("AML output: " ${ANTLR_AMLParser_OUTPUT_DIR})
 message("AML CXX out " ${ANTLR_AMLParser_CXX_OUTPUTS})
 message("LXR output: " ${ANTLR_pyA2LLexer_OUTPUT_DIR})
+message("NS: " ${Antlr4_NamespaceOption})
 
 # message("PROJ " ${PROJECT_SOURCE_DIR})
 # message("AML-Output: " ${ANTLR_AMLParser_OUTPUTS} " cxx: " ${ANTLR_AMLParser_CXX_OUTPUTS})

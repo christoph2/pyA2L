@@ -137,6 +137,19 @@ using numeric_t = std::variant<std::monostate, std::uint64_t, long double>;
   }
 
    std::any AmlVisitor::visitTagged_union_member(amlParser::Tagged_union_memberContext *ctx)  {
+      auto tag = visit(ctx->t);
+      auto member = visit(ctx->m);
+      auto block_definition = visit(ctx->b);
+
+      if (tag) {
+        //std::cout << "Tagged_union_member: " << tag.value();
+      }
+    #if 0
+        tag = ctx.t.value if ctx.t else None
+        member = ctx.m.value if ctx.m else None
+        blockDefinition = ctx.b.value if ctx.b else None
+        ctx.value = classes.createTaggedUnionMember(tag, member, blockDefinition)
+    #endif
     return visitChildren(ctx);
   }
 
