@@ -138,8 +138,8 @@ using numeric_t = std::variant<std::monostate, std::uint64_t, long double>;
 
    std::any AmlVisitor::visitTagged_union_member(amlParser::Tagged_union_memberContext *ctx)  {
       auto tag = visit(ctx->t);
-      auto member = visit(ctx->m);
-      auto block_definition = visit(ctx->b);
+      //auto member = visit(ctx->m);
+      //auto block_definition = visit(ctx->b);
 
 #if 0
       if (tag) {
