@@ -62,7 +62,7 @@ def build_extension(debug: bool = False) -> None:
         f"-DPYTHON_EXECUTABLE={sys.executable}",
         f"-DCMAKE_BUILD_TYPE={cfg}",  # not used on MSVC, but no harm
     ]
-    build_args = ["--config Release"]
+    build_args = ["--config Release", "--verbose"]
     # Adding CMake arguments set as environment variable
     # (needed e.g. to build for ARM OSx on conda-forge)
 
@@ -88,6 +88,7 @@ def build_extension(debug: bool = False) -> None:
 
     banner("Step #2: Build")
     # subprocess.run(["cmake", "--build", ".", *build_args], cwd=build_temp, check=True)  # nosec
+    # build_args += ["-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"]
     subprocess.run(["cmake", "--build", build_temp, *build_args], cwd=TOP_DIR, check=True)  # nosec
 
     banner("Step #3: Install")
