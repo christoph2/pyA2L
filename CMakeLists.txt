@@ -88,12 +88,12 @@ message("Compiling Cpp with: " ${CMAKE_CXX_COMPILER_ID})
 # target_compile_features(hello PUBLIC cxx_std_17)
 
 # Call macro to add lexer and grammar to your build dependencies.
-antlr_target(pyA2LLexer ./pya2l/a2llg.g4 LEXER
+antlr_target(pyA2LLexer ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/a2llg.g4 LEXER
 			# PACKAGE pya2l
 			OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
 			)
 
-antlr_target(AMLParser ./pya2l/aml.g4 LEXER PARSER
+antlr_target(AMLParser ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml.g4 LEXER PARSER
               # PACKAGE pya2l
 			  VISITOR
 			  OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
