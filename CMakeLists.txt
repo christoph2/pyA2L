@@ -112,8 +112,9 @@ target_link_libraries(aml_tester antlr4_static ${SYSTEM_LIBS})
  target_include_directories(aml_tester PUBLIC ${ANTLR4_INCLUDE_DIRS} ${ANTLR_AMLPaser_OUTPUT_DIR}/pya2l ${PROJECT_SOURCE_DIR}/pya2l/aml)
 
 # include generated files in project environment
-include_directories(${ANTLR_pyA2LLexer_OUTPUT_DIR})
-include_directories(${ANTLR_AMLParser_OUTPUT_DIR})
+include_directories(${ANTLR_pyA2LLexer_OUTPUT_DIR}/pya2l)
+include_directories(${ANTLR_AMLParser_OUTPUT_DIR}/pya2l)
+
 
 message("AML output: " ${ANTLR_AMLParser_OUTPUT_DIR})
 message("LXR output: " ${ANTLR_pyA2LLexer_OUTPUT_DIR})
