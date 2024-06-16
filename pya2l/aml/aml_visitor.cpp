@@ -171,7 +171,7 @@ using numeric_t = std::variant<std::monostate, std::uint64_t, long double>;
     if (ctx_s) {
         auto text = strip(trim_copy(ctx_s->getText()));
 
-        std::cout << "STR: " << text << ":" << text;
+        std::cout << "STR: " << text << std::endl;
         result = text;
     }
 
@@ -185,7 +185,7 @@ using numeric_t = std::variant<std::monostate, std::uint64_t, long double>;
     if (ctx_s) {
         auto text = strip(trim_copy(ctx_s->getText()));
 
-        std::cout << "TAG: " << text << ":" << text;
+        std::cout << "TAG: " << text << std::endl;
         result = text;
     }
 
