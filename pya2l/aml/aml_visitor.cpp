@@ -141,9 +141,12 @@ using numeric_t = std::variant<std::monostate, std::uint64_t, long double>;
       auto member = visit(ctx->m);
       auto block_definition = visit(ctx->b);
 
+#if 0
       if (tag) {
         //std::cout << "Tagged_union_member: " << tag.value();
       }
+#endif
+
     #if 0
         tag = ctx.t.value if ctx.t else None
         member = ctx.m.value if ctx.m else None
