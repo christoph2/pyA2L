@@ -6,6 +6,7 @@
 #include "amlParser.h"
 #include "amlBaseVisitor.h"
 
+#include "klasses.hpp"
 
 
 class  AmlVisitor : public amlBaseVisitor {
