@@ -1,14 +1,13 @@
 #include <iostream>
 
-#include "antlr4-runtime.h"
-#include "aml_visitor.h"
 #include "amlLexer.h"
-
+#include "aml_visitor.h"
+#include "antlr4-runtime.h"
 
 using namespace antlr4;
 
 int main(int argc, const char* argv[]) {
-	std::ifstream stream;
+    std::ifstream stream;
 
     if (argc == 2) {
         stream.open(argv[1]);
@@ -18,7 +17,7 @@ int main(int argc, const char* argv[]) {
 
     ANTLRInputStream input(stream);
 
-    amlLexer lexer(&input);
+    amlLexer          lexer(&input);
     CommonTokenStream tokens(&lexer);
 #if 0
     while (tokens.LA(1) != Token::EOF) {
@@ -28,11 +27,11 @@ int main(int argc, const char* argv[]) {
     }
 #endif
 
-    amlParser parser(&tokens);
-    amlParser::AmlFileContext * tree = parser.amlFile();
+    amlParser                  parser(&tokens);
+    amlParser::AmlFileContext* tree = parser.amlFile();
 
     AmlVisitor visitor;
-    auto res = visitor.visitAmlFile(tree);
+    auto       res = visitor.visitAmlFile(tree);
 
-	return 0;
+    return 0;
 }

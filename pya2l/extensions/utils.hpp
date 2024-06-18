@@ -31,8 +31,7 @@
     #include <string>
     #include <vector>
 
-#define PP_UNREFERENCED_PARAMETER(p)  ((p) = (p))
-
+    #define PP_UNREFERENCED_PARAMETER(p) ((p) = (p))
 
 enum class State : std::uint8_t {
     IDLE,
@@ -148,11 +147,11 @@ inline std::optional<std::string> get_env_var(const std::string &var) {
     #else
 inline std::optional<std::string> get_env_var(const std::string &var) {
 
-    #if (defined (__APPLE__) || defined(_WIN32))
+        #if (defined(__APPLE__) || defined(_WIN32))
     auto res = getenv(var.c_str());
-    #else
+        #else
     auto res = secure_getenv(var.c_str());
-    #endif
+        #endif
     if (res == nullptr) {
         return std::nullopt;
     }
