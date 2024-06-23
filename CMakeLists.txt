@@ -26,8 +26,8 @@ endif()
 
 find_package(ANTLR REQUIRED)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/pybind11)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/pybind11)
+# list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/pybind11)
+# add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/pybind11)
 
 message( STATUS "Found pybind11 v${pybind11_VERSION} ${pybind11_VERSION_TYPE}: ${pybind11_INCLUDE_DIRS}")
 
@@ -83,6 +83,8 @@ ENDIF ()
 
 message("Compiling C with: " ${CMAKE_C_COMPILER_ID})
 message("Compiling Cpp with: " ${CMAKE_CXX_COMPILER_ID})
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
 # target_compile_features(hello PUBLIC cxx_std_17)

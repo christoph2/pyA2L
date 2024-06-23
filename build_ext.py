@@ -66,6 +66,8 @@ def build_extension(debug: bool = False) -> None:
     # Adding CMake arguments set as environment variable
     # (needed e.g. to build for ARM OSx on conda-forge)
 
+    # cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 /path/to/src
+
     if sys.platform.startswith("darwin"):
         # Cross-compile support for macOS - respect ARCHFLAGS if set
         archs = re.findall(r"-arch (\S+)", os.environ.get("ARCHFLAGS", ""))
