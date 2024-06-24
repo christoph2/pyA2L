@@ -99,7 +99,4 @@ def build_extension(debug: bool = False) -> None:
 
 
 if __name__ == "__main__":
-    cm = Path("CMakeLists.txt").exists()
-    print("CMakeLists.txt vorhanden?", cm)
-    if cm:
-        build_extension()
+    build_extension()

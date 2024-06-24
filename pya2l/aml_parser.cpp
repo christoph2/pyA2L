@@ -31,7 +31,7 @@ int main(int argc, const char* argv[]) {
     amlParser::AmlFileContext* tree = parser.amlFile();
 
     AmlVisitor visitor;
-    auto       res = visitor.visitAmlFile(tree);
+    auto       res = std::any_cast<std::vector< Declaration>>(visitor.visitAmlFile(tree));
 
     return 0;
 }
