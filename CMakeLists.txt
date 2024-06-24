@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.7...3.29)
 project(pya2l_extensions LANGUAGES C CXX)
 
 find_package(Python COMPONENTS Interpreter Development)
+find_package(pybind11 REQUIRED)
 
 set(ANTLR4_TAG 4.13.1)
 

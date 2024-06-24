@@ -7,31 +7,27 @@
 #include "klasses.hpp"
 
 struct TypeRegistry {
-
     ~TypeRegistry() {
-        for (auto& elem : m_registry) {
+        for (auto &elem : m_registry) {
             delete elem;
         }
     }
 
-
-    void add(Type * entry) {
+    void add(Type *entry) {
         m_registry.push_back(entry);
-
     }
 
-    std::vector<Type*> m_registry{};
+    std::vector<Type *> m_registry{};
 };
 
 static TypeRegistry type_registry;
 
 template<typename Ty>
-Type* make_type(const Ty& value) {
+Type *make_type(const Ty &value) {
     auto result = new Type(value);
     type_registry.add(result);
     return result;
 }
-
 
 ////// utils ///////////////
 
@@ -84,105 +80,115 @@ std::string strip(std::string str, char chr = '"') {
 }
 
 std::any AmlVisitor::visitAmlFile(amlParser::AmlFileContext *ctx) {
-    auto ctx_d = ctx->d;
+    const auto ctx_d = ctx->d;
 
-    for (auto& elem_ctx : ctx_d) {
-        auto elem = visit(elem_ctx);
+    std::vector< Declaration> decls;
+
+    for (const auto &elem_ctx : ctx_d) {
+        decls.emplace_back(std::any_cast<Declaration>(visit(elem_ctx)));
     }
 
-    return visitChildren(ctx);
+    return decls;
 }
 
 std::any AmlVisitor::visitDeclaration(amlParser::DeclarationContext *ctx) {
-	auto ctx_t = ctx->t;
-	auto ctx_b = ctx->b;
+    const auto      ctx_t = ctx->t;
+    const auto      ctx_b = ctx->b;
+    Type           *tp    = nullptr;
+    BlockDefinition block;
 
-	if (ctx_t) {
-		auto tp = visit(ctx_t);
-	}
+    if (ctx_t) {
+        tp = std::any_cast<Type *>(visit(ctx_t));
+    }
 
-	if (ctx_b) {
-		auto block = visit(ctx_b);
-	}
+    if (ctx_b) {
+        block = std::any_cast<BlockDefinition>(visit(ctx_b));
+    }
 
-    return visitChildren(ctx);
+    return Declaration(tp, block);
 }
 
 std::any AmlVisitor::visitType_definition(amlParser::Type_definitionContext *ctx) {
-    auto td_ctx = ctx->type_name();
+    const auto td_ctx = ctx->type_name();
 
     if (td_ctx) {
-        auto tn = visit(td_ctx);
-        auto name = tn.type().name();
+        const auto tn   = visit(td_ctx);
+        const auto name = tn.type().name();
     }
 
     return visitChildren(ctx);
 }
 
 std::any AmlVisitor::visitType_name(amlParser::Type_nameContext *ctx) {
-    auto         ctx_t  = ctx->t;
-    auto         ctx_pr = ctx->pr;
-    auto         ctx_st = ctx->st;
-    auto         ctx_ts = ctx->ts;
-    auto         ctx_tu = ctx->tu;
-    auto         ctx_en = ctx->en;
+    const auto  ctx_t  = ctx->t;
+    const auto  ctx_pr = ctx->pr;
+    const auto  ctx_st = ctx->st;
+    const auto  ctx_ts = ctx->ts;
+    const auto  ctx_tu = ctx->tu;
+    const auto  ctx_en = ctx->en;
     std::string pdt_name;
-	std::string  tag_text{};
+    std::string tag_text{};
 
     if (ctx_t) {
-       auto tag_opt = std::any_cast<string_opt_t>(visit(ctx_t));
-       if (tag_opt) {
-		  tag_text = *tag_opt;
-          std::cout << "\t\tType-tag: " << tag_text << std::endl;
-       }
+        const auto tag_opt = std::any_cast<string_opt_t>(visit(ctx_t));
+        if (tag_opt) {
+            tag_text = *tag_opt;
+        }
     }
     if (ctx_pr) {
         pdt_name = std::any_cast<std::string>(visit(ctx_pr));
         return make_type(pdt_name);
-        //std::cout << "\t\tType-PDT: " << pdt_name << std::endl;
     }
     if (ctx_st) {
-        auto sst = std::any_cast<Struct>(visit(ctx_st));
+        const auto sst = std::any_cast<StructOrReferrer>(visit(ctx_st));
         return make_type(sst);
     }
     if (ctx_ts) {
+        const auto sst = std::any_cast<TaggedStructOrReferrer>(visit(ctx_ts));
+        return make_type(sst);
     }
     if (ctx_tu) {
+        const auto sst = std::any_cast<TaggedUnionOrReferrer>(visit(ctx_tu));
+        return make_type(sst);
     }
     if (ctx_en) {
-        auto enumeration = std::any_cast<EnumerationOrReferrer>(visit(ctx_en));
+        const auto enumeration = std::any_cast<EnumerationOrReferrer>(visit(ctx_en));
+        return make_type(enumeration);
     }
 
     return visitChildren(ctx);
-    //return Type();
 }
 
 std::any AmlVisitor::visitPredefined_type_name(amlParser::Predefined_type_nameContext *ctx) {
-    std::string name = ctx->name->getText();
-
-    std::cout << "\t\tPDTname: " << name << std::endl;
+    const std::string name = ctx->name->getText();
 
     return name;
 }
 
 std::any AmlVisitor::visitBlock_definition(amlParser::Block_definitionContext *ctx) {
-	auto ctx_tag  = ctx->tag;
-	auto ctx_tn = ctx->tn;
-	auto ctx_mem = ctx->mem;
-	auto ctx_mult = ctx->mult;
+    const auto ctx_tag  = ctx->tag;
+    const auto ctx_tn   = ctx->tn;
+    const auto ctx_mem  = ctx->mem;
+    const auto ctx_mult = ctx->mult;
 
-	std::string tag_text;
-    bool multiple{ false };
+    std::string tag_text;
+    bool        multiple{ false };
+    Type       *tn = nullptr;
+    Member      member;
 
-	if (ctx_tag) {
-        auto tag_opt = std::any_cast<string_opt_t>(visit(ctx_tag));
+    if (ctx_tag) {
+        const auto tag_opt = std::any_cast<string_opt_t>(visit(ctx_tag));
         if (tag_opt) {
             tag_text = *tag_opt;
         }
     }
 
+    if (ctx_tn) {
+        tn = std::any_cast<Type *>(visit(ctx_tn));
+    }
+
     if (ctx_mem) {
-        auto mem = visit(ctx_mem);
+        member = std::any_cast<Member>(visit(ctx_mem));
     }
 
     if (ctx_mult) {
@@ -191,33 +197,30 @@ std::any AmlVisitor::visitBlock_definition(amlParser::Block_definitionContext *c
         }
     }
 
-	return visitChildren(ctx);
+    return BlockDefinition(tag_text, tn, member, multiple);
 }
 
 std::any AmlVisitor::visitEnum_type_name(amlParser::Enum_type_nameContext *ctx) {
-    auto                    ctx_t0      = ctx->t0;
-    auto                    ctx_t1      = ctx->t1;
-    auto                    ctx_l       = ctx->l;
+    const auto              ctx_t0      = ctx->t0;
+    const auto              ctx_t1      = ctx->t1;
+    const auto              ctx_l       = ctx->l;
     bool                    is_referrer = false;
     std::string             name;
-    std::string 			ref_name;
+    std::string             ref_name;
     std::vector<Enumerator> enumerators;
     EnumerationOrReferrer   result;
 
-
     if (ctx_t0) {
-        auto str_opt = std::any_cast<string_opt_t>(visit(ctx_t0));
+        const auto str_opt = std::any_cast<string_opt_t>(visit(ctx_t0));
         if (str_opt) {
-            //std::cout << "\tEnum-Type: " << *str_opt << std::endl;
             name = *str_opt;
         }
     }
 
     if (ctx_t1) {
-        auto str_opt     = std::any_cast<string_opt_t>(visit(ctx_t1));
-        is_referrer = true;
+        const auto str_opt = std::any_cast<string_opt_t>(visit(ctx_t1));
+        is_referrer        = true;
         if (str_opt) {
-            //std::cout << "\trefering Enum: " << *str_opt << std::endl;
             ref_name = *str_opt;
         }
     }
@@ -237,308 +240,333 @@ std::any AmlVisitor::visitEnum_type_name(amlParser::Enum_type_nameContext *ctx) 
 
 std::any AmlVisitor::visitEnumerator_list(amlParser::Enumerator_listContext *ctx) {
     std::vector<Enumerator> result{};
-    auto                    enumerators = ctx->ids;
 
-    for (auto &&en : enumerators) {
+    for (const auto &en : ctx->ids) {
         result.emplace_back(std::any_cast<Enumerator>(visit(en)));
     }
     return result;
 }
 
 std::any AmlVisitor::visitEnumerator(amlParser::EnumeratorContext *ctx) {
-    auto                     ctx_t = ctx->t;
-    auto                     ctx_c = ctx->c;
+    const auto               ctx_t = ctx->t;
+    const auto               ctx_c = ctx->c;
     string_opt_t             tag;
     std::string              text{};
     std::optional<numeric_t> value{ std::nullopt };
 
     if (ctx_t) {
-        tag = std::any_cast<string_opt_t>(visit(ctx_t));
-        //std::cout << "\t\t\tenumerator-tag: " << *tag << std::endl;
+        tag  = std::any_cast<string_opt_t>(visit(ctx_t));
         text = *tag;
-    } else {
-        //std::cout << "\t\t\tenumerator-tag: (NONE)" << std::endl;
     }
     if (ctx_c) {
         value = std::any_cast<numeric_t>(visit(ctx_c));
-        if (value) {
-            //std::cout << "\t\t\tenumerator-value: " << as_double(*value) << std::endl;
-        }
     }
 
     return Enumerator(text, value);
 }
 
 std::any AmlVisitor::visitStruct_type_name(amlParser::Struct_type_nameContext *ctx) {
-    auto ctx_t0 = ctx->t0;
-    auto ctx_t1 = ctx->t1;
-    auto ctx_l = ctx->l;
-	bool is_referrer{false};
-    std::string             name;
-    std::string 			ref_name;
+    const auto                ctx_t0 = ctx->t0;
+    const auto                ctx_t1 = ctx->t1;
+    const auto                ctx_l  = ctx->l;
+    bool                      is_referrer{ false };
+    std::string               name;
+    std::string               ref_name;
     std::vector<StructMember> members;
-    StructOrReferrer   result;
-
+    StructOrReferrer          result;
 
     if (ctx_t0) {
-        auto str_opt = std::any_cast<string_opt_t>(visit(ctx_t0));
+        const auto str_opt = std::any_cast<string_opt_t>(visit(ctx_t0));
         if (str_opt) {
-            std::cout << "\tStruct-Type: " << *str_opt << std::endl;
             name = *str_opt;
         }
     }
 
     if (ctx_t1) {
-        auto str_opt     = std::any_cast<string_opt_t>(visit(ctx_t1));
-        is_referrer = true;
+        const auto str_opt = std::any_cast<string_opt_t>(visit(ctx_t1));
+        is_referrer        = true;
         if (str_opt) {
-            std::cout << "\trefering Struct: " << *str_opt << std::endl;
             ref_name = *str_opt;
         }
     }
 
-    for (auto& mem_ctx : ctx_l) {
-        auto mem = visit(mem_ctx);
-
+    for (const auto &mem_ctx : ctx_l) {
+        const auto mem = std::any_cast<StructMember>(visit(mem_ctx));
+        members.emplace_back(mem);
     }
 
     if (is_referrer) {
         result = Referrer(ReferrerType::StructType, ref_name);
-    }
-    else {
+    } else {
         result = Struct(name, members);
     }
 
     return result;
-    //return visitChildren(ctx);
 }
 
 std::any AmlVisitor::visitStruct_member(amlParser::Struct_memberContext *ctx) {
-	auto ctx_m = ctx->m;
-	auto ctx_mstar = ctx->mstar;
-	auto ctx_m0 = ctx->m0;
-    bool multiple{ false };
+    const auto ctx_m     = ctx->m;
+    const auto ctx_mstar = ctx->mstar;
+    const auto ctx_m0    = ctx->m0;
+    bool       multiple{ false };
 
-	if (ctx_m) {
-		auto value_opt = visit(ctx_m);
-        auto mem = std::any_cast<Member>(value_opt);
-	}
+    if (ctx_m) {
+        const auto mem = std::any_cast<Member>(visit(ctx_m));
+        return StructMember(mem, false);
+    }
 
-	if (ctx_m0) {
+    if (ctx_m0) {
         if (ctx_m0->getText() == "*") {
             multiple = true;
-			if (ctx_mstar) {
-                auto mem = visit(ctx_mstar);
-			}
+            if (ctx_mstar) {
+                const auto mem = std::any_cast<Member>(visit(ctx_mstar));
+                return StructMember(mem, true);
+            }
         }
-	}
-
-    return visitChildren(ctx);
+    }
+    return {};
 }
 
 std::any AmlVisitor::visitMember(amlParser::MemberContext *ctx) {
-    auto                  ctx_t = ctx->t;
-    auto                  ctx_a = ctx->a;
+    const auto            ctx_t = ctx->t;
+    const auto            ctx_a = ctx->a;
     std::vector<uint64_t> arrary_specifier;
-    std::uint64_t         value;
-    Type* tp = nullptr;
+    std::int64_t          value;
+    Type                 *tp = nullptr;
 
     if (ctx_t) {
-        auto type_name = visit(ctx_t);
+        const auto type_name = visit(ctx_t);
         if (type_name.has_value()) {
-            tp = std::any_cast<Type*>(type_name);
-            //if (xtt) {
-            //    std::cout << "\t\ttype_name: " << *xtt << std::endl;
-            //}
+            tp = std::any_cast<Type *>(type_name);
         }
     }
 
-    for (auto &elem : ctx_a) {
-        auto value_cont = std::any_cast<numeric_t>(visit(elem));
+    for (const auto &elem : ctx_a) {
+        const auto value_cont = std::any_cast<numeric_t>(visit(elem));
 
-        if (std::holds_alternative<std::uint64_t>(value_cont)) {
-            value = std::get<std::uint64_t>(value_cont);
+        if (std::holds_alternative<std::int64_t>(value_cont)) {
+            value = std::get<std::int64_t>(value_cont);
         } else if (std::holds_alternative<long double>(value_cont)) {
-            value = std::bit_cast<std::uint64_t>(std::get<long double>(value_cont));
+            value = std::bit_cast<std::int64_t>(std::get<long double>(value_cont));
         }
-
-        std::cout << "\t\t\tarray_spec: " << value
-                  << std::endl;  // std::variant<struct std::monostate,unsigned __int64,long double>
         arrary_specifier.push_back(value);
     }
     return Member(tp, arrary_specifier);
 }
 
 std::any AmlVisitor::visitArray_specifier(amlParser::Array_specifierContext *ctx) {
-    auto array_spec = std::any_cast<numeric_t>(visit(ctx->c));
+    const auto array_spec = std::any_cast<numeric_t>(visit(ctx->c));
 
     return array_spec;
 }
 
 std::any AmlVisitor::visitTaggedstruct_type_name(amlParser::Taggedstruct_type_nameContext *ctx) {
-    auto ctx_t0 = ctx->t0;
-    auto ctx_t1 = ctx->t1;
-    auto ctx_l = ctx->l;
-	bool is_referrer{false};
-    std::string             name;
-    std::string 			ref_name;
+    const auto                      ctx_t0 = ctx->t0;
+    const auto                      ctx_t1 = ctx->t1;
+    const auto                      ctx_l  = ctx->l;
+    bool                            is_referrer{ false };
+    std::string                     name;
+    std::string                     ref_name;
     std::vector<TaggedStructMember> members;
-    TaggedStructOrReferrer   result;
+    TaggedStructOrReferrer          result;
 
     if (ctx_t0) {
-        auto str_opt = std::any_cast<string_opt_t>(visit(ctx_t0));
+        const auto str_opt = std::any_cast<string_opt_t>(visit(ctx_t0));
         if (str_opt) {
-            std::cout << "\tTaggedStruct-Type: " << *str_opt << std::endl;
             name = *str_opt;
         }
     }
 
     if (ctx_t1) {
-        auto str_opt     = std::any_cast<string_opt_t>(visit(ctx_t1));
-        is_referrer = true;
+        const auto str_opt = std::any_cast<string_opt_t>(visit(ctx_t1));
+        is_referrer        = true;
         if (str_opt) {
-            std::cout << "\trefering TaggedStruct: " << *str_opt << std::endl;
             ref_name = *str_opt;
         }
     }
 
-    for (auto& mem_ctx : ctx_l) {
-        auto mem = visit(mem_ctx);
-
+    for (const auto &mem_ctx : ctx_l) {
+        const auto mem = std::any_cast<TaggedStructMember>(visit(mem_ctx));
+        members.emplace_back(mem);
     }
-    return visitChildren(ctx);
+    if (is_referrer) {
+        result = Referrer(ReferrerType::TaggedStructType, ref_name);
+    } else {
+        result = TaggedStruct(name, members);
+    }
+
+    return result;
 }
 
 std::any AmlVisitor::visitTaggedstruct_member(amlParser::Taggedstruct_memberContext *ctx) {
-    return visitChildren(ctx);
+    const auto ctx_ts0 = ctx->ts0;
+    const auto ctx_ts1 = ctx->ts1;
+    const auto ctx_bl0 = ctx->bl0;
+    const auto ctx_bl1 = ctx->bl1;
+    const auto length  = std::size(ctx->children);
+
+    TaggedStructDefinition tsd;
+    BlockDefinition        block;
+    auto                   multiple{ false };
+
+    if (ctx_ts0) {
+        const auto ts = visit(ctx_ts0);
+        tsd           = std::any_cast<TaggedStructDefinition>(ts);
+    } else if (ctx_ts1) {
+        multiple      = true;
+        const auto ts = visit(ctx_ts1);
+        tsd           = std::any_cast<TaggedStructDefinition>(ts);
+    }
+
+    if (ctx_bl0) {
+        multiple = true;
+        block    = std::any_cast<BlockDefinition>(visit(ctx_bl0));
+    } else if (ctx_bl1) {
+        block = std::any_cast<BlockDefinition>(visit(ctx_bl1));
+    }
+
+    return TaggedStructMember(tsd, block, multiple);
 }
 
 std::any AmlVisitor::visitTaggedstruct_definition(amlParser::Taggedstruct_definitionContext *ctx) {
-    return visitChildren(ctx);
+    const auto length   = std::size(ctx->children);
+    const auto multiple = (length == 5);
+    const auto ctx_tag  = ctx->tag;
+    const auto ctx_mem  = ctx->mem;
+
+    std::string tag{};
+    Member      member;
+
+    if (ctx_tag) {
+        const auto str_opt = std::any_cast<string_opt_t>(visit(ctx_tag));
+        if (str_opt) {
+            tag = *str_opt;
+        }
+    }
+
+    if (ctx_mem) {
+        member = std::any_cast<Member>(visit(ctx_mem));
+    }
+
+    return TaggedStructDefinition(tag, member);
 }
 
 std::any AmlVisitor::visitTaggedunion_type_name(amlParser::Taggedunion_type_nameContext *ctx) {
-    auto ctx_t0 = ctx->t0;
-    auto ctx_t1 = ctx->t1;
-    auto ctx_l = ctx->l;
-	bool is_referrer{false};
-    std::string             name;
-    std::string 			ref_name;
+    const auto ctx_t0 = ctx->t0;
+    const auto ctx_t1 = ctx->t1;
+    const auto ctx_l  = ctx->l;
+
+    bool                           is_referrer{ false };
+    std::string                    name;
+    std::string                    ref_name;
     std::vector<TaggedUnionMember> members;
-    TaggedUnionOrReferrer   result;
+    TaggedUnionOrReferrer          result;
 
     if (ctx_t0) {
-        auto str_opt = std::any_cast<string_opt_t>(visit(ctx_t0));
+        const auto str_opt = std::any_cast<string_opt_t>(visit(ctx_t0));
         if (str_opt) {
-            std::cout << "\tTaggedUnion-Type: " << *str_opt << std::endl;
             name = *str_opt;
         }
     }
 
     if (ctx_t1) {
-        auto str_opt     = std::any_cast<string_opt_t>(visit(ctx_t1));
-        is_referrer = true;
+        const auto str_opt = std::any_cast<string_opt_t>(visit(ctx_t1));
+        is_referrer        = true;
         if (str_opt) {
-            std::cout << "\trefering UnionStruct: " << *str_opt << std::endl;
             ref_name = *str_opt;
         }
     }
 
-    for (auto& mem_ctx : ctx_l) {
-        auto mem = visit(mem_ctx);
-
+    for (auto &mem_ctx : ctx_l) {
+        const auto mem = std::any_cast<TaggedUnionMember>(visit(mem_ctx));
+        members.emplace_back(mem);
     }
-    return visitChildren(ctx);
+    if (is_referrer) {
+        result = Referrer(ReferrerType::TaggedUnionType, ref_name);
+    } else {
+        result = TaggedUnion(name, members);
+    }
+
+    return result;
 }
 
 std::any AmlVisitor::visitTagged_union_member(amlParser::Tagged_union_memberContext *ctx) {
-    auto        ctx_t = ctx->t;
-    auto        ctx_m = ctx->m;
-    auto        ctx_b = ctx->b;
-    std::string tag{};
-    Member member;
+    const auto ctx_t = ctx->t;
+    const auto ctx_m = ctx->m;
+    const auto ctx_b = ctx->b;
 
-    std::cout << "\ttagged_union_member\n";
+    std::string     tag{};
+    Member          member;
+    BlockDefinition block;
 
     if (ctx_t) {
-        auto tag_cont = std::any_cast<string_opt_t>(visit(ctx_t));
+        const auto tag_cont = std::any_cast<string_opt_t>(visit(ctx_t));
         if (tag_cont) {
             tag = *tag_cont;
         }
-        std::cout << "\t\ttag: " << tag << std::endl;
     }
     if (ctx_m) {
-        auto mmm = visit(ctx_m);
-        //member = visit(ctx_m);
+        member = std::any_cast<Member>(visit(ctx_m));
     }
     if (ctx_b) {
-        auto block_definition = visit(ctx_b);
+        block = std::any_cast<BlockDefinition>(visit(ctx_b));
     }
 
-    return TaggedUnionMember(tag, member, BlockDefinition());
+    return TaggedUnionMember(tag, member, block);
 }
 
 std::any AmlVisitor::visitNumericValue(amlParser::NumericValueContext *ctx) {
-    auto ctx_i = ctx->i;
-    auto ctx_h = ctx->h;
-    auto ctx_f = ctx->f;
+    const auto ctx_i = ctx->i;
+    const auto ctx_h = ctx->h;
+    const auto ctx_f = ctx->f;
 
     numeric_t result{};
 
     if (ctx_i) {
-        auto text = ctx_i->getText();
-        // std::cout << "INT: " << text << std::endl;
-        result = std::strtoul(text.c_str(), nullptr, 10);
+        const auto text = ctx_i->getText();
+        result          = std::strtoul(text.c_str(), nullptr, 10);
     } else if (ctx_h) {
-        auto text = ctx_h->getText();
-        // std::cout << "HEX: " << text << std::endl;
-        result = std::strtoul(text.c_str() + 2, nullptr, 16);
+        const auto text = ctx_h->getText();
+        result          = std::strtoul(text.c_str() + 2, nullptr, 16);
     } else if (ctx_f) {
-        auto text = ctx_f->getText();
-        // std::cout << "FLOAT: " << text << std::endl;
-        result = std::strtold(text.c_str(), nullptr);
+        const auto text = ctx_f->getText();
+        result          = std::strtold(text.c_str(), nullptr);
     }
 
     return result;
 }
 
 std::any AmlVisitor::visitStringValue(amlParser::StringValueContext *ctx) {
-    auto         ctx_s = ctx->s;
+    const auto   ctx_s = ctx->s;
     string_opt_t result{ std::nullopt };
 
     if (ctx_s) {
-        auto text = strip(trim_copy(ctx_s->getText()));
-
-        // std::cout << "STR: " << text << std::endl;
-        result = text;
+        const auto text = strip(trim_copy(ctx_s->getText()));
+        result          = text;
     }
 
     return result;
 }
 
 std::any AmlVisitor::visitTagValue(amlParser::TagValueContext *ctx) {
-    auto         ctx_s = ctx->s;
+    const auto   ctx_s = ctx->s;
     string_opt_t result{ std::nullopt };
 
     if (ctx_s) {
-        auto text = strip(trim_copy(ctx_s->getText()));
-
-        // std::cout << "TAG: " << text << std::endl;
-        result = text;
+        const auto text = strip(trim_copy(ctx_s->getText()));
+        result          = text;
     }
 
     return result;
 }
 
 std::any AmlVisitor::visitIdentifierValue(amlParser::IdentifierValueContext *ctx) {
-    auto         ctx_i = ctx->i;
+    const auto   ctx_i = ctx->i;
     string_opt_t result{ std::nullopt };
 
     if (ctx_i) {
-        auto text = strip(trim_copy(ctx_i->getText()));
-
-        // std::cout << "ID: " << text << std::endl;
-        result = text;
+        const auto text = strip(trim_copy(ctx_i->getText()));
+        result          = text;
     }
 
     return result;
