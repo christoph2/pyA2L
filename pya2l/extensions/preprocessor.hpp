@@ -145,7 +145,6 @@ class Preprocessor {
             std::cout << "[INFO (pya2l.Preprocessor)]: Preprocessing and tokenizing '" + filename + "'." << std::endl;
             std::size_t end_line{ 0 };
 
-            // skip UTF-BOM
             skip_bom(file);
 
             for (auto token : tokenizer(file)) {
@@ -157,7 +156,7 @@ class Preprocessor {
                     end_line = token.m_line_numbers.end_line;
                 }
                 if (token.m_token_class == TokenClass::COMMENT) {
-                    auto lines      = split(token.m_payload, '\n');
+                    const auto lines      = split(token.m_payload, '\n');
                     auto line_count = lines.size();
                     for (const auto& line : lines) {
                         // tmp_a2l() << std::string(line.length(), ' ');
@@ -224,8 +223,8 @@ class Preprocessor {
                     if (include == true) {
                         auto _fn = token.m_payload;
 
-                        if (auto incl_file = locate_file(_fn, path.parent_path().string()); incl_file.has_value()) {
-                            auto length = (end_line - start_line_number);
+                        if (const auto incl_file = locate_file(_fn, path.parent_path().string()); incl_file.has_value()) {
+                            const auto length = (end_line - start_line_number);
                             update_line_map(abs_pth, line_offset, line_offset + length - 1, start_line_number, end_line - 1);
                             line_offset += length;
 
@@ -301,7 +300,7 @@ class Preprocessor {
                     }
                 }
             }
-            auto length = (end_line - start_line_number);
+            const auto length = (end_line - start_line_number);
             update_line_map(abs_pth, line_offset, line_offset + length, start_line_number, end_line);
             line_offset += length;
         } else {
@@ -320,32 +319,13 @@ class Preprocessor {
     void update_line_map(
         const fs::path& path, std::uint64_t abs_start, std::uint64_t abs_end, std::uint64_t rel_start, std::uint64_t rel_end
     ) {
-        auto key = shorten_file_name(path);
+        const auto key = shorten_file_name(path);
         line_map.add_entry(path.string(), abs_start, abs_end, rel_start, rel_end);
     }
 
     void get_include_paths_from_env() {
-        auto var      = get_env_var("ASAP_INCLUDE");
+        const auto var      = get_env_var("ASAP_INCLUDE");
         include_paths = split_path(var);
-    #if 0
-        #if defined(_WIN32)
-        const char delimiter = ';';
-        #else
-        const char delimiter = ':';
-        #endif
-        char* asap_include = std::getenv("ASAP_INCLUDE");
-
-        if (asap_include == NULL) {
-            return;
-        }
-
-        char const* ptr;
-        ptr = strtok(asap_include, &delimiter);
-        while (ptr != NULL) {
-            include_paths.push_back(ptr);
-            ptr = strtok(NULL, &delimiter);
-        }
-    #endif
     }
 
     std::optional<fs::path> locate_file(const std::string& file_name, const std::string& additional_path) {
@@ -356,7 +336,7 @@ class Preprocessor {
         paths.insert(paths.end(), include_paths.begin(), include_paths.end());
 
         for (const auto& include_path : paths) {
-            auto fn(fs::path(include_path) / fs::path(file_name));
+            const auto fn(fs::path(include_path) / fs::path(file_name));
             if (fs::exists(fn)) {
                 return fn;
             }
