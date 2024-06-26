@@ -64,7 +64,7 @@ struct Enum : public AsamType {
     }
 
     bool validate(const AsamVariantType& value) const override {
-        auto text_value = std::get<std::string>(value);
+        const auto text_value = std::get<std::string>(value);
         return m_enumerators.contains(text_value.data());
     }
 
@@ -112,10 +112,10 @@ struct IntegralType : public AsamType {
 
     bool validate(const AsamVariantType& value) const override {
         if constexpr (std::is_signed_v<Ty> == true) {
-            auto int_value = std::get<signed long long>(value);
+            const auto int_value = std::get<signed long long>(value);
             return (int_value < m_limits.min() || int_value > m_limits.max()) ? false : true;
         } else {
-            auto int_value = std::get<unsigned long long>(value);
+            const auto int_value = std::get<unsigned long long>(value);
             return (int_value < m_limits.min() || int_value > m_limits.max()) ? false : true;
         }
     }

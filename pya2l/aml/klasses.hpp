@@ -83,14 +83,14 @@ inline long double as_double(const numeric_t& value) {
 class Referrer {
    public:
 
-    Referrer(ReferrerType category, const std::string& identifier) : m_category(category), m_identifier(identifier) {
+    explicit Referrer(ReferrerType category, const std::string& identifier) : m_category(category), m_identifier(identifier) {
     }
 
-    ReferrerType get_category() const noexcept {
+    const ReferrerType& get_category() const noexcept {
         return m_category;
     }
 
-    std::string get_identifier() const noexcept {
+    const std::string& get_identifier() const noexcept {
         return m_identifier;
     }
 
@@ -103,7 +103,7 @@ class Referrer {
 class Enumerator {
    public:
 
-    Enumerator(const std::string& tag, const std::optional<numeric_t>& value) : m_tag(tag), m_value(value) {
+    explicit Enumerator(const std::string& tag, const std::optional<numeric_t>& value) : m_tag(tag), m_value(value) {
     }
 
     Enumerator()                  = delete;
@@ -125,11 +125,11 @@ class Enumerator {
         return ss.str();
     }
 
-    std::string get_tag() const noexcept {
+    const std::string& get_tag() const noexcept {
         return m_tag;
     }
 
-    std::optional<numeric_t> get_value() const noexcept {
+    const std::optional<numeric_t>& get_value() const noexcept {
         return m_value;
     }
 
@@ -142,7 +142,7 @@ class Enumerator {
 class Enumeration {
    public:
 
-    Enumeration(const std::string& name, const std::vector<Enumerator>& enumerators) : m_name(name) {
+    explicit Enumeration(const std::string& name, const std::vector<Enumerator>& enumerators) : m_name(name) {
         std::uint64_t last_idx = 0ULL;
         std::int64_t  value    = 0ULL;
         for (const auto& en : enumerators) {
@@ -164,11 +164,11 @@ class Enumeration {
         }
     }
 
-    std::string get_name() const noexcept {
+    const std::string& get_name() const noexcept {
         return m_name;
     }
 
-    std::map<std::string, std::uint64_t> get_enumerators() const noexcept {
+    const std::map<std::string, std::uint64_t>& get_enumerators() const noexcept {
         return m_enumerators;
     }
 
@@ -188,14 +188,14 @@ class Member {
     Member() : m_type(nullptr) {
     }
 
-    Member(Type* type, const std::vector<std::uint64_t>& arr_spec) : m_type(type), m_arr_spec(arr_spec) {
+    explicit Member(Type* type, const std::vector<std::uint64_t>& arr_spec) : m_type(type), m_arr_spec(arr_spec) {
     }
 
-    Type* get_type() const noexcept {
+    const Type* get_type() const noexcept {
         return m_type;
     }
 
-    std::vector<std::uint64_t> get_array_spec() const noexcept {
+    const std::vector<std::uint64_t>& get_array_spec() const noexcept {
         return m_arr_spec;
     }
 
@@ -211,19 +211,19 @@ class BlockDefinition {
     BlockDefinition() : m_tag(), m_type(nullptr), m_member(), m_multiple(false) {
     }
 
-    BlockDefinition(const std::string& tag, Type* type, const Member& member, bool multiple) :
+    explicit BlockDefinition(const std::string& tag, Type* type, const Member& member, bool multiple) :
         m_tag(tag), m_type(type), m_member(member), m_multiple(multiple) {
     }
 
-    std::string get_tag() const noexcept {
+    const std::string& get_tag() const noexcept {
         return m_tag;
     }
 
-    Type* get_type() const noexcept {
+    const Type* get_type() const noexcept {
         return m_type;
     }
 
-    Member get_member() const noexcept {
+    const Member& get_member() const noexcept {
         return m_member;
     }
 
@@ -242,10 +242,10 @@ class BlockDefinition {
 class StructMember {
    public:
 
-    StructMember(const Member& member, bool multiple) : m_member(member), m_multiple(multiple) {
+    explicit StructMember(const Member& member, bool multiple) : m_member(member), m_multiple(multiple) {
     }
 
-    Member get_member() const noexcept {
+    const Member& get_member() const noexcept {
         return m_member;
     }
 
@@ -262,14 +262,14 @@ class StructMember {
 class Struct {
    public:
 
-    Struct(const std::string& name, const std::vector<StructMember>& members) : m_name(name), m_members(members) {
+    explicit Struct(const std::string& name, const std::vector<StructMember>& members) : m_name(name), m_members(members) {
     }
 
-    std::string get_name() const noexcept {
+    const std::string& get_name() const noexcept {
         return m_name;
     }
 
-    std::vector<StructMember> get_members() const noexcept {
+    const std::vector<StructMember>& get_members() const noexcept {
         return m_members;
     }
 
@@ -286,14 +286,14 @@ class TaggedStructDefinition {
 
     TaggedStructDefinition() = default;
 
-    TaggedStructDefinition(const std::string& tag, const Member& member) : m_tag(tag), m_member(member) {
+    explicit TaggedStructDefinition(const std::string& tag, const Member& member) : m_tag(tag), m_member(member) {
     }
 
-    std::string get_tag() const noexcept {
+    const std::string& get_tag() const noexcept {
         return m_tag;
     }
 
-    Member get_member() const noexcept {
+    const Member& get_member() const noexcept {
         return m_member;
     }
 
@@ -306,16 +306,15 @@ class TaggedStructDefinition {
 class TaggedStructMember {
    public:
 
-    // taggedstruct_definition, block_definition, multiple
-    TaggedStructMember(const TaggedStructDefinition& tsd, const BlockDefinition& block, bool multiple) :
+    explicit TaggedStructMember(const TaggedStructDefinition& tsd, const BlockDefinition& block, bool multiple) :
         m_tsd(tsd), m_block(block), m_multiple(multiple) {
     }
 
-    TaggedStructDefinition get_tagged_struct_def() const noexcept {
+    const TaggedStructDefinition& get_tagged_struct_def() const noexcept {
         return m_tsd;
     }
 
-    BlockDefinition get_block() const noexcept {
+    const BlockDefinition& get_block() const noexcept {
         return m_block;
     }
 
@@ -333,14 +332,30 @@ class TaggedStructMember {
 class TaggedStruct {
    public:
 
-    TaggedStruct(const std::string& name, const std::vector<TaggedStructMember>& members) : m_name(name), m_members(members) {
+    using member_t = std::variant<Member, BlockDefinition>;
+
+    explicit TaggedStruct(const std::string& name, const std::vector<TaggedStructMember>& members) : m_name(name), m_members(members) {
+        for (const auto& elem : m_members) {
+            const auto tsd   = elem.get_tagged_struct_def();
+            const auto block = elem.get_block();
+            auto       mem   = tsd.get_member();
+            if (mem.get_type()) {
+                auto tag    = tsd.get_tag();
+                m_tags[tag] = mem;
+            }
+
+            if (block.get_type()) {
+                auto tag    = tsd.get_tag();
+                m_tags[tag] = block;
+            }
+        }
     }
 
-    std::string get_name() const noexcept {
+    const std::string& get_name() const noexcept {
         return m_name;
     }
 
-    std::vector<TaggedStructMember> get_members() const noexcept {
+    const std::vector<TaggedStructMember>& get_members() const noexcept {
         return m_members;
     }
 
@@ -348,6 +363,7 @@ class TaggedStruct {
 
     std::string                     m_name;
     std::vector<TaggedStructMember> m_members;
+    std::map<std::string, member_t> m_tags;
 };
 
 using TaggedStructOrReferrer = std::variant<std::monostate, TaggedStruct, Referrer>;
@@ -355,19 +371,19 @@ using TaggedStructOrReferrer = std::variant<std::monostate, TaggedStruct, Referr
 class TaggedUnionMember {
    public:
 
-    TaggedUnionMember(const std::string& tag, const Member& member, const BlockDefinition& block) :
+    explicit TaggedUnionMember(const std::string& tag, const Member& member, const BlockDefinition& block) :
         m_tag(tag), m_member(member), m_block(block) {
     }
 
-    std::string get_tag() const noexcept {
+    const std::string& get_tag() const noexcept {
         return m_tag;
     }
 
-    Member get_member() const noexcept {
+    const Member& get_member() const noexcept {
         return m_member;
     }
 
-    BlockDefinition get_block() const noexcept {
+    const BlockDefinition& get_block() const noexcept {
         return m_block;
     }
 
@@ -381,31 +397,36 @@ class TaggedUnionMember {
 class TaggedUnion {
    public:
 
-    TaggedUnion(const std::string& name, const std::vector<TaggedUnionMember>& members) : m_name(name), m_members(members) {
-        for (const auto& mem : members) {
-            auto tag   = mem.get_tag();
-            auto elem  = mem.get_member();
-            auto block = mem.get_block();
-            auto mtype = elem.get_type();
-            auto btype = block.get_type();
-            if (btype == nullptr) {
-                auto bb = 0;
+    using member_t = std::variant<Member, BlockDefinition>;
+
+    explicit TaggedUnion(const std::string& name, const std::vector<TaggedUnionMember>& members) : m_name(name), m_members(members) {
+        for (const auto& elem : members) {
+            const auto mem   = elem.get_member();
+            const auto block = elem.get_block();
+            if (block.get_type()) {
+                const auto tag = block.get_tag();
+                m_tags[tag]    = block;
+            }
+            if (mem.get_type()) {
+                const auto tag = elem.get_tag();
+                m_tags[tag]    = mem;
             }
         }
     }
 
-    std::string get_name() const noexcept {
+    const std::string& get_name() const noexcept {
         return m_name;
     }
 
-    std::vector<TaggedUnionMember> get_members() const noexcept {
+    const std::vector<TaggedUnionMember>& get_members() const noexcept {
         return m_members;
     }
 
    private:
 
-    std::string                    m_name;
-    std::vector<TaggedUnionMember> m_members;
+    std::string                     m_name;
+    std::vector<TaggedUnionMember>  m_members;
+    std::map<std::string, member_t> m_tags;
 };
 
 using TaggedUnionOrReferrer = std::variant<std::monostate, TaggedUnion, Referrer>;
@@ -431,7 +452,7 @@ class Type {
     Type(const TaggedUnionOrReferrer& tu) : m_type(tu), m_disc(TypeType::TaggedUnionType) {
     }
 
-    TypeVariant get_type() const noexcept {
+    const TypeVariant& get_type() const noexcept {
         return m_type;
     }
 
@@ -448,14 +469,14 @@ class Type {
 class Declaration {
    public:
 
-    Declaration(Type* tp, const BlockDefinition& block) : m_tp(tp), m_block(block) {
+    explicit Declaration(Type* tp, const BlockDefinition& block) : m_tp(tp), m_block(block) {
     }
 
     Type* get_type() const noexcept {
         return m_tp;
     }
 
-    BlockDefinition get_block() const noexcept {
+    const BlockDefinition& get_block() const noexcept {
         return m_block;
     }
 

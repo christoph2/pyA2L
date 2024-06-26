@@ -67,7 +67,7 @@ class A2LParser {
             // TODO:  Factor out.
             if (token_type() == A2LTokenType::END) {
                 m_reader->consume();
-                auto glied = m_reader->LT(1);
+                const auto glied = m_reader->LT(1);
                 // std::cout << "\t/END " << glied->getText() << "\n";
                 assert(kw_tos().m_name == glied->getText());
                 if (kw_tos().m_name == glied->getText()) {
@@ -134,7 +134,7 @@ class A2LParser {
             }
             if (token_type() == A2LTokenType::END) {
                 m_reader->consume();
-                auto glied = m_reader->LT(1);
+                const auto glied = m_reader->LT(1);
                 assert(kw_tos().m_name == glied->getText());
                 if (kw_tos().m_name == glied->getText()) {
                     kw_pop();
@@ -228,7 +228,7 @@ class A2LParser {
                     }
 
                     auto token_text = token->getText();
-                    auto param_type = parameter.get_type();
+                    const auto param_type = parameter.get_type();
                     using enum PredefinedType;
 
                     if (((param_type == Int) || (param_type == Uint) || (param_type == Long) || (param_type == Ulong) ||
@@ -240,7 +240,7 @@ class A2LParser {
                         token_text += number_text;
                     }
 
-                    auto value = convert(param_type, token_text);
+                    const auto value = convert(param_type, token_text);
 
                     const auto valid = validate(parameter, token, value);
                     if (!valid) {
@@ -260,7 +260,7 @@ class A2LParser {
     }
 
     Keyword& kw_tos(std::size_t pos = 0) {
-        auto offset = std::size(m_kw_stack) - pos - 1;
+        const auto offset = std::size(m_kw_stack) - pos - 1;
 
         return m_kw_stack[offset];
     }
