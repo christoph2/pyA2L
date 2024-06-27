@@ -105,7 +105,7 @@ class IfDataBuilder : public IfDataBase {
             }
         }
 
-        auto start     = m_tokens[0].m_line_numbers;
+        // auto start     = m_tokens[0].m_line_numbers;
         auto end       = m_tokens[m_tokens.size() - 1].m_line_numbers;
         m_line_numbers = LineNumbers(start_line, start_col, end.end_line, end.end_col);
     }

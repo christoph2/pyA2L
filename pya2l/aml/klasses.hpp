@@ -154,7 +154,7 @@ class Enumeration {
                 if (std::holds_alternative<std::int64_t>(value_cont)) {
                     value = std::get<std::int64_t>(value_cont);
                 } else if (std::holds_alternative<long double>(value_cont)) {
-                    value = std::bit_cast<std::int64_t>(std::get<long double>(value_cont));
+                    value = static_cast<std::int64_t>(std::get<long double>(value_cont));
                 }
                 m_enumerators[tag] = value;
                 last_idx           = value + 1ULL;
