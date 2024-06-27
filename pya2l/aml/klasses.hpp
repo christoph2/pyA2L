@@ -466,14 +466,24 @@ class Type {
     TypeType    m_disc;
 };
 
+class TypeDefinition {
+public:
+
+    TypeDefinition() = default;
+    TypeDefinition(Type* tp) :  m_tp(tp) {}
+
+private:
+    Type* m_tp;
+};
+
 class Declaration {
    public:
 
-    explicit Declaration(Type* tp, const BlockDefinition& block) : m_tp(tp), m_block(block) {
+    explicit Declaration(TypeDefinition td, const BlockDefinition& block) : m_td(td), m_block(block) {
     }
 
-    Type* get_type() const noexcept {
-        return m_tp;
+    const TypeDefinition& get_type() const noexcept {
+        return m_td;
     }
 
     const BlockDefinition& get_block() const noexcept {
@@ -482,7 +492,7 @@ class Declaration {
 
    private:
 
-    Type*           m_tp;
+    TypeDefinition  m_td;
     BlockDefinition m_block;
 };
 
