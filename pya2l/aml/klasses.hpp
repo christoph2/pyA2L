@@ -73,7 +73,7 @@ inline std::string get_string(auto var) {
 
 inline long double as_double(const numeric_t& value) {
     if (std::holds_alternative<std::int64_t>(value)) {
-        return std::bit_cast<long double>(std::get<std::int64_t>(value));
+        return static_cast<long double>(std::get<std::int64_t>(value));
     } else if (std::holds_alternative<long double>(value)) {
         return std::get<long double>(value);
     }
