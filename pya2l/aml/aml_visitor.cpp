@@ -113,7 +113,6 @@ std::any AmlVisitor::visitType_definition(amlParser::Type_definitionContext *ctx
 
     if (td_ctx) {
         const auto tn   = visit(td_ctx);
-        const auto name = tn.type().name();
     }
 
     return visitChildren(ctx);
@@ -308,7 +307,6 @@ std::any AmlVisitor::visitStruct_member(amlParser::Struct_memberContext *ctx) {
     const auto ctx_m     = ctx->m;
     const auto ctx_mstar = ctx->mstar;
     const auto ctx_m0    = ctx->m0;
-    bool       multiple{ false };
 
     if (ctx_m) {
         const auto mem = std::any_cast<Member>(visit(ctx_m));
@@ -317,7 +315,6 @@ std::any AmlVisitor::visitStruct_member(amlParser::Struct_memberContext *ctx) {
 
     if (ctx_m0) {
         if (ctx_m0->getText() == "*") {
-            multiple = true;
             if (ctx_mstar) {
                 const auto mem = std::any_cast<Member>(visit(ctx_mstar));
                 return StructMember(mem, true);
@@ -331,7 +328,7 @@ std::any AmlVisitor::visitMember(amlParser::MemberContext *ctx) {
     const auto            ctx_t = ctx->t;
     const auto            ctx_a = ctx->a;
     std::vector<uint64_t> arrary_specifier;
-    std::int64_t          value;
+    std::int64_t          value{0};
     Type                 *tp = nullptr;
 
     if (ctx_t) {
@@ -403,7 +400,7 @@ std::any AmlVisitor::visitTaggedstruct_member(amlParser::Taggedstruct_memberCont
     const auto ctx_ts1 = ctx->ts1;
     const auto ctx_bl0 = ctx->bl0;
     const auto ctx_bl1 = ctx->bl1;
-    const auto length  = std::size(ctx->children);
+    const auto length  = std::size(ctx->children);  // !!CHECK!!
 
     TaggedStructDefinition tsd;
     BlockDefinition        block;
@@ -430,7 +427,7 @@ std::any AmlVisitor::visitTaggedstruct_member(amlParser::Taggedstruct_memberCont
 
 std::any AmlVisitor::visitTaggedstruct_definition(amlParser::Taggedstruct_definitionContext *ctx) {
     const auto length   = std::size(ctx->children);
-    const auto multiple = (length == 5);
+    const auto multiple = (length == 5);    // !!CHECK!!
     const auto ctx_tag  = ctx->tag;
     const auto ctx_mem  = ctx->mem;
 
