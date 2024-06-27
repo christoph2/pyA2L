@@ -15,7 +15,7 @@ struct std::hash<A2LTokenType> {
 class Keyword {
    public:
 
-    using keyword_map_t = std::unordered_map<A2LTokenType, std::unique_ptr<Keyword>>;
+    using keyword_map_t = std::unordered_map<A2LTokenType, std::shared_ptr<Keyword>>;
 
     Keyword(
         A2LTokenType token, std::string_view name, std::string_view class_name, bool block, bool multiple,
@@ -23,7 +23,7 @@ class Keyword {
     ) :
         m_token(token), m_name(name), m_class_name(class_name), m_block(block), m_multiple(multiple), m_parameters(parameters) {
         for (const auto &kw : keywords) {
-            m_keywords.insert({ kw.m_token, std::make_unique<Keyword>(kw) });
+            m_keywords.insert({ kw.m_token, std::make_shared<Keyword>(kw) });
         }
     }
 
@@ -36,7 +36,7 @@ class Keyword {
         m_block(other.m_block),
         m_multiple(other.m_multiple),
         m_parameters(other.m_parameters),
-        m_keywords(std::move(other.m_keywords)) {
+        m_keywords(other.m_keywords) {
     }
 
     Keyword(Keyword &&)                 = default;
