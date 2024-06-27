@@ -94,28 +94,29 @@ std::any AmlVisitor::visitAmlFile(amlParser::AmlFileContext *ctx) {
 std::any AmlVisitor::visitDeclaration(amlParser::DeclarationContext *ctx) {
     const auto      ctx_t = ctx->t;
     const auto      ctx_b = ctx->b;
-    Type           *tp    = nullptr;
+    TypeDefinition td;
     BlockDefinition block;
 
     if (ctx_t) {
-        tp = std::any_cast<Type *>(visit(ctx_t));
+        td = std::any_cast<TypeDefinition>(visit(ctx_t));
     }
 
     if (ctx_b) {
         block = std::any_cast<BlockDefinition>(visit(ctx_b));
     }
 
-    return Declaration(tp, block);
+    return Declaration(td, block);
 }
 
 std::any AmlVisitor::visitType_definition(amlParser::Type_definitionContext *ctx) {
     const auto td_ctx = ctx->type_name();
+    Type * tp = nullptr;
 
     if (td_ctx) {
-        const auto tn   = visit(td_ctx);
+        tp = std::any_cast<Type*>(td_ctx);
     }
 
-    return visitChildren(ctx);
+    return TypeDefinition(tp);
 }
 
 std::any AmlVisitor::visitType_name(amlParser::Type_nameContext *ctx) {
