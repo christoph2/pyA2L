@@ -41,11 +41,20 @@ SET(GCC_N_CLANG_BASE_OPTIONS "-std=c++23 -Wall -Wextra -Wpedantic -Warray-bounds
 SET(MSVC_BASE_OPTIONS "/W3 /permissive- /EHsc /bigobj /Zc:__cplusplus /std:c++latest")
 
 
-if (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Od /fsanitize=address /Zi")
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+	if (MSVC)
+		SET(MSVC_BASE_OPTIONS "${MSVC_BASE_OPTIONS} /Od /fsanitize=address /Zi")
+	else()
+		SET(MSVC_BASE_OPTIONS "${MSVC_BASE_OPTIONS} -Og -g3 -ggdb --fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined -fsanitize=bounds")	# -fsanitize=hwaddress
+	endif()
 else ()
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Ox ")	# /GL
-endif ()
+	if (MSVC)
+		SET(MSVC_BASE_OPTIONS "${MSVC_BASE_OPTIONS} /Ox")
+	else()
+		SET(MSVC_BASE_OPTIONS "${MSVC_BASE_OPTIONS} -O3 --fomit-frame-pointer")
+	endif()
+ endif ()
 
 
 if (CMAKE_SYSTEM_NAME STREQUAL  "Darwin")
