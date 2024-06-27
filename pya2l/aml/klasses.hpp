@@ -334,7 +334,8 @@ class TaggedStruct {
 
     using member_t = std::variant<Member, BlockDefinition>;
 
-    explicit TaggedStruct(const std::string& name, const std::vector<TaggedStructMember>& members) : m_name(name), m_members(members) {
+    explicit TaggedStruct(const std::string& name, const std::vector<TaggedStructMember>& members) :
+        m_name(name), m_members(members) {
         for (const auto& elem : m_members) {
             const auto tsd   = elem.get_tagged_struct_def();
             const auto block = elem.get_block();
@@ -399,7 +400,8 @@ class TaggedUnion {
 
     using member_t = std::variant<Member, BlockDefinition>;
 
-    explicit TaggedUnion(const std::string& name, const std::vector<TaggedUnionMember>& members) : m_name(name), m_members(members) {
+    explicit TaggedUnion(const std::string& name, const std::vector<TaggedUnionMember>& members) :
+        m_name(name), m_members(members) {
         for (const auto& elem : members) {
             const auto mem   = elem.get_member();
             const auto block = elem.get_block();

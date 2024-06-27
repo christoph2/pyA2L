@@ -157,7 +157,7 @@ class Preprocessor {
                 }
                 if (token.m_token_class == TokenClass::COMMENT) {
                     const auto lines      = split(token.m_payload, '\n');
-                    auto line_count = lines.size();
+                    auto       line_count = lines.size();
                     for (const auto& line : lines) {
                         // tmp_a2l() << std::string(line.length(), ' ');
                         if (a2ml == true) {
@@ -324,8 +324,8 @@ class Preprocessor {
     }
 
     void get_include_paths_from_env() {
-        const auto var      = get_env_var("ASAP_INCLUDE");
-        include_paths = split_path(var);
+        const auto var = get_env_var("ASAP_INCLUDE");
+        include_paths  = split_path(var);
     }
 
     std::optional<fs::path> locate_file(const std::string& file_name, const std::string& additional_path) {

@@ -329,7 +329,7 @@ std::any AmlVisitor::visitMember(amlParser::MemberContext *ctx) {
     const auto            ctx_t = ctx->t;
     const auto            ctx_a = ctx->a;
     std::vector<uint64_t> arrary_specifier;
-    std::int64_t          value{0};
+    std::int64_t          value{ 0 };
     Type                 *tp = nullptr;
 
     if (ctx_t) {
@@ -428,7 +428,7 @@ std::any AmlVisitor::visitTaggedstruct_member(amlParser::Taggedstruct_memberCont
 
 std::any AmlVisitor::visitTaggedstruct_definition(amlParser::Taggedstruct_definitionContext *ctx) {
     const auto length   = std::size(ctx->children);
-    const auto multiple = (length == 5);    // !!CHECK!!
+    const auto multiple = (length == 5);  // !!CHECK!!
     const auto ctx_tag  = ctx->tag;
     const auto ctx_mem  = ctx->mem;
 

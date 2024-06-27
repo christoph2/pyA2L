@@ -227,7 +227,7 @@ class A2LParser {
                         continue;
                     }
 
-                    auto token_text = token->getText();
+                    auto       token_text = token->getText();
                     const auto param_type = parameter.get_type();
                     using enum PredefinedType;
 
