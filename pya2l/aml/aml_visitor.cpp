@@ -521,10 +521,10 @@ std::any AmlVisitor::visitNumericValue(amlParser::NumericValueContext *ctx) {
 
     if (ctx_i) {
         const auto text = ctx_i->getText();
-        result          = std::strtoul(text.c_str(), nullptr, 10);
+        result          = std::strtoll(text.c_str(), nullptr, 10);
     } else if (ctx_h) {
         const auto text = ctx_h->getText();
-        result          = std::strtoul(text.c_str() + 2, nullptr, 16);
+        result          = std::strtoll(text.c_str() + 2, nullptr, 16);
     } else if (ctx_f) {
         const auto text = ctx_f->getText();
         result          = std::strtold(text.c_str(), nullptr);
