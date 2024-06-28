@@ -23,8 +23,8 @@ struct TypeRegistry {
 static TypeRegistry type_registry;
 
 template<typename Ty>
-Type *make_type(const Ty &value) {
-    auto result = new Type(value);
+Type *make_type(const std::string& tag, const Ty &value) {
+    auto result = new Type(tag, value);
     type_registry.add(result);
     return result;
 }
@@ -137,26 +137,26 @@ std::any AmlVisitor::visitType_name(amlParser::Type_nameContext *ctx) {
     }
     if (ctx_pr) {
         pdt_name = std::any_cast<std::string>(visit(ctx_pr));
-        return make_type(pdt_name);
+        return make_type(tag_text, pdt_name);
     }
     if (ctx_st) {
         const auto sst = std::any_cast<StructOrReferrer>(visit(ctx_st));
-        return make_type(sst);
+        return make_type(tag_text, sst);
     }
     if (ctx_ts) {
         const auto sst = std::any_cast<TaggedStructOrReferrer>(visit(ctx_ts));
-        return make_type(sst);
+        return make_type(tag_text, sst);
     }
     if (ctx_tu) {
         const auto sst = std::any_cast<TaggedUnionOrReferrer>(visit(ctx_tu));
-        return make_type(sst);
+        return make_type(tag_text, sst);
     }
     if (ctx_en) {
         const auto enumeration = std::any_cast<EnumerationOrReferrer>(visit(ctx_en));
-        return make_type(enumeration);
+        return make_type(tag_text, enumeration);
     }
 
-    return visitChildren(ctx);
+    return {};
 }
 
 std::any AmlVisitor::visitPredefined_type_name(amlParser::Predefined_type_nameContext *ctx) {
