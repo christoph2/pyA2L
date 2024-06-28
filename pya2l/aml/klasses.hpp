@@ -439,19 +439,23 @@ using TypeVariant = std::variant<
 class Type {
    public:
 
-    Type(const std::string& predef_type_name) : m_type(predef_type_name), m_disc(TypeType::PredefinedType) {
+    Type(const std::string& tag, const std::string& predef_type_name) : m_tag(tag), m_type(predef_type_name), m_disc(TypeType::PredefinedType) {
     }
 
-    Type(const EnumerationOrReferrer& en) : m_type(en), m_disc(TypeType::Enumeration) {
+    Type(const std::string& tag, const EnumerationOrReferrer& en) : m_tag(tag), m_type(en), m_disc(TypeType::Enumeration) {
     }
 
-    Type(const StructOrReferrer& st) : m_type(st), m_disc(TypeType::StructType) {
+    Type(const std::string& tag, const StructOrReferrer& st) : m_tag(tag), m_type(st), m_disc(TypeType::StructType) {
     }
 
-    Type(const TaggedStructOrReferrer& st) : m_type(st), m_disc(TypeType::TaggedStructType) {
+    Type(const std::string& tag, const TaggedStructOrReferrer& st) : m_tag(tag), m_type(st), m_disc(TypeType::TaggedStructType) {
     }
 
-    Type(const TaggedUnionOrReferrer& tu) : m_type(tu), m_disc(TypeType::TaggedUnionType) {
+    Type(const std::string& tag, const TaggedUnionOrReferrer& tu) : m_tag(tag), m_type(tu), m_disc(TypeType::TaggedUnionType) {
+    }
+
+    const std::string& get_tag()  const noexcept {
+        return m_tag;
     }
 
     const TypeVariant& get_type() const noexcept {
@@ -464,6 +468,7 @@ class Type {
 
    private:
 
+    std::string m_tag;
     TypeVariant m_type;
     TypeType    m_disc;
 };
