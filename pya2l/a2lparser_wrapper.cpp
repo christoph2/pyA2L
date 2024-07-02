@@ -2,13 +2,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-// #include <iostream>
 #include <sstream>
 
 #include "a2lparser.hpp"
-
-// #include "ifdata.hpp"
-// #include "line_map.hpp"
 #include "preprocessor.hpp"
 
 namespace py = pybind11;

@@ -6,6 +6,9 @@
 
 using namespace antlr4;
 
+void marshal(std::stringstream& ss, const AmlFile& amlf);
+void unmarshal(const std::stringstream& inbuf);
+
 int main(int argc, const char* argv[]) {
     std::ifstream stream;
 
@@ -31,7 +34,27 @@ int main(int argc, const char* argv[]) {
     amlParser::AmlFileContext* tree = parser.amlFile();
 
     AmlVisitor visitor;
-    auto       res = std::any_cast<std::vector< Declaration>>(visitor.visitAmlFile(tree));
+    auto       res = std::any_cast<AmlFile>(visitor.visitAmlFile(tree));
+
+    std::stringstream ss;
+    marshal(ss, res);
+    // std::cout << ss.str();
+
+    constexpr auto FNAME{ "aml_dump.bin" };
+
+    std::ofstream outf(FNAME, std::ios::binary);
+    outf << ss.str();
+    outf.close();
+
+    std::stringstream rbuf;
+    std::ifstream     inf(FNAME, std::ios::binary);
+
+    rbuf << inf.rdbuf();
+
+    // std::string ppp = ;
+    unmarshal(rbuf);
+
+    inf.close();
 
     return 0;
 }

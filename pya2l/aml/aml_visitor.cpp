@@ -23,7 +23,7 @@ struct TypeRegistry {
 static TypeRegistry type_registry;
 
 template<typename Ty>
-Type *make_type(const std::string& tag, const Ty &value) {
+Type *make_type(const std::string &tag, const Ty &value) {
     auto result = new Type(tag, value);
     type_registry.add(result);
     return result;
@@ -82,19 +82,19 @@ std::string strip(std::string str, char chr = '"') {
 std::any AmlVisitor::visitAmlFile(amlParser::AmlFileContext *ctx) {
     const auto ctx_d = ctx->d;
 
-    std::vector< Declaration> decls;
+    std::vector<Declaration> decls;
 
     for (const auto &elem_ctx : ctx_d) {
         decls.emplace_back(std::any_cast<Declaration>(visit(elem_ctx)));
     }
 
-    return decls;
+    return AmlFile(decls);
 }
 
 std::any AmlVisitor::visitDeclaration(amlParser::DeclarationContext *ctx) {
     const auto      ctx_t = ctx->t;
     const auto      ctx_b = ctx->b;
-    TypeDefinition td;
+    TypeDefinition  td;
     BlockDefinition block;
 
     if (ctx_t) {
@@ -110,10 +110,10 @@ std::any AmlVisitor::visitDeclaration(amlParser::DeclarationContext *ctx) {
 
 std::any AmlVisitor::visitType_definition(amlParser::Type_definitionContext *ctx) {
     const auto td_ctx = ctx->type_name();
-    Type * tp = nullptr;
+    Type      *tp     = nullptr;
 
     if (td_ctx) {
-        tp = std::any_cast<Type*>(td_ctx);
+        tp = std::any_cast<Type *>(visit(td_ctx));
     }
 
     return TypeDefinition(tp);
@@ -126,7 +126,6 @@ std::any AmlVisitor::visitType_name(amlParser::Type_nameContext *ctx) {
     const auto  ctx_ts = ctx->ts;
     const auto  ctx_tu = ctx->tu;
     const auto  ctx_en = ctx->en;
-    std::string pdt_name;
     std::string tag_text{};
 
     if (ctx_t) {
@@ -136,8 +135,8 @@ std::any AmlVisitor::visitType_name(amlParser::Type_nameContext *ctx) {
         }
     }
     if (ctx_pr) {
-        pdt_name = std::any_cast<std::string>(visit(ctx_pr));
-        return make_type(tag_text, pdt_name);
+        auto pdt = std::any_cast<AMLPredefinedType>(visit(ctx_pr));
+        return make_type(tag_text, pdt);
     }
     if (ctx_st) {
         const auto sst = std::any_cast<StructOrReferrer>(visit(ctx_st));
@@ -162,7 +161,7 @@ std::any AmlVisitor::visitType_name(amlParser::Type_nameContext *ctx) {
 std::any AmlVisitor::visitPredefined_type_name(amlParser::Predefined_type_nameContext *ctx) {
     const std::string name = ctx->name->getText();
 
-    return name;
+    return createPredefinedType(name);
 }
 
 std::any AmlVisitor::visitBlock_definition(amlParser::Block_definitionContext *ctx) {
@@ -408,12 +407,10 @@ std::any AmlVisitor::visitTaggedstruct_member(amlParser::Taggedstruct_memberCont
     auto                   multiple{ false };
 
     if (ctx_ts0) {
-        const auto ts = visit(ctx_ts0);
-        tsd           = std::any_cast<TaggedStructDefinition>(ts);
+        multiple = true;
+        tsd      = std::any_cast<TaggedStructDefinition>(visit(ctx_ts0));
     } else if (ctx_ts1) {
-        multiple      = true;
-        const auto ts = visit(ctx_ts1);
-        tsd           = std::any_cast<TaggedStructDefinition>(ts);
+        tsd = std::any_cast<TaggedStructDefinition>(visit(ctx_ts1));
     }
 
     if (ctx_bl0) {
@@ -428,12 +425,16 @@ std::any AmlVisitor::visitTaggedstruct_member(amlParser::Taggedstruct_memberCont
 
 std::any AmlVisitor::visitTaggedstruct_definition(amlParser::Taggedstruct_definitionContext *ctx) {
     const auto length   = std::size(ctx->children);
-    const auto multiple = (length == 5);  // !!CHECK!!
+    const auto multiple = (length > 4);
     const auto ctx_tag  = ctx->tag;
     const auto ctx_mem  = ctx->mem;
 
     std::string tag{};
     Member      member;
+
+    if (multiple) {
+        auto x = 9;
+    }
 
     if (ctx_tag) {
         const auto str_opt = std::any_cast<string_opt_t>(visit(ctx_tag));
@@ -446,7 +447,7 @@ std::any AmlVisitor::visitTaggedstruct_definition(amlParser::Taggedstruct_defini
         member = std::any_cast<Member>(visit(ctx_mem));
     }
 
-    return TaggedStructDefinition(tag, member);
+    return TaggedStructDefinition(tag, member, multiple);
 }
 
 std::any AmlVisitor::visitTaggedunion_type_name(amlParser::Taggedunion_type_nameContext *ctx) {
