@@ -30,7 +30,7 @@ class Parameter {
         m_type(PredefinedType::Tuple), m_multiple(false), m_tuple{ true }, m_counter{ counter }, m_tuple_elements{ elements } {
     }
 
-    ~Parameter() noexcept = default;
+    virtual ~Parameter() noexcept = default;
 
     PredefinedType get_type() const noexcept {
         return m_type;
