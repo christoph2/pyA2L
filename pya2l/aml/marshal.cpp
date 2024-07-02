@@ -38,7 +38,6 @@ void dumps(std::stringstream& ss, const BlockDefinition& block) {
     const auto  type     = block.get_type();
     const auto& member   = block.get_member();
     const auto& multiple = block.get_multiple();
-
     ss << to_binary(tag);
     if (type) {
         ss << to_binary<std::string>("T");
@@ -56,7 +55,7 @@ void dumps(std::stringstream& ss, const TaggedStructDefinition& tsd) {
     const auto  multiple = tsd.get_multiple();
     const auto& member   = tsd.get_member();
     const auto  tp       = member.get_type();
-	ss << to_binary<bool>(multiple);
+    ss << to_binary<bool>(multiple);
     if (tp) {
         ss << to_binary<bool>(true);  // available.
         dumps(ss, tp);
@@ -71,7 +70,6 @@ void dumps(std::stringstream& ss, const TaggedStructMember& tsm) {
     const auto multiple = tsm.get_multiple();
     ss << to_binary<bool>(multiple);
     if (tsm.get_block().get_type()) {
-        // ss << to_binary<std::string>("B");
         const auto& block = tsm.get_block();
         dumps(ss, block);
     } else {
@@ -93,7 +91,6 @@ void dumps(std::stringstream& ss, const TaggedStructOrReferrer& sr) {
         const auto&         tags         = ts.get_tags();
         const std::uint32_t member_count = std::size(members);
         const std::uint32_t tags_count   = std::size(tags);
-
         ss << to_binary(name);
         ss << to_binary(tags_count);
         for (const auto& [tag, value] : tags) {
@@ -111,10 +108,8 @@ void dumps(std::stringstream& ss, const TaggedUnionMember& tum) {
     const auto& tag    = tum.get_tag();
     const auto& block  = tum.get_block();
     const auto& member = tum.get_member();
-
-    //    ss << to_binary(tag);
     if (block.get_type()) {
-        //ss << to_binary<std::string>("B");
+        // ss << to_binary<std::string>("B");
         dumps(ss, block);
     } else {
         ss << to_binary<std::string>("M");
@@ -133,7 +128,6 @@ void dumps(std::stringstream& ss, const TaggedUnionOrReferrer& tr) {
         const auto&         tags         = tu.get_tags();
         const std::uint32_t member_count = std::size(members);
         const std::uint32_t tags_count   = std::size(tags);
-
         ss << to_binary(name);
         ss << to_binary(tags_count);
         for (const auto& [tag, value] : tags) {
@@ -194,9 +188,7 @@ void dumps(std::stringstream& ss, const EnumerationOrReferrer& er) {
 void dumps(std::stringstream& ss, const Type* tp_) {
     auto tp  = tp_->get_type();
     auto tag = tp_->get_tag();
-
     ss << to_binary(tag);
-
     std::visit(
         [&ss, &tp](auto&& arg) {
             using T = std::decay_t<decltype(arg)>;
@@ -222,7 +214,6 @@ void dumps(std::stringstream& ss, const Type* tp_) {
 void dumps(std::stringstream& ss, const Declaration& decl) {
     const auto  tp    = decl.get_type();
     const auto& block = decl.get_block();
-
     if (block.get_type() != nullptr) {
         ss << to_binary<std::string>("BL");
         dumps(ss, block);
@@ -236,9 +227,7 @@ void dumps(std::stringstream& ss, const Declaration& decl) {
 void dumps(std::stringstream& ss, const AmlFile& amlf) {
     const auto& decls      = amlf.get_decls();
     const auto  decl_count = std::size(decls);
-
     ss << to_binary<std::uint32_t>(decl_count);
-
     for (const auto& decl : decls) {
         dumps(ss, decl);
     }

@@ -1,6 +1,5 @@
 
 #include <cassert>
-
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -55,7 +54,6 @@ class Unmarshaller {
 
     void load_enum() {
         const auto& disc = m_reader.from_binary_str();
-
         if (disc == "E") {
             auto name             = m_reader.from_binary_str();
             auto enumerator_count = m_reader.from_binary<std::uint32_t>();
@@ -70,8 +68,8 @@ class Unmarshaller {
     }
 
     void load_tagged_struct_definition() {
-        const auto  multiple = m_reader.from_binary<bool>();
-        auto available = m_reader.from_binary< bool >();
+        const auto multiple  = m_reader.from_binary<bool>();
+        auto       available = m_reader.from_binary< bool >();
         if (available) {
             load_type();
         }
@@ -80,11 +78,10 @@ class Unmarshaller {
 
     void load_tagged_struct_member() {
         const auto  multiple = m_reader.from_binary<bool>();
-        const auto& dt = m_reader.from_binary_str();
+        const auto& dt       = m_reader.from_binary_str();
         if (dt == "T") {
             load_tagged_struct_definition();
-        }
-        else if (dt == "B") {
+        } else if (dt == "B") {
             load_block();
         }
     }
@@ -95,7 +92,7 @@ class Unmarshaller {
             auto name       = m_reader.from_binary_str();
             auto tags_count = m_reader.from_binary<std::uint32_t>();
             for (auto idx = 0; idx < tags_count; ++idx) {
-                const auto& tag      = m_reader.from_binary_str();
+                const auto& tag = m_reader.from_binary_str();
                 load_tagged_struct_member();
             }
         } else if (disc == "R") {
@@ -105,7 +102,6 @@ class Unmarshaller {
 
     void load_tagged_union() {
         const auto& disc = m_reader.from_binary_str();
-
         if (disc == "U") {
             auto name       = m_reader.from_binary_str();
             auto tags_count = m_reader.from_binary<std::uint32_t>();
@@ -150,7 +146,6 @@ class Unmarshaller {
     void load_member() {
         auto                       arr_count = m_reader.from_binary<std::uint32_t>();
         std::vector<std::uint32_t> array_spec;
-
         for (auto idx = 0; idx < arr_count; ++idx) {
             array_spec.push_back(m_reader.from_binary<std::uint32_t>());
         }
@@ -159,7 +154,6 @@ class Unmarshaller {
 
     void load_struct() {
         const auto& disc = m_reader.from_binary_str();
-
         if (disc == "S") {
             auto name         = m_reader.from_binary_str();
             auto member_count = m_reader.from_binary<std::uint32_t>();
@@ -173,8 +167,7 @@ class Unmarshaller {
     }
 
     void load_block() {
-        const auto& tag = m_reader.from_binary_str();
-
+        const auto& tag  = m_reader.from_binary_str();
         const auto& disc = m_reader.from_binary_str();
         if (disc == "T") {
             load_type();
@@ -186,7 +179,6 @@ class Unmarshaller {
 
     void run() {
         auto decl_count = m_reader.from_binary<std::uint32_t>();
-        std::cout << decl_count;
         for (auto idx = 0; idx < decl_count; ++idx) {
             const auto& disc1 = m_reader.from_binary_str();
 
