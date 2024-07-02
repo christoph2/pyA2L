@@ -71,7 +71,7 @@ void dumps(std::stringstream& ss, const TaggedStructMember& tsm) {
     const auto multiple = tsm.get_multiple();
     ss << to_binary<bool>(multiple);
     if (tsm.get_block().get_type()) {
-        ss << to_binary<std::string>("B");
+        // ss << to_binary<std::string>("B");
         const auto& block = tsm.get_block();
         dumps(ss, block);
     } else {
@@ -114,7 +114,7 @@ void dumps(std::stringstream& ss, const TaggedUnionMember& tum) {
 
     //    ss << to_binary(tag);
     if (block.get_type()) {
-        ss << to_binary<std::string>("B");
+        //ss << to_binary<std::string>("B");
         dumps(ss, block);
     } else {
         ss << to_binary<std::string>("M");
