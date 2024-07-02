@@ -9,53 +9,40 @@
     #include <sstream>
     #include <variant>
 
+    #include "types.hpp"
+
 template<typename... Ts>
 struct Overload : Ts... {
     using Ts::operator()...;
 };
 
-using string_opt_t = std::optional<std::string>;
-using numeric_t    = std::variant<std::monostate, std::int64_t, long double>;
+template<typename T>
+inline std::string to_binary(const T& value) {
+    std::string result;
 
-enum class AMLPredefinedType : std::uint8_t {
-    CHAR   = 0,
-    INT    = 1,
-    LONG   = 2,
-    UCHAR  = 3,
-    UINT   = 4,
-    ULONG  = 5,
-    DOUBLE = 6,
-    FLOAT  = 7,
-};
+    auto ptr = reinterpret_cast<const std::string::value_type*>(&value);
+    for (std::size_t idx = 0; idx < sizeof(T); ++idx) {
+        auto ch = ptr[idx];
+        result.push_back(ch);
+    }
+    return result;
+}
 
-enum class ReferrerType : std::uint8_t {
-    Enumeration      = 0,
-    StructType       = 1,
-    TaggedStructType = 2,
-    TaggedUnionType  = 3,
-};
+template<>
+inline std::string to_binary<std::string>(const std::string& value) {
+    std::string result;
 
-enum class TypeType : std::uint8_t {
-    PredefinedType   = 0,
-    Enumeration      = 1,
-    StructType       = 2,
-    TaggedStructType = 3,
-    TaggedUnionType  = 4,
-};
+    auto                ptr    = reinterpret_cast<const std::string::value_type*>(value.c_str());
+    const std::uint32_t length = std::size(value);
 
-const std::map<std::string, AMLPredefinedType> PredefinedTypesMap{
-    { "char",   AMLPredefinedType::CHAR   },
-    { "int",    AMLPredefinedType::INT    },
-    { "long",   AMLPredefinedType::LONG   },
-    { "uchar",  AMLPredefinedType::UCHAR  },
-    { "uint",   AMLPredefinedType::UINT   },
-    { "ulong",  AMLPredefinedType::ULONG  },
-    { "double", AMLPredefinedType::DOUBLE },
-    { "float",  AMLPredefinedType::FLOAT  },
-};
-
-inline AMLPredefinedType createPredefinedType(const std::string& name) {
-    return PredefinedTypesMap.at(name);
+    // We are using Pascal strings as serialization format.
+    auto len_bin = to_binary(length);
+    std::copy(len_bin.begin(), len_bin.end(), std::back_inserter(result));
+    for (std::size_t idx = 0; idx < length; ++idx) {
+        auto ch = ptr[idx];
+        result.push_back(ch);
+    }
+    return result;
 }
 
 inline std::string get_string(auto var) {
@@ -286,7 +273,8 @@ class TaggedStructDefinition {
 
     TaggedStructDefinition() = default;
 
-    explicit TaggedStructDefinition(const std::string& tag, const Member& member) : m_tag(tag), m_member(member) {
+    explicit TaggedStructDefinition(const std::string& tag, const Member& member, bool multiple) :
+        m_tag(tag), m_member(member), m_multiple(multiple) {
     }
 
     const std::string& get_tag() const noexcept {
@@ -297,14 +285,21 @@ class TaggedStructDefinition {
         return m_member;
     }
 
+    const bool get_multiple() const noexcept {
+        return m_multiple;
+    }
+
    private:
 
     std::string m_tag;
     Member      m_member;
+    bool        m_multiple;
 };
 
 class TaggedStructMember {
    public:
+
+    TaggedStructMember() = default;
 
     explicit TaggedStructMember(const TaggedStructDefinition& tsd, const BlockDefinition& block, bool multiple) :
         m_tsd(tsd), m_block(block), m_multiple(multiple) {
@@ -332,22 +327,20 @@ class TaggedStructMember {
 class TaggedStruct {
    public:
 
-    using member_t = std::variant<Member, BlockDefinition>;
-
     explicit TaggedStruct(const std::string& name, const std::vector<TaggedStructMember>& members) :
         m_name(name), m_members(members) {
         for (const auto& elem : m_members) {
-            const auto tsd   = elem.get_tagged_struct_def();
-            const auto block = elem.get_block();
-            auto       mem   = tsd.get_member();
-            if (mem.get_type()) {
-                auto tag    = tsd.get_tag();
-                m_tags[tag] = mem;
-            }
+            const auto  block = elem.get_block();
+            const auto  tsd   = elem.get_tagged_struct_def();
+            std::string tag{};
 
             if (block.get_type()) {
-                auto tag    = tsd.get_tag();
-                m_tags[tag] = block;
+                tag = block.get_tag();
+            } else {
+                tag = tsd.get_tag();
+            }
+            if (tag != "") {
+                m_tags[tag] = elem;
             }
         }
     }
@@ -360,17 +353,23 @@ class TaggedStruct {
         return m_members;
     }
 
+    const std::map<std::string, TaggedStructMember>& get_tags() const noexcept {
+        return m_tags;
+    }
+
    private:
 
-    std::string                     m_name;
-    std::vector<TaggedStructMember> m_members;
-    std::map<std::string, member_t> m_tags;
+    std::string                               m_name;
+    std::vector<TaggedStructMember>           m_members;
+    std::map<std::string, TaggedStructMember> m_tags;
 };
 
 using TaggedStructOrReferrer = std::variant<std::monostate, TaggedStruct, Referrer>;
 
 class TaggedUnionMember {
    public:
+
+    TaggedUnionMember() = default;
 
     explicit TaggedUnionMember(const std::string& tag, const Member& member, const BlockDefinition& block) :
         m_tag(tag), m_member(member), m_block(block) {
@@ -398,8 +397,6 @@ class TaggedUnionMember {
 class TaggedUnion {
    public:
 
-    using member_t = std::variant<Member, BlockDefinition>;
-
     explicit TaggedUnion(const std::string& name, const std::vector<TaggedUnionMember>& members) :
         m_name(name), m_members(members) {
         for (const auto& elem : members) {
@@ -407,11 +404,11 @@ class TaggedUnion {
             const auto block = elem.get_block();
             if (block.get_type()) {
                 const auto tag = block.get_tag();
-                m_tags[tag]    = block;
+                m_tags[tag]    = elem;
             }
             if (mem.get_type()) {
                 const auto tag = elem.get_tag();
-                m_tags[tag]    = mem;
+                m_tags[tag]    = elem;
             }
         }
     }
@@ -424,22 +421,27 @@ class TaggedUnion {
         return m_members;
     }
 
+    const std::map<std::string, TaggedUnionMember>& get_tags() const noexcept {
+        return m_tags;
+    }
+
    private:
 
-    std::string                     m_name;
-    std::vector<TaggedUnionMember>  m_members;
-    std::map<std::string, member_t> m_tags;
+    std::string                              m_name;
+    std::vector<TaggedUnionMember>           m_members;
+    std::map<std::string, TaggedUnionMember> m_tags;
 };
 
 using TaggedUnionOrReferrer = std::variant<std::monostate, TaggedUnion, Referrer>;
 
 using TypeVariant = std::variant<
-    std::monostate, std::string, EnumerationOrReferrer, StructOrReferrer, TaggedStructOrReferrer, TaggedUnionOrReferrer>;
+    std::monostate, AMLPredefinedType, EnumerationOrReferrer, StructOrReferrer, TaggedStructOrReferrer, TaggedUnionOrReferrer>;
 
 class Type {
    public:
 
-    Type(const std::string& tag, const std::string& predef_type_name) : m_tag(tag), m_type(predef_type_name), m_disc(TypeType::PredefinedType) {
+    Type(const std::string& tag, const AMLPredefinedType& predef_type) :
+        m_tag(tag), m_type(predef_type), m_disc(TypeType::PredefinedType) {
     }
 
     Type(const std::string& tag, const EnumerationOrReferrer& en) : m_tag(tag), m_type(en), m_disc(TypeType::Enumeration) {
@@ -454,7 +456,7 @@ class Type {
     Type(const std::string& tag, const TaggedUnionOrReferrer& tu) : m_tag(tag), m_type(tu), m_disc(TypeType::TaggedUnionType) {
     }
 
-    const std::string& get_tag()  const noexcept {
+    const std::string& get_tag() const noexcept {
         return m_tag;
     }
 
@@ -474,12 +476,20 @@ class Type {
 };
 
 class TypeDefinition {
-public:
+   public:
 
-    TypeDefinition() = default;
-    TypeDefinition(Type* tp) :  m_tp(tp) {}
+    TypeDefinition() : m_tp(nullptr) {
+    }
 
-private:
+    explicit TypeDefinition(Type* tp) : m_tp(tp) {
+    }
+
+    Type* get_type() const noexcept {
+        return m_tp;
+    }
+
+   private:
+
     Type* m_tp;
 };
 
@@ -501,6 +511,21 @@ class Declaration {
 
     TypeDefinition  m_td;
     BlockDefinition m_block;
+};
+
+class AmlFile {
+   public:
+
+    explicit AmlFile(const std::vector<Declaration>& decls) : m_decls(decls) {
+    }
+
+    const std::vector<Declaration>& get_decls() const noexcept {
+        return m_decls;
+    }
+
+   private:
+
+    std::vector<Declaration> m_decls;
 };
 
 #endif  // __KLASSES_HPP

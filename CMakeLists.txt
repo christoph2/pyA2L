@@ -114,7 +114,7 @@ antlr_target(AMLParser ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml.g4 LEXER PARSER
 			  )
 
 add_executable(aml_tester ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml_parser.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/aml_visitor.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/aml_visitor.cpp ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/marshal.cpp ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/unmarshal.cpp
 	${ANTLR_AMLParser_CXX_OUTPUTS}
 )
 
@@ -127,11 +127,6 @@ target_link_libraries(aml_tester antlr4_static ${SYSTEM_LIBS})
 include_directories(${ANTLR_pyA2LLexer_OUTPUT_DIR}/pya2l)
 include_directories(${ANTLR_AMLParser_OUTPUT_DIR}/pya2l)
 
-
-message("AML output: " ${ANTLR_AMLParser_OUTPUT_DIR})
-message("AML CXX out " ${ANTLR_AMLParser_CXX_OUTPUTS})
-message("LXR output: " ${ANTLR_pyA2LLexer_OUTPUT_DIR})
-message("NS: " ${Antlr4_NamespaceOption})
 
 # message("PROJ " ${PROJECT_SOURCE_DIR})
 # message("AML-Output: " ${ANTLR_AMLParser_OUTPUTS} " cxx: " ${ANTLR_AMLParser_CXX_OUTPUTS})
