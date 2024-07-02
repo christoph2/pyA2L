@@ -56,6 +56,7 @@ void dumps(std::stringstream& ss, const TaggedStructDefinition& tsd) {
     const auto  multiple = tsd.get_multiple();
     const auto& member   = tsd.get_member();
     const auto  tp       = member.get_type();
+	ss << to_binary<bool>(multiple);
     if (tp) {
         ss << to_binary<bool>(true);  // available.
         dumps(ss, tp);
