@@ -1,7 +1,7 @@
 /*
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-    (C) 2023 by Christoph Schueler <cpu12.gems.googlemail.com>
+    (C) 2023-2024 by Christoph Schueler <cpu12.gems.googlemail.com>
 
     All Rights Reserved
 
@@ -247,6 +247,13 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
                 if ((string_state == StringStateType::IDLE) && (!in_comment())) {
                     token[char_class_to_int(current)].push_back(ch);
                 } else {
+                    auto sz = std::size(token[char_class_to_int(CharClass::STRING)]);
+                    if ((sz == 1) && (ch == DQUOTE) && (previous == CharClass::REGULAR) &&
+                        (string_state == StringStateType::IN_STRING)) {
+                        LineNumbers line_numbers{ start_line, start_column, line, column - 1 };
+                        co_yield { Token(TokenClass::REGULAR, line_numbers, token[char_class_to_int(current)]) };
+                        token[char_class_to_int(CharClass::REGULAR)].clear();
+                    }
                     token[char_class_to_int(CharClass::STRING)].push_back(ch);
                 }
             } else {

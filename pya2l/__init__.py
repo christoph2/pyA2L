@@ -27,7 +27,7 @@ __author__ = "Christoph Schueler"
 __version__ = "0.10.2"
 
 
-import pickle  # nosec
+# import pickle  # nosec
 import pkgutil
 import sys
 from pathlib import Path
@@ -143,11 +143,11 @@ class DB:
         self.db, listener_result = a2l_parser.parse(filename=filenames.a2l, dbname=str(self._dbfn), encoding=encoding)
         self.session = self.db.session
 
-        self.logger.info("Parsing AML section ...")
-        aml_parser = parsers.aml(prepro_result=prepro_result)
-        aml_result = aml_parser.parseFromFile(filename=filenames.aml, dbname=str(self._dbfn), encoding=encoding).listener_result
-        aml_parsed = pickle.dumps(aml_result)
-        aml_text = open(filenames.aml).read()
+        # self.logger.info("Parsing AML section ...")
+        # aml_parser = parsers.aml(prepro_result=prepro_result)
+        # aml_result = aml_parser.parseFromFile(filename=filenames.aml, dbname=str(self._dbfn), encoding=encoding).listener_result
+        # aml_parsed = pickle.dumps(aml_result)
+        # aml_text = open(filenames.aml).read()
         """
         self.session.add(model.AMLSection(text=aml_text, parsed=aml_parsed))
         self.logger.info("Parsing IF_DATA sections ...")
@@ -160,7 +160,7 @@ class DB:
         """
         self.session.commit()
 
-        self.session.add(model.AMLSection(text=aml_text, parsed=aml_parsed))
+        # self.session.add(model.AMLSection(text=aml_text, parsed=aml_parsed))
 
         # self.session.commit()
         self.logger.info(f"Done [Elapsed time {perf_counter() - start_time:.2f}s].")
