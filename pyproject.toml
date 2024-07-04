@@ -31,7 +31,6 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-antlr4-python3-runtime = "4.13.1"
 chardet = "^5.2.0"
 Mako = "^1.3.5"
 SQLAlchemy = "^2.0.30"
@@ -52,7 +51,7 @@ pre-commit-hooks = "^4.6.0"
 
 pyupgrade = "^3.16.0"
 [build-system]
-requires = ["poetry-core>=1.6.0", "pybind11>=2.12.0", "wheel", "cmake>=3.12", "pybind11[global]>=2.11.1"]
+requires = ["poetry-core>=1.6.0", "wheel", "cmake>=3.12", "pybind11[global]>=2.12.0"]
 build-backend = "poetry.core.masonry.api"
 
 
