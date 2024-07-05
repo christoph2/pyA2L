@@ -15,7 +15,7 @@ int main(int argc, const char* argv[]) {
     if (argc == 2) {
         stream.open(argv[1]);
     } else {
-        // stream.open("C:/csProjects/pyA2L/examples/xcp100.aml");
+        //stream.open("C:/csProjects/pyA2L/examples/xcp100.aml");
         stream.open("C:/csProjects/pyA2L/pya2l/examples/AML.tmp");
     }
 

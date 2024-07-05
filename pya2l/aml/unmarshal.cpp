@@ -254,6 +254,7 @@ class Unmarshaller {
             if (disc1 == "TY") {
                 result.emplace_back(load_type());
             } else if (disc1 == "BL") {
+                auto bt = m_reader.from_binary_str();
                 result.emplace_back(load_block());
             }
         }
