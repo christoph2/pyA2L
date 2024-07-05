@@ -118,10 +118,19 @@ add_executable(aml_tester ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml_parser.cpp
 	${ANTLR_AMLParser_CXX_OUTPUTS}
 )
 
+add_executable(if_data_parser ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/if_data_parser.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/unmarshal.cpp
+	${ANTLR_AMLParser_CXX_OUTPUTS}
+	${ANTLR_pyA2LLexer_CXX_OUTPUTS}
+)
+
 target_link_libraries(aml_tester antlr4_static ${SYSTEM_LIBS})
+target_link_libraries(if_data_parser antlr4_static ${SYSTEM_LIBS})
 
 # target_include_directories(aml_tester PUBLIC $<BUILD_INTERFACE:${ANTLR4_INCLUDE_DIRS})
  target_include_directories(aml_tester PUBLIC ${ANTLR4_INCLUDE_DIRS} ${ANTLR_AMLParser_OUTPUT_DIR} ${PROJECT_SOURCE_DIR}/pya2l/aml)
+ target_include_directories(if_data_parser PUBLIC ${ANTLR4_INCLUDE_DIRS} ${ANTLR_pyA2LLexer_OUTPUT_DIR} ${ANTLR_AMLParser_OUTPUT_DIR} ${PROJECT_SOURCE_DIR}/pya2l/aml)	# !?
+
 
 # include generated files in project environment
 include_directories(${ANTLR_pyA2LLexer_OUTPUT_DIR}/pya2l)

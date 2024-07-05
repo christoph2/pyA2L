@@ -50,7 +50,8 @@ INT:
 COMMENT:
     ('//' ~('\n'|'\r')* '\r'? '\n'
     |   '/*' .*? '*/')
-        -> channel(HIDDEN)
+        //-> channel(HIDDEN)
+        -> channel(1)
     ;
 
 WS  :   (' ' | '\t' | '\r' | '\n') -> skip

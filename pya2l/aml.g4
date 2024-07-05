@@ -67,7 +67,9 @@ predefined_type_name:
    ;
 
 block_definition:
-   'block' tag = tagValue tn = type_name | /* Owed to Vector Informatik... */ '(' mem = member ')' (mult = '*')?
+   'block' tag = tagValue
+   tn = type_name
+   | (/* Owed to Vector Informatik... */ '(' mem = member ')' (mult = '*')?)
    ;
 
 enum_type_name:
@@ -204,4 +206,3 @@ OCTAL_ESC
     |   '\\' ('0'..'7') ('0'..'7')
     |   '\\' ('0'..'7')
     ;
-
