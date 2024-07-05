@@ -250,6 +250,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
                     auto sz = std::size(token[char_class_to_int(CharClass::STRING)]);
                     if ((sz == 1) && (ch == DQUOTE) && (previous == CharClass::REGULAR) &&
                         (string_state == StringStateType::IN_STRING)) {
+                        // Get rid of " prefixes, eg. ("some string"
                         LineNumbers line_numbers{ start_line, start_column, line, column - 1 };
                         co_yield { Token(TokenClass::REGULAR, line_numbers, token[char_class_to_int(current)]) };
                         token[char_class_to_int(CharClass::REGULAR)].clear();
@@ -314,9 +315,6 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
                 std::cout << "[WARNING (pya2l.Preprocessor)]: Multiline string @ line: " << line - 1 << std::endl;
                 multi_line_string = true;
             }
-
-            // string_state = StringStateType::IDLE;  // Unterminated string?
-            // string_class = false;
             if (comment_state == CommentStateType::SINGLE_LINE) {
                 comment_state = CommentStateType::IDLE;
 

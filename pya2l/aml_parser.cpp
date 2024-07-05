@@ -4,6 +4,8 @@
 #include "aml_visitor.h"
 #include "antlr4-runtime.h"
 
+// #include "boost/json/src.hpp"
+
 using namespace antlr4;
 
 void marshal(std::stringstream& ss, const AmlFile& amlf);
@@ -15,8 +17,9 @@ int main(int argc, const char* argv[]) {
     if (argc == 2) {
         stream.open(argv[1]);
     } else {
-        //stream.open("C:/csProjects/pyA2L/examples/xcp100.aml");
-        stream.open("C:/csProjects/pyA2L/pya2l/examples/AML.tmp");
+        // stream.open("C:/csProjects/pyA2L/examples/xcp100.aml");
+        // stream.open("C:/csProjects/pyA2L/pya2l/examples/AML.tmp");
+        stream.open("C:/csProjects/pyA2L/pya2l/PreProcessor/AML.tmp");
     }
 
     ANTLRInputStream input(stream);
@@ -52,7 +55,6 @@ int main(int argc, const char* argv[]) {
 
     rbuf << inf.rdbuf();
 
-    // std::string ppp = ;
     unmarshal(rbuf);
 
     inf.close();
