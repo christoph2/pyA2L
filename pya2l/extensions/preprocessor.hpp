@@ -132,7 +132,7 @@ class Preprocessor {
         bool               include     = false;
         std::uint8_t       skip_tokens = 0;
         std::vector<Token> collected_tokens{};
-        bool suppress_comments{ true };
+        bool               suppress_comments{ true };
 
         if (line_map.contains(abs_pth.string())) {
             throw std::runtime_error(
@@ -162,11 +162,9 @@ class Preprocessor {
                     for (const auto& line : lines) {
                         // tmp_a2l() << std::string(line.length(), ' ');
                         if (a2ml == true) {
-
                             if (suppress_comments) {
                                 tmp_aml() << std::string(line.length(), ' ');
-                            }
-                            else {
+                            } else {
                                 tmp_aml() << line;
                             }
                         }
@@ -185,7 +183,7 @@ class Preprocessor {
                             for (const auto& item : collected_tokens) {
                                 // tmp_a2l() << item.m_payload;
                                 a2l_token_writer << item;
-                                //tmp_aml() << item.m_payload;
+                                // tmp_aml() << item.m_payload;
                             }
                             tmp_aml() << "A2ML";
                         } else if (token.m_payload == "IF_DATA") {

@@ -152,8 +152,15 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/pya2l/extensions)
 pybind11_add_module(preprocessor pya2l/preprocessor_wrapper.cpp pya2l/extensions/tokenizer.cpp)
 pybind11_add_module(a2lparser_ext pya2l/a2lparser_wrapper.cpp pya2l/extensions/exceptions.cpp)
 
+pybind11_add_module(amlparser_ext pya2l/amlparser_wrapper.cpp ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/aml_visitor.cpp ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/marshal.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/parser.cpp ${ANTLR_AMLParser_CXX_OUTPUTS})
+
+target_link_libraries(amlparser_ext PRIVATE antlr4_static) # ${SYSTEM_LIBS})
+
+
 target_compile_options(preprocessor PUBLIC "-DEXTENSION_NAME=preprocessor")
 target_compile_options(a2lparser_ext PUBLIC "-DEXTENSION_NAME=a2lparser_ext")
+target_compile_options(amlparser_ext PUBLIC "-DEXTENSION_NAME=amlparser_ext")
 
 set(LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pya2l")
 
@@ -171,6 +178,7 @@ ENDIF()
 
 install(TARGETS preprocessor LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
 install(TARGETS a2lparser_ext LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
+install(TARGETS amlparser_ext LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
 # install(TARGETS aml_tester LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
 
 # install(FILES ${ANTLR_AMLParser_CXX_OUTPUTS} LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/pya2l/libs)
