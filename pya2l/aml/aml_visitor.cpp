@@ -400,7 +400,6 @@ std::any AmlVisitor::visitTaggedstruct_member(amlParser::Taggedstruct_memberCont
     const auto ctx_ts1 = ctx->ts1;
     const auto ctx_bl0 = ctx->bl0;
     const auto ctx_bl1 = ctx->bl1;
-    const auto length  = std::size(ctx->children);  // !!CHECK!!
 
     TaggedStructDefinition tsd;
     BlockDefinition        block;
@@ -431,10 +430,6 @@ std::any AmlVisitor::visitTaggedstruct_definition(amlParser::Taggedstruct_defini
 
     std::string tag{};
     Member      member;
-
-    if (multiple) {
-        auto x = 9;
-    }
 
     if (ctx_tag) {
         const auto str_opt = std::any_cast<string_opt_t>(visit(ctx_tag));

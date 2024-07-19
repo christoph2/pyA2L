@@ -1,6 +1,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <memory>
 #include <optional>
 #include <sstream>
 #include <vector>

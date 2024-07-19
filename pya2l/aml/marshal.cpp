@@ -74,7 +74,6 @@ void dumps(std::stringstream& ss, const TaggedStructMember& tsm) {
         dumps(ss, block);
     } else {
         ss << to_binary<std::string>("T");
-        const auto& tp  = tsm.get_tagged_struct_def().get_member().get_type();
         const auto& tsd = tsm.get_tagged_struct_def();
         dumps(ss, tsd);
     }
@@ -85,12 +84,11 @@ void dumps(std::stringstream& ss, const TaggedStructOrReferrer& sr) {
     ss << to_binary<std::string>("TS");
     if (std::holds_alternative<TaggedStruct>(sr)) {
         ss << to_binary<std::string>("S");
-        const auto&         ts           = std::get<TaggedStruct>(sr);
-        const auto&         members      = ts.get_members();
-        const auto&         name         = ts.get_name();
-        const auto&         tags         = ts.get_tags();
-        const std::uint32_t member_count = std::size(members);
-        const std::uint32_t tags_count   = std::size(tags);
+        const auto&         ts         = std::get<TaggedStruct>(sr);
+        const auto&         members    = ts.get_members();
+        const auto&         name       = ts.get_name();
+        const auto&         tags       = ts.get_tags();
+        const std::uint32_t tags_count = std::size(tags);
         ss << to_binary(name);
         ss << to_binary(tags_count);
         for (const auto& [tag, value] : tags) {
@@ -105,11 +103,10 @@ void dumps(std::stringstream& ss, const TaggedStructOrReferrer& sr) {
 
 // TaggedUnionMember.
 void dumps(std::stringstream& ss, const TaggedUnionMember& tum) {
-    const auto& tag    = tum.get_tag();
+    // const auto& tag    = tum.get_tag();
     const auto& block  = tum.get_block();
     const auto& member = tum.get_member();
     if (block.get_type()) {
-        // ss << to_binary<std::string>("B");
         dumps(ss, block);
     } else {
         ss << to_binary<std::string>("M");
@@ -122,12 +119,11 @@ void dumps(std::stringstream& ss, const TaggedUnionOrReferrer& tr) {
     ss << to_binary<std::string>("TU");
     if (std::holds_alternative<TaggedUnion>(tr)) {
         ss << to_binary<std::string>("U");
-        const auto&         tu           = std::get<TaggedUnion>(tr);
-        const auto&         members      = tu.get_members();
-        const auto&         name         = tu.get_name();
-        const auto&         tags         = tu.get_tags();
-        const std::uint32_t member_count = std::size(members);
-        const std::uint32_t tags_count   = std::size(tags);
+        const auto&         tu         = std::get<TaggedUnion>(tr);
+        const auto&         members    = tu.get_members();
+        const auto&         name       = tu.get_name();
+        const auto&         tags       = tu.get_tags();
+        const std::uint32_t tags_count = std::size(tags);
         ss << to_binary(name);
         ss << to_binary(tags_count);
         for (const auto& [tag, value] : tags) {

@@ -285,7 +285,7 @@ class TaggedStructDefinition {
         return m_member;
     }
 
-    const bool get_multiple() const noexcept {
+    bool get_multiple() const noexcept {
         return m_multiple;
     }
 
