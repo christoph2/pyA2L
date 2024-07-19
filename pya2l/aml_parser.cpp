@@ -1,3 +1,5 @@
+#include <time.h>
+
 #include <iostream>
 
 #include "amlLexer.h"
@@ -13,6 +15,8 @@ void unmarshal(const std::stringstream& inbuf);
 
 int main(int argc, const char* argv[]) {
     std::ifstream stream;
+
+    // tt_tester();
 
     if (argc == 2) {
         stream.open(argv[1]);
