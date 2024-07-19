@@ -32,8 +32,8 @@ template<>
 inline std::string to_binary<std::string>(const std::string& value) {
     std::string result;
 
-    auto                ptr    = reinterpret_cast<const std::string::value_type*>(value.c_str());
-    const std::uint32_t length = std::size(value);
+    auto            ptr    = reinterpret_cast<const std::string::value_type*>(value.c_str());
+    const std::size length = std::size(value);
 
     // We are using Pascal strings as serialization format.
     auto len_bin = to_binary(length);

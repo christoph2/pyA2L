@@ -6,6 +6,7 @@ import platform
 import re
 import subprocess  # nosec
 import sys
+from typing import Optional
 from pathlib import Path
 
 # from pprint import pprint
@@ -36,7 +37,7 @@ def fetch_tags(repo: str) -> list[str]:
     return sorted(tag_set, key=sort_by_version)
 
 
-def most_recent_tag(repo: str) -> str | None:
+def most_recent_tag(repo: str) -> Optional[str]:
     tags = fetch_tags(repo)
     return tags[-1] if tags else None
 
