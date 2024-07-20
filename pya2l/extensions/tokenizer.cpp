@@ -249,6 +249,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
                         LineNumbers line_numbers{ start_line, start_column, line, column - 1 };
                         co_yield{ Token(TokenClass::STRING, line_numbers, token[char_class_to_int(current)]) };
                         token[char_class_to_int(CharClass::REGULAR)].clear();
+                        string_class = false;
                     }
                     token[char_class_to_int(current)].push_back(ch);
                 } else {
