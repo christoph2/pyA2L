@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
@@ -27,20 +26,22 @@ __copyright__ = """
 __author__ = "Christoph Schueler"
 __version__ = "0.1.0"
 
-from collections import namedtuple
 import importlib
 import sys
-
-import antlr4
-from antlr4.error.ErrorListener import ErrorListener
-from antlr4.atn.ParserATNSimulator import ParserATNSimulator
+from collections import namedtuple
 
 from pya2l import model
+
+
+# import antlr4
+# from antlr4.error.ErrorListener import ErrorListener
+# from antlr4.atn.ParserATNSimulator import ParserATNSimulator
 
 
 ResultType = namedtuple("ResultType", "db listener_result")
 
 
+'''
 class MyErrorListener(ErrorListener):
     """ """
 
@@ -58,6 +59,7 @@ class MyErrorListener(ErrorListener):
             )
         else:
             print("line " + str(line) + ":" + str(column) + " " + msg, file=sys.stderr)
+'''
 
 
 class ParserWrapper:
@@ -82,8 +84,8 @@ class ParserWrapper:
         self.listener = listener
 
     def _load(self, name):
-        className = "{0}{1}".format(self.grammarName, name)
-        moduleName = "pya2l.{0}".format(className)
+        className = f"{self.grammarName}{name}"
+        moduleName = f"pya2l.{className}"
         module = importlib.import_module(moduleName)
         klass = getattr(module, className)
         return (

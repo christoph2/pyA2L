@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
@@ -25,8 +24,6 @@ __copyright__ = """
 
 from collections import namedtuple
 
-import six
-
 from pya2l.utils import SingletonBase
 
 
@@ -36,11 +33,11 @@ def camel_case(name, upper_first=True):
     result.append(splitty[0])
     if len(splitty) > 1:
         for part in splitty[1:]:
-            xxx = "{0}{1}".format(part[0].upper(), part[1:])
+            xxx = f"{part[0].upper()}{part[1:]}"
             result.append(xxx)
     result = "".join(result)
     if upper_first:
-        result = "{}{}".format(result[0].upper(), result[1:])
+        result = f"{result[0].upper()}{result[1:]}"
     return result
 
 
@@ -165,8 +162,7 @@ class KeywordType(type):
         return result
 
 
-@six.add_metaclass(KeywordType)
-class Keyword(object):
+class Keyword(metaclass=KeywordType):
 
     multiple = False
     block = False
@@ -180,7 +176,7 @@ class Keyword(object):
         return [attr[1] for attr in cls.attrs if MULTIPLE not in attr]
 
     def __str__(self):
-        return "< %s @%0X >" % (self.__class__.__name__, id(self))
+        return f"< {self.__class__.__name__} @{id(self):0X} >"
 
     @classmethod
     def class_name(cls):
@@ -2073,7 +2069,7 @@ KEYWORD_MAP = {
 }
 
 
-class A2LElement(object):
+class A2LElement:
     def __str__(self):
         result = []
         result.append("%s {" % self.__class__.__name__)
