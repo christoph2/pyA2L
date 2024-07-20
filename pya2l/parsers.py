@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
@@ -26,10 +25,13 @@ __copyright__ = """
 """
 __author__ = "Christoph Schueler"
 
-from pya2l.aml.listener import AMLListener
-from pya2l.parserlib import ParserWrapper
 from pya2l.a2lparser import A2LParser
-from pya2l.if_data_parser import IfDataParser
+
+# from pya2l.aml.listener import AMLListener
+from pya2l.parserlib import ParserWrapper
+
+
+# from pya2l.if_data_parser import IfDataParser
 
 
 def aml(debug: bool = False, prepro_result=None):
