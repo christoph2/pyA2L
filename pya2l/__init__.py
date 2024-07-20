@@ -145,6 +145,18 @@ class DB:
 
         # self.logger.info("Parsing AML section ...")
         # aml_parser = parsers.aml(prepro_result=prepro_result)
+
+        def parse_aml(file_name: str) -> str:
+            from pya2l import amlparser_ext
+
+            text = open(file_name).read()
+            # print(text)
+            result = amlparser_ext.parse(text)
+            # print(result)
+            return result
+
+        # from pya2l import amlparser_ext
+        parse_aml(filenames.aml)
         # aml_result = aml_parser.parseFromFile(filename=filenames.aml, dbname=str(self._dbfn), encoding=encoding).listener_result
         # aml_parsed = pickle.dumps(aml_result)
         # aml_text = open(filenames.aml).read()
