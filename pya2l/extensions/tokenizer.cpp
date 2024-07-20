@@ -245,6 +245,11 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
         } else {
             if (previous == current) {
                 if ((string_state == StringStateType::IDLE) && (!in_comment())) {
+                    if (previos_ch == DQUOTE) {
+                        LineNumbers line_numbers{ start_line, start_column, line, column - 1 };
+                        co_yield{ Token(TokenClass::STRING, line_numbers, token[char_class_to_int(current)]) };
+                        token[char_class_to_int(CharClass::REGULAR)].clear();
+                    }
                     token[char_class_to_int(current)].push_back(ch);
                 } else {
                     auto sz = std::size(token[char_class_to_int(CharClass::STRING)]);

@@ -8,8 +8,25 @@ using namespace antlr4;
 
 void marshal(std::stringstream& ss, const AmlFile& amlf);
 
+// ANTLRFileStream::loadFromFile(const std::string &fileName)
+
+#if 0
+void ANTLRFileStream::loadFromFile(const std::string &fileName) {
+  _fileName = fileName;
+  if (_fileName.empty()) {
+    return;
+  }
+
+  std::ifstream stream(fileName, std::ios::binary);
+
+  ANTLRInputStream::load(stream);
+}
+#endif
+
 std::string parse(const std::string& aml_stuff) {
-    ANTLRInputStream input(aml_stuff);
+	//std::ifstream stream(fileName, std::ios::binary);
+
+	ANTLRInputStream input(aml_stuff);
 
     amlLexer          lexer(&input);
     CommonTokenStream tokens(&lexer);
