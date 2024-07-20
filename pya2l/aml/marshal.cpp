@@ -13,7 +13,7 @@ void dumps(std::stringstream& ss, const AMLPredefinedType& pdt) {
 // Member.
 void dumps(std::stringstream& ss, const Member& mem) {
     const auto&     arr_spec   = mem.get_array_spec();
-    const std::size array_size = std::size(arr_spec);
+    const std::size_t array_size = std::size(arr_spec);
     ss << to_binary(array_size);
     for (const auto arr : arr_spec) {
         ss << to_binary<std::uint32_t>(arr);
@@ -88,7 +88,7 @@ void dumps(std::stringstream& ss, const TaggedStructOrReferrer& sr) {
         const auto&     members    = ts.get_members();
         const auto&     name       = ts.get_name();
         const auto&     tags       = ts.get_tags();
-        const std::size tags_count = std::size(tags);
+        const std::size_t tags_count = std::size(tags);
         ss << to_binary(name);
         ss << to_binary(tags_count);
         for (const auto& [tag, value] : tags) {
@@ -123,7 +123,7 @@ void dumps(std::stringstream& ss, const TaggedUnionOrReferrer& tr) {
         const auto&     members    = tu.get_members();
         const auto&     name       = tu.get_name();
         const auto&     tags       = tu.get_tags();
-        const std::size tags_count = std::size(tags);
+        const std::size_t tags_count = std::size(tags);
         ss << to_binary(name);
         ss << to_binary(tags_count);
         for (const auto& [tag, value] : tags) {
@@ -144,7 +144,7 @@ void dumps(std::stringstream& ss, const StructOrReferrer& sr) {
         const auto&     st           = std::get<Struct>(sr);
         const auto&     name         = st.get_name();
         const auto&     members      = st.get_members();
-        const std::size member_count = std::size(members);
+        const std::size_t member_count = std::size(members);
         ss << to_binary(name);
         ss << to_binary(member_count);
         for (const auto& sm : members) {
@@ -167,7 +167,7 @@ void dumps(std::stringstream& ss, const EnumerationOrReferrer& er) {
         const auto&     enumeration      = std::get<Enumeration>(er);
         const auto&     name             = enumeration.get_name();
         const auto&     enumerators      = enumeration.get_enumerators();
-        const std::size enumerator_count = std::size(enumerators);
+        const std::size_t enumerator_count = std::size(enumerators);
         ss << to_binary(name);
         ss << to_binary(enumerator_count);
         for (const auto& [tag, value] : enumerators) {
@@ -222,7 +222,7 @@ void dumps(std::stringstream& ss, const Declaration& decl) {
 // AMLFile.
 void dumps(std::stringstream& ss, const AmlFile& amlf) {
     const auto& decls      = amlf.get_decls();
-    const auto  decl_count = std::size(decls);
+    const std::size_t  decl_count = std::size(decls);
     ss << to_binary<std::uint32_t>(decl_count);
     for (const auto& decl : decls) {
         dumps(ss, decl);
