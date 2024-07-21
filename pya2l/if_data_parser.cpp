@@ -3,7 +3,11 @@
 #include "antlr4-runtime.h"
 #include "ifdata.hpp"
 
+
 using namespace antlr4;
+
+void unmarshal(const std::stringstream& inbuf);
+
 
 int main() {
     std::ifstream stream;
@@ -17,6 +21,14 @@ int main() {
         stream.open("C:/csProjects/pyA2L/pya2l/examples/AML.tmp");
     }
 #endif
+
+    std::ifstream aml_stream;
+    aml_stream.open("C:/csProjects/pyA2L/build/aml_dump.bin");
+    std::stringstream aml_buffer;
+
+    aml_buffer << aml_stream.rdbuf();
+
+    unmarshal(aml_buffer);
 
     stream.open("C:\\csProjects\\pyA2L\\pya2l\\examples\\some_if_data.txt");
 
