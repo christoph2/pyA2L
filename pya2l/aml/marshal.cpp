@@ -15,7 +15,7 @@ void dumps(std::stringstream& ss, const Member& mem) {
     const auto&       arr_spec   = mem.get_array_spec();
     const std::size_t array_size = std::size(arr_spec);
     ss << to_binary(array_size);
-    for (const auto arr : arr_spec) {
+    for (std::uint32_t arr : arr_spec) {
         ss << to_binary<std::uint32_t>(arr);
     }
     const auto& tp = mem.get_type();
