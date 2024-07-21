@@ -12,7 +12,7 @@ void dumps(std::stringstream& ss, const AMLPredefinedType& pdt) {
 
 // Member.
 void dumps(std::stringstream& ss, const Member& mem) {
-    const auto&     arr_spec   = mem.get_array_spec();
+    const auto&       arr_spec   = mem.get_array_spec();
     const std::size_t array_size = std::size(arr_spec);
     ss << to_binary(array_size);
     for (const auto arr : arr_spec) {
@@ -84,10 +84,10 @@ void dumps(std::stringstream& ss, const TaggedStructOrReferrer& sr) {
     ss << to_binary<std::string>("TS");
     if (std::holds_alternative<TaggedStruct>(sr)) {
         ss << to_binary<std::string>("S");
-        const auto&     ts         = std::get<TaggedStruct>(sr);
-        const auto&     members    = ts.get_members();
-        const auto&     name       = ts.get_name();
-        const auto&     tags       = ts.get_tags();
+        const auto&       ts         = std::get<TaggedStruct>(sr);
+        const auto&       members    = ts.get_members();
+        const auto&       name       = ts.get_name();
+        const auto&       tags       = ts.get_tags();
         const std::size_t tags_count = std::size(tags);
         ss << to_binary(name);
         ss << to_binary(tags_count);
@@ -119,10 +119,10 @@ void dumps(std::stringstream& ss, const TaggedUnionOrReferrer& tr) {
     ss << to_binary<std::string>("TU");
     if (std::holds_alternative<TaggedUnion>(tr)) {
         ss << to_binary<std::string>("U");
-        const auto&     tu         = std::get<TaggedUnion>(tr);
-        const auto&     members    = tu.get_members();
-        const auto&     name       = tu.get_name();
-        const auto&     tags       = tu.get_tags();
+        const auto&       tu         = std::get<TaggedUnion>(tr);
+        const auto&       members    = tu.get_members();
+        const auto&       name       = tu.get_name();
+        const auto&       tags       = tu.get_tags();
         const std::size_t tags_count = std::size(tags);
         ss << to_binary(name);
         ss << to_binary(tags_count);
@@ -141,9 +141,9 @@ void dumps(std::stringstream& ss, const StructOrReferrer& sr) {
     ss << to_binary<std::string>("ST");
     if (std::holds_alternative<Struct>(sr)) {
         ss << to_binary<std::string>("S");
-        const auto&     st           = std::get<Struct>(sr);
-        const auto&     name         = st.get_name();
-        const auto&     members      = st.get_members();
+        const auto&       st           = std::get<Struct>(sr);
+        const auto&       name         = st.get_name();
+        const auto&       members      = st.get_members();
         const std::size_t member_count = std::size(members);
         ss << to_binary(name);
         ss << to_binary(member_count);
@@ -164,9 +164,9 @@ void dumps(std::stringstream& ss, const EnumerationOrReferrer& er) {
     ss << to_binary<std::string>("EN");
     if (std::holds_alternative<Enumeration>(er)) {
         ss << to_binary<std::string>("E");
-        const auto&     enumeration      = std::get<Enumeration>(er);
-        const auto&     name             = enumeration.get_name();
-        const auto&     enumerators      = enumeration.get_enumerators();
+        const auto&       enumeration      = std::get<Enumeration>(er);
+        const auto&       name             = enumeration.get_name();
+        const auto&       enumerators      = enumeration.get_enumerators();
         const std::size_t enumerator_count = std::size(enumerators);
         ss << to_binary(name);
         ss << to_binary(enumerator_count);
@@ -221,8 +221,8 @@ void dumps(std::stringstream& ss, const Declaration& decl) {
 
 // AMLFile.
 void dumps(std::stringstream& ss, const AmlFile& amlf) {
-    const auto& decls      = amlf.get_decls();
-    const std::size_t  decl_count = std::size(decls);
+    const auto&       decls      = amlf.get_decls();
+    const std::size_t decl_count = std::size(decls);
     ss << to_binary<std::uint32_t>(decl_count);
     for (const auto& decl : decls) {
         dumps(ss, decl);
