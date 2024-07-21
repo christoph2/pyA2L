@@ -24,9 +24,9 @@ void ANTLRFileStream::loadFromFile(const std::string &fileName) {
 #endif
 
 std::string parse(const std::string& aml_stuff) {
-	//std::ifstream stream(fileName, std::ios::binary);
+    // std::ifstream stream(fileName, std::ios::binary);
 
-	ANTLRInputStream input(aml_stuff);
+    ANTLRInputStream input(aml_stuff);
 
     amlLexer          lexer(&input);
     CommonTokenStream tokens(&lexer);
