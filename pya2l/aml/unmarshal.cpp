@@ -24,7 +24,7 @@ class Reader {
     }
 
     inline std::string from_binary_str() {
-        auto        length = from_binary<std::uint32_t>();
+        auto        length = from_binary<std::size_t>();
         std::string result;
         auto        start = m_buf.cbegin() + m_offset;
 
