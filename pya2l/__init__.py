@@ -143,24 +143,24 @@ class DB:
         self.db, listener_result = a2l_parser.parse(filename=filenames.a2l, dbname=str(self._dbfn), encoding=encoding)
         self.session = self.db.session
 
-        # self.logger.info("Parsing AML section ...")
+        self.logger.info("Parsing AML section ...")
         # aml_parser = parsers.aml(prepro_result=prepro_result)
 
-        def parse_aml(file_name: str) -> str:
+        def parse_aml(file_name: str) -> bytes:
             from pya2l import amlparser_ext
 
-            text = open(file_name).read()
-            # print(text)
-            result = amlparser_ext.parse(text)
-            # print(result)
-            return result
+            text: bytes = open(file_name, "rb").read()
+            result: bytes = amlparser_ext.parse_aml(text)
+            return text, result
 
         # from pya2l import amlparser_ext
-        parse_aml(filenames.aml)
+        aml_text, aml_parsed = parse_aml(filenames.aml)
+        self.session.add(model.AMLSection(text=aml_text, parsed=aml_parsed))
         # aml_result = aml_parser.parseFromFile(filename=filenames.aml, dbname=str(self._dbfn), encoding=encoding).listener_result
         # aml_parsed = pickle.dumps(aml_result)
         # aml_text = open(filenames.aml).read()
         """
+
         self.session.add(model.AMLSection(text=aml_text, parsed=aml_parsed))
         self.logger.info("Parsing IF_DATA sections ...")
 
