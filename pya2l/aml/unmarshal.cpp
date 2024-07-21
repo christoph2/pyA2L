@@ -100,11 +100,11 @@ class Unmarshaller {
         const auto& disc = m_reader.from_binary_str();
         if (disc == "E") {
             auto name             = m_reader.from_binary_str();
-            auto enumerator_count = m_reader.from_binary<std::uint32_t>();
+            auto enumerator_count = m_reader.from_binary<std::size_t>();
 
             enumerators_t enumerators;
 
-            for (std::uint32_t idx = 0UL; idx < enumerator_count; ++idx) {
+            for (auto idx = 0UL; idx < enumerator_count; ++idx) {
                 auto tag   = m_reader.from_binary_str();
                 auto value = m_reader.from_binary< std::uint32_t>();
 
@@ -142,9 +142,9 @@ class Unmarshaller {
         const auto& disc = m_reader.from_binary_str();
         if (disc == "S") {
             auto                                                         name       = m_reader.from_binary_str();
-            auto                                                         tags_count = m_reader.from_binary<std::uint32_t>();
+            auto                                                         tags_count = m_reader.from_binary<std::size_t>();
             std::vector<std::tuple<std::string, tagged_struct_member_t>> members;
-            for (std::uint32_t idx = 0UL; idx < tags_count; ++idx) {
+            for (auto idx = 0UL; idx < tags_count; ++idx) {
                 const auto& tag = m_reader.from_binary_str();
                 members.emplace_back(tag, load_tagged_struct_member());
             }
@@ -158,10 +158,10 @@ class Unmarshaller {
         const auto& disc = m_reader.from_binary_str();
         if (disc == "U") {
             auto                               name       = m_reader.from_binary_str();
-            auto                               tags_count = m_reader.from_binary<std::uint32_t>();
+            auto                               tags_count = m_reader.from_binary<std::size_t>();
             std::vector<tagged_union_member_t> members;
 
-            for (std::uint32_t idx = 0UL; idx < tags_count; ++idx) {
+            for (auto idx = 0UL; idx < tags_count; ++idx) {
                 auto        tag = m_reader.from_binary_str();
                 const auto& dt  = m_reader.from_binary_str();
 
@@ -205,9 +205,9 @@ class Unmarshaller {
     }
 
     member_t load_member() {
-        auto                       arr_count = m_reader.from_binary<std::uint32_t>();
+        auto                       arr_count = m_reader.from_binary<std::size_t>();
         std::vector<std::uint32_t> array_spec;
-        for (std::uint32_t idx = 0UL; idx < arr_count; ++idx) {
+        for (auto idx = 0UL; idx < arr_count; ++idx) {
             array_spec.push_back(m_reader.from_binary<std::uint32_t>());
         }
         return member_t{ array_spec, std::make_unique<type_t>(load_type()) };
@@ -217,10 +217,10 @@ class Unmarshaller {
         const auto& disc = m_reader.from_binary_str();
         if (disc == "S") {
             auto                         name         = m_reader.from_binary_str();
-            auto                         member_count = m_reader.from_binary<std::uint32_t>();
+            auto                         member_count = m_reader.from_binary<std::size_t>();
             std::vector<struct_member_t> members;
 
-            for (std::uint32_t idx = 0UL; idx < member_count; ++idx) {
+            for (auto idx = 0UL; idx < member_count; ++idx) {
                 auto member = load_member();
                 auto mult   = m_reader.from_binary<bool>();
                 members.emplace_back(mult, std::move(member));
@@ -247,9 +247,9 @@ class Unmarshaller {
     }
 
     std::vector<std::variant<type_t, block_t>> run() {
-        auto                                       decl_count = m_reader.from_binary<std::uint32_t>();
+        auto                                       decl_count = m_reader.from_binary<std::size_t>();
         std::vector<std::variant<type_t, block_t>> result;
-        for (std::uint32_t idx = 0UL; idx < decl_count; ++idx) {
+        for (auto idx = 0UL; idx < decl_count; ++idx) {
             const auto& disc1 = m_reader.from_binary_str();
 
             if (disc1 == "TY") {

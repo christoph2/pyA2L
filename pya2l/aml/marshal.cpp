@@ -223,7 +223,7 @@ void dumps(std::stringstream& ss, const Declaration& decl) {
 void dumps(std::stringstream& ss, const AmlFile& amlf) {
     const auto&       decls      = amlf.get_decls();
     const std::size_t decl_count = std::size(decls);
-    ss << to_binary<std::uint32_t>(decl_count);
+    ss << to_binary<std::size_t>(decl_count);
     for (const auto& decl : decls) {
         dumps(ss, decl);
     }
