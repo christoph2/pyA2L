@@ -9,7 +9,13 @@ namespace py = pybind11;
 std::string parse(const std::string& aml_stuff);
 
 PYBIND11_MODULE(amlparser_ext, m) {
-    m.def("parse", &parse);
+
+	m.def("parse_aml",
+    [](const std::string& aml_text) {
+        return py::bytes(parse(aml_text));
+    }
+);
+
 #if 0
     py::class_<ValueContainer>(m, "ValueContainer")
         .def(py::init<std::string_view>(), py::arg("name"))
