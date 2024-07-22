@@ -22,9 +22,9 @@ int main(int argc, const char* argv[]) {
         stream.open(argv[1]);
     } else {
         // stream.open("C:/csProjects/pyA2L/examples/xcp100.aml");
-        // stream.open("C:/csProjects/pyA2L/pya2l/examples/AML.tmp");
-        stream.open("C:/csProjects/pyA2L/pya2l/examples/vector.aml");
-        //stream.open("C:/csProjects/pyA2L/pya2l/PreProcessor/AML.tmp");
+        //  stream.open("C:/csProjects/pyA2L/pya2l/examples/AML.tmp");
+        //  stream.open("C:/csProjects/pyA2L/pya2l/PreProcessor/AML.tmp");
+        stream.open("C:\\Users\\HP\\PycharmProjects\\pyA2L\\pya2l\\examples\\vector.aml");
     }
 
     ANTLRInputStream input(stream);
