@@ -2,12 +2,9 @@
 #include "a2llg.h"
 #include "antlr4-runtime.h"
 #include "ifdata.hpp"
-
+#include "unmarshal.hpp"
 
 using namespace antlr4;
-
-void unmarshal(const std::stringstream& inbuf);
-
 
 int main() {
     std::ifstream stream;
@@ -18,19 +15,19 @@ int main() {
     }
     else {
         // stream.open("C:/csProjects/pyA2L/examples/xcp100.aml");
-        stream.open("C:/csProjects/pyA2L/pya2l/examples/AML.tmp");
+        stream.open("C:/Users/HP/PycharmProjects/pyA2L/pya2l/examples/AML.tmp");
     }
 #endif
 
     std::ifstream aml_stream;
-    aml_stream.open("C:/csProjects/pyA2L/build/aml_dump.bin");
+    aml_stream.open("C:/Users/HP/PycharmProjects/pyA2L/pya2l/examples/aml_dump.bin", std::ios_base::binary);
     std::stringstream aml_buffer;
 
     aml_buffer << aml_stream.rdbuf();
 
-    unmarshal(aml_buffer);
+    auto umm = unmarshal(aml_buffer);
 
-    stream.open("C:\\csProjects\\pyA2L\\pya2l\\examples\\some_if_data.txt");
+    stream.open("C:/Users/HP/PycharmProjects/pyA2L/pya2l/examples/some_if_data.txt");
 
     ANTLRInputStream input(stream);
 
@@ -44,3 +41,14 @@ int main() {
 
     return 0;
 }
+
+#if 0
+a2llg::IDENT
+a2llg::FLOAT
+a2llg::INT
+a2llg::COMMENT
+a2llg::WS
+a2llg::STRING
+a2llg::BEGIN
+a2llg::END
+#endif
