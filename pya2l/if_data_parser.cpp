@@ -8,7 +8,7 @@
 
 using namespace antlr4;
 
-Root load_grammar(const std::string& file_name) {
+Node load_grammar(const std::string& file_name) {
     std::ifstream aml_stream;
     aml_stream.open(file_name, std::ios_base::binary);
     std::stringstream aml_buffer;
@@ -19,7 +19,7 @@ Root load_grammar(const std::string& file_name) {
 class IfDataParser {
    public:
 
-    explicit IfDataParser(Root& root) : m_root(root) {
+    explicit IfDataParser(Node& root) : m_root(root) {
         // m_grammar.push(&m_root);
     }
 
@@ -29,6 +29,7 @@ class IfDataParser {
 
     // find_node -- type
     const Node* find_block(const std::string& tag) {
+#if 0
         // auto mr = m_grammar.top();
         //  auto root  = dynamic_cast<Root*>(mr);
         auto root  = &m_root;
@@ -50,13 +51,14 @@ class IfDataParser {
             }
 #endif
         }
+#endif
         return nullptr;
     }
 
    private:
 
-    Root&                    m_root;
-    std::stack<NodeVariant*> m_grammar{};
+    Node&                    m_root;
+    std::stack<Node*> m_grammar{};
 };
 
 int main() {
