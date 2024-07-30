@@ -45,24 +45,27 @@ class Reader {
 
 struct Node {
     enum class NodeType {
-        TYPE,
+        // TYPE,
         BLOCK,
         BLOCK_INTERN,
+        ENUMERATION,
+        ENUMERATOR,
         MEMBER,
+        PDT,
+        REFERRER,
+        ROOT,
         STRUCT,
         STRUCT_MEMBER,
         TAGGED_STRUCT,
-        TAGGED_STRUCT_MEMBER,
         TAGGED_STRUCT_DEFINITION,
+        TAGGED_STRUCT_MEMBER,
         TAGGED_UNION,
         TAGGED_UNION_MEMBER,
-        ENUMERATION,
-        ENUMERATORS,
-        REFERRER,
-        PDT,
     };
 
     Node() = default;
+
+    Node(const Node& other) = default;
 
     virtual ~Node() {
     }
@@ -74,6 +77,10 @@ struct Node {
         return m_node_type;
     }
 
+    virtual const Node* find(const std::string& value) const noexcept {
+        return nullptr;
+    }
+
     NodeType m_node_type;
 };
 
@@ -81,6 +88,8 @@ struct Referrer : public Node {
     explicit Referrer(ReferrerType category, const std::string& identifier) :
         Node(Node::NodeType::REFERRER), m_category(category), m_identifier(identifier) {
     }
+
+    Referrer(const Referrer& other) = default;
 
     ReferrerType m_category;
     std::string  m_identifier;
@@ -90,37 +99,86 @@ struct PDT : public Node {
     explicit PDT(AMLPredefinedType type) : Node(Node::NodeType::PDT), m_type(type) {
     }
 
+    PDT(const PDT& other) = default;
+
     AMLPredefinedType m_type;
 };
 
+    #if 0
 struct Enumerators : public Node {
     explicit Enumerators() : Node(Node::NodeType::ENUMERATORS) {
     }
 };
+    #endif
 
 using enumerators_t = std::map<std::string, std::uint32_t>;
+
+struct Enumerator : public Node {
+    explicit Enumerator(const std::string& name, std::uint32_t value) :
+        Node(Node::NodeType::ENUMERATOR), m_name(name), m_value(value) {
+    }
+
+    Enumerator() = default;
+
+    std::string   m_name;
+    std::uint32_t m_value;
+};
 
 struct Enumeration : public Node {
     Enumeration(const std::string& name, const enumerators_t& values) :
         Node(Node::NodeType::ENUMERATION), m_name(name), m_values(values) {
+        for (const auto& [name, value] : values) {
+            m_enumerators[name] = Enumerator(name, value);
+        }
     }
 
-    std::string   m_name;
-    enumerators_t m_values;
+    Enumeration(const Enumeration& other) {
+        m_node_type = other.m_node_type;
+        m_name      = other.m_name;
+        m_values    = other.m_values;
+    }
+
+    const Node* find(const std::string& value) const noexcept override {
+        auto res = m_enumerators.find(value);
+
+        if (res != m_enumerators.end()) {
+            // const auto& [key, value] = res;
+            // return &value;
+            return nullptr;
+        } else {
+            return nullptr;
+        }
+    }
+
+    std::string                       m_name;
+    enumerators_t                     m_values;
+    std::map<std::string, Enumerator> m_enumerators;
 };
 
 struct TaggedStructDefinition : public Node {
-    explicit TaggedStructDefinition(bool multiple, std::optional<std::unique_ptr<Node>>&& type) :
-        Node(Node::NodeType::TAGGED_STRUCT_DEFINITION), m_multiple(multiple), m_type(std::move(type)) {
+    explicit TaggedStructDefinition(bool multiple, std::optional<std::shared_ptr<Node>> type) :
+        Node(Node::NodeType::TAGGED_STRUCT_DEFINITION), m_multiple(multiple), m_type(type) {
+    }
+
+    TaggedStructDefinition(const TaggedStructDefinition& other) {
+        m_node_type = other.m_node_type;
+        m_multiple  = other.m_multiple;
+        m_type      = other.m_type;
     }
 
     bool                                 m_multiple;
-    std::optional<std::unique_ptr<Node>> m_type;
+    std::optional<std::shared_ptr<Node>> m_type;
 };
 
 struct TaggedStructMember : public Node {
-    explicit TaggedStructMember(bool multiple, Node&& definition) :
-        Node(Node::NodeType::TAGGED_STRUCT_MEMBER), m_multiple(multiple), m_definition(std::move(definition)) {
+    explicit TaggedStructMember(bool multiple, const Node& definition) :
+        Node(Node::NodeType::TAGGED_STRUCT_MEMBER), m_multiple(multiple), m_definition(definition) {
+    }
+
+    TaggedStructMember(const TaggedStructMember& other) {
+        m_node_type  = other.m_node_type;
+        m_multiple   = other.m_multiple;
+        m_definition = other.m_definition;
     }
 
     bool m_multiple;
@@ -128,8 +186,14 @@ struct TaggedStructMember : public Node {
 };
 
 struct TaggedStruct : public Node {
-    TaggedStruct(const std::string& name, std::vector< std::tuple<std::string, Node>>&& members) :
-        Node(Node::NodeType::TAGGED_STRUCT), m_name(name), m_members(std::move(members)) {
+    TaggedStruct(const std::string& name, const std::vector< std::tuple<std::string, Node>> members) :
+        Node(Node::NodeType::TAGGED_STRUCT), m_name(name), m_members(members) {
+    }
+
+    TaggedStruct(const TaggedStruct& other) {
+        m_node_type = other.m_node_type;
+        m_name      = other.m_name;
+        std::copy(other.m_members.begin(), other.m_members.end(), std::back_inserter(m_members));
     }
 
     std::string                                m_name;
@@ -146,31 +210,43 @@ struct Member : public Node {
         std::swap(m_type, other.m_type);
     }
 
-    Member& operator=(Member&& other) {
-        m_node_type = other.m_node_type;
-        std::swap(m_array_spec, other.m_array_spec);
-        std::swap(m_type, other.m_type);
+    Member& operator=(const Member& other) {
+        m_node_type  = other.m_node_type;
+        m_array_spec = other.m_array_spec;
+        m_type       = other.m_type;
 
         return *this;
     }
 
-    Member(const std::vector<std::uint32_t>& array_spec, std::unique_ptr<Node> type) :
-        Node(Node::NodeType::MEMBER), m_array_spec(array_spec), m_type(std::move(type)) {
+    Member(const Member& other) {
+        m_node_type  = other.m_node_type;
+        m_array_spec = other.m_array_spec;
+        m_type       = other.m_type;
+    }
+
+    Member(const std::vector<std::uint32_t>& array_spec, std::shared_ptr<Node> type) :
+        Node(Node::NodeType::MEMBER), m_array_spec(array_spec), m_type(type) {
     }
 
     std::vector<std::uint32_t> m_array_spec;
-    std::unique_ptr<Node>      m_type;
+    std::shared_ptr<Node>      m_type;
 };
 
 struct BlockIntern : public Node {
     BlockIntern() : Node(Node::NodeType::BLOCK_INTERN), m_type(nullptr) {
     }
 
-    BlockIntern(Member&& member, std::unique_ptr<Node> type) :
-        Node(Node::NodeType::BLOCK_INTERN), m_member(std::move(member)), m_type(std::move(type)) {
+    BlockIntern(const Member& member, std::shared_ptr<Node> type) :
+        Node(Node::NodeType::BLOCK_INTERN), m_member(member), m_type(type) {
     }
 
-    void set_type(std::unique_ptr<Node> type) noexcept {
+    BlockIntern(const BlockIntern& other) {
+        m_node_type = other.m_node_type;
+        m_member    = other.m_member;
+        m_type      = other.m_type;
+    }
+
+    void set_type(std::shared_ptr<Node> type) noexcept {
         m_type = std::move(type);
     }
 
@@ -179,12 +255,28 @@ struct BlockIntern : public Node {
     }
 
     Member                m_member;
-    std::unique_ptr<Node> m_type;
+    std::shared_ptr<Node> m_type;
 };
 
 struct Block : public Node {
     Block(const std::string& tag, bool multiple, BlockIntern&& member) :
         Node(Node::NodeType::BLOCK), m_tag(tag), m_multiple(multiple), m_member(std::move(member)) {
+    }
+
+    bool operator==(const std::string& tag) const noexcept {
+        return m_tag == tag;  // && m_multiple == other.m_multiple && m_member == other.m_member;
+    }
+
+    std::string get_tag() const noexcept {
+        return m_tag;
+    }
+
+    const Node* find(const std::string& tag) const noexcept override {
+        if (m_tag == tag) {
+            return this;
+        } else {
+            return nullptr;
+        }
     }
 
     std::string m_tag;
@@ -228,6 +320,44 @@ struct TaggedUnion : public Node {
     std::vector<TaggedUnionMember> m_members;
 };
 
+struct Root;
+
+using NodeVariant = std::variant<
+    Enumeration, Enumerator, Member, Struct, StructMember, TaggedUnion, TaggedUnionMember, TaggedStructDefinition,
+    TaggedStructMember, TaggedStruct, Referrer, Block, BlockIntern, PDT, Root /*, Node*/>;
+
+struct Root : public Node {
+    Root(const std::vector<NodeVariant>& nodes) : Node(Node::NodeType::ROOT) {
+        std::copy(nodes.begin(), nodes.end(), std::back_inserter(m_nodes));
+    }
+
+    Root(const Root& other) {
+        m_node_type = other.m_node_type;
+        std::copy(other.m_nodes.begin(), other.m_nodes.end(), std::back_inserter(m_nodes));
+    }
+
+    std::vector<NodeVariant>& nodes() noexcept {
+        return m_nodes;
+    }
+
+    #if 0
+    // find_node -- type
+    const Node* find_block(const std::string& tag) {
+        for (auto& node : m_nodes) {
+            if ((node.type() == Node::NodeType::BLOCK)) {
+                Block* block = dynamic_cast<Block*>(&node);
+                if (block->get_tag() == tag) {
+                    return block;
+                }
+            }
+            //}
+        }
+        return nullptr;
+    }
+    #endif
+    std::vector<NodeVariant> m_nodes;
+};
+
 class Unmarshaller {
    public:
 
@@ -267,7 +397,7 @@ class Unmarshaller {
         auto       available = m_reader.from_binary< bool >();
 
         if (available) {
-            return TaggedStructDefinition(multiple, std::make_unique<Node>(load_type()));
+            return TaggedStructDefinition(multiple, std::make_shared<Node>(load_type()));
         }
         // else TAG only.
         return TaggedStructDefinition(multiple, std::nullopt);
@@ -324,7 +454,7 @@ class Unmarshaller {
         }
     }
 
-    Node load_type() {
+    NodeVariant load_type() {
         const auto& tag = m_reader.from_binary_str();
         // "PD" - AMLPredefinedType
         // "TS" - TaggedStruct
@@ -356,7 +486,7 @@ class Unmarshaller {
         for (auto idx = 0UL; idx < arr_count; ++idx) {
             array_spec.push_back(m_reader.from_binary<std::uint32_t>());
         }
-        return Member(array_spec, std::make_unique<Node>(load_type()));
+        return Member(array_spec, std::make_shared<NodeVariant>(load_type()));
     }
 
     Node load_struct() {
@@ -383,7 +513,7 @@ class Unmarshaller {
 
         BlockIntern result{};
         if (disc == "T") {
-            result.set_type(std::make_unique<Node>(load_type()));
+            result.set_type(std::make_shared<Node>(load_type()));
         } else if (disc == "M") {
             result.set_member(load_member());
         }
@@ -391,10 +521,9 @@ class Unmarshaller {
         return Block(tag, multiple, std::move(result));
     }
 
-    std::vector<Node> run() {
-        auto              decl_count = m_reader.from_binary<std::size_t>();
-        std::vector<Node> result;
-        std::vector<Node> nodes;
+    std::vector<NodeVariant> run() {
+        auto                     decl_count = m_reader.from_binary<std::size_t>();
+        std::vector<NodeVariant> result;
         for (auto idx = 0UL; idx < decl_count; ++idx) {
             const auto& disc1 = m_reader.from_binary_str();
 
@@ -413,6 +542,6 @@ class Unmarshaller {
     Reader m_reader;
 };
 
-auto unmarshal(const std::stringstream& inbuf) -> std::vector<Node>;
+auto unmarshal(const std::stringstream& inbuf) -> Root;
 
 #endif  // __UNMARSHAL_HPP
