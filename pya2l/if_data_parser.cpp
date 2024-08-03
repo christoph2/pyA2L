@@ -132,6 +132,13 @@ class IfDataParser {
     }
 
     void tagged_struct_type() {
+        auto token = current_token();
+        if (token) {
+            auto [tp, text] = *token;
+            const auto tos = top();
+            const auto& ts_members = tos->get_tagged_struct_members();
+            const auto& [type, b0, b1] = ts_members.at(text);
+        }
     }
 
     void tagged_union_type() {
@@ -139,8 +146,9 @@ class IfDataParser {
         if (token) {
             auto [tp, text]   = *token;
             const auto member = top()->find_tag(text);
-            m_grammar.push(member);
             const auto& [arr_spec, type] = member->get_type();
+            m_grammar.push(type);
+            consume();
             do_type();
             m_grammar.pop();
         }
@@ -148,6 +156,26 @@ class IfDataParser {
 
     void do_type() {
         const auto tos = top();
+        switch (tos->aml_type()) {
+            case Node::AmlType::STRUCT:
+                struct_type();
+                break;
+            case Node::AmlType::TAGGED_STRUCT:
+                tagged_struct_type();
+                break;
+            case Node::AmlType::TAGGED_UNION:
+                tagged_union_type();
+                break;
+            case Node::AmlType::ENUMERATION:
+                enumeration_type();
+                break;
+            case Node::AmlType::PDT:
+                pdt_type();
+                break;
+            default:
+                std::cerr << "Unknown type: " << std::endl;
+                break;
+            }
     }
 
     void enumeration_type() {
@@ -166,16 +194,19 @@ class IfDataParser {
     token_t                 m_current_token;
 };
 
+const std::string BASE{ "C:/csProjects/" };
+//const std::string BASE{ ""C:/Users/HP/PycharmProjects/" };
+
 int main() {
     std::ifstream stream;
 
-    stream.open("C:/Users/HP/PycharmProjects/pyA2L/pya2l/examples/some_if_data.txt");
+    stream.open(BASE + "pyA2L/pya2l/examples/some_if_data.txt");
 
     ANTLRInputStream input(stream);
 
     auto ifd_lexer = a2llg(&input);
 
-    auto root = load_grammar("C:/Users/HP/PycharmProjects/pyA2L/pya2l/examples/aml_dump.bin");
+    auto root = load_grammar(BASE + "pyA2L/pya2l/examples/aml_dump.bin");
 
     std::string TEXT("/begin IF_DATA ETK\n"
                      "ADDRESS_MAPPING\n"

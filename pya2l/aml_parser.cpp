@@ -12,6 +12,10 @@ using namespace antlr4;
 
 void marshal(std::stringstream& ss, const AmlFile& amlf);
 
+const std::string BASE{ "C:/csProjects/" };
+//const std::string BASE{ ""C:/Users/HP/PycharmProjects/" };
+
+
 int main(int argc, const char* argv[]) {
     std::ifstream stream;
 
@@ -24,7 +28,7 @@ int main(int argc, const char* argv[]) {
         //  stream.open("C:/csProjects/pyA2L/pya2l/examples/AML.tmp");
         //  stream.open("C:/csProjects/pyA2L/pya2l/PreProcessor/AML.tmp");
         // stream.open("C:\\Users\\HP\\PycharmProjects\\pyA2L\\pya2l\\examples\\vector.aml");
-        stream.open("C:/Users/HP/PycharmProjects/pyA2L/pya2l/examples/AML.tmp");
+        stream.open(BASE + "pyA2L/pya2l/examples/AML.tmp");
     }
 
     ANTLRInputStream input(stream);
@@ -49,7 +53,7 @@ int main(int argc, const char* argv[]) {
     marshal(ss, res);
     // std::cout << ss.str();
 
-    constexpr auto FNAME{ "C:/Users/HP/PycharmProjects/pyA2L/pya2l/examples/aml_dump.bin" };
+    const auto FNAME{ BASE + "pyA2L/pya2l/examples/aml_dump.bin" };
 
     std::ofstream outf(FNAME, std::ios::binary);
     outf << ss.str();

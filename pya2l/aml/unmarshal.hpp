@@ -76,7 +76,7 @@ class Node {
         TAGGED_UNION_MEMBER,
     };
 
-    using terminal_t = std::variant<std::monostate, long long, float, std::string>;
+    using terminal_t = std::variant<std::monostate, long long, double, std::string>;
     using list_t     = std::vector<Node>;
     using map_t      = std::map<std::string, Node>;
 
@@ -193,6 +193,51 @@ class Node {
         }
         return {};
     }
+
+    std::map<std::string, std::tuple<const Node*, bool, bool>> get_tagged_struct_members() const noexcept {
+
+        std::map<std::string, std::tuple<const Node*, bool, bool>> result;
+
+        if (m_aml_type != AmlType::TAGGED_STRUCT) {
+            return {};
+        }
+        const auto&  members = m_map.at("MEMBERS");
+
+        for (const auto& member : members.list()) {
+            const auto& mmap = member.map();
+            const auto& ts_member = mmap.at("MEMBER");
+            const auto& ts_tag = mmap.at("TAG").get_string();
+            const auto& ts_def = ts_member.map().at("DEFINITION");
+            const auto ts_mult = bool(ts_member.map().at("MULTIPLE").get_int());
+
+            const auto& tsd_type = ts_def.map().at("TYPE");
+            const auto tsd_mult = bool(ts_def.map().at("MULTIPLE").get_int());
+            result.emplace(ts_tag, std::forward_as_tuple( & tsd_type, ts_mult, tsd_mult ));
+        }
+        return result;
+    }
+
+    long long get_int() const noexcept {
+        if (m_node_type != NodeType::TERMINAL) {
+            return {};
+        }
+        return std::get<long long>(value());
+    }
+
+    double get_float() const noexcept {
+        if (m_node_type != NodeType::TERMINAL) {
+            return {};
+        }
+        return std::get<double>(value());
+    }
+
+    std::string get_string() const noexcept {
+        if (m_node_type != NodeType::TERMINAL) {
+            return {};
+        }
+        return std::get<std::string>(value());
+    }
+
 
     ///////////////////////////////////////////////////////////////
 
@@ -420,7 +465,7 @@ class Unmarshaller {
         auto       available = m_reader.from_binary< bool >();
 
         if (available) {
-            return make_tagged_struct_definition(multiple, load_type());
+            return make_tagged_struct_definition(multiple, /*load_type()*/load_member());
         }
         // else TAG only.
         return make_tagged_struct_definition(multiple, std::nullopt);

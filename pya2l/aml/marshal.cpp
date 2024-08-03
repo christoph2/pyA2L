@@ -19,7 +19,13 @@ void dumps(std::stringstream& ss, const Member& mem) {
         ss << to_binary<std::uint32_t>(arr);
     }
     const auto& tp = mem.get_type();
-    dumps(ss, tp);
+    if (tp != nullptr) {
+        dumps(ss, tp);
+    }
+    else {
+        std::cout << "nullptr\n";
+    }
+
 }
 
 // Referrer.
@@ -58,7 +64,8 @@ void dumps(std::stringstream& ss, const TaggedStructDefinition& tsd) {
     ss << to_binary<bool>(multiple);
     if (tp) {
         ss << to_binary<bool>(true);  // available.
-        dumps(ss, tp);
+        //dumps(ss, tp);
+        dumps(ss, member);  // FIXED!!!
     } else {
         // Tag-only.
         ss << to_binary<bool>(false);  // NOT available.
