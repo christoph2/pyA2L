@@ -4,7 +4,7 @@ project(pya2l_extensions LANGUAGES C CXX)
 
 cmake_policy(SET CMP0135 NEW)
 
-# find_package(Python COMPONENTS Interpreter Development)
+find_package(Python COMPONENTS Interpreter Development)
 find_package(pybind11 REQUIRED)
 
 set(ANTLR4_TAG 4.13.1)
@@ -133,7 +133,7 @@ target_link_libraries(if_data_parser antlr4_static ${SYSTEM_LIBS})
  target_include_directories(aml_tester PUBLIC ${ANTLR4_INCLUDE_DIRS} ${ANTLR_AMLParser_OUTPUT_DIR} ${PROJECT_SOURCE_DIR}/pya2l/aml)
  target_include_directories(if_data_parser PUBLIC ${ANTLR4_INCLUDE_DIRS} ${ANTLR_pyA2LLexer_OUTPUT_DIR} ${ANTLR_AMLParser_OUTPUT_DIR} ${PROJECT_SOURCE_DIR}/pya2l/aml)	# !?
 
-message("am_tester / output: " ${aml_tester_OUTPUT_DIRECTORY})
+message("aml_tester / output: " ${aml_tester_OUTPUT_DIRECTORY})
 
 
 # include generated files in project environment

@@ -31,6 +31,8 @@ class IfDataParser {
     }
 
     void parse() {
+        do_type();
+#if 0
         auto token = current_token();
         if (token) {
             auto [type, text] = *token;
@@ -44,6 +46,7 @@ class IfDataParser {
             }
             parse();
         }
+#endif
     }
 
     token_t next_token() {
@@ -106,7 +109,15 @@ class IfDataParser {
                             break;
                     }
                 } else if (member) {
-                    m_grammar.push(*member);
+                    const auto mem_real = *member;
+                    if (mem_real->aml_type() == Node::AmlType::TAGGED_STRUCT_MEMBER) {
+                        const auto& def = mem_real->map().at("DEFINITION");
+                        const auto& [mmultiple, mmember, mtype] = def.member_or_type();
+                        m_grammar.push(*mtype);
+                        do_type();
+                        m_grammar.pop();
+                    }
+                    //m_grammar.push(*member);
                 }
                 m_grammar.pop();
             }
@@ -129,6 +140,14 @@ class IfDataParser {
     }
 
     void struct_type() {
+        const auto tos = top();
+        for (const auto& member: tos->get_members()) {
+            auto token = current_token();
+            if (token) {
+                auto [tp, text] = *token;
+            }
+            consume();
+        }
     }
 
     void tagged_struct_type() {
@@ -137,7 +156,13 @@ class IfDataParser {
             auto [tp, text] = *token;
             const auto tos = top();
             const auto& ts_members = tos->get_tagged_struct_members();
-            const auto& [type, b0, b1] = ts_members.at(text);
+            const auto& [member, b0, b1] = ts_members.at(text);
+            const auto& [arr_spec, type] = member->get_type();
+            m_grammar.push(type);
+            consume();
+            do_type();
+            m_grammar.pop();
+
         }
     }
 
@@ -145,8 +170,9 @@ class IfDataParser {
         auto token = current_token();
         if (token) {
             auto [tp, text]   = *token;
-            const auto member = top()->find_tag(text);
-            const auto& [arr_spec, type] = member->get_type();
+            const auto tu_member = top()->find_tag(text);
+            const auto& member = tu_member->map().at("MEMBER");
+            const auto& [arr_spec, type] = member.get_type();
             m_grammar.push(type);
             consume();
             do_type();
@@ -156,6 +182,19 @@ class IfDataParser {
 
     void do_type() {
         const auto tos = top();
+        auto token = current_token();
+        if (token) {
+            auto [type, text] = *token;
+            switch (type) {
+            case a2llg::BEGIN:
+                consume();
+                block_type();
+                break;
+            default:
+                std::cerr << "Unknown token type: " << type << std::endl;
+            }
+        }
+
         switch (tos->aml_type()) {
             case Node::AmlType::STRUCT:
                 struct_type();
@@ -197,6 +236,132 @@ class IfDataParser {
 const std::string BASE{ "C:/csProjects/" };
 //const std::string BASE{ ""C:/Users/HP/PycharmProjects/" };
 
+const std::string CPLX_TEXT{
+    "" \
+"  /begin IF_DATA ASAP1B_CCP" \
+"      /begin SOURCE" \
+"	      \"segment synchronous event channel\"" \
+"		  103" \
+"		  1" \
+"		  /begin QP_BLOB" \
+"		      0" \
+"			  LENGTH 8" \
+"			  CAN_ID_FIXED 0x330" \
+"			  FIRST_PID 0" \
+"			  RASTER 0" \
+"		  /end QP_BLOB" \
+"	  /end SOURCE" \
+"  " \
+"      /begin SOURCE" \
+"	      \"10ms time synchronous event channel\"" \
+"		  4" \
+"		  1" \
+"		  /begin QP_BLOB" \
+"		      1" \
+"			  LENGTH 12" \
+"			  CAN_ID_FIXED 0x340" \
+"			  FIRST_PID 8" \
+"			  RASTER 1" \
+"		  /end QP_BLOB" \
+"	  /end SOURCE" \
+"  " \
+"      /begin SOURCE" \
+"	      \"100ms time synchronous event channel\"" \
+"		  4" \
+"		  10" \
+"		  /begin QP_BLOB" \
+"		      2" \
+"			  LENGTH 8" \
+"			  CAN_ID_FIXED 0x350" \
+"			  FIRST_PID 20" \
+"			  RASTER 2" \
+"		  /end QP_BLOB" \
+"	  /end SOURCE" \
+"  " \
+"      /begin RASTER" \
+"	      \"segment synchronous event channel\"" \
+"	      \"seg_sync\"" \
+"		  0" \
+"		  103" \
+"		  1" \
+"	  /end RASTER" \
+"  " \
+"      /begin RASTER" \
+"	      \"10ms time synchronous event channel\"" \
+"	      \"10_ms\"" \
+"		  1" \
+"		  4" \
+"		  1" \
+"	  /end RASTER" \
+"  " \
+"      /begin RASTER" \
+"	      \"100ms time synchronous event channel\"" \
+"	      \"100_ms\"" \
+"		  2" \
+"		  4" \
+"		  10" \
+"	  /end RASTER" \
+"  " \
+"	  /begin SEED_KEY" \
+"	       \"\"" \
+"	       \"\"" \
+"	       \"\"" \
+"	  /end SEED_KEY" \
+"  " \
+"	  /begin TP_BLOB" \
+"	       0x200" \
+"		   0x202" \
+"		   0x200" \
+"		   0x210" \
+"		   0x1234" \
+"		   1" \
+"          " \
+"		  /begin CAN_PARAM" \
+"		       0x3E8" \
+"			   0x40" \
+"			   0x16" \
+"		  /end CAN_PARAM" \
+"          " \
+"		  DAQ_MODE    BURST" \
+"		  CONSISTENCY DAQ" \
+"          " \
+"		  /begin CHECKSUM_PARAM " \
+"		       0xC001" \
+"		       0xFFFFFFFF" \
+"		      CHECKSUM_CALCULATION ACTIVE_PAGE" \
+"          /end CHECKSUM_PARAM " \
+"          " \
+"		  /begin DEFINED_PAGES" \
+"		      1" \
+"			  \"reference page\"" \
+"			   0x00" \
+"			   0x8E0670" \
+"			   0x1C26C" \
+"			  ROM" \
+"		  /end DEFINED_PAGES" \
+"          " \
+"		  /begin DEFINED_PAGES" \
+"		      2" \
+"			  \"working page\"" \
+"			   0x00" \
+"			   0x808E0670" \
+"			   0x1C26C" \
+"			  RAM" \
+"			  RAM_INIT_BY_ECU" \
+"		  /end DEFINED_PAGES" \
+"          " \
+"		  OPTIONAL_CMD 0x11  " \
+"		  OPTIONAL_CMD 0xE  " \
+"		  OPTIONAL_CMD 0x19  " \
+"		  OPTIONAL_CMD 0x9  " \
+"		  OPTIONAL_CMD 0xC  " \
+"		  OPTIONAL_CMD 0xD  " \
+"		  OPTIONAL_CMD 0x12  " \
+"		  OPTIONAL_CMD 0x13  " \
+"	  /end TP_BLOB" \
+"  /end IF_DATA"
+};
+
 int main() {
     std::ifstream stream;
 
@@ -214,7 +379,9 @@ int main() {
                      "0x10000\n"
                      "0x1E8\n"
                      "/end IF_DATA");
-    auto        lex = IfDataParser(root, TEXT);
+    //auto        lex = IfDataParser(root, TEXT);
+    auto        lex = IfDataParser(root, CPLX_TEXT);
+
     lex.parse();
 
     return 0;
