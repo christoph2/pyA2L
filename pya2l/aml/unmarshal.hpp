@@ -107,18 +107,18 @@ class Node {
         } else {
             for (auto entry : get_members()) {
                 std::cout << static_cast<int>(entry->node_type()) << " " << static_cast<int>(entry->aml_type()) << std::endl;
-                if (entry->aml_type() == Node::AmlType::BLOCK) {
+                //if (entry->aml_type() == Node::AmlType::BLOCK) {
                     if (entry->get_tag() == name) {
                         return entry;
                     }
-                }
+                //}
             }
         }
         return nullptr;
     }
 
     std::tuple<bool, std::optional<const Node*>, std::optional<const Node*>> member_or_type() const noexcept {
-        if (m_aml_type == AmlType::BLOCK) {
+        //if (m_aml_type == AmlType::BLOCK) {
             auto        multiple = is_multiple();
             const auto& member   = m_map.at("MEMBER");
             if (member.aml_type() == Node::AmlType::NONE) {
@@ -127,7 +127,7 @@ class Node {
             } else {
                 return { multiple, &member, std::nullopt };
             }
-        }
+        //}
         return { false, {}, {} };
     }
 
@@ -157,7 +157,7 @@ class Node {
     }
 
     bool is_multiple() const noexcept {
-        if (m_node_type == NodeType::MAP) {
+        if ((m_node_type == NodeType::MAP) && (m_map.contains("MULTIPLE"))) {
             const auto& multiple = m_map.at("MULTIPLE");
             return bool(std::get<long long>(multiple.value()));
         }
@@ -165,20 +165,17 @@ class Node {
     }
 
     std::tuple<std::vector<long long>, const Node*> get_type() const noexcept {
-        if (m_node_type == NodeType::MAP) {
-            if (m_map.contains("MEMBER")) {
-                std::vector<long long> arr_spec;
-                const auto&            member = m_map.at("MEMBER");
-                for (const auto& elem : member.map().at("ARR_SPEC").list()) {
-                    arr_spec.push_back(std::get<long long>(elem.value()));
-                }
-                const auto& type = member.map().at("TYPE");
-                return { arr_spec, &type };
-            } else {
-                return {};
+        std::vector<long long> arr_spec;
+        if ((m_map.contains("TYPE")) && (m_map.contains("ARR_SPEC"))) {
+            const auto& type = map().at("TYPE");
+            for (const auto& elem : map().at("ARR_SPEC").list()) {
+                arr_spec.push_back(std::get<long long>(elem.value()));
             }
+            return { arr_spec, &type };
         }
-        return {};
+        else {
+            return {};
+        }
     }
 
     std::vector<const Node*> get_members() const noexcept {
@@ -210,9 +207,9 @@ class Node {
             const auto& ts_def = ts_member.map().at("DEFINITION");
             const auto ts_mult = bool(ts_member.map().at("MULTIPLE").get_int());
 
-            const auto& tsd_type = ts_def.map().at("TYPE");
+            const auto& tsd_member = ts_def.map().at("MEMBER");
             const auto tsd_mult = bool(ts_def.map().at("MULTIPLE").get_int());
-            result.emplace(ts_tag, std::forward_as_tuple( & tsd_type, ts_mult, tsd_mult ));
+            result.emplace(ts_tag, std::forward_as_tuple( & tsd_member, ts_mult, tsd_mult ));
         }
         return result;
     }
@@ -321,7 +318,7 @@ inline Node make_tagged_struct_definition(bool multiple, std::optional<Node> typ
 
     Node::map_t map = {
         { "MULTIPLE", Node(Node::AmlType::TERMINAL, multiple) },
-        { "TYPE", type_node },
+        { "MEMBER", type_node },
     };
     auto res = Node(Node::AmlType::TAGGED_STRUCT_DEFINITION, map);
     return res;
