@@ -1,7 +1,7 @@
 /*
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2022 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2024 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -33,8 +33,8 @@ amlFile:
    ;
 
 declaration:
-   ( t = type_definition
-   | b = block_definition) ';'
+   ( t = type_definition ';')
+   | (b = block_definition ';')
    ;
 
 type_definition:
@@ -42,13 +42,11 @@ type_definition:
    ;
 
 type_name:
-   t = tagValue? (
      pr = predefined_type_name
    | st = struct_type_name
    | ts = taggedstruct_type_name
    | tu = taggedunion_type_name
    | en = enum_type_name
-   )
    ;
 
 predefined_type_name:
@@ -67,9 +65,8 @@ predefined_type_name:
    ;
 
 block_definition:
-   'block' tag = tagValue
-   tn = type_name
-   | (/* Owed to Vector Informatik... */ '(' mem = member ')' (mult = '*')?)
+	//block_definition | 'block' tag = tagValue tn = type_name
+   'block' tag = tagValue (blk = block_definition | tn = type_name)
    ;
 
 enum_type_name:
@@ -91,8 +88,7 @@ struct_type_name:
     ;
 
 struct_member:
-     m = member ';'
-   | '(' mstar = member ')' (m0 = '*')? ';'
+     m = member | block_definition ';'
    ;
 
 member:
@@ -104,32 +100,30 @@ array_specifier:
    ;
 
 taggedstruct_type_name:
-    'taggedstruct' t1 = identifierValue
-   | 'taggedstruct' t0 = identifierValue? ('{' (l += taggedstruct_member)* '}' | (l += taggedstruct_member)*)
+     'taggedstruct' t0 = identifierValue? '{' (l += taggedstruct_member)* '}'
+   | 'taggedstruct' t1 = identifierValue
    ;
 
 taggedstruct_member:
-    ('(' ts0 = taggedstruct_definition ';'? ')' '*' ';')
-    | ('(' bl0 = block_definition ')' '*' ';')
-    | (ts1 = taggedstruct_definition ';')
-    | (bl1 = block_definition ';')
-   ;
+	  ts1 = taggedstruct_definition ';'
+    | '(' ts0 = taggedstruct_definition ')' '*' ';'
+    | bl1 = block_definition ';'
+	| '(' bl0 = block_definition ')' '*' ';'
+    ;
 
 taggedstruct_definition:
-     tag = tagValue? mem = member?
-   | tag = tagValue? '(' mem = member ')' '*'
-   ;
+      tag = tagValue mem = member?
+	| tag = tagValue '(' mem = member ';'? ')' '*' // ';'
+    ;
 
 taggedunion_type_name:
-    (('taggedunion' t0 = identifierValue? '{' l += tagged_union_member* '}')
-    | ('taggedunion' t1 = identifierValue))
+      'taggedunion' t0 = identifierValue? '{' l += tagged_union_member* '}'
+    | 'taggedunion' t1 = identifierValue
     ;
 
 tagged_union_member:
-   (
-     t = tagValue  m = member?  ';'
+     t = tagValue  m = member? ';'
    | b = block_definition ';'
-   )
    ;
 
 numericValue:

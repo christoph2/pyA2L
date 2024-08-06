@@ -195,11 +195,11 @@ class Member {
 class BlockDefinition {
    public:
 
-    BlockDefinition() : m_tag(), m_type(nullptr), m_member(), m_multiple(false) {
+    BlockDefinition() : m_tag(), m_type(nullptr)/*, m_member(), m_multiple(false)*/ {
     }
 
-    explicit BlockDefinition(const std::string& tag, Type* type, const Member& member, bool multiple) :
-        m_tag(tag), m_type(type), m_member(member), m_multiple(multiple) {
+    explicit BlockDefinition(const std::string& tag, Type* type/*, const Member& member, bool multiple*/) :
+        m_tag(tag), m_type(type) /*, m_member(member), m_multiple(multiple)*/ {
     }
 
     const std::string& get_tag() const noexcept {
@@ -209,7 +209,7 @@ class BlockDefinition {
     const Type* get_type() const noexcept {
         return m_type;
     }
-
+    #if 0
     const Member& get_member() const noexcept {
         return m_member;
     }
@@ -217,33 +217,33 @@ class BlockDefinition {
     bool get_multiple() const noexcept {
         return m_multiple;
     }
-
+    #endif
    private:
 
     std::string m_tag;
     Type*       m_type;
-    Member      m_member;
-    bool        m_multiple;
+    //Member      m_member;
+    //bool        m_multiple;
 };
 
 class StructMember {
    public:
 
-    explicit StructMember(const Member& member, bool multiple) : m_member(member), m_multiple(multiple) {
+    explicit StructMember(const Member& member/*, bool multiple*/) : m_member(member) /*, m_multiple(multiple)*/ {
     }
 
     const Member& get_member() const noexcept {
         return m_member;
     }
-
+#if 0
     bool get_multiple() const noexcept {
         return m_multiple;
     }
-
+#endif
    private:
 
     Member m_member;
-    bool   m_multiple;
+    // bool   m_multiple;
 };
 
 class Struct {
@@ -440,24 +440,20 @@ using TypeVariant = std::variant<
 class Type {
    public:
 
-    Type(const std::string& tag, const AMLPredefinedType& predef_type) :
-        m_tag(tag), m_type(predef_type), m_disc(TypeType::PredefinedType) {
+    Type(const AMLPredefinedType& predef_type) :
+        m_type(predef_type), m_disc(TypeType::PredefinedType) {
     }
 
-    Type(const std::string& tag, const EnumerationOrReferrer& en) : m_tag(tag), m_type(en), m_disc(TypeType::Enumeration) {
+    Type(const EnumerationOrReferrer& en) : m_type(en), m_disc(TypeType::Enumeration) {
     }
 
-    Type(const std::string& tag, const StructOrReferrer& st) : m_tag(tag), m_type(st), m_disc(TypeType::StructType) {
+    Type(const StructOrReferrer& st) : m_type(st), m_disc(TypeType::StructType) {
     }
 
-    Type(const std::string& tag, const TaggedStructOrReferrer& st) : m_tag(tag), m_type(st), m_disc(TypeType::TaggedStructType) {
+    Type(const TaggedStructOrReferrer& st) : m_type(st), m_disc(TypeType::TaggedStructType) {
     }
 
-    Type(const std::string& tag, const TaggedUnionOrReferrer& tu) : m_tag(tag), m_type(tu), m_disc(TypeType::TaggedUnionType) {
-    }
-
-    const std::string& get_tag() const noexcept {
-        return m_tag;
+    Type(const TaggedUnionOrReferrer& tu) : m_type(tu), m_disc(TypeType::TaggedUnionType) {
     }
 
     const TypeVariant& get_type() const noexcept {
@@ -470,7 +466,6 @@ class Type {
 
    private:
 
-    std::string m_tag;
     TypeVariant m_type;
     TypeType    m_disc;
 };

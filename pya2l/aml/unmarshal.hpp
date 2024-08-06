@@ -368,20 +368,20 @@ inline Node make_member(const std::vector<std::uint32_t>& array_spec, const Node
     return res;
 }
 
-inline Node make_block(const std::string& tag, bool multiple, const Node& type, const Node& member) {
+inline Node make_block(const std::string& tag /*, bool multiple*/, const Node& type/*, const Node& member*/) {
     Node::map_t map = {
         { "TAG", Node(Node::AmlType::TERMINAL, tag) },
-        { "MULTIPLE", Node(Node::AmlType::TERMINAL, multiple) },
+        //{ "MULTIPLE", Node(Node::AmlType::TERMINAL, multiple) },
         { "TYPE", type },
-        { "MEMBER", member },
+        //{ "MEMBER", member },
     };
     auto res = Node(Node::AmlType::BLOCK, map);
     return res;
 }
 
-inline Node make_struct_member(bool multiple, const Node& member) {
+inline Node make_struct_member(/* bool multiple, */ const Node & member) {
     Node::map_t map = {
-        { "MULTIPLE", Node(Node::AmlType::TERMINAL, multiple) },
+        // { "MULTIPLE", Node(Node::AmlType::TERMINAL, multiple) },
         { "MEMBER", member },
     };
     auto res = Node(Node::AmlType::STRUCT_MEMBER, map);
@@ -462,7 +462,7 @@ class Unmarshaller {
         auto       available = m_reader.from_binary< bool >();
 
         if (available) {
-            return make_tagged_struct_definition(multiple, /*load_type()*/load_member());
+            return make_tagged_struct_definition(multiple, load_member());
         }
         // else TAG only.
         return make_tagged_struct_definition(multiple, std::nullopt);
@@ -522,7 +522,7 @@ class Unmarshaller {
     }
 
     Node load_type() {
-        const auto& tag = m_reader.from_binary_str();
+        // const auto& tag = m_reader.from_binary_str();
         // "PD" - AMLPredefinedType
         // "TS" - TaggedStruct
         // "TU" - TaggedUnion
@@ -565,8 +565,8 @@ class Unmarshaller {
 
             for (auto idx = 0UL; idx < member_count; ++idx) {
                 auto member = load_member();
-                auto mult   = m_reader.from_binary<bool>();
-                members.emplace_back(make_struct_member(mult, member));
+                //auto mult   = m_reader.from_binary<bool>();
+                members.emplace_back(make_struct_member(/*mult, */member));
             }
             return make_struct(name, members);
         } else if (disc == "R") {
@@ -582,11 +582,14 @@ class Unmarshaller {
         Node member{};
         if (disc == "T") {
             tp = load_type();
-        } else if (disc == "M") {
+        }
+#if 0
+        else if (disc == "M") {
             member = load_member();
         }
-        auto multiple = m_reader.from_binary<bool>();
-        return make_block(tag, multiple, tp, member);
+#endif
+        //auto multiple = m_reader.from_binary<bool>();
+        return make_block(tag, /*multiple,*/ tp/*, member*/);
     }
 
     Node run() {
