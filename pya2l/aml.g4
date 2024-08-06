@@ -88,11 +88,12 @@ struct_type_name:
     ;
 
 struct_member:
-     m = member | block_definition ';'
+     m = member';'
    ;
 
 member:
     t = type_name (a += array_specifier)*
+	| b = block_definition
     ;
 
 array_specifier:
@@ -106,9 +107,9 @@ taggedstruct_type_name:
 
 taggedstruct_member:
 	  ts1 = taggedstruct_definition ';'
-    | '(' ts0 = taggedstruct_definition ')' '*' ';'
+    | '(' ts0 = taggedstruct_definition ';'? ')' '*' ';'
     | bl1 = block_definition ';'
-	| '(' bl0 = block_definition ')' '*' ';'
+	| '(' bl0 = block_definition ';'? ')' '*' ';'
     ;
 
 taggedstruct_definition:
