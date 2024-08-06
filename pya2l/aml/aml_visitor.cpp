@@ -23,8 +23,8 @@ struct TypeRegistry {
 static TypeRegistry type_registry;
 
 template<typename Ty>
-Type *make_type(const std::string &tag, const Ty &value) {
-    auto result = new Type(tag, value);
+Type *make_type(const Ty &value) {
+    auto result = new Type(value);
     type_registry.add(result);
     return result;
 }
@@ -120,12 +120,13 @@ std::any AmlVisitor::visitType_definition(amlParser::Type_definitionContext *ctx
 }
 
 std::any AmlVisitor::visitType_name(amlParser::Type_nameContext *ctx) {
-    const auto  ctx_t  = ctx->t;
+    //const auto  ctx_t  = ctx->t;
     const auto  ctx_pr = ctx->pr;
     const auto  ctx_st = ctx->st;
     const auto  ctx_ts = ctx->ts;
     const auto  ctx_tu = ctx->tu;
     const auto  ctx_en = ctx->en;
+#if 0
     std::string tag_text{};
 
     if (ctx_t) {
@@ -134,25 +135,26 @@ std::any AmlVisitor::visitType_name(amlParser::Type_nameContext *ctx) {
             tag_text = *tag_opt;
         }
     }
+#endif
     if (ctx_pr) {
         auto pdt = std::any_cast<AMLPredefinedType>(visit(ctx_pr));
-        return make_type(tag_text, pdt);
+        return make_type(pdt);
     }
     if (ctx_st) {
         const auto sst = std::any_cast<StructOrReferrer>(visit(ctx_st));
-        return make_type(tag_text, sst);
+        return make_type(sst);
     }
     if (ctx_ts) {
         const auto sst = std::any_cast<TaggedStructOrReferrer>(visit(ctx_ts));
-        return make_type(tag_text, sst);
+        return make_type(sst);
     }
     if (ctx_tu) {
         const auto sst = std::any_cast<TaggedUnionOrReferrer>(visit(ctx_tu));
-        return make_type(tag_text, sst);
+        return make_type(sst);
     }
     if (ctx_en) {
         const auto enumeration = std::any_cast<EnumerationOrReferrer>(visit(ctx_en));
-        return make_type(tag_text, enumeration);
+        return make_type(enumeration);
     }
 
     return {};
@@ -167,13 +169,13 @@ std::any AmlVisitor::visitPredefined_type_name(amlParser::Predefined_type_nameCo
 std::any AmlVisitor::visitBlock_definition(amlParser::Block_definitionContext *ctx) {
     const auto ctx_tag  = ctx->tag;
     const auto ctx_tn   = ctx->tn;
-    const auto ctx_mem  = ctx->mem;
-    const auto ctx_mult = ctx->mult;
+    //const auto ctx_mem  = ctx->mem;
+    //const auto ctx_mult = ctx->mult;
 
     std::string tag_text;
-    bool        multiple{ false };
+    //bool        multiple{ false };
     Type       *tn = nullptr;
-    Member      member;
+    //Member      member;
 
     if (ctx_tag) {
         const auto tag_opt = std::any_cast<string_opt_t>(visit(ctx_tag));
@@ -185,7 +187,7 @@ std::any AmlVisitor::visitBlock_definition(amlParser::Block_definitionContext *c
     if (ctx_tn) {
         tn = std::any_cast<Type *>(visit(ctx_tn));
     }
-
+#if 0
     if (ctx_mem) {
         member = std::any_cast<Member>(visit(ctx_mem));
     }
@@ -195,8 +197,8 @@ std::any AmlVisitor::visitBlock_definition(amlParser::Block_definitionContext *c
             multiple = true;
         }
     }
-
-    return BlockDefinition(tag_text, tn, member, multiple);
+#endif
+    return BlockDefinition(tag_text, tn/*, member, multiple*/);
 }
 
 std::any AmlVisitor::visitEnum_type_name(amlParser::Enum_type_nameContext *ctx) {
@@ -305,14 +307,14 @@ std::any AmlVisitor::visitStruct_type_name(amlParser::Struct_type_nameContext *c
 
 std::any AmlVisitor::visitStruct_member(amlParser::Struct_memberContext *ctx) {
     const auto ctx_m     = ctx->m;
-    const auto ctx_mstar = ctx->mstar;
-    const auto ctx_m0    = ctx->m0;
+    //const auto ctx_mstar = ctx->mstar;
+    //const auto ctx_m0    = ctx->m0;
 
     if (ctx_m) {
         const auto mem = std::any_cast<Member>(visit(ctx_m));
-        return StructMember(mem, false);
+        return StructMember(mem);
     }
-
+#if 0
     if (ctx_m0) {
         if (ctx_m0->getText() == "*") {
             if (ctx_mstar) {
@@ -321,6 +323,7 @@ std::any AmlVisitor::visitStruct_member(amlParser::Struct_memberContext *ctx) {
             }
         }
     }
+#endif
     return {};
 }
 

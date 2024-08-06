@@ -42,18 +42,21 @@ void dumps(std::stringstream& ss, const BlockDefinition& block) {
     ss << to_binary<std::string>("B");
     const auto& tag      = block.get_tag();
     const auto  type     = block.get_type();
-    const auto& member   = block.get_member();
-    const auto& multiple = block.get_multiple();
+    //const auto& member   = block.get_member();
+    //const auto& multiple = block.get_multiple();
     ss << to_binary(tag);
     if (type) {
         ss << to_binary<std::string>("T");
         dumps(ss, type);
 
-    } else if (member.get_type()) {
+    }
+#if 0
+    else if (member.get_type()) {
         ss << to_binary<std::string>("M");
         dumps(ss, member);
     }
     ss << to_binary(multiple);
+#endif
 }
 
 // TaggedStructDefinition.
@@ -155,10 +158,10 @@ void dumps(std::stringstream& ss, const StructOrReferrer& sr) {
         ss << to_binary(name);
         ss << to_binary(member_count);
         for (const auto& sm : members) {
-            auto        mult = sm.get_multiple();
+            //auto        mult = sm.get_multiple();
             const auto& mem  = sm.get_member();
             dumps(ss, mem);
-            ss << to_binary(mult);
+            //ss << to_binary(mult);
         }
     } else if (std::holds_alternative<Referrer>(sr)) {
         auto ref = std::get<Referrer>(sr);
@@ -190,8 +193,8 @@ void dumps(std::stringstream& ss, const EnumerationOrReferrer& er) {
 // Type.
 void dumps(std::stringstream& ss, const Type* tp_) {
     auto tp  = tp_->get_type();
-    auto tag = tp_->get_tag();
-    ss << to_binary(tag);
+    //auto tag = tp_->get_tag();
+    //ss << to_binary(tag);
     std::visit(
         [&ss, &tp](auto&& arg) {
             using T = std::decay_t<decltype(arg)>;
