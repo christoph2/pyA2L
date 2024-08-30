@@ -169,14 +169,43 @@ using EnumerationOrReferrer = std::variant<std::monostate, Referrer, Enumeration
 
 class Type;
 
+class BlockDefinition {
+public:
+
+    BlockDefinition() : m_tag(), m_type(nullptr) {
+    }
+
+    explicit BlockDefinition(const std::string& tag, Type* type) :
+        m_tag(tag), m_type(type) {
+    }
+
+    const std::string& get_tag() const noexcept {
+        return m_tag;
+    }
+
+    const Type* get_type() const noexcept {
+        return m_type;
+    }
+
+private:
+
+    std::string m_tag;
+    Type* m_type;
+};
+
 class Member {
    public:
 
-    Member() : m_type(nullptr) {
+    Member() : m_block(std::nullopt), m_type(nullptr) {
     }
 
-    explicit Member(Type* type, const std::vector<std::uint64_t>& arr_spec) : m_type(type), m_arr_spec(arr_spec) {
+    explicit Member(std::optional<BlockDefinition> block, Type* type, const std::vector<std::uint64_t>& arr_spec) :
+        m_block(block), m_type(type), m_arr_spec(arr_spec) {
     }
+
+    const std::optional<BlockDefinition> get_block() const noexcept {
+        return m_block;
+    };
 
     const Type* get_type() const noexcept {
         return m_type;
@@ -188,62 +217,24 @@ class Member {
 
    private:
 
+       std::optional<BlockDefinition> m_block;
     Type*                      m_type;
     std::vector<std::uint64_t> m_arr_spec{};
-};
-
-class BlockDefinition {
-   public:
-
-    BlockDefinition() : m_tag(), m_type(nullptr)/*, m_member(), m_multiple(false)*/ {
-    }
-
-    explicit BlockDefinition(const std::string& tag, Type* type/*, const Member& member, bool multiple*/) :
-        m_tag(tag), m_type(type) /*, m_member(member), m_multiple(multiple)*/ {
-    }
-
-    const std::string& get_tag() const noexcept {
-        return m_tag;
-    }
-
-    const Type* get_type() const noexcept {
-        return m_type;
-    }
-    #if 0
-    const Member& get_member() const noexcept {
-        return m_member;
-    }
-
-    bool get_multiple() const noexcept {
-        return m_multiple;
-    }
-    #endif
-   private:
-
-    std::string m_tag;
-    Type*       m_type;
-    //Member      m_member;
-    //bool        m_multiple;
 };
 
 class StructMember {
    public:
 
-    explicit StructMember(const Member& member/*, bool multiple*/) : m_member(member) /*, m_multiple(multiple)*/ {
+    explicit StructMember(const Member& member) : m_member(member) {
     }
 
     const Member& get_member() const noexcept {
         return m_member;
     }
-#if 0
-    bool get_multiple() const noexcept {
-        return m_multiple;
-    }
-#endif
+
    private:
 
     Member m_member;
-    // bool   m_multiple;
 };
 
 class Struct {

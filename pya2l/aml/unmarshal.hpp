@@ -94,31 +94,24 @@ class Node {
     }
 
     const Node* find_block(const std::string& name) const noexcept {
+
+
+
         if (m_aml_type == AmlType::BLOCK) {
-            if (m_map.contains("TAG")) {
-                if (get_tag() == name) {
-                    return this;
-                } else {
-                    return nullptr;
+            const auto& tp = map().at("TYPE").map();
+            const auto& members = tp.at("MEMBERS").list();
+            for (const auto& member : members) {
+                const auto& tag = member.get_tag();
+                std::cout << "tag: " << tag << std::endl;
+                if (name == tag) {
+                    return &member;
                 }
-            } else {
-                return nullptr;
-            }
-        } else {
-            for (auto entry : get_members()) {
-                std::cout << static_cast<int>(entry->node_type()) << " " << static_cast<int>(entry->aml_type()) << std::endl;
-                //if (entry->aml_type() == Node::AmlType::BLOCK) {
-                    if (entry->get_tag() == name) {
-                        return entry;
-                    }
-                //}
             }
         }
         return nullptr;
     }
 
     std::tuple<bool, std::optional<const Node*>, std::optional<const Node*>> member_or_type() const noexcept {
-        //if (m_aml_type == AmlType::BLOCK) {
             auto        multiple = is_multiple();
             const auto& member   = m_map.at("MEMBER");
             if (member.aml_type() == Node::AmlType::NONE) {
@@ -127,7 +120,6 @@ class Node {
             } else {
                 return { multiple, &member, std::nullopt };
             }
-        //}
         return { false, {}, {} };
     }
 
@@ -352,7 +344,7 @@ inline Node make_tagged_struct(const std::string& name, std::vector<std::tuple<s
     return res;
 }
 
-inline Node make_member(const std::vector<std::uint32_t>& array_spec, const Node& type) {
+inline Node make_member(const std::vector<std::uint32_t>& array_spec, const Node& node, bool is_block) {
     Node::list_t lst{};
 
     for (const auto& arrs : array_spec) {
@@ -360,7 +352,8 @@ inline Node make_member(const std::vector<std::uint32_t>& array_spec, const Node
     }
 
     Node::map_t map = {
-        { "TYPE", type },
+        {"IS_BLOCK", Node(Node::AmlType::TERMINAL, is_block)},
+        { "NODE", node },
         { "ARR_SPEC", Node(Node::AmlType::MEMBERS, lst) },
     };
 
@@ -368,20 +361,17 @@ inline Node make_member(const std::vector<std::uint32_t>& array_spec, const Node
     return res;
 }
 
-inline Node make_block(const std::string& tag /*, bool multiple*/, const Node& type/*, const Node& member*/) {
+inline Node make_block(const std::string& tag , const Node& type) {
     Node::map_t map = {
         { "TAG", Node(Node::AmlType::TERMINAL, tag) },
-        //{ "MULTIPLE", Node(Node::AmlType::TERMINAL, multiple) },
         { "TYPE", type },
-        //{ "MEMBER", member },
     };
     auto res = Node(Node::AmlType::BLOCK, map);
     return res;
 }
 
-inline Node make_struct_member(/* bool multiple, */ const Node & member) {
+inline Node make_struct_member(const Node & member) {
     Node::map_t map = {
-        // { "MULTIPLE", Node(Node::AmlType::TERMINAL, multiple) },
         { "MEMBER", member },
     };
     auto res = Node(Node::AmlType::STRUCT_MEMBER, map);
@@ -522,7 +512,6 @@ class Unmarshaller {
     }
 
     Node load_type() {
-        // const auto& tag = m_reader.from_binary_str();
         // "PD" - AMLPredefinedType
         // "TS" - TaggedStruct
         // "TU" - TaggedUnion
@@ -548,12 +537,23 @@ class Unmarshaller {
     }
 
     Node load_member() {
-        auto                       arr_count = m_reader.from_binary<std::size_t>();
-        std::vector<std::uint32_t> array_spec;
-        for (auto idx = 0UL; idx < arr_count; ++idx) {
-            array_spec.push_back(m_reader.from_binary<std::uint32_t>());
+        const auto& disc = m_reader.from_binary_str();
+
+        if (disc == "T") {
+            auto                       arr_count = m_reader.from_binary<std::size_t>();
+            std::vector<std::uint32_t> array_spec;
+            for (auto idx = 0UL; idx < arr_count; ++idx) {
+                array_spec.push_back(m_reader.from_binary<std::uint32_t>());
+            }
+            return make_member(array_spec, load_type(), false);
         }
-        return make_member(array_spec, load_type());
+        else if (disc == "B") {
+            return make_member({}, load_block(), true);
+        }
+        else {
+
+        }
+
     }
 
     Node load_struct() {

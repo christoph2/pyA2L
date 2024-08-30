@@ -120,22 +120,12 @@ std::any AmlVisitor::visitType_definition(amlParser::Type_definitionContext *ctx
 }
 
 std::any AmlVisitor::visitType_name(amlParser::Type_nameContext *ctx) {
-    //const auto  ctx_t  = ctx->t;
     const auto  ctx_pr = ctx->pr;
     const auto  ctx_st = ctx->st;
     const auto  ctx_ts = ctx->ts;
     const auto  ctx_tu = ctx->tu;
     const auto  ctx_en = ctx->en;
-#if 0
-    std::string tag_text{};
 
-    if (ctx_t) {
-        const auto tag_opt = std::any_cast<string_opt_t>(visit(ctx_t));
-        if (tag_opt) {
-            tag_text = *tag_opt;
-        }
-    }
-#endif
     if (ctx_pr) {
         auto pdt = std::any_cast<AMLPredefinedType>(visit(ctx_pr));
         return make_type(pdt);
@@ -169,13 +159,9 @@ std::any AmlVisitor::visitPredefined_type_name(amlParser::Predefined_type_nameCo
 std::any AmlVisitor::visitBlock_definition(amlParser::Block_definitionContext *ctx) {
     const auto ctx_tag  = ctx->tag;
     const auto ctx_tn   = ctx->tn;
-    //const auto ctx_mem  = ctx->mem;
-    //const auto ctx_mult = ctx->mult;
 
     std::string tag_text;
-    //bool        multiple{ false };
     Type       *tn = nullptr;
-    //Member      member;
 
     if (ctx_tag) {
         const auto tag_opt = std::any_cast<string_opt_t>(visit(ctx_tag));
@@ -187,17 +173,7 @@ std::any AmlVisitor::visitBlock_definition(amlParser::Block_definitionContext *c
     if (ctx_tn) {
         tn = std::any_cast<Type *>(visit(ctx_tn));
     }
-#if 0
-    if (ctx_mem) {
-        member = std::any_cast<Member>(visit(ctx_mem));
-    }
 
-    if (ctx_mult) {
-        if (ctx_mult->getText() == "*") {
-            multiple = true;
-        }
-    }
-#endif
     return BlockDefinition(tag_text, tn/*, member, multiple*/);
 }
 
@@ -307,51 +283,49 @@ std::any AmlVisitor::visitStruct_type_name(amlParser::Struct_type_nameContext *c
 
 std::any AmlVisitor::visitStruct_member(amlParser::Struct_memberContext *ctx) {
     const auto ctx_m     = ctx->m;
-    //const auto ctx_mstar = ctx->mstar;
-    //const auto ctx_m0    = ctx->m0;
 
     if (ctx_m) {
         const auto mem = std::any_cast<Member>(visit(ctx_m));
         return StructMember(mem);
     }
-#if 0
-    if (ctx_m0) {
-        if (ctx_m0->getText() == "*") {
-            if (ctx_mstar) {
-                const auto mem = std::any_cast<Member>(visit(ctx_mstar));
-                return StructMember(mem, true);
-            }
-        }
-    }
-#endif
+
     return {};
 }
 
 std::any AmlVisitor::visitMember(amlParser::MemberContext *ctx) {
     const auto            ctx_t = ctx->t;
     const auto            ctx_a = ctx->a;
-    std::vector<uint64_t> arrary_specifier;
+    const auto            ctx_b = ctx->b;
+    std::vector<uint64_t> arrary_specifier{};
     std::int64_t          value{ 0 };
     Type                 *tp = nullptr;
+    std::optional<BlockDefinition> block{std::nullopt};
 
-    if (ctx_t) {
-        const auto type_name = visit(ctx_t);
-        if (type_name.has_value()) {
-            tp = std::any_cast<Type *>(type_name);
+    if (ctx_b) {
+        block = std::any_cast<BlockDefinition>(visit(ctx_b));
+    }
+    else {
+
+        if (ctx_t) {
+            const auto type_name = visit(ctx_t);
+            if (type_name.has_value()) {
+                tp = std::any_cast<Type*>(type_name);
+            }
+        }
+
+        for (const auto& elem : ctx_a) {
+            const auto value_cont = std::any_cast<numeric_t>(visit(elem));
+
+            if (std::holds_alternative<std::int64_t>(value_cont)) {
+                value = std::get<std::int64_t>(value_cont);
+            }
+            else if (std::holds_alternative<long double>(value_cont)) {
+                value = static_cast<std::int64_t>(std::get<long double>(value_cont));
+            }
+            arrary_specifier.push_back(value);
         }
     }
-
-    for (const auto &elem : ctx_a) {
-        const auto value_cont = std::any_cast<numeric_t>(visit(elem));
-
-        if (std::holds_alternative<std::int64_t>(value_cont)) {
-            value = std::get<std::int64_t>(value_cont);
-        } else if (std::holds_alternative<long double>(value_cont)) {
-            value = static_cast<std::int64_t>(std::get<long double>(value_cont));
-        }
-        arrary_specifier.push_back(value);
-    }
-    return Member(tp, arrary_specifier);
+    return Member(block, tp, arrary_specifier);
 }
 
 std::any AmlVisitor::visitArray_specifier(amlParser::Array_specifierContext *ctx) {

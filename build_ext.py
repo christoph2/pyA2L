@@ -6,18 +6,62 @@ import platform
 import re
 import subprocess  # nosec
 import sys
-from typing import Optional
+import sysconfig
 from pathlib import Path
-
-# from pprint import pprint
 from tempfile import TemporaryDirectory
+from typing import Optional
 
-
-print("Platform", platform.system())
 
 TOP_DIR = Path(__file__).parent
 
 GIT_TAG_RE = re.compile(r"refs/tags/v?(\d\.\d{1,3}.\d{1,3})")
+
+print("Platform", platform.system())
+uname = platform.uname()
+if uname.system == "Darwin":
+    os.environ["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
+
+VARS = sysconfig.get_config_vars()
+
+
+def get_python_base() -> str:
+    # Applies in this form only to Windows.
+    if "base" in VARS and VARS["base"]:  # noqa: RUF019
+        return VARS["base"]
+    if "installed_base" in VARS and VARS["installed_base"]:  # noqa: RUF019
+        return VARS["installed_base"]
+
+
+def alternate_libdir(pth: str):
+    base = Path(pth).parent
+    libdir = Path(base) / "libs"
+    if libdir.exists():
+        # available_libs = os.listdir(libdir)
+        return str(libdir)
+    else:
+        return ""
+
+
+def get_py_config() -> dict:
+    pynd = VARS["py_version_nodot"]  # Should always be present.
+    include = sysconfig.get_path("include")  # Seems to be cross-platform.
+    library = f"python{pynd}.lib"
+    if uname.system == "Windows":
+        base = get_python_base()
+        libdir = Path(base) / "libs"
+        if libdir.exists():
+            available_libs = os.listdir(libdir)
+            if library in available_libs:
+                libdir = str(libdir)
+            else:
+                libdir = ""
+        else:
+            libdir = alternate_libdir(include)
+    else:
+        libdir = VARS["LIBDIR"]
+        library = VARS["LDLIBRARY"]
+
+    return dict(exe=sys.executable, include=include, libdir=libdir, library=library)
 
 
 def sort_by_version(version: str) -> tuple[int]:
@@ -37,7 +81,7 @@ def fetch_tags(repo: str) -> list[str]:
     return sorted(tag_set, key=sort_by_version)
 
 
-def most_recent_tag(repo: str) -> Optional[str]:
+def most_recent_tag(repo: str) -> Optional[str]:  # noqa: UP007
     tags = fetch_tags(repo)
     return tags[-1] if tags else None
 
@@ -57,15 +101,15 @@ def build_extension(debug: bool = False, use_temp_dir=True) -> None:
     debug = int(os.environ.get("DEBUG", 0)) or debug
     cfg = "Debug" if debug else "Release"
 
-    # Set Python_EXECUTABLE instead if you use PYBIND11_FINDPYTHON
-    # EXAMPLE_VERSION_INFO shows you how to pass a value into the C++ code
-    # from Python.
+    py_cfg = get_py_config()
+
     cmake_args = [
-        # f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}{os.sep}",
-        # "-G Ninja",
-        f"-DPYTHON_EXECUTABLE={sys.executable}",
+        f"-DPython3_EXECUTABLE={py_cfg['exe']}",
+        f"-DPython3_INCLUDE_DIR={py_cfg['include']}",
+        f"-DPython3_LIBRARY={str(Path(py_cfg['libdir']) / Path(py_cfg['library']))}",  # noqa: RUF010
         f"-DCMAKE_BUILD_TYPE={cfg}",  # not used on MSVC, but no harm
     ]
+
     build_args = ["--config Release", "--verbose"]
     # Adding CMake arguments set as environment variable
     # (needed e.g. to build for ARM OSx on conda-forge)
@@ -90,8 +134,7 @@ def build_extension(debug: bool = False, use_temp_dir=True) -> None:
 
     banner("Step #1: Configure")
     # cmake_args += ["--debug-output"]
-    print("aufruf:", ["cmake", str(TOP_DIR), *cmake_args])
-    subprocess.run(["cmake", str(TOP_DIR), *cmake_args], cwd=build_temp, check=True)  # nosec
+    subprocess.run(["cmake", "-S", str(TOP_DIR), *cmake_args], cwd=build_temp, check=True)  # nosec
 
     cmake_args += [f"--parallel {mp.cpu_count()}"]
 

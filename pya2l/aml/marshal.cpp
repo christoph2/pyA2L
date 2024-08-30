@@ -10,24 +10,6 @@ void dumps(std::stringstream& ss, const AMLPredefinedType& pdt) {
     ss << to_binary(value);
 }
 
-// Member.
-void dumps(std::stringstream& ss, const Member& mem) {
-    const auto&       arr_spec   = mem.get_array_spec();
-    const std::size_t array_size = std::size(arr_spec);
-    ss << to_binary(array_size);
-    for (std::uint32_t arr : arr_spec) {
-        ss << to_binary<std::uint32_t>(arr);
-    }
-    const auto& tp = mem.get_type();
-    if (tp != nullptr) {
-        dumps(ss, tp);
-    }
-    else {
-        std::cout << "nullptr\n";
-    }
-
-}
-
 // Referrer.
 void dumps(std::stringstream& ss, const Referrer& ref) {
     ss << to_binary<std::string>("R");
@@ -37,26 +19,39 @@ void dumps(std::stringstream& ss, const Referrer& ref) {
     ss << to_binary(idf);
 }
 
+
 // BlockDefinition.
 void dumps(std::stringstream& ss, const BlockDefinition& block) {
     ss << to_binary<std::string>("B");
-    const auto& tag      = block.get_tag();
-    const auto  type     = block.get_type();
-    //const auto& member   = block.get_member();
-    //const auto& multiple = block.get_multiple();
+    const auto& tag = block.get_tag();
+    const auto  type = block.get_type();
     ss << to_binary(tag);
     if (type) {
         ss << to_binary<std::string>("T");
         dumps(ss, type);
 
     }
-#if 0
-    else if (member.get_type()) {
-        ss << to_binary<std::string>("M");
-        dumps(ss, member);
+}
+
+// Member.
+void dumps(std::stringstream& ss, const Member& mem) {
+    const auto& tp = mem.get_type();
+    if (tp != nullptr) {
+        ss << to_binary<std::string>("T");
+
+        const auto& arr_spec = mem.get_array_spec();
+        const std::size_t array_size = std::size(arr_spec);
+        ss << to_binary(array_size);
+        for (std::uint32_t arr : arr_spec) {
+            ss << to_binary<std::uint32_t>(arr);
+        }
+
+        dumps(ss, tp);
     }
-    ss << to_binary(multiple);
-#endif
+    else {
+        const auto& blk = *mem.get_block();
+        dumps(ss, blk);
+    }
 }
 
 // TaggedStructDefinition.
@@ -67,8 +62,7 @@ void dumps(std::stringstream& ss, const TaggedStructDefinition& tsd) {
     ss << to_binary<bool>(multiple);
     if (tp) {
         ss << to_binary<bool>(true);  // available.
-        //dumps(ss, tp);
-        dumps(ss, member);  // FIXED!!!
+        dumps(ss, member);
     } else {
         // Tag-only.
         ss << to_binary<bool>(false);  // NOT available.
