@@ -65,8 +65,7 @@ predefined_type_name:
    ;
 
 block_definition:
-	//block_definition | 'block' tag = tagValue tn = type_name
-   'block' tag = tagValue (blk = block_definition | tn = type_name)
+   'block' tag = tagValue (/* blk = block_definition | */ tn = type_name)
    ;
 
 enum_type_name:
@@ -83,12 +82,12 @@ enumerator:
    ;
 
 struct_type_name:
-      'struct' t0 = identifierValue? '{' l += struct_member* '}'
+      'struct' t0 = identifierValue? '{' l += struct_member* '}' ';'?
     | 'struct' t1 = identifierValue
     ;
 
 struct_member:
-     m = member';'
+     m = member ';'?
    ;
 
 member:
@@ -101,20 +100,20 @@ array_specifier:
    ;
 
 taggedstruct_type_name:
-     'taggedstruct' t0 = identifierValue? '{' (l += taggedstruct_member)* '}'
+     'taggedstruct' t0 = identifierValue? '{' (l += taggedstruct_member)* '}' ';'?
    | 'taggedstruct' t1 = identifierValue
    ;
 
 taggedstruct_member:
-	  ts1 = taggedstruct_definition ';'
+	  ts1 = taggedstruct_definition ';'?
     | '(' ts0 = taggedstruct_definition ';'? ')' '*' ';'
-    | bl1 = block_definition ';'
+    | bl1 = block_definition ';'?
 	| '(' bl0 = block_definition ';'? ')' '*' ';'
     ;
 
 taggedstruct_definition:
       tag = tagValue mem = member?
-	| tag = tagValue '(' mem = member ';'? ')' '*' // ';'
+	| tag = tagValue '(' mem = member ';'? ')' '*'
     ;
 
 taggedunion_type_name:
@@ -123,8 +122,8 @@ taggedunion_type_name:
     ;
 
 tagged_union_member:
-     t = tagValue  m = member? ';'
-   | b = block_definition ';'
+     t = tagValue  m = member? ';'?
+   | b = block_definition ';'?
    ;
 
 numericValue:

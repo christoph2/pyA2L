@@ -31,22 +31,45 @@ class IfDataParser {
     }
 
     void parse() {
-        do_type();
-#if 0
-        auto token = current_token();
-        if (token) {
-            auto [type, text] = *token;
-            switch (type) {
-                case a2llg::BEGIN:
-                    consume();
-                    block_type();
-                    break;
-                default:
-                    std::cerr << "Unknown token type: " << type << std::endl;
-            }
-            parse();
+        const auto root = get_root();
+        if (root) {
+            m_grammar.push(root);
+            consume();
+            do_type();
         }
-#endif
+    }
+
+    const Node * get_root() {
+        auto token = current_token();
+        const auto [type, text] = *token;
+        consume();
+        const auto [type2, text2] = *current_token();
+
+        if (type == a2llg::BEGIN) {
+            if ((type2 == a2llg::IDENT) && (text2 == "IF_DATA")) {
+                for (const auto& member: top()->map().at("MEMBERS").list()) {
+                    const auto& mmap = member.map();
+
+                    if (member.aml_type() == Node::AmlType::BLOCK) {
+                        const auto tag = std::get<std::string>(mmap.at("TAG").value());
+                        if (tag == "IF_DATA") {
+                            return &member;
+                        }
+                    }
+                    else {
+                        const auto name = std::get<std::string>(mmap.at("NAME").value());
+                        std::cout << "Name: " << name << std::endl;
+                        if (name == "if_data") {
+                            return &member;
+                        }
+                    }
+
+
+                }
+            }
+        }
+
+        return nullptr;
     }
 
     token_t next_token() {
@@ -210,6 +233,9 @@ class IfDataParser {
             case Node::AmlType::PDT:
                 pdt_type();
                 break;
+            case Node::AmlType::BLOCK:
+                block_type();
+                break;
             default:
                 std::cerr << "Unknown type: " << std::endl;
                 break;
@@ -232,8 +258,8 @@ class IfDataParser {
     token_t                 m_current_token;
 };
 
-// const std::string BASE{ "C:/csProjects/" };
-const std::string BASE{ "C:/Users/HP/PycharmProjects/" };
+const std::string BASE{ "C:/csProjects/" };
+//const std::string BASE{ "C:/Users/HP/PycharmProjects/" };
 
 const std::string CPLX_TEXT{ ""
                              "  /begin IF_DATA ASAP1B_CCP"
@@ -359,7 +385,106 @@ const std::string CPLX_TEXT{ ""
                              "	  /end TP_BLOB"
                              "  /end IF_DATA" };
 
+const std::string CPLX_TEXT2{
+"  /begin IF_DATA ASAP1B_KWP2000 " \
+"      /begin SOURCE " \
+"	      \"timeslot\" " \
+"		  0 " \
+"		  0 " \
+"		  QP_BLOB " \
+"		      0 " \
+"			  BLOCKMODE " \
+"			  0xF0 " \
+"			  0 " \
+"              20 " \
+"	  /end SOURCE " \
+"  " \
+"	  /begin TP_BLOB " \
+"		  0x100 " \
+"		  0x11 " \
+"		  0xF1 " \
+"		  WuP " \
+"		  MSB_LAST " \
+"          1 " \
+"          0x00000 " \
+"          " \
+"		  SERAM " \
+"		      0x10000 " \
+"		      0x10000 " \
+"		      0x13FFF " \
+"		      0x17FFF " \
+"			  0x000000 " \
+"			  0x000000 " \
+"              1 " \
+"              1 " \
+"              1 " \
+"              1 " \
+"          " \
+"		  /begin CHECKSUM " \
+"              0x010201 " \
+"              1 " \
+"              1 " \
+"              RequestRoutineResults " \
+"              RNC_RESULT 0x23 " \
+"          /end CHECKSUM " \
+"          " \
+"          /begin FLASH_COPY " \
+"              TOOLFLASHBACK " \
+"              3 " \
+"              RequestRoutineResults " \
+"              RAM_InitByECU " \
+"              0x86 " \
+"              COPY_FRAME 1 " \
+"              RNC_RESULT 0x23 0xFB 0xFC " \
+"              COPY_PARA 1 " \
+"          /end FLASH_COPY " \
+"          " \
+"          BAUD_DEF " \
+"              105600 " \
+"              0x86 " \
+"              0x81 " \
+"          BAUD_DEF " \
+"              211200 " \
+"              0x86 " \
+"              0xA1 " \
+"          BAUD_DEF " \
+"              156250 " \
+"              0x86 " \
+"              0x91 " \
+"          BAUD_DEF " \
+"              125000 " \
+"              0x86 " \
+"              0x87 " \
+"          BAUD_DEF " \
+"              10400 " \
+"              0x86 " \
+"              0x14 " \
+"          " \
+"          TIME_DEF " \
+"              0x0001 " \
+"              0x0000 " \
+"              0x0032 " \
+"              0x0003 " \
+"              0x0200 " \
+"              0x0000 " \
+"          TIME_DEF " \
+"              0x0001 " \
+"              0x0000 " \
+"              0x0032 " \
+"              0x0003 " \
+"              0x0200 " \
+"              0x0001 " \
+"          " \
+"          SECURITY_ACCESS " \
+"              1 " \
+"              1 " \
+"              0 " \
+"          " \
+"	  /end TP_BLOB " \
+"  /end IF_DATA "};
+
 int main() {
+#if 0
     std::ifstream stream;
 
     stream.open(BASE + "pyA2L/pya2l/examples/some_if_data.txt");
@@ -367,6 +492,7 @@ int main() {
     ANTLRInputStream input(stream);
 
     auto ifd_lexer = a2llg(&input);
+#endif
 
     auto root = load_grammar(BASE + "pyA2L/pya2l/examples/aml_dump.bin");
 
@@ -377,7 +503,7 @@ int main() {
                      "0x1E8\n"
                      "/end IF_DATA");
     // auto        lex = IfDataParser(root, TEXT);
-    auto lex = IfDataParser(root, CPLX_TEXT);
+    auto lex = IfDataParser(root, CPLX_TEXT2);
 
     lex.parse();
 

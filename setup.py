@@ -1,21 +1,14 @@
 # pylint: disable=C0111
 import os
 import platform
-import subprocess
-import sys
-from itertools import chain
+import subprocess  # nosec
 from pathlib import Path
 
 import setuptools.command.build_py
 import setuptools.command.develop
 from pkg_resources import parse_requirements
-from pybind11.setup_helpers import build_ext
-from pybind11.setup_helpers import naive_recompile
-from pybind11.setup_helpers import ParallelCompile
-from pybind11.setup_helpers import Pybind11Extension
-from setuptools import Command
-from setuptools import find_namespace_packages
-from setuptools import setup
+from pybind11.setup_helpers import Pybind11Extension, build_ext
+from setuptools import Command, find_namespace_packages, setup
 
 
 def _parse_requirements(filepath):
@@ -31,15 +24,13 @@ BASE_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.txt")
 TEST_REQUIREMENTS = _parse_requirements(ROOT_DIRPATH / "requirements.test.txt")
 ANTLR_VERSION = next(req.specs[0][1] for req in BASE_REQUIREMENTS if req.project_name == "antlr4-python3-runtime")
 
-PB11_INCLUDE_DIRS = subprocess.getoutput("pybind11-config --include")
+PB11_INCLUDE_DIRS = subprocess.getoutput("pybind11-config --include")  # nosec
 
 EXT_NAMES = ["pya2l.preprocessor", "pya2l.a2lparser_ext"]
 
 uname = platform.uname()
 if uname.system == "Linux":
     extra_compile_args = ["-fcoroutines"]  # At least required on Raspberry PIs.
-elif uname.system == "Darwin":
-    os.environ["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
     extra_compile_args = []
 else:
     extra_compile_args = []
@@ -68,9 +59,7 @@ class AntlrAutogen(Command):
     """Custom command to autogenerate Python code using ANTLR."""
 
     description = "generate python code using antlr"
-    user_options = [
-        ("target-dir=", None, "(optional) output directory for antlr artifacts"),
-    ]
+    user_options = (("target-dir=", None, "(optional) output directory for antlr artifacts"),)
 
     def initialize_options(self):
         """Set default values for options."""
@@ -93,16 +82,16 @@ class AntlrAutogen(Command):
     def run(self):
         """Run ANTLR."""
         pwd = Path(os.environ.get("PWD", "."))
-        antlrJar = pwd / Path("antlr-{}-complete.jar".format(ANTLR_VERSION))
+        antlrJar = pwd / Path(f"antlr-{ANTLR_VERSION}-complete.jar")
         if not antlrJar.exists():
             # https://www.antlr.org/download/antlr4-cpp-runtime-4.13.1-source.zip
-            os.system("curl -O -C - -L https://www.antlr.org/download/antlr-{}-complete.jar".format(ANTLR_VERSION))
+            os.system(f"curl -O -C - -L https://www.antlr.org/download/antlr-{ANTLR_VERSION}-complete.jar")  # nosec
             # print(f"{antlrJar} not found in '{pwd}'")
             # sys.exit(2)
         antlrJar = str(antlrJar)
         antlrCmd = ["java", "-Xmx500M", "-cp", antlrJar, "org.antlr.v4.Tool"]
         self.announce(" ".join(antlrCmd + self.arguments))
-        subprocess.check_call(antlrCmd + self.arguments)
+        subprocess.check_call(antlrCmd + self.arguments)  # nosec
         clean()
 
 
