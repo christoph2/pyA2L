@@ -45,7 +45,6 @@ def get_py_config() -> dict:
     pynd = VARS["py_version_nodot"]  # Should always be present.
     include = sysconfig.get_path("include")  # Seems to be cross-platform.
     if uname.system == "Windows":
-    #library = f"python{pynd}.lib"
         base = get_python_base()
         libdir = Path(base) / "libs"
         if libdir.exists():
@@ -57,19 +56,26 @@ def get_py_config() -> dict:
         else:
             libdir = alternate_libdir(include)
     else:
-        libdir = VARS["LIBDIR"]
-        library = VARS["LDLIBRARY"]
-        if not (Path(libdir) / library).exists():
-            #arch = VARS["MULTIARCH"]
-            arch_dir = VARS["multiarchsubdir"]
-            if arch_dir.startswith("/"):
-                arch_dir = arch_dir[1:]
-                if (Path(libdir) / Path(arch_dir) / library).exists():
-                    xd = Path(libdir) / Path(arch_dir) / library
-                    libdir = str(Path(libdir) / Path(arch_dir))
-                else:
-                    print("Could NOT locate Python link-library!!!")                                    
-    print("LIB-DIR:", libdir, library)
+        library = VARS["LIBRARY"]      
+        DIR_VARS = ('LIBDIR', 'BINLIBDEST', 'DESTLIB', 'LIBDEST', 'MACHDESTLIB', 'DESTSHARED')
+        if uname.system == "Linux":
+            arch = VARS.get("MULTIARCH", "")
+            if not arch:
+                print("WARNING: var 'MULTIARCH' not found. search may fail!")                
+        for dir_var in DIR_VARS:
+            dir_name = VARS.get(dir_var)
+            if not dir_name:
+                continue      
+            if uname.system == "Darwin":
+                full_path = Path(dir_name) / library
+            elif uname.system == "Linux":               
+                full_path = Path(dir_name) / arch / library
+            else:
+                print("PF?", uname.system)
+            if full_path.exists():
+                print(f"found Python library: '{full_path}'")
+                libdir = dir_name
+                break                                
     return dict(exe=sys.executable, include=include, libdir=libdir, library=library)
 
 
