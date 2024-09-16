@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: pyA2L
+name: pya2ldb
 
 on:
   push:
@@ -12,67 +12,67 @@ on:
 jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
+    continue-on-error: true
     runs-on: ${{ matrix.os }}
     strategy:
-        fail-fast: false
-        matrix:
-            os: [
-              #ubuntu-latest, 
-              macos-latest, 
-              windows-latest
-            ]
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest] # , ubuntu-latest, macos-13, macos-14
+        # cibw_archs: ["x86_64", ""]
+        #include:
+        #  - os: ubuntu-latest
+        #    cibw_archs: "aarch64"
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Build wheel
-        uses: pypa/cibuildwheel@v2.3.1
-
-      - uses: actions/upload-artifact@v2
+      - uses: actions/checkout@v3
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
         with:
-            path: ./wheelhouse/*.whl
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+      - name: Build wheel
+        uses: pypa/cibuildwheel@v2.20
+
+      - uses: actions/upload-artifact@v4
+        with:
+          # path: ./dist/*.whl
+          # include-hidden-files: true
+          # retention-days: 1
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl
 
   build_sdist:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-        - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-        - name: Build sdist
-          run: |
-            pip install -U build
-            python -m build --sdist
+      - name: Build sdist
+        run: |
+          pip install -U build
+          python -m build --sdist
 
-        - uses: actions/upload-artifact@v2
-          with:
-            path: dist/*.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          path: dist/*.tar.gz
+          include-hidden-files: true
+          retention-days: 1
+
   upload_pypi:
-    needs: [build_wheels, build_sdist]
+    needs: [build_wheels, build_sdist] # , build_sdist
     runs-on: ubuntu-latest
     #    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')
     # alternatively, to publish when a GitHub Release is created, use the following rule:
     # if: github.event_name == 'release' && github.event.action == 'published'
     steps:
-    - uses: actions/download-artifact@v4.1.7
-      with:
-        name: artifact
-        path: dist
-    
-    - uses: pypa/gh-action-pypi-publish@v1.4.2
-      with:
-        user: ${{ secrets.PYPI_USER_NAME }}     # __token__
-        password: ${{ secrets.PYPI_PASSWORD }}
-    # To test: repository_url: https://test.pypi.org/legacy/
-    #
-        #      - name: Upload to PyPI
-        #uses: pypa/gh-action-pypi-publish@v1.4.2
-        #with:
-        #    user: ${{ secrets.PYPI_USER_NAME }}
-        #    password: ${{ secrets.PYPI_PASSWORD }}
-      #- name: Build and publish
-      #  env:
-      #    TWINE_USERNAME: ${{ secrets.PYPI_USER_NAME }}
-      #    TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      #  if: env.TWINE_USERNAME != null
-      #  run: |
-      #    python setup.py bdist_wheel
-      #    twine upload dist/*
+      - uses: actions/download-artifact@v4.1.7
+        with:
+          # name: artifact
+          path: dist
+          merge-multiple: true
+          # pattern: dist/*
+
+      - uses: pypa/gh-action-pypi-publish@v1.4.2
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_PASSWORD }}
