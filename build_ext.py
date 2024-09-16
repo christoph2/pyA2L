@@ -23,12 +23,16 @@ if uname.system == "Darwin":
 
 VARS = sysconfig.get_config_vars()
 
+
 def get_python_base() -> str:
     # Applies in this form only to Windows.
-    if "base" in VARS and VARS["base"]:
-        return VARS["base"]
-    if "installed_base" in VARS and VARS["installed_base"]:
-        return VARS["installed_base"]
+
+    base = VARS.get("base", "")
+    if base:
+        return base
+    installed_base = VARS.get("installed_base")
+    if installed_base:
+        return installed_base
 
 
 def alternate_libdir(pth: str):
@@ -46,6 +50,7 @@ def get_py_config() -> dict:
     include = sysconfig.get_path("include")  # Seems to be cross-platform.
     if uname.system == "Windows":
         base = get_python_base()
+        library = f"python{pynd}.lib"
         libdir = Path(base) / "libs"
         if libdir.exists():
             available_libs = os.listdir(libdir)
@@ -56,26 +61,28 @@ def get_py_config() -> dict:
         else:
             libdir = alternate_libdir(include)
     else:
-        library = VARS["LIBRARY"]      
-        DIR_VARS = ('LIBDIR', 'BINLIBDEST', 'DESTLIB', 'LIBDEST', 'MACHDESTLIB', 'DESTSHARED')
+        library = VARS["LIBRARY"]
+        DIR_VARS = ("LIBDIR", "BINLIBDEST", "DESTLIB", "LIBDEST", "MACHDESTLIB", "DESTSHARED", "LIBPL")
         if uname.system == "Linux":
             arch = VARS.get("MULTIARCH", "")
             if not arch:
-                print("WARNING: var 'MULTIARCH' not found. search may fail!")                
+                print("WARNING: var 'MULTIARCH' not found. search may fail!")
         for dir_var in DIR_VARS:
             dir_name = VARS.get(dir_var)
             if not dir_name:
-                continue      
+                continue
             if uname.system == "Darwin":
                 full_path = Path(dir_name) / library
-            elif uname.system == "Linux":               
+            elif uname.system == "Linux":
                 full_path = Path(dir_name) / arch / library
             else:
                 print("PF?", uname.system)
             if full_path.exists():
                 print(f"found Python library: '{full_path}'")
                 libdir = dir_name
-                break                                
+                break
+            # else:
+            #    print(f"NOT found: '{full_path}'")
     return dict(exe=sys.executable, include=include, libdir=libdir, library=library)
 
 
