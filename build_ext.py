@@ -23,12 +23,11 @@ if uname.system == "Darwin":
 
 VARS = sysconfig.get_config_vars()
 
-
 def get_python_base() -> str:
     # Applies in this form only to Windows.
-    if "base" in VARS and VARS["base"]:  # noqa: RUF019
+    if "base" in VARS and VARS["base"]:
         return VARS["base"]
-    if "installed_base" in VARS and VARS["installed_base"]:  # noqa: RUF019
+    if "installed_base" in VARS and VARS["installed_base"]:
         return VARS["installed_base"]
 
 
@@ -45,8 +44,8 @@ def alternate_libdir(pth: str):
 def get_py_config() -> dict:
     pynd = VARS["py_version_nodot"]  # Should always be present.
     include = sysconfig.get_path("include")  # Seems to be cross-platform.
-    library = f"python{pynd}.lib"
     if uname.system == "Windows":
+    #library = f"python{pynd}.lib"
         base = get_python_base()
         libdir = Path(base) / "libs"
         if libdir.exists():
@@ -60,7 +59,17 @@ def get_py_config() -> dict:
     else:
         libdir = VARS["LIBDIR"]
         library = VARS["LDLIBRARY"]
-
+        if not (Path(libdir) / library).exists():
+            #arch = VARS["MULTIARCH"]
+            arch_dir = VARS["multiarchsubdir"]
+            if arch_dir.startswith("/"):
+                arch_dir = arch_dir[1:]
+                if (Path(libdir) / Path(arch_dir) / library).exists():
+                    xd = Path(libdir) / Path(arch_dir) / library
+                    libdir = str(Path(libdir) / Path(arch_dir))
+                else:
+                    print("Could NOT locate Python link-library!!!")                                    
+    print("LIB-DIR:", libdir, library)
     return dict(exe=sys.executable, include=include, libdir=libdir, library=library)
 
 
