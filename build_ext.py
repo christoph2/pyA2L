@@ -63,6 +63,7 @@ def get_py_config() -> dict:
     else:
         library = VARS["LIBRARY"]
         DIR_VARS = ("LIBDIR", "BINLIBDEST", "DESTLIB", "LIBDEST", "MACHDESTLIB", "DESTSHARED", "LIBPL")
+        arch = None
         if uname.system == "Linux":
             arch = VARS.get("MULTIARCH", "")
             if not arch:
@@ -72,17 +73,18 @@ def get_py_config() -> dict:
             if not dir_name:
                 continue
             if uname.system == "Darwin":
-                full_path = Path(dir_name) / library
+                full_path = [Path(dir_name) / library]
             elif uname.system == "Linux":
-                full_path = Path(dir_name) / arch / library
+                full_path = [Path(dir_name) / arch / library, Path(dir_name) / library]
             else:
                 print("PF?", uname.system)
-            if full_path.exists():
-                print(f"found Python library: '{full_path}'")
-                libdir = dir_name
-                break
-            # else:
-            #    print(f"NOT found: '{full_path}'")
+            for fp in full_path:
+                if fp.exists():
+                    print(f"found Python library: '{full_path}'")
+                    libdir = dir_name
+                    break
+                # else:
+                #    print(f"NOT found: '{full_path}'")
     return dict(exe=sys.executable, include=include, libdir=libdir, library=library)
 
 
