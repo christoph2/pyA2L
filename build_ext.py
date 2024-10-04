@@ -120,8 +120,8 @@ def banner(msg: str) -> None:
 # tool["cs_build"]={"antlr4_version": "4.13.0"}
 
 
-def build_extension(debug: bool = False, use_temp_dir=True) -> None:
-    print("CMakeBuild::build_extension()")
+def build_extension(debug: bool = False, use_temp_dir=False) -> None:
+    print("build_ext::build_extension()")
 
     debug = int(os.environ.get("DEBUG", 0)) or debug
     cfg = "Debug" if debug else "Release"
@@ -170,4 +170,4 @@ def build_extension(debug: bool = False, use_temp_dir=True) -> None:
 if __name__ == "__main__":
     includes = subprocess.getoutput("pybind11-config --cmakedir")  # nosec
     os.environ["pybind11_DIR"] = includes
-    build_extension(False)
+    build_extension(use_temp_dir=False)
