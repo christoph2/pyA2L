@@ -9,7 +9,7 @@ import sys
 import sysconfig
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 
 TOP_DIR = Path(__file__).parent
@@ -94,7 +94,7 @@ def sort_by_version(version: str) -> Tuple[int]:
     return int(h), int(m), int(s)
 
 
-def fetch_tags(repo: str) -> list[str]:
+def fetch_tags(repo: str) -> List[str]:
     res = subprocess.run(["git", "ls-remote", "--tags", repo], shell=False, capture_output=True, text=True)  # nosec
     if res.returncode == 0:
         return []
