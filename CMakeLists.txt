@@ -8,7 +8,7 @@ cmake_policy(SET CMP0094 NEW)
 find_package(Python3 COMPONENTS Interpreter Development)
 find_package(pybind11 REQUIRED)
 
-set(ANTLR4_TAG 4.13.1)
+set(ANTLR4_TAG 4.13.2)
 
 SET(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 23)

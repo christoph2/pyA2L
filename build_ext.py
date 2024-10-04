@@ -117,9 +117,6 @@ def banner(msg: str) -> None:
     print("=" * 80)
 
 
-# tool["cs_build"]={"antlr4_version": "4.13.0"}
-
-
 def build_extension(debug: bool = False, use_temp_dir=False) -> None:
     print("build_ext::build_extension()")
 
