@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """ pya2l version module """
 
-__version__ = "0.12.93"
+__version__ = "0.13.0"

@@ -100,7 +100,7 @@ repos:
         language: system
         types: [python]
         require_serial: true
-        args: [--darglint-ignore-regex, .*]
+        # args: [--darglint-ignore-regex, .*]
       - id: isort
         name: isort
         entry: isort
