@@ -147,10 +147,8 @@ def build_extension(debug: bool = False, use_temp_dir=True) -> None:
     if use_temp_dir:
         build_temp = Path(TemporaryDirectory(suffix=".build-temp").name) / "extension_it_in"
     else:
-        build_temp = Path(os.getcwd()) / "build"
-
-    print("cwd:", os.getcwd(), "build-dir:", build_temp, "top:", str(TOP_DIR))
-
+        build_temp = Path(".")
+    # print("cwd:", os.getcwd(), "build-dir:", build_temp, "top:", str(TOP_DIR))
     if not build_temp.exists():
         build_temp.mkdir(parents=True)
 
@@ -161,16 +159,15 @@ def build_extension(debug: bool = False, use_temp_dir=True) -> None:
     cmake_args += [f"--parallel {mp.cpu_count()}"]
 
     banner("Step #2: Build")
-    # subprocess.run(["cmake", "--build", ".", *build_args], cwd=build_temp, check=True)  # nosec
     # build_args += ["-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"]
-    subprocess.run(["cmake", "--build", build_temp, *build_args], cwd=TOP_DIR, check=True)  # nosec
+    subprocess.run(["cmake", "--build", str(build_temp), *build_args], cwd=TOP_DIR, check=True)  # nosec
 
     banner("Step #3: Install")
-    # subprocess.run(["cmake", "--install", "."], cwd=build_temp, check=True)  # nosec
+    subprocess.run(["cmake", "--install", "."], cwd=build_temp, check=True)  # nosec
     subprocess.run(["cmake", "--install", build_temp], cwd=TOP_DIR, check=True)  # nosec
 
 
 if __name__ == "__main__":
     includes = subprocess.getoutput("pybind11-config --cmakedir")  # nosec
     os.environ["pybind11_DIR"] = includes
-    build_extension(use_temp_dir=True)
+    build_extension(False)
