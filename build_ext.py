@@ -9,7 +9,7 @@ import sys
 import sysconfig
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Optional
+from typing import Optional, Tuple
 
 
 TOP_DIR = Path(__file__).parent
@@ -26,13 +26,10 @@ VARS = sysconfig.get_config_vars()
 
 def get_python_base() -> str:
     # Applies in this form only to Windows.
-
-    base = VARS.get("base", "")
-    if base:
-        return base
-    installed_base = VARS.get("installed_base")
-    if installed_base:
-        return installed_base
+    if "base" in VARS and VARS["base"]:
+        return VARS["base"]
+    if "installed_base" in VARS and VARS["installed_base"]:
+        return VARS["installed_base"]
 
 
 def alternate_libdir(pth: str):
@@ -66,9 +63,10 @@ def get_py_config() -> dict:
         arch = None
         if uname.system == "Linux":
             arch = VARS.get("MULTIARCH", "")
-            if not arch:
-                print("WARNING: var 'MULTIARCH' not found. search may fail!")
+        found = False
         for dir_var in DIR_VARS:
+            if found:
+                break
             dir_name = VARS.get(dir_var)
             if not dir_name:
                 continue
@@ -79,16 +77,19 @@ def get_py_config() -> dict:
             else:
                 print("PF?", uname.system)
             for fp in full_path:
+                print(f"Trying {fp!r}")
                 if fp.exists():
-                    print(f"found Python library: '{full_path}'")
-                    libdir = dir_name
+                    print(f"found Python library: {fp!r}")
+                    libdir = str(fp.parent)
+                    found = True
                     break
-                # else:
-                #    print(f"NOT found: '{full_path}'")
+        if not found:
+            print("Could NOT locate Python library.")
+            return dict(exe=sys.executable, include=include, libdir="", library=library)
     return dict(exe=sys.executable, include=include, libdir=libdir, library=library)
 
 
-def sort_by_version(version: str) -> tuple[int]:
+def sort_by_version(version: str) -> Tuple[int]:
     h, m, s = version.split(".")
     return int(h), int(m), int(s)
 
@@ -130,15 +131,12 @@ def build_extension(debug: bool = False, use_temp_dir=True) -> None:
     cmake_args = [
         f"-DPython3_EXECUTABLE={py_cfg['exe']}",
         f"-DPython3_INCLUDE_DIR={py_cfg['include']}",
-        f"-DPython3_LIBRARY={str(Path(py_cfg['libdir']) / Path(py_cfg['library']))}",  # noqa: RUF010
         f"-DCMAKE_BUILD_TYPE={cfg}",  # not used on MSVC, but no harm
     ]
+    if py_cfg["libdir"]:
+        cmake_args.append(f"-DPython3_LIBRARY={str(Path(py_cfg['libdir']) / Path(py_cfg['library']))}")
 
     build_args = ["--config Release", "--verbose"]
-    # Adding CMake arguments set as environment variable
-    # (needed e.g. to build for ARM OSx on conda-forge)
-
-    # cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 /path/to/src
 
     if sys.platform.startswith("darwin"):
         # Cross-compile support for macOS - respect ARCHFLAGS if set
