@@ -146,21 +146,9 @@ unfixable = ["B"]
 exclude_dirs = [".venv", "tests"]
 skips = ["B307", "B404", "B605", "B607", "B603"]
 
-[tool.cibuildwheel.linux]
-environment = { CLASSPATH="$PWD/antlr-4.13.1-complete.jar" }
-
-[tool.cibuildwheel.macos]
-environment = { CLASSPATH="$PWD/antlr-4.13.1-complete.jar" }
-
-[tool.cibuildwheel.windows]
-environment = { CLASSPATH="%PWD%/antlr-4.13.1-complete.jar" }
-
 [tool.cibuildwheel]
 build-verbosity = 3
 build = "cp3{8,9,10,11,12,13}-*"
 #test-command = "pytest -svv"
 build-frontend = "build"
 #build-frontend = "pip"
-before-build = [
-    "python install_antlr.py"
-]
