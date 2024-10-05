@@ -123,16 +123,19 @@ def build_extension(debug: bool = False, use_temp_dir=False) -> None:
     debug = int(os.environ.get("DEBUG", 0)) or debug
     cfg = "Debug" if debug else "Release"
 
-    py_cfg = get_py_config()
-
     cmake_args = [
-        f"-DPython3_EXECUTABLE={py_cfg['exe']}",
-        f"-DPython3_INCLUDE_DIR={py_cfg['include']}",
         f"-DCMAKE_BUILD_TYPE={cfg}",  # not used on MSVC, but no harm
     ]
-    if py_cfg["libdir"]:
-        cmake_args.append(f"-DPython3_LIBRARY={str(Path(py_cfg['libdir']) / Path(py_cfg['library']))}")
-
+    if uname.system != "Windows":
+        py_cfg = get_py_config()
+        cmake_args.extend(
+            [
+                f"-DPython3_EXECUTABLE={py_cfg['exe']}",
+                f"-DPython3_INCLUDE_DIR={py_cfg['include']}",
+            ]
+        )
+        if py_cfg["libdir"]:
+            cmake_args.append(f"-DPython3_LIBRARY={str(Path(py_cfg['libdir']) / Path(py_cfg['library']))}")
     build_args = ["--config Release", "--verbose"]
 
     if sys.platform.startswith("darwin"):
