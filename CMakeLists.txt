@@ -18,6 +18,8 @@ add_definitions(-DANTLR4CPP_STATIC)
 set(ANTLR4_WITH_STATIC_CRT OFF)
 include(ExternalAntlr4Cpp)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 include_directories(SYSTEM ${ANTLR4_INCLUDE_DIRS})
 
 set(ANTLR_EXECUTABLE ${CMAKE_CURRENT_SOURCE_DIR}/antlr-tool/antlr-${ANTLR4_TAG}-complete.jar)
@@ -68,7 +70,7 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL  "Windows")
 	message("Platform is WINDOWS")
 	SET(MSVC_EXTRA_OPTIONS "")
 elseif (CMAKE_SYSTEM_NAME STREQUAL  "Linux")
-    SET(GCC_N_CLANG_EXTRA_OPTIONS "-fcoroutines -fvisibility=hidden -g0 -fPIC")
+    SET(GCC_N_CLANG_EXTRA_OPTIONS "-fcoroutines -fvisibility=hidden -g0")
 	message("Platform is LINUX")
 endif()
 

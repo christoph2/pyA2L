@@ -30,6 +30,10 @@ jobs:
           toolchain: nightly
           override: true
           components: rustfmt, clippy
+
+     - name: Install Python3-Dev
+       run: sudo apt-get install -y python3-dev
+
       - name: Install Java
         uses: actions/setup-java@v4
         with:
