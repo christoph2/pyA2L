@@ -9,7 +9,7 @@ import sys
 import sysconfig
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple  # noqa: UP035
 
 
 TOP_DIR = Path(__file__).parent
@@ -26,9 +26,9 @@ VARS = sysconfig.get_config_vars()
 
 def get_python_base() -> str:
     # Applies in this form only to Windows.
-    if "base" in VARS and VARS["base"]:
+    if "base" in VARS and VARS["base"]:  # noqa: RUF019
         return VARS["base"]
-    if "installed_base" in VARS and VARS["installed_base"]:
+    if "installed_base" in VARS and VARS["installed_base"]:  # noqa: RUF019
         return VARS["installed_base"]
 
 
@@ -89,14 +89,14 @@ def get_py_config() -> dict:
     return dict(exe=sys.executable, include=include, libdir=libdir, library=library)
 
 
-def sort_by_version(version: str) -> Tuple[int]:
+def sort_by_version(version: str) -> Tuple[int]:  # noqa: UP006
     h, m, s = version.split(".")
     return int(h), int(m), int(s)
 
 
-def fetch_tags(repo: str) -> List[str]:
+def fetch_tags(repo: str) -> List[str]:  # noqa: UP006
     res = subprocess.run(["git", "ls-remote", "--tags", repo], shell=False, capture_output=True, text=True)  # nosec
-    if res.returncode == 0:
+    if res.returncode != 0:
         return []
     tag_set = set()
     for tag in res.stdout.splitlines():
@@ -120,6 +120,9 @@ def banner(msg: str) -> None:
 def build_extension(debug: bool = False, use_temp_dir=False) -> None:
     print("build_ext::build_extension()")
 
+    antlr4_tag = most_recent_tag("https://github.com/antlr/antlr4")
+    print("antlr4_tag", antlr4_tag)
+    os.environ["ANTLR4_TAG"] = antlr4_tag
     debug = int(os.environ.get("DEBUG", 0)) or debug
     cfg = "Debug" if debug else "Release"
 
@@ -135,8 +138,8 @@ def build_extension(debug: bool = False, use_temp_dir=False) -> None:
             ]
         )
         if py_cfg["libdir"]:
-            cmake_args.append(f"-DPython3_LIBRARY={str(Path(py_cfg['libdir']) / Path(py_cfg['library']))}")
-    build_args = ["--config Release", "--verbose"]
+            cmake_args.append(f"-DPython3_LIBRARY={str(Path(py_cfg['libdir']) / Path(py_cfg['library']))}")  # noqa: RUF010
+    build_args = ["--config Release", "--verbose"]  # f"-DANTLR4_TAG={antlr4_tag}"
 
     if sys.platform.startswith("darwin"):
         # Cross-compile support for macOS - respect ARCHFLAGS if set

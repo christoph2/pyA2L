@@ -53,6 +53,10 @@ class InvalidA2LDatabase(Exception):
 class DB:
     """"""
 
+    def __init__(self, loglevel="INFO") -> None:
+        self.loglevel = loglevel
+        self.logger = Logger(self.__class__.__name__, loglevel)
+
     A2L_TEMPLATE = pkgutil.get_data("pya2l.cgen.templates", "a2l.tmpl")
 
     def import_a2l(
@@ -115,7 +119,6 @@ class DB:
         from pya2l.preprocessor import Preprocessor
 
         start_time = perf_counter()
-        self.logger = Logger(self.__class__.__name__, loglevel)
         self.in_memory = in_memory
 
         self._set_path_components(file_name, local)
@@ -127,7 +130,9 @@ class DB:
                     pass  # nosec
             elif self._dbfn.exists():
                 raise OSError(f"file '{self._dbfn}' already exists.")  # Use 'open_create()' or 'open_existing()'.--
-
+        if hasattr(self, "db"):
+            print("CLOSE db")
+            self.db.close()
         print("Enter pre-processor...")
 
         prepro = Preprocessor(loglevel=loglevel)
