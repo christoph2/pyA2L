@@ -79,13 +79,28 @@ bool validate(const Parameter& p, const ANTLRToken* token, const AsamVariantType
 
     if (std::size(p.get_enumerators()) == 0) {
         const auto entry = ASAM_TYPES[std::bit_cast<std::uint16_t>(p.m_type) - 1];
-        // const Enum*       en_xx = dynamic_cast< const Enum*>(entry);
         ok              = entry->validate(value);
+		if (!ok) {
+			std::cout << "\tInvalid Value -- type: "  << std::bit_cast<std::uint16_t>(p.m_type) << " idx: " << value.index() << std::endl;
+
+			if (std::holds_alternative<unsigned long long>(value)) {
+				std::cout << "\t\tVALUE [unsigned long long]: " << std::to_string(std::get<unsigned long long>(value)) << std::endl;
+			} else if (std::holds_alternative<signed long long>(value)) {
+				std::cout << "\t\tVALUE [signed long long]: " << std::to_string(std::get<signed long long>(value)) << std::endl;
+			} else if (std::holds_alternative<long double>(value)) {
+				std::cout << "\t\tVALUE [long double]: " << std::to_string(std::get<long double>(value)) << std::endl;
+			} else if (std::holds_alternative<std::string>(value)) {
+				std::cout << "\t\tVALUE [string]: " << std::get<std::string>(value) << std::endl;
+			}
+		}
         auto valid_type = entry->m_valid_tokens.contains(static_cast<A2LTokenType>(token->getType()));
+		if (!valid_type) {
+			std::cout << "\tInvalid type: " << token->getType() << std::endl;
+		}
+
         return ok && valid_type;
     } else {
         ok = p.get_enumerators().contains(std::get<std::string>(value));
-        // auto token_type = static_cast<A2LTokenType>(token->getType());
         if (!ok) {
             std::cout << token->line() << ":" << token->column() << ": error : "
                       << "Enumeration '" + p.m_name + "' must be one of: " << valid_enumerators(p.m_enumerators) << " -- got: '"

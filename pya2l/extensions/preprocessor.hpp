@@ -88,6 +88,9 @@ class Preprocessor {
     }
 
     ~Preprocessor() {
+        tmp_a2l.close();
+        tmp_aml.close();
+        tmp_ifdata.close();
     }
 
     preprocessor_result_t process(const std::string& filename, const std::string& encoding) {

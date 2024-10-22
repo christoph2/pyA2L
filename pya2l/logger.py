@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2021 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2024 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -29,23 +28,26 @@ __version__ = "0.1.0"
 
 import logging
 
-# logging.basicConfig()
+from rich.logging import RichHandler
 
 
-class Logger(object):
+class Logger:
 
     LOGGER_BASE_NAME = "pya2l"
     FORMAT = "[%(levelname)s (%(name)s)]: %(message)s"
 
     def __init__(self, name, level="WARN"):
-        self.logger = logging.getLogger("{0}.{1}".format(self.LOGGER_BASE_NAME, name))
-        # self.logger.setLevel(level.upper())
-        self.setLevel(level)
-        handler = logging.StreamHandler()
-        # handler.setLevel(level.upper())
-        formatter = logging.Formatter(self.FORMAT)
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
+        if not logging.getLogger().handlers:
+            self.logger = logging.getLogger(f"{self.LOGGER_BASE_NAME}.{name}")
+            # self.logger.setLevel(level.upper())
+            self.setLevel(level)
+            # handler = logging.StreamHandler()
+            handler = RichHandler()
+            # handler.setLevel(level.upper())
+            formatter = logging.Formatter(self.FORMAT)
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+        self.logger = logging.getLogger("rich")
         self.lastMessage = None
         self.lastSeverity = None
 
@@ -57,7 +59,7 @@ class Logger(object):
     def log(self, message, level):
         self.lastSeverity = level
         self.lastMessage = message
-        self.logger.log(level, "{0}".format(message))
+        self.logger.log(level, f"{message}")
         # print("{0}{1}".format(level, message))
 
     def info(self, message):

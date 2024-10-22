@@ -1,22 +1,20 @@
-import os
 import re
 import typing
 from collections import defaultdict
-from pprint import pprint
 from time import perf_counter
 
-from rich.progress import BarColumn
-from rich.progress import Progress
-from rich.progress import SpinnerColumn
-from rich.progress import TaskProgressColumn
-from rich.progress import TimeElapsedColumn
-from rich.progress import TimeRemainingColumn
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TaskProgressColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+)
 
 import pya2l.a2lparser_ext as ext
-from pya2l import classes
-from pya2l import model
+from pya2l import classes, model
 
-# from  .a2lparser_ext import A2LParser as A2LParser_ext
 
 IFD_HEADER = re.compile(r"/begin\s+IF_DATA\s+(\w+)", re.DOTALL | re.MULTILINE)
 
@@ -26,7 +24,6 @@ KW_MAP = {
     "AddrEpk": model.AddrEpk,
     "AlignmentByte": model.AlignmentByte,
     "AlignmentFloat16Ieee": model.AlignmentFloat16Ieee,
-    "AlignmentFloat32Ieee": model.AlignmentFloat32Ieee,
     "AlignmentFloat32Ieee": model.AlignmentFloat32Ieee,
     "AlignmentFloat64Ieee": model.AlignmentFloat64Ieee,
     "AlignmentInt64": model.AlignmentInt64,
@@ -220,7 +217,7 @@ def lower_first(text: str) -> str:
     return f"{text[0].lower()}{text[1:]}"
 
 
-def make_zipper(kw) -> typing.Callable[[typing.Container[typing.Any]], typing.Dict[str, typing.Any]]:
+def make_zipper(kw) -> typing.Callable[[typing.Container[typing.Any]], typing.Dict[str, typing.Any]]:  # noqa: UP006
     if hasattr(kw, "__required_parameters__"):
         table_name = kw.__tablename__.upper()
         if table_name == "IFDATA":
@@ -246,7 +243,7 @@ def make_zipper(kw) -> typing.Callable[[typing.Container[typing.Any]], typing.Di
 
                 def zipper(values, mult_values: list[typing.Any]):
                     # Scalars, the final value is a list.
-                    result = dict(zip([p.name for p in kw.__required_parameters__[:-1]], values))
+                    result = dict(zip([p.name for p in kw.__required_parameters__[:-1]], values, strict=False))
                     result[MULT_COLUMN[table_name]] = mult_values
                     return result
 
@@ -254,7 +251,7 @@ def make_zipper(kw) -> typing.Callable[[typing.Container[typing.Any]], typing.Di
 
             def zipper(values, mult_values: list[typing.Any]):
                 # Standard case -- all scalar values.
-                return dict(zip([p.name for p in kw.__required_parameters__], values))
+                return dict(zip([p.name for p in kw.__required_parameters__], values, strict=False))
 
     else:
 
@@ -303,7 +300,7 @@ def update_tables(session, parser):
         t0, t1, assoc, counter, columns = MAP[table_type]
         result = []
         for row in values:
-            result.append(t1(**dict(zip(columns, row))))
+            result.append(t1(**dict(zip(columns, row, strict=False))))
         session.add_all(result)
         inst = session.query(t0).filter(t0.name == name).first()
         setattr(inst, counter, len(values))
@@ -313,16 +310,22 @@ def update_tables(session, parser):
 
 class A2LParser:
     def __init__(self, prepro_result):
-        self.parser = ext.A2LParser(prepro_result)
+        self.prepro_result = prepro_result
+
+    def __del__(self):
+        pass
+
+    def close(self):
+        pass
 
     def parse(self, filename: str, encoding: str = "latin-1", dbname: str = ":memory:"):
         self.debug = False
         start = perf_counter()
         self.db = model.A2LDatabase(dbname, debug=self.debug)
         print(f"Parsing: '{filename}' [{encoding}] ==> DB '{dbname}'.")
-        self.parser.parse(filename, encoding)
-        values = self.parser.get_values()
-        print(f"Keyword counter: {self.parser.keyword_counter} -- Elapsed Time: {perf_counter() - start:.2f}s.", end="\n\n")
+        parser = ext.A2LParser(self.prepro_result, filename, encoding)
+        values = parser.get_values()
+        print(f"Keyword counter: {parser.keyword_counter} -- Elapsed Time: {perf_counter() - start:.2f}s.", end="\n\n")
         self.counter = 0
 
         progress_columns = (
@@ -336,21 +339,21 @@ class A2LParser:
             TimeRemainingColumn(),
         )
         self.progress_bar = Progress(*progress_columns)
-        self.task = self.progress_bar.add_task("[blue]writing to DB...", total=self.parser.keyword_counter)
-        self.advance = self.parser.keyword_counter // 100 if self.parser.keyword_counter >= 100 else 1
+        self.task = self.progress_bar.add_task("[blue]writing to DB...", total=parser.keyword_counter)
+        self.advance = parser.keyword_counter // 100 if parser.keyword_counter >= 100 else 1
         fr = FakeRoot()
         with self.progress_bar:
             self.traverse(values, fr, None, False)
         self.db.session.commit()
         self.db.close()
-        print()
-        return (self.db, ())
+        parser.close()
+        # del parser
+        return self.db
 
     def traverse(self, tree, parent, attr, multiple, level=0):
         self.counter += 1
         inst = None
         mult: list = []
-        space = "    " * level
         name = tree.get_name()
 
         # print("TABLE ==> ", name, parent, multiple)
@@ -379,11 +382,7 @@ class A2LParser:
                     #    print(parent, table, params, if_data)
                     if parent.if_data is None:
                         parent.if_data = []
-
-                    ma = IFD_HEADER.search(if_data)
-                    if ma:
-                        ifd_name = ma.group(1)
-
+                    # ma = IFD_HEADER.search(if_data)
                     ifd = model.IfData(raw=if_data)
                     parent.if_data.append(ifd)
                 # db.session.add(inst)
@@ -406,7 +405,6 @@ class A2LParser:
                 inst = FakeRoot()
                 attr = "fake"
                 mult = False
-                an = "root"
             self.traverse(kw, inst, attr, mult, level + 1)
         if name != "root" and not isinstance(inst, bool):
             self.db.session.add(inst)

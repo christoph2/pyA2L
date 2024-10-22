@@ -140,7 +140,7 @@ class DB:
         filenames, line_map, ifdata_reader = prepro_result
         a2l_parser = parsers.a2l(debug=debug, prepro_result=prepro_result)
         self.logger.info("Parsing pre-processed data ...")
-        self.db, listener_result = a2l_parser.parse(filename=filenames.a2l, dbname=str(self._dbfn), encoding=encoding)
+        self.db = a2l_parser.parse(filename=filenames.a2l, dbname=str(self._dbfn), encoding=encoding)
         self.session = self.db.session
 
         # self.logger.info("Parsing AML section ...")
@@ -168,10 +168,19 @@ class DB:
         """
         self.session.commit()
         self.logger.info(f"Done [Elapsed time {perf_counter() - start_time:.2f}s].")
+        a2l_parser.close()
         return self.session
 
     def export_a2l(self, file_name=sys.stdout, encoding="utf-8"):
-        """"""
+        """
+        Parameters
+        ----------
+        file_name: str
+            Name of the A2L exported.
+
+        encoding: str
+            File encoding like "latin-1" or "utf-8".
+        """
         namespace = dict(session=self.db.session, model=model)
         data = doTemplateFromText(self.A2L_TEMPLATE, namespace, formatExceptions=False, encoding=encoding)
         result = []
@@ -230,7 +239,13 @@ class DB:
         self.db.close()
 
     def _set_path_components(self, file_name, local=False):
-        """"""
+        """
+        Parameters
+        ----------
+        file_name: str
+
+        local: bool
+        """
         if hasattr(self, "_dbfn"):
             return
         file_path = Path(file_name)

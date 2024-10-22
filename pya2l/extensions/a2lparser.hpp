@@ -34,21 +34,32 @@ class A2LParser {
 
     using value_table_t = std::tuple<std::string, std::string, std::vector<std::vector<AsamVariantType>>>;
 
-    explicit A2LParser(std::optional<preprocessor_result_t> prepro_result) :
-        m_prepro_result(prepro_result), m_keyword_counter(0), m_table(PARSER_TABLE), m_root("root") {
+    explicit A2LParser(std::optional<preprocessor_result_t> prepro_result, const std::string& file_name, const std::string& encoding) :
+        m_prepro_result(prepro_result), m_keyword_counter(0), m_table(PARSER_TABLE), m_root("root"), m_finalized(false) {
         kw_push(m_table);
         m_value_stack.push(&m_root);
         m_idr         = std::make_unique<IfDataReader>(std::get<2>(prepro_result.value()));
         m_table_count = 0;
+        parse(file_name, encoding);
     }
 
     A2LParser(const A2LParser&) = delete;
+
+    ~A2LParser() {
+        close();
+    }
+
+    void close() {
+        if (!m_finalized) {
+            m_reader->close();
+            m_finalized = true;
+        }
+    }
 
     void parse(const std::string& file_name, const std::string& encoding) {
         ValueContainer::set_encoding(encoding);
         std::optional<std::string> if_data_section;
         m_reader = std::make_unique<TokenReader>(file_name);
-
         if (m_prepro_result) {
             auto idr = std::get<2>(m_prepro_result.value());
             idr.open();
@@ -288,13 +299,13 @@ class A2LParser {
     std::string                          m_encoding;
     std::unique_ptr<TokenReader>         m_reader;
     std::size_t                          m_keyword_counter;
-    // std::stack<Keyword>                  m_kw_stack;
     std::vector<Keyword>        m_kw_stack;
     std::stack<ValueContainer*> m_value_stack;
     Keyword&                    m_table;
     ValueContainer              m_root;
     std::vector<value_table_t>  m_tables;
     std::size_t                 m_table_count{ 0 };
+    bool m_finalized{false};
 };
 
 // helper function to print a tuple of any size

@@ -86,8 +86,8 @@ PYBIND11_MODULE(a2lparser_ext, m) {
         });
 
     py::class_<A2LParser>(m, "A2LParser")
-        .def(py::init<std::optional<preprocessor_result_t>>())
-        .def("parse", &A2LParser::parse)
+        .def(py::init<std::optional<preprocessor_result_t>, const std::string&, const std::string&>())
+        .def("close", &A2LParser::close)
         .def("get_values", &A2LParser::get_values, py::return_value_policy::move)
         .def("get_tables", &A2LParser::get_tables, py::return_value_policy::move)
         .def_property_readonly("keyword_counter", &A2LParser::get_keyword_counter);

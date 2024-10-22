@@ -1231,7 +1231,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                         Keyword(
                                             A2LTokenType::CALIBRATION_HANDLE, "CALIBRATION_HANDLE", "CalibrationHandle", true, true,
                                             {
-                                                Parameter(PredefinedType::Long, "Handle", true),
+                                                Parameter(PredefinedType::Ulong, "Handle", true),
                                             },
                                             {
                                                 Keyword(
