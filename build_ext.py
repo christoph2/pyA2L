@@ -120,6 +120,9 @@ def banner(msg: str) -> None:
 def build_extension(debug: bool = False, use_temp_dir=False) -> None:
     print("build_ext::build_extension()")
 
+    use_temp_dir = use_temp_dir or os.environ.get("BUILD_TEMP")
+    debug = debug or os.environ.get("BUILD_DEBUG")
+
     antlr4_tag = most_recent_tag("https://github.com/antlr/antlr4")
     print("antlr4_tag", antlr4_tag)
     os.environ["ANTLR4_TAG"] = antlr4_tag

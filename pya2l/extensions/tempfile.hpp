@@ -62,8 +62,9 @@ class TempFile {
     }
 
     void remove() noexcept {
+        close();
         if (fs::exists(m_path)) {
-            close();
+
             // fs::remove(m_path);
         }
     }

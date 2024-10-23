@@ -64,10 +64,8 @@ class A2LParser {
             auto idr = std::get<2>(m_prepro_result.value());
             idr.open();
         }
-
         while (true) {
             const auto token = m_reader->LT(1);
-            // auto block = kw_tos().m_block;
 
             if (token_type() == A2LTokenType::BEGIN) {
                 m_reader->consume();
@@ -79,7 +77,6 @@ class A2LParser {
             if (token_type() == A2LTokenType::END) {
                 m_reader->consume();
                 const auto glied = m_reader->LT(1);
-                // std::cout << "\t/END " << glied->getText() << "\n";
                 assert(kw_tos().m_name == glied->getText());
                 if (kw_tos().m_name == glied->getText()) {
                     kw_pop();
@@ -99,7 +96,6 @@ class A2LParser {
             }
 
             if (kw_tos().contains(token->getType())) {
-                // std::cout << v++ << ": " << token->getText() << std::endl;
                 const auto ttype = kw_tos().get(token->type());
                 kw_push(ttype);
                 auto& vref = value_tos().add_keyword(ValueContainer(ttype.m_class_name));

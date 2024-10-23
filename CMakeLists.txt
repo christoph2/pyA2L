@@ -15,11 +15,12 @@ set(ANTLR4_TAG $ENV{ANTLR4_TAG})
 message("ANTLR4-TAG: " ${ANTLR4_TAG})
 
 SET(CMAKE_C_STANDARD 17)
-set(CMAKE_CXX_STANDARD 23)
+# set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/antlr_cmake)
 
 add_definitions(-DANTLR4CPP_STATIC)
-set(ANTLR4_WITH_STATIC_CRT OFF)
+set(ANTLR4_WITH_STATIC_CRT ON)
 include(ExternalAntlr4Cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -44,7 +45,7 @@ message( STATUS "Found pybind11 v${pybind11_VERSION} ${pybind11_VERSION_TYPE}: $
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dist")
 
 
-SET(GCC_N_CLANG_BASE_OPTIONS "-std=c++23 -Wall -Wextra -Wpedantic -Warray-bounds -mtune=native -fexceptions")
+SET(GCC_N_CLANG_BASE_OPTIONS "-Wall -Wextra -Wpedantic -Warray-bounds -mtune=native -fexceptions")
 # target_link_options(${PROJECT_NAME} PUBLIC -flto=auto)
 
 SET(MSVC_BASE_OPTIONS "/W3 /permissive- /EHsc /bigobj /Zc:__cplusplus /std:c++latest")
