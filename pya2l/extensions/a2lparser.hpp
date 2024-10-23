@@ -119,13 +119,6 @@ class A2LParser {
             }
             m_reader->consume();
             m_keyword_counter++;
-
-    #if 0
-            if (token_type() == ANTLRToken::_EOF) {
-                std::cout << m_keyword_counter / 1000 << "k tokens processed." << std::endl;
-                break;
-            }
-    #endif
             auto kw = ValueContainer(kw_tos().m_name);
 
             // std::cout << "KW: " << kw_tos().m_name << std::endl;
