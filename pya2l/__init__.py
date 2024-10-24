@@ -122,6 +122,7 @@ class DB:
         self.in_memory = in_memory
 
         self._set_path_components(file_name, local)
+        print("_dbfn", self._dbfn)
         if not in_memory:
             if remove_existing:
                 try:
@@ -253,8 +254,8 @@ class DB:
 
         local: bool
         """
-        if hasattr(self, "_dbfn"):
-            return
+        # if hasattr(self, "_dbfn"):
+        #    return
         file_path = Path(file_name)
         if self.in_memory:
             self._dbfn = ":memory:"
