@@ -117,11 +117,19 @@ def banner(msg: str) -> None:
     print("=" * 80)
 
 
+def get_env_int(name: str, default: int = 0) -> int:
+    return int(os.environ.get(name, default))
+
+
+def get_env_bool(name: str, default: int = 0) -> bool:
+    return get_env_int(name, default)
+
+
 def build_extension(debug: bool = False, use_temp_dir=False) -> None:
     print("build_ext::build_extension()")
 
-    use_temp_dir = use_temp_dir or os.environ.get("BUILD_TEMP")
-    debug = debug or os.environ.get("BUILD_DEBUG")
+    use_temp_dir = use_temp_dir or get_env_bool("BUILD_TEMP")
+    debug = debug or get_env_bool("BUILD_DEBUG")
 
     antlr4_tag = most_recent_tag("https://github.com/antlr/antlr4")
     print("antlr4_tag", antlr4_tag)

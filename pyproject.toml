@@ -55,7 +55,7 @@ requires = ["poetry-core>=1.6.0", "wheel", "cmake>=3.12", "pybind11[global]>=2.1
 build-backend = "poetry.core.masonry.api"
 
 
-[project.scripts]
+[tool.poetry.scripts]
 a2ldb-imex = "pya2l.scripts.a2ldb_imex:main"
 
 [tool.pytest]
