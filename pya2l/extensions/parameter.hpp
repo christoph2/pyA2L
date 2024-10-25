@@ -159,7 +159,23 @@ class ParameterTupleParser {
     void feed(const ANTLRToken* token) noexcept {
         if (!m_started) {
             auto [tp, name]  = m_parameter.get_counter().value();
-            auto tuple_count = std::get<unsigned long long>(convert(tp, token->getText()));
+            auto converted_value = convert(tp, token->getText());
+            unsigned long long tuple_count = 0ULL;
+            if (!std::holds_alternative<unsigned long long>(converted_value)) {
+                std::cerr << "Error: Tuple counter must be an unsigned long long is: " << converted_value.index() << std::endl;
+
+               if (std::holds_alternative<signed long long>(converted_value)) {
+                    std::cout << "\t\tVALUE [signed long long]: " << std::to_string(std::get<signed long long>(converted_value)) << std::endl;
+                    tuple_count = std::get<signed long long>(converted_value);
+                } else if (std::holds_alternative<long double>(converted_value)) {
+                    std::cout << "\t\tVALUE [long double]: " << std::to_string(std::get<long double>(converted_value)) << std::endl;
+                } else if (std::holds_alternative<std::string>(converted_value)) {
+                    std::cout << "\t\tVALUE [string]: " << std::get<std::string>(converted_value) << std::endl;
+                    tuple_count =  std::strtoll(std::get<std::string>(converted_value).c_str(), nullptr, 10);
+                }
+            } else {
+                tuple_count = std::get<unsigned long long>(converted_value);
+             }
             m_tuple_size     = std::size(m_parameter.get_tuple_elements());
             m_row.resize(m_tuple_size);
             m_token_count = tuple_count * m_tuple_size;

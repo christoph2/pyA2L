@@ -77,7 +77,7 @@ class A2LParser {
             if (token_type() == A2LTokenType::END) {
                 m_reader->consume();
                 const auto glied = m_reader->LT(1);
-                assert(kw_tos().m_name == glied->getText());
+                assert(kw_tos().m_name == glied->getText());    // TODO: handle error
                 if (kw_tos().m_name == glied->getText()) {
                     kw_pop();
                     m_value_stack.pop();
@@ -214,6 +214,10 @@ class A2LParser {
                         token = m_reader->LT(1);
                         tuple_parser.feed(token);
                         if (tuple_parser.get_state() == ParameterTupleParser::StateType::FINISHED) {
+                            if (!std::holds_alternative<std::string>(parameter_list[0])) {
+                                std::cerr << "Invalid tuple.\n";
+                                break;
+                            }
                             m_tables.push_back({ value_tos().get_name(), std::get<std::string>(parameter_list[0]),
                                                  tuple_parser.get_table() });
                             m_reader->consume();
