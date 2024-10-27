@@ -153,20 +153,31 @@ class IfDataReader : public IfDataBase {
     void open() {
     #if defined(_MSC_VER)
         auto err = ::fopen_s(&m_file, m_file_name.c_str(), "rb");
+        if (err != 0) {
+            throw std::runtime_error("Could not open file '" + m_file_name + "'.\n");
+        }
     #else
         m_file = ::fopen(m_file_name.c_str(), "rb");
+        if (m_file == nullptr) {
+            throw std::runtime_error("Could not open file '" + m_file_name + "'.\n");
+        }
     #endif
 
         struct stat stat_buf;
         int         rc = stat(m_file_name.c_str(), &stat_buf);
         m_size         = rc == 0 ? stat_buf.st_size : -1;
+        m_file_open    = true;
     }
 
     void close() {
-        ::fclose(m_file);
+        if (m_file_open) {
+            ::fclose(m_file);
+            m_file_open = false;
+        }
     }
 
     ~IfDataReader() {
+        close();
     }
 
     std::optional<std::string> get(const line_type& line) {
@@ -225,6 +236,7 @@ class IfDataReader : public IfDataBase {
     std::FILE*  m_file{ nullptr };
     map_type    file_map;
     std::size_t m_size{ 0 };
+    bool        m_file_open{ false };
 };
 
 #endif  // __IFDATA_HPP

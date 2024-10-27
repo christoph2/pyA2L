@@ -1,30 +1,32 @@
 
-#include "preprocessor.hpp"
-#include "a2lparser.hpp"
 
-#include <iostream>
+#include <filesystem>
+#include <fstream>
+
+#include "a2lparser.hpp"
+#include "preprocessor.hpp"
 
 std::string ValueContainer::s_encoding{ "latin1" };
 
+void process(const std::string& file_name, const std::string& encoding) {
+    Preprocessor p{ "INFO" };
+
+    auto res                   = p.process(file_name, encoding);
+    auto& [fns, linemap, ifdr] = res;
+    p.finalize();
+    auto        parser = A2LParser(res, fns.a2l, encoding);
+    const auto& values = parser.get_values();
+}
+
 int main(int argc, char** argv) {
-	std::cout << "Hello!!!\n";
-	bool cmd = false;
-    auto FN{ "C:\\csProjects\\pyA2L\\examples\\03G906021KE_9970_501409_P447_HAXN_EDC16U34_3.41.a2l" };
-
-    cmd = argc > 1;
-
-
-	Preprocessor p{ "INFO" };
-
-    if (cmd) {
-        auto res    = p.process(argv[1], "UTF-8");
-        auto reader = std::get<2>(res);
-        p.finalize();
-        reader.open();
-    //    auto id = reader.get({ 2297, 9, 2307, 20 });
-    //    reader.close();
-    //    ld(p, 3);
+    for (auto const & dir_entry : std::filesystem::directory_iterator{ "..\\..\\examples" }) {
+        auto pth = dir_entry.path();
+        auto ext = pth.extension();
+        if (ext != ".a2l") {
+            continue;
+        }
+        std::cout << pth << '\n';
+        process(pth.string(), "latin1");
     }
-
-	return 0;
+    return 0;
 }

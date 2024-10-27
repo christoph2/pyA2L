@@ -34,7 +34,9 @@ class A2LParser {
 
     using value_table_t = std::tuple<std::string, std::string, std::vector<std::vector<AsamVariantType>>>;
 
-    explicit A2LParser(std::optional<preprocessor_result_t> prepro_result, const std::string& file_name, const std::string& encoding) :
+    explicit A2LParser(
+        std::optional<preprocessor_result_t> prepro_result, const std::string& file_name, const std::string& encoding
+    ) :
         m_prepro_result(prepro_result), m_keyword_counter(0), m_table(PARSER_TABLE), m_root("root"), m_finalized(false) {
         kw_push(m_table);
         m_value_stack.push(&m_root);
@@ -69,8 +71,12 @@ class A2LParser {
 
             if (token_type() == A2LTokenType::BEGIN) {
                 m_reader->consume();
+    #if 0
                 if (kw_tos().contains(token_type())) {
+                } else {
+                    std::cout << "Warning: unexpected token: " << token->toString() << std::endl;
                 }
+    #endif
             }
 
             // TODO:  Factor out.
@@ -104,8 +110,12 @@ class A2LParser {
                 //
                 // TODO: Addressmapper
                 // auto msg {"[INFO (pya2l.parser)]"};
-
-                std::cerr << "Invalid token: " << token->toString() << std::endl;
+                auto kwt = kw_tos();
+                std::cerr << "[ERROR (pya2l.parser)] Invalid token: " << token->toString() << std::endl;
+                if ((token->getText() == "IF_DATA") && (kwt.m_name == "ROOT")) {
+                    std::cerr << "[ERROR (pya2l.parser)] No top-level PROJECT element. This is probably an include file?\n";
+                }
+                break;
             }
 
             if (token->getText() == "IF_DATA") {
@@ -292,13 +302,13 @@ class A2LParser {
     std::string                          m_encoding;
     std::unique_ptr<TokenReader>         m_reader;
     std::size_t                          m_keyword_counter;
-    std::vector<Keyword>        m_kw_stack;
-    std::stack<ValueContainer*> m_value_stack;
-    Keyword&                    m_table;
-    ValueContainer              m_root;
-    std::vector<value_table_t>  m_tables;
-    std::size_t                 m_table_count{ 0 };
-    bool m_finalized{false};
+    std::vector<Keyword>                 m_kw_stack;
+    std::stack<ValueContainer*>          m_value_stack;
+    Keyword&                             m_table;
+    ValueContainer                       m_root;
+    std::vector<value_table_t>           m_tables;
+    std::size_t                          m_table_count{ 0 };
+    bool                                 m_finalized{ false };
 };
 
 // helper function to print a tuple of any size

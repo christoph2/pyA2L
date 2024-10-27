@@ -135,16 +135,18 @@ class DB:
             self.db.close()
         print("Enter pre-processor...")
 
-        prepro = Preprocessor(loglevel=loglevel)
-
         if encoding is None:
             self.logger.info("Detecting encoding...")
             encoding = detect_encoding(file_name=self._a2lfn)
+
+        prepro = Preprocessor(loglevel=loglevel)
         prepro_result = prepro.process(str(self._a2lfn), encoding=encoding)
         prepro.finalize()
         filenames, line_map, ifdata_reader = prepro_result
         a2l_parser = parsers.a2l(debug=debug, prepro_result=prepro_result)
+
         self.logger.info("Parsing pre-processed data ...")
+
         self.db = a2l_parser.parse(filename=filenames.a2l, dbname=str(self._dbfn), encoding=encoding)
         self.session = self.db.session
 
