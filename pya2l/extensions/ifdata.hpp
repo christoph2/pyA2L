@@ -191,7 +191,7 @@ class IfDataReader : public IfDataBase {
         }
 
         if (offset >= m_size) {
-            std::cerr << "file offset " << offset << " is out of range of file size " << m_size << std::endl;
+            std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "file offset " << offset << " is out of range of file size " << m_size << std::endl;
             return std::nullopt;
         } else {
             // std::cout << "file offset: " << offset << std::endl;

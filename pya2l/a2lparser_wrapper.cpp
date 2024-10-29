@@ -11,12 +11,36 @@ namespace py = pybind11;
 
 std::string ValueContainer::s_encoding{ "ascii" };
 
+auto parse(const std::string& file_name, const std::string& encoding) -> std::tuple<std::size_t, const ValueContainer> {
+    Preprocessor p{ "INFO" };
+
+    std::chrono::steady_clock::time_point start1 = std::chrono::steady_clock::now();
+    auto res                   = p.process(file_name, encoding);
+    auto& [fns, linemap, ifdr] = res;
+    p.finalize();
+    std::chrono::steady_clock::time_point stop1 = std::chrono::steady_clock::now();
+    std::cout << "[Info (pya2l.Preprocessor)]  Elapsed Time: " << (std::chrono::duration_cast<std::chrono::milliseconds>(stop1 - start1).count()) / 1000.0 << "[s]"  << std::endl;
+
+    std::cout << "[Info (pya2l.A2LParser)]     Parsing intermediate file: " << fns.a2l << std::endl;
+    std::chrono::steady_clock::time_point start2 = std::chrono::steady_clock::now();
+    auto        parser = A2LParser(res, fns.a2l, encoding);
+    auto counter = parser.get_keyword_counter();
+    const auto& values = parser.get_values();
+    std::chrono::steady_clock::time_point stop2 = std::chrono::steady_clock::now();
+    std::cout << "[Info (pya2l.A2LParser)]     Elapsed Time: " << (std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - start2).count()) / 1000.0 << "[s]"  << std::endl;
+    std::cout << "[Info (pya2l.A2LParser)]     Number of keywords: " << counter << std::endl;
+
+    return {counter, values};
+}
+
 template<typename... Ts>
 struct Overload : Ts... {
     using Ts::operator()...;
 };
 
 PYBIND11_MODULE(a2lparser_ext, m) {
+    m.def("parse", &parse, py::return_value_policy::move)
+    ;
     py::class_<ValueContainer>(m, "ValueContainer")
         .def(py::init<std::string_view>(), py::arg("name"))
         .def("get_name", &ValueContainer::get_name)
@@ -84,13 +108,6 @@ PYBIND11_MODULE(a2lparser_ext, m) {
             }
             return result;
         });
-
-    py::class_<A2LParser>(m, "A2LParser")
-        .def(py::init<std::optional<preprocessor_result_t>, const std::string&, const std::string&>())
-        .def("close", &A2LParser::close)
-        .def("get_values", &A2LParser::get_values, py::return_value_policy::move)
-        .def("get_tables", &A2LParser::get_tables, py::return_value_policy::move)
-        .def_property_readonly("keyword_counter", &A2LParser::get_keyword_counter);
 }
 
 #if 0

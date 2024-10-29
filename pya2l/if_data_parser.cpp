@@ -91,7 +91,7 @@ class IfDataParser {
 
     const Node* top() const noexcept {
         if (m_grammar.empty()) {
-            std::cerr << "Stack is empty" << std::endl;
+            std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "Stack is empty" << std::endl;
         }
         return m_grammar.top();
     }
@@ -128,7 +128,7 @@ class IfDataParser {
                             pdt_type();
                             break;
                         default:
-                            std::cerr << "Unknown type: " << std::endl;
+                            std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "Unknown type: " << std::endl;
                             break;
                     }
                 } else if (member) {
@@ -213,7 +213,7 @@ class IfDataParser {
                     block_type();
                     break;
                 default:
-                    std::cerr << "Unknown token type: " << type << std::endl;
+                    std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "Unknown token type: " << type << std::endl;
             }
         }
 
@@ -237,7 +237,7 @@ class IfDataParser {
                 block_type();
                 break;
             default:
-                std::cerr << "Unknown type: " << std::endl;
+                std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "Unknown type: " << std::endl;
                 break;
         }
     }

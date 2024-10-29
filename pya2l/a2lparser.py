@@ -1,6 +1,8 @@
 import re
 import typing
 from collections import defaultdict
+from os import unlink
+from pathlib import Path
 from time import perf_counter
 
 from rich.progress import (
@@ -14,6 +16,8 @@ from rich.progress import (
 
 import pya2l.a2lparser_ext as ext
 from pya2l import classes, model
+from pya2l.logger import Logger
+from pya2l.utils import detect_encoding
 
 
 IFD_HEADER = re.compile(r"/begin\s+IF_DATA\s+(\w+)", re.DOTALL | re.MULTILINE)
@@ -309,8 +313,10 @@ def update_tables(session, parser):
 
 
 class A2LParser:
-    def __init__(self, prepro_result):
-        self.prepro_result = prepro_result
+    def __init__(self):
+        self.debug = False
+        self.logger = Logger("A2LDB", "INFO")
+        # self.logger.setLevel("ERROR")
 
     def __del__(self):
         pass
@@ -318,14 +324,26 @@ class A2LParser:
     def close(self):
         pass
 
-    def parse(self, filename: str, encoding: str = "latin-1", dbname: str = ":memory:"):
-        self.debug = False
-        start = perf_counter()
-        self.db = model.A2LDatabase(dbname, debug=self.debug)
-        print(f"Parsing: '{filename}' [{encoding}] ==> DB '{dbname}'.")
-        parser = ext.A2LParser(self.prepro_result, filename, encoding)
-        values = parser.get_values()
-        print(f"Keyword counter: {parser.keyword_counter} -- Elapsed Time: {perf_counter() - start:.2f}s.", end="\n\n")
+    def parse(
+        self, file_name: str, encoding: str = "latin-1", in_memory: bool = False, local: bool = False, remove_existing: bool = False
+    ):
+        a2l_fn, db_fn = path_components(in_memory, file_name, local)
+        if not in_memory:
+            if remove_existing:
+                try:
+                    unlink(str(db_fn))
+                except Exception:
+                    pass  # nosec
+            elif db_fn.exists():
+                raise OSError(f"file {db_fn!r} already exists.")
+        if not encoding:
+            self.logger.info("Detecting encoding...")
+            encoding = detect_encoding(file_name=a2l_fn)
+        start_time = perf_counter()
+        self.db = model.A2LDatabase(str(db_fn), debug=self.debug)
+        self.logger.info(f"Importing {a2l_fn!r} [{encoding}] ==> DB {db_fn!r}.")
+
+        keyword_counter, values = ext.parse(str(a2l_fn), encoding)
         self.counter = 0
 
         progress_columns = (
@@ -339,15 +357,14 @@ class A2LParser:
             TimeRemainingColumn(),
         )
         self.progress_bar = Progress(*progress_columns)
-        self.task = self.progress_bar.add_task("[blue]writing to DB...", total=parser.keyword_counter)
-        self.advance = parser.keyword_counter // 100 if parser.keyword_counter >= 100 else 1
+        self.task = self.progress_bar.add_task("[blue]writing to DB...", total=keyword_counter)
+        self.advance = keyword_counter // 100 if keyword_counter >= 100 else 1
         fr = FakeRoot()
         with self.progress_bar:
             self.traverse(values, fr, None, False)
         self.db.session.commit()
         self.db.close()
-        parser.close()
-        # del parser
+        self.logger.info(f"Done. Elapsed time [{perf_counter() - start_time:.2f}s].")
         return self.db
 
     def traverse(self, tree, parent, attr, multiple, level=0):
@@ -408,3 +425,39 @@ class A2LParser:
             self.traverse(kw, inst, attr, mult, level + 1)
         if name != "root" and not isinstance(inst, bool):
             self.db.session.add(inst)
+
+
+def enforce_suffix(pth: Path, suffix: str):
+    """Path.with_suffix() works not as expected, if filename contains dots."""
+    if not str(pth).endswith(suffix):
+        return Path(str(pth) + suffix)
+    return pth
+
+
+def path_components(in_memory: bool, file_name: str, local=False):
+    """
+    Parameters
+    ----------
+    in_memory: bool
+
+    file_name: str
+
+    local: bool
+    """
+
+    db_fn = ""
+    a2l_fn = ""
+
+    file_path = Path(file_name)
+    if in_memory:
+        db_fn = ":memory:"
+    else:
+        if local:
+            db_fn = enforce_suffix(Path(file_path.stem), ".a2ldb")
+        else:
+            db_fn = enforce_suffix((file_path.parent / file_path.stem), ".a2ldb")
+    if not file_path.suffix:
+        a2l_fn = enforce_suffix((file_path.parent / file_path.stem), ".a2l")
+    else:
+        a2l_fn = enforce_suffix((file_path.parent / file_path.stem), file_path.suffix)
+    return (a2l_fn, db_fn)

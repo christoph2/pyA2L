@@ -36,7 +36,7 @@ class Logger:
     LOGGER_BASE_NAME = "pya2l"
     FORMAT = "[%(levelname)s (%(name)s)]: %(message)s"
 
-    def __init__(self, name, level="WARN"):
+    def __init__(self, name, level="INFO"):
         if not logging.getLogger().handlers:
             self.logger = logging.getLogger(f"{self.LOGGER_BASE_NAME}.{name}")
             # self.logger.setLevel(level.upper())

@@ -1,7 +1,7 @@
 /*
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-    (C) 2023 by Christoph Schueler <cpu12.gems.googlemail.com>
+    (C) 2023-2024 by Christoph Schueler <cpu12.gems.googlemail.com>
 
     All Rights Reserved
 
@@ -101,7 +101,6 @@ class Preprocessor {
     }
 
     void finalize() {
-        // std::cout << "Preprocessor::finalize()\n";
         tmp_a2l.close();
         tmp_aml.close();
         tmp_ifdata.close();
@@ -139,14 +138,14 @@ class Preprocessor {
 
         if (line_map.contains(abs_pth.string())) {
             throw std::runtime_error(
-                "[ERROR (pya2l.Preprocessor)]: Circular "
+                "[ERROR (pya2l.Preprocessor)]  Circular "
                 "dependency to include file '" +
                 abs_pth.string() + "'."
             );
         }
 
         if (file.is_open()) {
-            std::cout << "[INFO (pya2l.Preprocessor)]: Preprocessing and tokenizing '" + filename + "'." << std::endl;
+            std::cout << "[INFO (pya2l.Preprocessor)]  Preprocessing and tokenizing '" + filename + "'." << std::endl;
             std::size_t end_line{ 0 };
 
             skip_bom(file);
@@ -238,12 +237,12 @@ class Preprocessor {
                             update_line_map(abs_pth, line_offset, line_offset + length - 1, start_line_number, end_line - 1);
                             line_offset += length;
 
-                            std::cout << "[INFO (pya2l.Preprocessor)]: Including '" + incl_file.value().string() + "'."
+                            std::cout << "[INFO (pya2l.Preprocessor)]  Including '" + incl_file.value().string() + "'."
                                       << std::endl;
                             _process_file(incl_file.value().string());
                         } else {
                             throw std::runtime_error(
-                                "[ERROR (pya2l.Preprocessor)]: Could "
+                                "[ERROR (pya2l.Preprocessor)]  Could "
                                 "not locate include file '" +
                                 _fn + "'."
                             );

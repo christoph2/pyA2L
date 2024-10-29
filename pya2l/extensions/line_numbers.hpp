@@ -33,6 +33,9 @@ struct LineNumbers {
     }
 
     LineNumbers(const LineNumbers &) = default;
+    LineNumbers(LineNumbers &&) = default;
+    LineNumbers& operator=(const LineNumbers &) = default;
+    LineNumbers& operator=(LineNumbers &&) = default;
 
     LineNumbers(std::tuple< std::size_t, std::size_t> start, std::tuple< std::size_t, std::size_t> end) noexcept :
         start_line(std::get<0>(start)), start_col(std::get<1>(start)), end_line(std::get<0>(end)), end_col(std::get<1>(end)) {

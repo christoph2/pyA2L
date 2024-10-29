@@ -81,7 +81,7 @@ bool validate(const Parameter& p, const ANTLRToken* token, const AsamVariantType
         const auto entry = ASAM_TYPES[std::bit_cast<std::uint16_t>(p.m_type) - 1];
         ok              = entry->validate(value);
 		if (!ok) {
-			std::cout << "\tInvalid Value -- type: "  << std::bit_cast<std::uint16_t>(p.m_type) << " idx: " << value.index() << std::endl;
+			std::cout << "[WARNING (pya2l.A2LParser)]  Value out of range [" << token->line() << ":" << token->column() << "]"  << std::endl;
 
 			if (std::holds_alternative<unsigned long long>(value)) {
 				std::cout << "\t\tVALUE [unsigned long long]: " << std::to_string(std::get<unsigned long long>(value)) << std::endl;
@@ -94,16 +94,11 @@ bool validate(const Parameter& p, const ANTLRToken* token, const AsamVariantType
 			}
 		}
         auto valid_type = entry->m_valid_tokens.contains(static_cast<A2LTokenType>(token->getType()));
-		if (!valid_type) {
-			std::cout << "\tInvalid type: " << token->getType() << std::endl;
-		}
-
         return ok && valid_type;
     } else {
         ok = p.get_enumerators().contains(std::get<std::string>(value));
         if (!ok) {
-            std::cout << token->line() << ":" << token->column() << ": error : "
-                      << "Enumeration '" + p.m_name + "' must be one of: " << valid_enumerators(p.m_enumerators) << " -- got: '"
+            std::cout << "[ERROR (pya2l.A2LParser)] Enumeration '" + p.m_name + "' [" << token->line() << ":" << token->column() << "] must be one of: " << valid_enumerators(p.m_enumerators) << " -- got: '"
                       << std::get<std::string>(value) << "'." << std::endl;
         }
         return ok;
@@ -162,15 +157,12 @@ class ParameterTupleParser {
             auto converted_value = convert(tp, token->getText());
             unsigned long long tuple_count = 0ULL;
             if (!std::holds_alternative<unsigned long long>(converted_value)) {
-                std::cerr << "Error: Tuple counter must be an unsigned long long is: " << converted_value.index() << std::endl;
-
+                std::cerr << "[ERROR (pya2l.A2LParser)] Tuple counter must be an unsigned long long - Is: " << converted_value.index() << std::endl;
                if (std::holds_alternative<signed long long>(converted_value)) {
-                    std::cout << "\t\tVALUE [signed long long]: " << std::to_string(std::get<signed long long>(converted_value)) << std::endl;
-                    tuple_count = std::get<signed long long>(converted_value);
+                    tuple_count = static_cast<unsigned long long>(std::get<signed long long>(converted_value));
                 } else if (std::holds_alternative<long double>(converted_value)) {
-                    std::cout << "\t\tVALUE [long double]: " << std::to_string(std::get<long double>(converted_value)) << std::endl;
+                    tuple_count = static_cast<unsigned long long>(std::get<long double>(converted_value));
                 } else if (std::holds_alternative<std::string>(converted_value)) {
-                    std::cout << "\t\tVALUE [string]: " << std::get<std::string>(converted_value) << std::endl;
                     tuple_count =  std::strtoll(std::get<std::string>(converted_value).c_str(), nullptr, 10);
                 }
             } else {

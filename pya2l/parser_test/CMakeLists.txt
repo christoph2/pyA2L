@@ -6,15 +6,9 @@ cmake_policy(SET CMP0135 NEW)
 cmake_policy(SET CMP0094 NEW)
 
 find_package(Python3 COMPONENTS Interpreter Development)
-find_package(pybind11 REQUIRED)
-
 
 SET(CMAKE_C_STANDARD 17)
-# set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD 20)
-
-# list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/pybind11)
-# add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/pybind11)
 
 message( STATUS "Found pybind11 v${pybind11_VERSION} ${pybind11_VERSION_TYPE}: ${pybind11_INCLUDE_DIRS}")
 
@@ -22,11 +16,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dist")
 
 
 SET(GCC_N_CLANG_BASE_OPTIONS "-Wall -Wextra -Wpedantic -Warray-bounds -mtune=native -fexceptions")
-# target_link_options(${PROJECT_NAME} PUBLIC -flto=auto)
-
 SET(MSVC_BASE_OPTIONS "/W3 /permissive- /EHsc /bigobj /Zc:__cplusplus /std:c++latest")
-
-
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	if (MSVC)

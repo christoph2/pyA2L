@@ -94,9 +94,9 @@ class A2LParser {
 
             if (token->getType() == ANTLRToken::_EOF) {
                 if (std::size(m_kw_stack) > 1) {
-                    std::cout << "Premature end of file!!!\n";
+                    std::cout << "[ERROR (pya2l.A2LParser)]    " << "Premature end of file!!!\n";
                 } else {
-                    std::cout << "OK, done.\n";
+                   // std::cout << "OK, done.\n";
                 }
                 break;
             }
@@ -109,11 +109,10 @@ class A2LParser {
             } else {
                 //
                 // TODO: Addressmapper
-                // auto msg {"[INFO (pya2l.parser)]"};
                 auto kwt = kw_tos();
-                std::cerr << "[ERROR (pya2l.parser)] Invalid token: " << token->toString() << std::endl;
+                std::cerr << "[ERROR (pya2l.A2LParser)]    Invalid token: " << token->toString() << std::endl;
                 if ((token->getText() == "IF_DATA") && (kwt.m_name == "ROOT")) {
-                    std::cerr << "[ERROR (pya2l.parser)] No top-level PROJECT element. This is probably an include file?\n";
+                    std::cerr << "[ERROR (pya2l.A2LParser)]    No top-level PROJECT element. This is probably an include file?\n";
                 }
                 break;
             }
@@ -187,8 +186,7 @@ class A2LParser {
                     ((token_type() == A2LTokenType::END) && (parameter.is_multiple() == false))) {
                     // Not all parameters are present.
 
-                    std::cerr << kw_tos().m_name << " is missing one or more required parameters: " << std::endl;
-                    // std::cerr << token->toString() << std::endl;
+                    std::cerr << "[WARNING (pya2l.A2LParser)]  " << kw_tos().m_name << " is missing one or more required parameters: " << std::endl;
 
                     for (std::size_t idx = param_count; idx < std::size(kw_tos().m_parameters); ++idx) {
                         auto p = kw_tos().m_parameters[idx];
@@ -225,7 +223,7 @@ class A2LParser {
                         tuple_parser.feed(token);
                         if (tuple_parser.get_state() == ParameterTupleParser::StateType::FINISHED) {
                             if (!std::holds_alternative<std::string>(parameter_list[0])) {
-                                std::cerr << "Invalid tuple.\n";
+                                std::cerr << "[ERROR (pya2l.A2LParser)]    " << "Invalid tuple.\n";
                                 break;
                             }
                             m_tables.push_back({ value_tos().get_name(), std::get<std::string>(parameter_list[0]),
@@ -258,7 +256,7 @@ class A2LParser {
 
                     const auto valid = validate(parameter, token, value);
                     if (!valid) {
-                        std::cout << "Invalid param: " << parameter.get_name() << " -- " << token->toString() << std::endl;
+                        std::cout << "[ERROR (pya2l.A2LParser)]    " << "Invalid param: " << parameter.get_name() << " -- " << token->toString() << std::endl;
                     }
 
                     if (parameter.is_multiple() == true) {
@@ -311,31 +309,4 @@ class A2LParser {
     bool                                 m_finalized{ false };
 };
 
-// helper function to print a tuple of any size
-template<class Tuple, std::size_t N>
-struct TuplePrinter {
-    static void print(const Tuple& t) {
-        TuplePrinter<Tuple, N - 1>::print(t);
-        std::cout << ", " << std::get<N - 1>(t);
-    }
-};
-
-template<class Tuple>
-struct TuplePrinter<Tuple, 1> {
-    static void print(const Tuple& t) {
-        std::cout << std::get<0>(t);
-    }
-};
-
-template<typename... Args, std::enable_if_t<sizeof...(Args) == 0, int> = 0>
-void print(const std::tuple<Args...>& t) {
-    std::cout << "()\n";
-}
-
-template<typename... Args, std::enable_if_t<sizeof...(Args) != 0, int> = 0>
-void print(const std::tuple<Args...>& t) {
-    std::cout << "(";
-    TuplePrinter<decltype(t), sizeof...(Args)>::print(t);
-    std::cout << ")\n";
-}
 #endif  // __A2LPARSER_HPP
