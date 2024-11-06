@@ -218,8 +218,9 @@ class DB:
         remove_existing: bool = False,
         local: bool = False,
         encoding: str = "",
+        loglevel: str = "INFO",
     ):
-        return import_a2l(file_name, debug, in_memory, remove_existing, local, encoding)
+        return import_a2l(file_name, debug, in_memory, remove_existing, local, encoding, loglevel)
 
     @staticmethod
     def open_existing(file_name: str):
