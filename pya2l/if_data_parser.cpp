@@ -92,6 +92,7 @@ class IfDataParser {
     const Node* top() const noexcept {
         if (m_grammar.empty()) {
             std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "Stack is empty" << std::endl;
+            // m_logger.error("Stack is empty");
         }
         return m_grammar.top();
     }
@@ -129,6 +130,7 @@ class IfDataParser {
                             break;
                         default:
                             std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "Unknown type: " << std::endl;
+                            // m_loogger.error("Unknown type: ", static_cast<int>((*type)->aml_type()));
                             break;
                     }
                 } else if (member) {

@@ -22,6 +22,7 @@ using AsamVariantType = std::variant<std::string, unsigned long long, signed lon
 
     #include "a2ltoken.hpp"
     #include "asam_types.hpp"
+    #include "logger.hpp"
     #include "keyword.hpp"
     #include "parameter.hpp"
     #include "parser_table.hpp"
@@ -42,6 +43,7 @@ class A2LParser {
         m_value_stack.push(&m_root);
         m_idr         = std::make_unique<IfDataReader>(std::get<2>(prepro_result.value()));
         m_table_count = 0;
+        m_logger = Logger("pya2l.A2LParser", LogLevel::DEBUG);
         parse(file_name, encoding);
     }
 
@@ -111,8 +113,10 @@ class A2LParser {
                 // TODO: Addressmapper
                 auto kwt = kw_tos();
                 std::cerr << "[ERROR (pya2l.A2LParser)]    Invalid token: " << token->toString() << std::endl;
+                m_logger.error("Invalid token: ", token->toString());
                 if ((token->getText() == "IF_DATA") && (kwt.m_name == "ROOT")) {
                     std::cerr << "[ERROR (pya2l.A2LParser)]    No top-level PROJECT element. This is probably an include file?\n";
+                    m_logger.error("No top-level PROJECT element. This is probably an include file?");
                 }
                 break;
             }
@@ -307,6 +311,7 @@ class A2LParser {
     std::vector<value_table_t>           m_tables;
     std::size_t                          m_table_count{ 0 };
     bool                                 m_finalized{ false };
+    Logger                               m_logger;
 };
 
 #endif  // __A2LPARSER_HPP
