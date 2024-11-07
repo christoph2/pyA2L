@@ -33,6 +33,7 @@
     #include <cstdio>
 
     #include "tokenizer.hpp"
+    #include "logger.hpp"
 
 using line_type = std::tuple< std::size_t, std::size_t>;
 
@@ -191,7 +192,7 @@ class IfDataReader : public IfDataBase {
         }
 
         if (offset >= m_size) {
-            std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "file offset " << offset << " is out of range of file size " << m_size << std::endl;
+            logger.error("file offset ", offset, " is out of range of file size ", m_size);
             return std::nullopt;
         } else {
             // std::cout << "file offset: " << offset << std::endl;

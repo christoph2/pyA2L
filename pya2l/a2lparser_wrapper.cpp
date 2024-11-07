@@ -11,6 +11,13 @@ namespace py = pybind11;
 
 std::string ValueContainer::s_encoding{ "ascii" };
 
+Logger logger{};
+
+
+void set_log_level(LogLevel level) {
+    logger.setLevel(level);
+}
+
 auto parse(const std::string& file_name, const std::string& encoding) -> std::tuple<std::size_t, const ValueContainer> {
     Preprocessor p{ "INFO" };
 
@@ -19,16 +26,16 @@ auto parse(const std::string& file_name, const std::string& encoding) -> std::tu
     auto& [fns, linemap, ifdr] = res;
     p.finalize();
     std::chrono::steady_clock::time_point stop1 = std::chrono::steady_clock::now();
-    std::cout << "[Info (pya2l.Preprocessor)]  Elapsed Time: " << (std::chrono::duration_cast<std::chrono::milliseconds>(stop1 - start1).count()) / 1000.0 << "[s]"  << std::endl;
+    logger.info("Elapsed Time: ", (std::chrono::duration_cast<std::chrono::milliseconds>(stop1 - start1).count()) / 1000.0, "[s]");
 
-    std::cout << "[Info (pya2l.A2LParser)]     Parsing intermediate file: " << fns.a2l << std::endl;
+    logger.info("Parsing intermediate file: ", fns.a2l);
     std::chrono::steady_clock::time_point start2 = std::chrono::steady_clock::now();
     auto        parser = A2LParser(res, fns.a2l, encoding);
     auto counter = parser.get_keyword_counter();
     const auto& values = parser.get_values();
     std::chrono::steady_clock::time_point stop2 = std::chrono::steady_clock::now();
-    std::cout << "[Info (pya2l.A2LParser)]     Elapsed Time: " << (std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - start2).count()) / 1000.0 << "[s]"  << std::endl;
-    std::cout << "[Info (pya2l.A2LParser)]     Number of keywords: " << counter << std::endl;
+    logger.info("Elapsed Time: ", (std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - start2).count()) / 1000.0, "[s]");
+    logger.info("Number of keywords: ", counter);
 
     return {counter, values};
 }
@@ -39,8 +46,17 @@ struct Overload : Ts... {
 };
 
 PYBIND11_MODULE(a2lparser_ext, m) {
-    m.def("parse", &parse, py::return_value_policy::move)
+    m.def("parse", &parse, py::return_value_policy::move);
+    m.def("set_log_level", &set_log_level);
+
+    py::enum_<LogLevel>(m, "LogLevel")
+        .value("DEBUG", LogLevel::DEBUG)
+        .value("INFO", LogLevel::INFO)
+        .value("WARNING", LogLevel::WARNING)
+        .value("ERROR", LogLevel::ERROR)
+        .value("CRITICAL", LogLevel::CRITICAL)
     ;
+
     py::class_<ValueContainer>(m, "ValueContainer")
         .def(py::init<std::string_view>(), py::arg("name"))
         .def("get_name", &ValueContainer::get_name)
@@ -109,12 +125,3 @@ PYBIND11_MODULE(a2lparser_ext, m) {
             return result;
         });
 }
-
-#if 0
-m.def("return_bytes",
-    []() {
-        std::string s("\xba\xd0\xba\xd0");  // Not valid UTF-8
-        return py::bytes(s);  // Return the data without transcoding
-    }
-);
-#endif

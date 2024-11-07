@@ -43,7 +43,7 @@ class A2LParser {
         m_value_stack.push(&m_root);
         m_idr         = std::make_unique<IfDataReader>(std::get<2>(prepro_result.value()));
         m_table_count = 0;
-        m_logger = Logger("pya2l.A2LParser", LogLevel::DEBUG);
+        logger.setName("pya2l.A2LParser");
         parse(file_name, encoding);
     }
 
@@ -73,12 +73,6 @@ class A2LParser {
 
             if (token_type() == A2LTokenType::BEGIN) {
                 m_reader->consume();
-    #if 0
-                if (kw_tos().contains(token_type())) {
-                } else {
-                    std::cout << "Warning: unexpected token: " << token->toString() << std::endl;
-                }
-    #endif
             }
 
             // TODO:  Factor out.
@@ -96,9 +90,7 @@ class A2LParser {
 
             if (token->getType() == ANTLRToken::_EOF) {
                 if (std::size(m_kw_stack) > 1) {
-                    std::cout << "[ERROR (pya2l.A2LParser)]    " << "Premature end of file!!!\n";
-                } else {
-                   // std::cout << "OK, done.\n";
+                    logger.error("Premature end of file!!!");
                 }
                 break;
             }
@@ -112,29 +104,23 @@ class A2LParser {
                 //
                 // TODO: Addressmapper
                 auto kwt = kw_tos();
-                std::cerr << "[ERROR (pya2l.A2LParser)]    Invalid token: " << token->toString() << std::endl;
-                m_logger.error("Invalid token: ", token->toString());
+                logger.error("Invalid token: ", token->toString());
                 if ((token->getText() == "IF_DATA") && (kwt.m_name == "ROOT")) {
-                    std::cerr << "[ERROR (pya2l.A2LParser)]    No top-level PROJECT element. This is probably an include file?\n";
-                    m_logger.error("No top-level PROJECT element. This is probably an include file?");
+                    logger.error("No top-level PROJECT element. This is probably an include file?");
                 }
                 break;
             }
 
             if (token->getText() == "IF_DATA") {
-                // std::cout << "\tID: " << token->getLine() << ":" << token->column() << std::endl;
                 if (m_prepro_result) {
                     if_data_section = m_idr->get({ token->getLine(), token->column() + 1 });
                     if (if_data_section) {
-                        // std::cout << "\t FOUND IF_DATA!!!\n";
                     }
                 }
             }
             m_reader->consume();
             m_keyword_counter++;
             auto kw = ValueContainer(kw_tos().m_name);
-
-            // std::cout << "KW: " << kw_tos().m_name << std::endl;
 
             auto [p, m] = do_parameters();
             value_tos().set_parameters(std::move(p));
@@ -190,12 +176,14 @@ class A2LParser {
                     ((token_type() == A2LTokenType::END) && (parameter.is_multiple() == false))) {
                     // Not all parameters are present.
 
-                    std::cerr << "[WARNING (pya2l.A2LParser)]  " << kw_tos().m_name << " is missing one or more required parameters: " << std::endl;
+                    // std::cerr << "[WARNING (pya2l.A2LParser)]  " << kw_tos().m_name << " is missing one or more required parameters: " << std::endl;
+                    logger.error(kw_tos().m_name, " is missing one or more required parameters: ");
 
                     for (std::size_t idx = param_count; idx < std::size(kw_tos().m_parameters); ++idx) {
                         auto p = kw_tos().m_parameters[idx];
 
-                        std::cerr << "\t" << p.get_name() << std::endl;
+                        //std::cerr << "\t" << p.get_name() << std::endl;
+                        logger.error("\t", p.get_name());
 
                         switch (p.get_type()) {
                             case PredefinedType::Int:
@@ -227,7 +215,8 @@ class A2LParser {
                         tuple_parser.feed(token);
                         if (tuple_parser.get_state() == ParameterTupleParser::StateType::FINISHED) {
                             if (!std::holds_alternative<std::string>(parameter_list[0])) {
-                                std::cerr << "[ERROR (pya2l.A2LParser)]    " << "Invalid tuple.\n";
+                                //std::cerr << "[ERROR (pya2l.A2LParser)]    " << "Invalid tuple.\n";
+                                logger.error("Invalid tuple.");
                                 break;
                             }
                             m_tables.push_back({ value_tos().get_name(), std::get<std::string>(parameter_list[0]),
@@ -260,7 +249,7 @@ class A2LParser {
 
                     const auto valid = validate(parameter, token, value);
                     if (!valid) {
-                        std::cout << "[ERROR (pya2l.A2LParser)]    " << "Invalid param: " << parameter.get_name() << " -- " << token->toString() << std::endl;
+                       logger.error("Invalid param: ", parameter.get_name(), " -- ", token->toString());
                     }
 
                     if (parameter.is_multiple() == true) {
@@ -311,7 +300,6 @@ class A2LParser {
     std::vector<value_table_t>           m_tables;
     std::size_t                          m_table_count{ 0 };
     bool                                 m_finalized{ false };
-    Logger                               m_logger;
 };
 
 #endif  // __A2LPARSER_HPP

@@ -80,11 +80,12 @@ class Preprocessor {
         tmp_ifdata(IFDATA_TMP, true),
         a2l_token_writer(tmp_a2l),
         ifdata_builder{ tmp_ifdata.handle() } {
-        get_include_paths_from_env();
-        // tmp_a2l.to_stdout();
-        m_filenames.a2l    = tmp_a2l.abs_path();
-        m_filenames.aml    = tmp_aml.abs_path();
-        m_filenames.ifdata = tmp_ifdata.abs_path();
+            logger.setName("pya2l.Preprocessor");
+            get_include_paths_from_env();
+            // tmp_a2l.to_stdout();
+            m_filenames.a2l    = tmp_a2l.abs_path();
+            m_filenames.aml    = tmp_aml.abs_path();
+            m_filenames.ifdata = tmp_ifdata.abs_path();
     }
 
     ~Preprocessor() {
@@ -145,7 +146,7 @@ class Preprocessor {
         }
 
         if (file.is_open()) {
-            std::cout << "[INFO (pya2l.Preprocessor)]  Preprocessing and tokenizing '" + filename + "'." << std::endl;
+            logger.info("Preprocessing and tokenizing '" + filename + "'.");
             std::size_t end_line{ 0 };
 
             skip_bom(file);
@@ -236,9 +237,7 @@ class Preprocessor {
                             const auto length = (end_line - start_line_number);
                             update_line_map(abs_pth, line_offset, line_offset + length - 1, start_line_number, end_line - 1);
                             line_offset += length;
-
-                            std::cout << "[INFO (pya2l.Preprocessor)]  Including '" + incl_file.value().string() + "'."
-                                      << std::endl;
+                            logger.info("Including '" + incl_file.value().string() + "'.");
                             _process_file(incl_file.value().string());
                         } else {
                             throw std::runtime_error(

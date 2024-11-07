@@ -32,49 +32,73 @@ public:
 
     Logger(const std::string& name="", LogLevel level=LogLevel::INFO) : m_name(name), m_level(level) {
     }
-    Logger(const Logger&) = default;
-    Logger(Logger&&) = default;
-    Logger& operator=(const Logger &) = default;
-    Logger& operator=(Logger&&) = default;
+
+    Logger(const Logger& other) {
+        m_name = other.m_name;
+        m_level = other.m_level;
+    }
+
+    Logger(Logger&& other) {
+        m_name = other.m_name;
+        m_level = std::move(other.m_level);
+    }
+
+    Logger& operator=(const Logger & other) {
+        m_name = other.m_name;
+        m_level = other.m_level;
+    }
+
+    Logger& operator=(Logger&& other) {
+        m_name = other.m_name;
+        m_level = std::move(other.m_level);
+    }
+
+    void setLevel(LogLevel level) noexcept {
+        m_level = level;
+    }
+
+    void setName(const std::string& name) {
+        m_name = name;
+    }
 
     template<typename ...Args>
     constexpr void log(LogLevel level, Args&&... args) noexcept {
-        std::cout << "[" << loglevel_to_string(level)  << " (" << m_name << ")]";
+        std::cout << "[" << loglevel_to_string(level)  << " (" << m_name << ")] ";
         ((std::cout << std::forward<Args>(args) << " "), ...);
         std::cout << std::endl;
     }
 
     template<typename ...Args>
     constexpr void debug(Args&&... args) noexcept {
-        if (LogLevel::DEBUG <= m_level) {
+        if (LogLevel::DEBUG > m_level) {
             log(LogLevel::DEBUG, args ...);
         }
     }
 
     template<typename ...Args>
     constexpr void info(Args&&... args) noexcept {
-        if (LogLevel::INFO <= m_level) {
+        if (LogLevel::INFO > m_level) {
             log(LogLevel::INFO, args ...);
         }
     }
 
     template<typename ...Args>
     constexpr void warn(Args&&... args) noexcept {
-        if (LogLevel::WARNING <= m_level) {
+        if (LogLevel::WARNING > m_level) {
             log(LogLevel::WARNING, args ...);
         }
     }
 
     template<typename ...Args>
     constexpr void error(Args&&... args) noexcept {
-        if (LogLevel::ERROR <= m_level) {
+        if (LogLevel::ERROR > m_level) {
             log(LogLevel::ERROR, args ...);
         }
     }
 
     template<typename ...Args>
     constexpr void critical(Args&&... args) noexcept {
-        if (LogLevel::CRITICAL <= m_level) {
+        if (LogLevel::CRITICAL > m_level) {
             log(LogLevel::CRITICAL, args ...);
         }
     }
@@ -85,5 +109,6 @@ private:
     LogLevel m_level;
 };
 
+extern Logger logger;
 
 #endif // __LOGGER_HPP

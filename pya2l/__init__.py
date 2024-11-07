@@ -110,7 +110,9 @@ def import_a2l(
     ``AML`` and ``IF_DATA`` sections are currently not processed.
     """
     a2l_parser = A2LParser()
-    db = a2l_parser.parse(file_name=file_name, local=local, in_memory=in_memory, encoding=encoding, remove_existing=remove_existing)
+    db = a2l_parser.parse(
+        file_name=file_name, local=local, in_memory=in_memory, encoding=encoding, remove_existing=remove_existing, loglevel=loglevel
+    )
     session = db.session
 
     # self.logger.info("Parsing AML section ...")
@@ -140,7 +142,7 @@ def import_a2l(
     return session
 
 
-def open_existing(file_name: str):
+def open_existing(file_name: str, loglevel: str = "INFO"):
     """Open an existing `.a2ldb` database.
 
     Parameters
@@ -180,7 +182,7 @@ def open_create(file_name: str, local: bool = False, encoding: str = "", logleve
     if not db_fn.exists():
         return import_a2l(a2l_fn, local=local, encoding=encoding, loglevel=loglevel)
     else:
-        return open_existing(db_fn)
+        return open_existing(db_fn, loglevel)
 
 
 def export_a2l(db_name: str, output: typing.Union[TextIOWrapper, str, typing.Any] = sys.stdout, encoding="latin1"):  # noqa: UP007
@@ -223,8 +225,8 @@ class DB:
         return import_a2l(file_name, debug, in_memory, remove_existing, local, encoding, loglevel)
 
     @staticmethod
-    def open_existing(file_name: str):
-        return open_existing(file_name)
+    def open_existing(file_name: str, loglevel: str = "INFO"):
+        return open_existing(file_name, loglevel)
 
     @staticmethod
     def open_create(file_name: str, local: bool = False, encoding: str = "", loglevel: str = "INFO"):

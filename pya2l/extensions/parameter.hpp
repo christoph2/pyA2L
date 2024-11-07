@@ -81,16 +81,15 @@ bool validate(const Parameter& p, const ANTLRToken* token, const AsamVariantType
         const auto entry = ASAM_TYPES[std::bit_cast<std::uint16_t>(p.m_type) - 1];
         ok              = entry->validate(value);
 		if (!ok) {
-			std::cout << "[WARNING (pya2l.A2LParser)]  Value out of range [" << token->line() << ":" << token->column() << "]"  << std::endl;
-
+			logger.warn("Value out of range [", token->line(), ":", token->column(), "]");
 			if (std::holds_alternative<unsigned long long>(value)) {
-				std::cout << "\t\tVALUE [unsigned long long]: " << std::to_string(std::get<unsigned long long>(value)) << std::endl;
+				logger.warn("\t\tVALUE [unsigned long long]: ", std::to_string(std::get<unsigned long long>(value)));
 			} else if (std::holds_alternative<signed long long>(value)) {
-				std::cout << "\t\tVALUE [signed long long]: " << std::to_string(std::get<signed long long>(value)) << std::endl;
+				logger.warn("\t\tVALUE [signed long long]: ", std::to_string(std::get<signed long long>(value)));
 			} else if (std::holds_alternative<long double>(value)) {
-				std::cout << "\t\tVALUE [long double]: " << std::to_string(std::get<long double>(value)) << std::endl;
+				logger.warn("\t\tVALUE [long double]: ", std::to_string(std::get<long double>(value)));
 			} else if (std::holds_alternative<std::string>(value)) {
-				std::cout << "\t\tVALUE [string]: " << std::get<std::string>(value) << std::endl;
+				logger.warn("\t\tVALUE [string]: ", std::get<std::string>(value));
 			}
 		}
         auto valid_type = entry->m_valid_tokens.contains(static_cast<A2LTokenType>(token->getType()));
@@ -98,8 +97,8 @@ bool validate(const Parameter& p, const ANTLRToken* token, const AsamVariantType
     } else {
         ok = p.get_enumerators().contains(std::get<std::string>(value));
         if (!ok) {
-            std::cout << "[ERROR (pya2l.A2LParser)] Enumeration '" + p.m_name + "' [" << token->line() << ":" << token->column() << "] must be one of: " << valid_enumerators(p.m_enumerators) << " -- got: '"
-                      << std::get<std::string>(value) << "'." << std::endl;
+            logger.error("Enumeration '" + p.m_name + "' [", token->line(), ":", token->column(), "] must be one of: ",
+            valid_enumerators(p.m_enumerators), " -- got: '", std::get<std::string>(value), "'.");
         }
         return ok;
     }
@@ -157,7 +156,7 @@ class ParameterTupleParser {
             auto converted_value = convert(tp, token->getText());
             unsigned long long tuple_count = 0ULL;
             if (!std::holds_alternative<unsigned long long>(converted_value)) {
-                std::cerr << "[ERROR (pya2l.A2LParser)] Tuple counter must be an unsigned long long - Is: " << converted_value.index() << std::endl;
+                logger.error("Tuple counter must be an unsigned long long - Is: ", converted_value.index());
                if (std::holds_alternative<signed long long>(converted_value)) {
                     tuple_count = static_cast<unsigned long long>(std::get<signed long long>(converted_value));
                 } else if (std::holds_alternative<long double>(converted_value)) {
@@ -183,7 +182,6 @@ class ParameterTupleParser {
             }
             m_idx++;
             if (m_idx >= m_token_count) {
-                // std::cout << "Tp finished\n";
                 m_state = StateType::FINISHED;
             }
         }

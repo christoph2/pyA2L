@@ -316,7 +316,6 @@ class A2LParser:
     def __init__(self):
         self.debug = False
         self.logger = Logger("A2LDB", "INFO")
-        # self.logger.setLevel("ERROR")
 
     def __del__(self):
         pass
@@ -325,8 +324,23 @@ class A2LParser:
         pass
 
     def parse(
-        self, file_name: str, encoding: str = "latin-1", in_memory: bool = False, local: bool = False, remove_existing: bool = False
+        self,
+        file_name: str,
+        encoding: str = "latin-1",
+        in_memory: bool = False,
+        local: bool = False,
+        remove_existing: bool = False,
+        loglevel: str = "INFO",
     ):
+        LEVEL_MAP = {
+            "INFO": ext.LogLevel.INFO,
+            "WARN": ext.LogLevel.WARNING,
+            "ERROR": ext.LogLevel.ERROR,
+            "DEBUG": ext.LogLevel.DEBUG,
+            "CRITICAL": ext.LogLevel.CRITICAL,
+        }
+        self.silent = loglevel.upper() == "CRITICAL"
+        ext.set_log_level(LEVEL_MAP.get(loglevel.upper()))
         a2l_fn, db_fn = path_components(in_memory, file_name, local)
         if not in_memory:
             if remove_existing:
@@ -357,7 +371,8 @@ class A2LParser:
             TimeRemainingColumn(),
         )
         self.progress_bar = Progress(*progress_columns)
-        self.task = self.progress_bar.add_task("[blue]writing to DB...", total=keyword_counter)
+        if not self.silent:
+            self.task = self.progress_bar.add_task("[blue]writing to DB...", total=keyword_counter)
         self.advance = keyword_counter // 100 if keyword_counter >= 100 else 1
         fr = FakeRoot()
         with self.progress_bar:
@@ -374,7 +389,7 @@ class A2LParser:
         name = tree.get_name()
 
         # print("TABLE ==> ", name, parent, multiple)
-        if self.counter % self.advance == 0:
+        if not self.silent and self.counter % self.advance == 0:
             self.db.session.flush()
             self.progress_bar.update(self.task, advance=self.advance)
             # db.session.commit()

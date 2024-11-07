@@ -5,8 +5,11 @@
 #include "antlr4-runtime.h"
 #include "ifdata.hpp"
 #include "unmarshal.hpp"
+#include "logger.hpp"
 
 using namespace antlr4;
+
+Logger logger{};
 
 Node load_grammar(const std::string& file_name) {
     std::ifstream aml_stream;
@@ -27,6 +30,8 @@ class IfDataParser {
         m_grammar.push(&m_root);
         m_input = ANTLRInputStream(m_ifdata_section);
         m_lexer = std::make_unique<a2llg>(&m_input);
+        logger.setName("pya2l.IfDataParser");
+        // logger.setLevel(LogLevel::DEBUG);
         consume();
     }
 
@@ -91,8 +96,8 @@ class IfDataParser {
 
     const Node* top() const noexcept {
         if (m_grammar.empty()) {
-            std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "Stack is empty" << std::endl;
-            // m_logger.error("Stack is empty");
+            // std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "Stack is empty" << std::endl;
+            logger.error("Stack is empty");
         }
         return m_grammar.top();
     }
@@ -215,7 +220,8 @@ class IfDataParser {
                     block_type();
                     break;
                 default:
-                    std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "Unknown token type: " << type << std::endl;
+                    // std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "Unknown token type: " << type << std::endl;
+                    logger.error("Unknown token type: ", type);
             }
         }
 
@@ -239,7 +245,8 @@ class IfDataParser {
                 block_type();
                 break;
             default:
-                std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "Unknown type: " << std::endl;
+                // std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "Unknown type: " << std::endl;
+                logger.error("Unknown type: ");
                 break;
         }
     }
