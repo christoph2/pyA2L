@@ -215,7 +215,6 @@ class A2LParser {
                         tuple_parser.feed(token);
                         if (tuple_parser.get_state() == ParameterTupleParser::StateType::FINISHED) {
                             if (!std::holds_alternative<std::string>(parameter_list[0])) {
-                                //std::cerr << "[ERROR (pya2l.A2LParser)]    " << "Invalid tuple.\n";
                                 logger.error("Invalid tuple.");
                                 break;
                             }

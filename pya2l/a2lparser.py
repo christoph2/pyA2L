@@ -286,7 +286,7 @@ class FakeRoot:
         return True
 
 
-def update_tables(session, parser):
+def update_tables(session, tables):
     MAP = {
         "CompuTab": (model.CompuTab, model.CompuTabPair, "pairs", "numberValuePairs", ("inVal", "outVal")),
         "CompuVtab": (model.CompuVtab, model.CompuVtabPair, "pairs", "numberValuePairs", ("inVal", "outVal")),
@@ -298,18 +298,19 @@ def update_tables(session, parser):
             ("inValMin", "inValMax", "outVal"),
         ),
     }
-
-    for table_type, name, values in p.get_tables():
-        print("TBL", table_type, name)
-        t0, t1, assoc, counter, columns = MAP[table_type]
+    for table_type, name, values in tables:
+        master_table, tuple_table, assoc, counter, columns = MAP[table_type]
         result = []
         for row in values:
-            result.append(t1(**dict(zip(columns, row, strict=False))))
+            result.append(tuple_table(**dict(zip(columns, row, strict=False))))
         session.add_all(result)
-        inst = session.query(t0).filter(t0.name == name).first()
-        setattr(inst, counter, len(values))
-        getattr(inst, assoc).extend(result)
-        session.add(inst)
+        inst = session.query(master_table).filter(master_table.name == name).first()
+        if inst is not None:
+            setattr(inst, counter, len(values))
+            getattr(inst, assoc).extend(result)
+            session.add(inst)
+        else:
+            print(f"error {name!r}")
 
 
 class A2LParser:
@@ -357,7 +358,7 @@ class A2LParser:
         self.db = model.A2LDatabase(str(db_fn), debug=self.debug)
         self.logger.info(f"Importing {a2l_fn!r} [{encoding}] ==> DB {db_fn!r}.")
 
-        keyword_counter, values = ext.parse(str(a2l_fn), encoding)
+        keyword_counter, values, tables = ext.parse(str(a2l_fn), encoding)
         self.counter = 0
 
         progress_columns = (
@@ -377,6 +378,8 @@ class A2LParser:
         fr = FakeRoot()
         with self.progress_bar:
             self.traverse(values, fr, None, False)
+        self.db.session.commit()
+        update_tables(self.db.session, tables)
         self.db.session.commit()
         self.db.close()
         self.logger.info(f"Done. Elapsed time [{perf_counter() - start_time:.2f}s].")

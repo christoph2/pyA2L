@@ -67,7 +67,7 @@ def import_a2l(
     in_memory: bool = False,
     remove_existing: bool = False,
     local: bool = False,
-    encoding: str = "",
+    encoding: str = "latin-1",
     loglevel: str = "INFO",
 ):
     """Import `.a2l` file to `.a2ldb` database.
@@ -175,7 +175,7 @@ def open_existing(file_name: str, loglevel: str = "INFO"):
         return session
 
 
-def open_create(file_name: str, local: bool = False, encoding: str = "", loglevel: str = "INFO"):
+def open_create(file_name: str, local: bool = False, encoding: str = "latin-1", loglevel: str = "INFO"):
     """Open or create an A2LDB."""
 
     a2l_fn, db_fn = path_components(in_memory=False, file_name=file_name)

@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2022 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2024 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -29,14 +28,15 @@ __copyright__ = """
 import bisect
 import math
 import re
+import typing
 from operator import itemgetter
 
-from pya2l import exceptions, model
-
 import numpy as np
-
 from scipy import interpolate
 from scipy.interpolate import RegularGridInterpolator
+
+from pya2l import exceptions
+
 
 try:
     import numexpr
@@ -51,12 +51,12 @@ SYSC = re.compile(r"sysc\s*\((?P<param>.*?)\s*\)")
 
 
 def fix_axis_par(offset: int, shift: int, num_apo: int) -> list:
-    """"""
+    """"""  # noqa: DAR101, DAR201
     return np.array([offset + (i * (2**shift)) for i in range(num_apo)], dtype="float64")
 
 
 def fix_axis_par_dist(offset: int, distance: int, num_apo: int) -> list:
-    """"""
+    """"""  # noqa: DAR101, DAR201
     return np.array([offset + (i * distance) for i in range(num_apo)], dtype="float64")
 
 
@@ -312,14 +312,14 @@ class Linear:
         self.p = np.poly1d([a, b])
 
     def int_to_physical(self, i):
-        """"""
+        """"""  # noqa: DAR101, DAR201
         return self.p(i)
 
     def _eval_pti(self, p):
         return (self.p - p).roots[0]
 
     def physical_to_int(self, p):
-        """"""
+        """"""  # noqa: DAR101, DAR201
         if hasattr(p, "__iter__"):
             return [self._eval_pti(i) for i in p]
         else:
@@ -345,17 +345,20 @@ class LookupTable:
         self.mapping = dict(mapping)
         self.mapping_inv = {v: k for k, v in self.mapping.items()}
         self.default = default
+        self.map_internal_to_phys_vec = np.vectorize(self.map_internal_to_phys)
 
-    def int_to_physical(self, i):
-        """"""
-        if hasattr(i, "__iter__"):
-            return [self.mapping.get(r, self.default) for r in i]
+    def map_internal_to_phys(self, value):
+        return self.mapping.get(value, self.default)
+
+    def int_to_physical(self, value):
+        """"""  # noqa: DAR101, DAR201
+        if hasattr(value, "__iter__"):
+            return self.map_internal_to_phys_vec(value)
         else:
-            return self.mapping.get(i, self.default)
+            return self.map_internal_to_phys(value)
 
     def physical_to_int(self, p):
-        """"""
-
+        """"""  # noqa: DAR101, DAR201
         if hasattr(p, "__iter__") and not isinstance(p, str):
             return [self.mapping_inv.get(r) for r in p]
         else:
@@ -370,14 +373,14 @@ class InterpolatedTable:
         self.default = default
 
     def int_to_physical(self, i):
-        """"""
+        """"""  # noqa: DAR101, DAR201
         try:
             return self.interp(i)
         except ValueError:
             return self.default
 
     def physical_to_int(self, p):
-        """"""
+        """"""  # noqa: DAR101, DAR201, DAR401
         raise NotImplementedError()
 
 
@@ -417,7 +420,7 @@ class LookupTableWithRanges:
             self.in_range = lambda x, left, right: left <= x < right
 
     def _lookup(self, x):
-        """"""
+        """"""  # noqa: DAR101, DAR201
         if not (self.minimum <= x <= self.maximum):
             return self.default
         pos = bisect.bisect_right(self.min_values, x) - 1
@@ -430,14 +433,14 @@ class LookupTableWithRanges:
             return self.default
 
     def int_to_physical(self, i):
-        """"""
+        """"""  # noqa: DAR101, DAR201
         if hasattr(i, "__iter__"):
             return [self._lookup(r) for r in i]
         else:
             return self._lookup(i)
 
     def physical_to_int(self, p):
-        """"""
+        """"""  # noqa: DAR101, DAR201
         if hasattr(p, "__iter__") and not isinstance(p, str):
             return [self.dict_inv.get(r, None) for r in p]
         else:
@@ -475,7 +478,7 @@ class FormulaBase:
     def _build_namespace(self, *args):
         if len(args) == 0:
             raise ValueError("Formula called with no paramters.")
-        xs = {"X{}".format(i): v for i, v in enumerate(args, 1)}
+        xs = {f"X{i}": v for i, v in enumerate(args, 1)}
         if len(args) == 1:  # In this case...
             xs["X"] = xs.get("X1")  # ... create an alias.
         namespace = self.MATH_FUNCS
@@ -520,10 +523,10 @@ if has_numexpr:
                 if match:
                     params = [p.strip() for p in match.group("params").split(",")]
                     assert len(params) == 2
-                    pow_expr = "({0} ** {1})".format(*params)
+                    pow_expr = "({} ** {})".format(*params)
                     head = result[: match.start()]
                     tail = result[match.end() :]
-                    result = "{}{}{}".format(head, tail, pow_expr)
+                    result = f"{head}{tail}{pow_expr}"
                 else:
                     break
             while True:
@@ -533,17 +536,17 @@ if has_numexpr:
                     value = self.sysc(param)
                     head = result[: match.start()]
                     tail = result[match.end() :]
-                    result = "{}{}{}".format(head, tail, value)
+                    result = f"{head}{tail}{value}"
                 else:
                     break
             return result
 
         def int_to_physical(self, *args):
-            """"""
+            """"""  # noqa: DAR101, DAR201
             return numexpr.evaluate(self.formula, local_dict=self._build_namespace(*args))
 
         def physical_to_int(self, *args):
-            """"""
+            """"""  # noqa: DAR101, DAR201
             if self.inverse_formula is None:
                 raise NotImplementedError("Formula: physical_to_int() requires inverse_formula.")
             return numexpr.evaluate(self.inverse_formula, local_dict=self._build_namespace(*args))
@@ -565,7 +568,7 @@ else:
         system_constants: list of 2-tuples (name, value)
         """
 
-        MATH_FUNCS = {
+        MATH_FUNCS: typing.ClassVar = {
             "abs": math.fabs,
             "acos": math.acos,
             "asin": math.asin,
@@ -587,11 +590,11 @@ else:
             return text.replace("&&", " and ").replace("||", " or ").replace("!", "not ")
 
         def int_to_physical(self, *args):
-            """"""
+            """"""  # noqa: DAR101, DAR201
             return eval(self.formula, dict(), self._build_namespace(*args))
 
         def physical_to_int(self, *args):
-            """"""
+            """"""  # noqa: DAR101, DAR201
             if self.inverse_formula is None:
                 raise NotImplementedError("Formula: physical_to_int() requires inverse_formula.")
             return eval(self.inverse_formula, dict(), self._build_namespace(*args))

@@ -18,8 +18,17 @@ void set_log_level(LogLevel level) {
     logger.setLevel(level);
 }
 
-auto parse(const std::string& file_name, const std::string& encoding) -> std::tuple<std::size_t, const ValueContainer> {
-    Preprocessor p{ "INFO" };
+inline auto unicode_decode(std::string_view value, const char * encoding) -> py::str {
+	py::handle py_s = PyUnicode_Decode(value.data(), value.length(), encoding, "strict");
+    if (!py_s) {
+		throw py::error_already_set();
+    }
+    return py::reinterpret_steal<py::str>(py_s);
+}
+
+auto parse(const std::string& file_name, const std::string& encoding) -> std::tuple<std::size_t, const ValueContainer, const std::vector<A2LParser::value_table_t>> {
+	Preprocessor p{ "INFO" };
+	std::vector<A2LParser::value_table_t> converted_tables{};
 
     std::chrono::steady_clock::time_point start1 = std::chrono::steady_clock::now();
     auto res                   = p.process(file_name, encoding);
@@ -28,7 +37,6 @@ auto parse(const std::string& file_name, const std::string& encoding) -> std::tu
     std::chrono::steady_clock::time_point stop1 = std::chrono::steady_clock::now();
     logger.info("Elapsed Time: ", (std::chrono::duration_cast<std::chrono::milliseconds>(stop1 - start1).count()) / 1000.0, "[s]");
 
-    logger.info("Parsing intermediate file: ", fns.a2l);
     std::chrono::steady_clock::time_point start2 = std::chrono::steady_clock::now();
     auto        parser = A2LParser(res, fns.a2l, encoding);
     auto counter = parser.get_keyword_counter();
@@ -36,14 +44,33 @@ auto parse(const std::string& file_name, const std::string& encoding) -> std::tu
     std::chrono::steady_clock::time_point stop2 = std::chrono::steady_clock::now();
     logger.info("Elapsed Time: ", (std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - start2).count()) / 1000.0, "[s]");
     logger.info("Number of keywords: ", counter);
+	const auto& tables = parser.get_tables();
+	for (const auto&[tp, name, rows]: tables) {
+		const auto& tpt = unicode_decode(tp, encoding.c_str());
+		const auto& namet = unicode_decode(name, encoding.c_str());
+		std::vector<std::vector<AsamVariantType>> result;
+		for (const auto& row: rows) {
+			std::vector<AsamVariantType> fixed_row;
+			for (const auto& column: row) {
+				if (std::holds_alternative<std::string>(column)) {
+					fixed_row.emplace_back(unicode_decode(std::get<std::string>(column), encoding.c_str()));
+				} else {
+					fixed_row.emplace_back(column);
+				}
+			}
+			result.emplace_back(fixed_row);
+		}
+		converted_tables.emplace_back(tpt, namet, result);
+	}
 
-    return {counter, values};
+    return {counter, values, converted_tables};
 }
 
 template<typename... Ts>
 struct Overload : Ts... {
     using Ts::operator()...;
 };
+
 
 PYBIND11_MODULE(a2lparser_ext, m) {
     m.def("parse", &parse, py::return_value_policy::move);
