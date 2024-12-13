@@ -22,13 +22,51 @@ using AsamVariantType = std::variant<std::string, unsigned long long, signed lon
 
     #include "a2ltoken.hpp"
     #include "asam_types.hpp"
-    #include "logger.hpp"
     #include "keyword.hpp"
     #include "parameter.hpp"
     #include "parser_table.hpp"
     #include "preprocessor.hpp"
     #include "token_stream.hpp"
     #include "valuecontainer.hpp"
+
+
+class AsapVersion {
+public:
+
+    AsapVersion() : m_valid(false) {}
+    AsapVersion(unsigned long long major, unsigned long long minor) : m_major(major), m_minor(minor), m_valid(true) {}
+    const AsapVersion& operator=(AsapVersion&& other) {
+        m_major = other.m_major;
+        m_minor = other.m_minor;
+        if (other.m_major > 0) {
+            m_valid = true;
+        }
+        else {
+            m_valid = false;
+        }
+
+        return *this;
+    }
+
+    bool is_valid() const noexcept {
+        return m_valid;
+    }
+
+    unsigned long long major() const noexcept {
+        return m_major;
+    }
+
+    unsigned long long minor() const noexcept {
+        return m_minor;
+    }
+
+
+private:
+    unsigned long long m_major;
+    unsigned long long m_minor;
+    bool m_valid;
+
+};
 
 class A2LParser {
    public:
@@ -41,10 +79,16 @@ class A2LParser {
         m_prepro_result(prepro_result), m_keyword_counter(0), m_table(PARSER_TABLE), m_root("root"), m_finalized(false) {
         kw_push(m_table);
         m_value_stack.push(&m_root);
-        m_idr         = std::make_unique<IfDataReader>(std::get<2>(prepro_result.value()));
+//        m_idr         = std::make_unique<IfDataReader>(std::get<2>(prepro_result.value()));
         m_table_count = 0;
-        logger.setName("pya2l.A2LParser");
+
+        // logger.setName("pya2l.A2LParser");
+        // auto new_logger = spdlog::basic_logger_mt("pya2l.A2LParser", "logs/new-default-log.txt", true);
+        //spdlog::set_default_logger(new_logger);
+        spdlog::set_level(spdlog::level::info);
         parse(file_name, encoding);
+        spdlog::info("Parsing done.");
+        spdlog::shutdown();
     }
 
     A2LParser(const A2LParser&) = delete;
@@ -90,7 +134,7 @@ class A2LParser {
 
             if (token->getType() == ANTLRToken::_EOF) {
                 if (std::size(m_kw_stack) > 1) {
-                    logger.error("Premature end of file!!!");
+                    spdlog::error("Premature end of file!!!");
                 }
                 break;
             }
@@ -104,9 +148,9 @@ class A2LParser {
                 //
                 // TODO: Addressmapper
                 auto kwt = kw_tos();
-                logger.error("Invalid token: ", token->toString());
+                spdlog::error("Invalid token : {}", token->toString());
                 if ((token->getText() == "IF_DATA") && (kwt.m_name == "ROOT")) {
-                    logger.error("No top-level PROJECT element. This is probably an include file?");
+                    spdlog::error("No top-level PROJECT element. This is probably an include file?");
                 }
                 break;
             }
@@ -126,7 +170,21 @@ class A2LParser {
             value_tos().set_parameters(std::move(p));
             value_tos().set_multiple_values(std::move(m));
             value_tos().set_if_data(std::move(if_data_section));
-
+#if 0
+            if (value_tos().get_name() == "Asap2Version") {
+                const auto& version_par_vec = value_tos().get_parameters();
+                if (std::size(version_par_vec) == 2) {
+                    auto major_v = version_par_vec[0];
+                    auto minor_v = version_par_vec[1];
+                    m_asam_version = AsapVersion(variant_get<unsigned long long>(major_v), variant_get<unsigned long long>(minor_v));
+                }
+                if (m_asam_version.is_valid() && (m_asam_version.major() == 1)) {
+                    if (m_asam_version.minor() <= 5) {
+                        spdlog::warn("ASAP version {}.{} may only parsed with errors.", m_asam_version.major(), m_asam_version.minor());
+                    }
+                }
+            }
+#endif
             if (kw_tos().m_block == false) {
                 kw_pop();
                 m_value_stack.pop();
@@ -176,15 +234,10 @@ class A2LParser {
                     ((token_type() == A2LTokenType::END) && (parameter.is_multiple() == false))) {
                     // Not all parameters are present.
 
-                    // std::cerr << "[WARNING (pya2l.A2LParser)]  " << kw_tos().m_name << " is missing one or more required parameters: " << std::endl;
-                    logger.error(kw_tos().m_name, " is missing one or more required parameters: ");
-
+                    spdlog::error("{} is missing one or more required parameters: ", kw_tos().m_name);
                     for (std::size_t idx = param_count; idx < std::size(kw_tos().m_parameters); ++idx) {
                         auto p = kw_tos().m_parameters[idx];
-
-                        //std::cerr << "\t" << p.get_name() << std::endl;
-                        logger.error("\t", p.get_name());
-
+                        spdlog::error("\t{}", p.get_name());
                         switch (p.get_type()) {
                             case PredefinedType::Int:
                             case PredefinedType::Uint:
@@ -215,7 +268,7 @@ class A2LParser {
                         tuple_parser.feed(token);
                         if (tuple_parser.get_state() == ParameterTupleParser::StateType::FINISHED) {
                             if (!std::holds_alternative<std::string>(parameter_list[0])) {
-                                logger.error("Invalid tuple.");
+                                spdlog::error("Invalid tuple.");
                                 break;
                             }
                             m_tables.push_back({ value_tos().get_name(), std::get<std::string>(parameter_list[0]),
@@ -248,7 +301,7 @@ class A2LParser {
 
                     const auto valid = validate(parameter, token, value);
                     if (!valid) {
-                       logger.error("Invalid param: ", parameter.get_name(), " -- ", token->toString());
+                       spdlog::error("Invalid param: {} token: {}", parameter.get_name(), token->toString());
                     }
 
                     if (parameter.is_multiple() == true) {
@@ -299,6 +352,7 @@ class A2LParser {
     std::vector<value_table_t>           m_tables;
     std::size_t                          m_table_count{ 0 };
     bool                                 m_finalized{ false };
+    AsapVersion                          m_asam_version;
 };
 
 #endif  // __A2LPARSER_HPP

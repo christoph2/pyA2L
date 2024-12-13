@@ -333,15 +333,8 @@ class A2LParser:
         remove_existing: bool = False,
         loglevel: str = "INFO",
     ):
-        LEVEL_MAP = {
-            "INFO": ext.LogLevel.INFO,
-            "WARN": ext.LogLevel.WARNING,
-            "ERROR": ext.LogLevel.ERROR,
-            "DEBUG": ext.LogLevel.DEBUG,
-            "CRITICAL": ext.LogLevel.CRITICAL,
-        }
         self.silent = loglevel.upper() == "CRITICAL"
-        ext.set_log_level(LEVEL_MAP.get(loglevel.upper()))
+        # ext.set_loglevel(loglevel.upper())
         a2l_fn, db_fn = path_components(in_memory, file_name, local)
         if not in_memory:
             if remove_existing:

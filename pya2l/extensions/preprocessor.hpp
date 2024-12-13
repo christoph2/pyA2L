@@ -50,6 +50,8 @@ namespace fs = std::filesystem;
     #include "tokenizer.hpp"
     #include "utils.hpp"
 
+#include "spdlog/spdlog.h"
+
 struct Filenames {
     Filenames()                 = default;
     Filenames(const Filenames&) = default;
@@ -80,15 +82,21 @@ class Preprocessor {
         tmp_ifdata(IFDATA_TMP, true),
         a2l_token_writer(tmp_a2l),
         ifdata_builder{ tmp_ifdata.handle() } {
-            logger.setName("pya2l.Preprocessor");
+            //logger.setName("pya2l.Preprocessor");
             get_include_paths_from_env();
             // tmp_a2l.to_stdout();
             m_filenames.a2l    = tmp_a2l.abs_path();
             m_filenames.aml    = tmp_aml.abs_path();
             m_filenames.ifdata = tmp_ifdata.abs_path();
+
+            spdlog::set_level(spdlog::level::info);
+            spdlog::debug("This message should not be displayed!");
+            spdlog::set_level(spdlog::level::trace);
+            spdlog::debug("This message should be displayed..");
     }
 
     ~Preprocessor() {
+        spdlog::shutdown();
         tmp_a2l.close();
         tmp_aml.close();
         tmp_ifdata.close();
@@ -146,7 +154,8 @@ class Preprocessor {
         }
 
         if (file.is_open()) {
-            logger.info("Preprocessing and tokenizing '" + filename + "'.");
+            //logger.info("Preprocessing and tokenizing '" + filename + "'.");
+            spdlog::info("Preprocessing and tokenizing '{}'.", filename);
             std::size_t end_line{ 0 };
 
             skip_bom(file);
@@ -237,7 +246,8 @@ class Preprocessor {
                             const auto length = (end_line - start_line_number);
                             update_line_map(abs_pth, line_offset, line_offset + length - 1, start_line_number, end_line - 1);
                             line_offset += length;
-                            logger.info("Including '" + incl_file.value().string() + "'.");
+                            //logger.info("Including '" + incl_file.value().string() + "'.");
+                            spdlog::info("Including '{}'.", incl_file.value().string());
                             _process_file(incl_file.value().string());
                         } else {
                             throw std::runtime_error(

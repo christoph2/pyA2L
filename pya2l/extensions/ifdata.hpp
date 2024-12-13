@@ -33,7 +33,7 @@
     #include <cstdio>
 
     #include "tokenizer.hpp"
-    #include "logger.hpp"
+#include "logger.hpp"
 
 using line_type = std::tuple< std::size_t, std::size_t>;
 
@@ -192,10 +192,8 @@ class IfDataReader : public IfDataBase {
         }
 
         if (offset >= m_size) {
-            logger.error("file offset ", offset, " is out of range of file size ", m_size);
+            spdlog::error("file offset {} is out of range of file size {}", offset, m_size);
             return std::nullopt;
-        } else {
-            // std::cout << "file offset: " << offset << std::endl;
         }
 
         ::fseek(m_file, offset, SEEK_SET);

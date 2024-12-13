@@ -258,7 +258,7 @@ class RatFunc:
         """
         return self.p(p) / self.q(p)
 
-    def int_to_physical(self, i):
+    def int_to_physical(self, value):
         """Evaluate function INT ==> PHYS
 
         Parameters
@@ -270,7 +270,9 @@ class RatFunc:
         Currently inversion of quadratic functions isn't supported, only linear ones.
         """
         if self.p.order == 1 and self.q.order == 0:
-            return self.p_inv(i)
+            return self.p_inv(value)
+        elif self.p.order == 0 and self.q.order == 1:
+            return self.physical_to_int(value)  # Inverse functions are already inverted...
         elif self.p.order == 0 and self.q.order == 0:
             raise exceptions.MathError("Cannot invert constant function.")
         else:

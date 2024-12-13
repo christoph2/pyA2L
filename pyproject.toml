@@ -155,4 +155,4 @@ build-frontend = "build"
 
 [tool.cibuildwheel.linux]
 archs = ["x86_64", "aarch64"]
-before-build = "yum install -y libffi openssl openssl-devel python3-dev libpython3-dev"
+before-build = "yum install -y libffi openssl openssl-devel libpython3-dev"

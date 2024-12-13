@@ -191,4 +191,20 @@ inline void hex_dump(const char *p, std::size_t n) {
     printf("\n");
 }
 
+template<typename T, typename V>
+T variant_get(V&& value) {
+
+    T result;
+
+    const T* value_ptr = std::get_if<T>(&value);
+    if (value_ptr == nullptr) {
+        result = T{};
+    }
+    else {
+        result = *value_ptr;
+    }
+
+    return result;
+}
+
 #endif  // __UTILS_HPP

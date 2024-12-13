@@ -11,12 +11,12 @@ namespace py = pybind11;
 
 std::string ValueContainer::s_encoding{ "ascii" };
 
-Logger logger{};
 
-
-void set_log_level(LogLevel level) {
-    logger.setLevel(level);
+void set_loglevel(const std::string& level) {
+    //logger.setLevel(level);
+	std::cout << "LOG-LEVEL request: " << level << std::endl;
 }
+
 
 inline auto unicode_decode(std::string_view value, const char * encoding) -> py::str {
 	py::handle py_s = PyUnicode_Decode(value.data(), value.length(), encoding, "strict");
@@ -31,19 +31,21 @@ auto parse(const std::string& file_name, const std::string& encoding) -> std::tu
 	std::vector<A2LParser::value_table_t> converted_tables{};
 
     std::chrono::steady_clock::time_point start1 = std::chrono::steady_clock::now();
-    auto res                   = p.process(file_name, encoding);
-    auto& [fns, linemap, ifdr] = res;
+    const auto& res                   = p.process(file_name, encoding);
+    const auto& [fns, linemap, ifdr] = res;
     p.finalize();
     std::chrono::steady_clock::time_point stop1 = std::chrono::steady_clock::now();
-    logger.info("Elapsed Time: ", (std::chrono::duration_cast<std::chrono::milliseconds>(stop1 - start1).count()) / 1000.0, "[s]");
+    spdlog::info("Elapsed Time: {}[s]", (std::chrono::duration_cast<std::chrono::milliseconds>(stop1 - start1).count()) / 1000.0);
 
     std::chrono::steady_clock::time_point start2 = std::chrono::steady_clock::now();
-    auto        parser = A2LParser(res, fns.a2l, encoding);
+	spdlog::info("Start parsing...");
+    const auto&        parser = A2LParser(res, fns.a2l, encoding);
+	spdlog::info("after parsing...");
     auto counter = parser.get_keyword_counter();
     const auto& values = parser.get_values();
     std::chrono::steady_clock::time_point stop2 = std::chrono::steady_clock::now();
-    logger.info("Elapsed Time: ", (std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - start2).count()) / 1000.0, "[s]");
-    logger.info("Number of keywords: ", counter);
+    spdlog::info("Elapsed Time: {}[s]", (std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - start2).count()) / 1000.0);
+    spdlog::info("Number of keywords: {}", counter);
 	const auto& tables = parser.get_tables();
 	for (const auto&[tp, name, rows]: tables) {
 		const auto& tpt = unicode_decode(tp, encoding.c_str());
@@ -74,15 +76,7 @@ struct Overload : Ts... {
 
 PYBIND11_MODULE(a2lparser_ext, m) {
     m.def("parse", &parse, py::return_value_policy::move);
-    m.def("set_log_level", &set_log_level);
-
-    py::enum_<LogLevel>(m, "LogLevel")
-        .value("DEBUG", LogLevel::DEBUG)
-        .value("INFO", LogLevel::INFO)
-        .value("WARNING", LogLevel::WARNING)
-        .value("ERROR", LogLevel::ERROR)
-        .value("CRITICAL", LogLevel::CRITICAL)
-    ;
+    m.def("set_loglevel", &set_loglevel);
 
     py::class_<ValueContainer>(m, "ValueContainer")
         .def(py::init<std::string_view>(), py::arg("name"))

@@ -9,8 +9,6 @@
 
 using namespace antlr4;
 
-Logger logger{};
-
 Node load_grammar(const std::string& file_name) {
     std::ifstream aml_stream;
     aml_stream.open(file_name, std::ios_base::binary);
@@ -30,7 +28,7 @@ class IfDataParser {
         m_grammar.push(&m_root);
         m_input = ANTLRInputStream(m_ifdata_section);
         m_lexer = std::make_unique<a2llg>(&m_input);
-        logger.setName("pya2l.IfDataParser");
+        //logger.setName("pya2l.IfDataParser");
         // logger.setLevel(LogLevel::DEBUG);
         consume();
     }
@@ -96,8 +94,7 @@ class IfDataParser {
 
     const Node* top() const noexcept {
         if (m_grammar.empty()) {
-            // std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "Stack is empty" << std::endl;
-            logger.error("Stack is empty");
+			spdlog::error("Stack is empty");
         }
         return m_grammar.top();
     }
@@ -220,8 +217,7 @@ class IfDataParser {
                     block_type();
                     break;
                 default:
-                    // std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "Unknown token type: " << type << std::endl;
-                    logger.error("Unknown token type: ", type);
+                    spdlog::error("Unknown token type: {}", type);
             }
         }
 
@@ -245,8 +241,7 @@ class IfDataParser {
                 block_type();
                 break;
             default:
-                // std::cerr << "[ERROR (pya2l.IF_DATAParser)] " << "Unknown type: " << std::endl;
-                logger.error("Unknown type: ");
+                spdlog::error("Unknown AmlType: ");
                 break;
         }
     }
@@ -492,8 +487,9 @@ const std::string CPLX_TEXT2{
 "	  /end TP_BLOB " \
 "  /end IF_DATA "};
 
-int main() {
 #if 0
+int main() {
+
     std::ifstream stream;
 
     stream.open(BASE + "pyA2L/pya2l/examples/some_if_data.txt");
@@ -501,7 +497,7 @@ int main() {
     ANTLRInputStream input(stream);
 
     auto ifd_lexer = a2llg(&input);
-#endif
+
 
     auto root = load_grammar(BASE + "pyA2L/pya2l/examples/aml_dump.bin");
 
@@ -519,13 +515,8 @@ int main() {
     return 0;
 }
 
-#if 0
-a2llg::IDENT
-a2llg::FLOAT
-a2llg::INT
-a2llg::COMMENT
-a2llg::WS
-a2llg::STRING
-a2llg::BEGIN
-a2llg::END
 #endif
+
+int main() {
+    return 0;
+}
