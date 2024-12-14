@@ -151,6 +151,8 @@ target_link_libraries(amlparser_ext PRIVATE antlr4_static) # ${SYSTEM_LIBS})
 target_compile_options(a2lparser_ext PUBLIC "-DEXTENSION_NAME=a2lparser_ext" PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
 target_compile_options(amlparser_ext PUBLIC "-DEXTENSION_NAME=amlparser_ext" PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
 target_compile_options(if_data_parser PUBLIC "-DEXTENSION_NAME=if_data_parser_ext" PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
+target_include_directories(amlparser_ext PUBLIC ${PROJECT_SOURCE_DIR}/pya2l/aml)
+
 
 set(LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pya2l")
 

@@ -4,12 +4,24 @@
 
 #include <sstream>
 
+#include "unmarshal.hpp"
+
 namespace py = pybind11;
 
 std::string parse(const std::string& aml_stuff);
 
+auto unmarshal(const std::stringstream& inbuf) -> Node {
+    auto unm    = Unmarshaller(inbuf);
+    return unm.run();
+}
+
 PYBIND11_MODULE(amlparser_ext, m) {
-    m.def("parse_aml", [](const std::string& aml_text) { return py::bytes(parse(aml_text)); });
+    m.def("parse_aml", [](const std::string& aml_text) { return py::bytes(parse(aml_text)); }, py::return_value_policy::move);
+	m.def("unmarshal", &unmarshal, py::return_value_policy::move);
+
+	py::class_<Node>(m, "Node")
+		.def(py::init<std::string_view>())
+	;
 
 #if 0
     py::class_<ValueContainer>(m, "ValueContainer")

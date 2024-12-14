@@ -93,6 +93,14 @@ class Node {
     explicit Node(AmlType aml_type, const map_t& map) : m_aml_type(aml_type), m_node_type(NodeType::MAP), m_map(map) {
     }
 
+	Node(const Node& other) {
+		m_aml_type = other.m_aml_type;
+		m_node_type = other.m_node_type;
+		m_value = other.m_value;
+		m_list = other.m_list;
+		m_map = other.m_map;
+	}
+
     const Node* find_block(const std::string& name) const noexcept {
 
 
