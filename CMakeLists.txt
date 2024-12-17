@@ -105,12 +105,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Call macro to add lexer and grammar to your build dependencies.
 antlr_target(pyA2LLexer ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/a2llg.g4 LEXER
-			# PACKAGE pya2l
 			OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
 			)
 
 antlr_target(AMLParser ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml.g4 LEXER PARSER
-              # PACKAGE pya2l
 			  VISITOR
 			  OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
               DEPENDS_ANTLR pyA2LLexer
@@ -122,18 +120,18 @@ add_executable(aml_tester ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml_parser.cpp
 	${ANTLR_AMLParser_CXX_OUTPUTS}
 )
 
-add_executable(if_data_parser ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/if_data_parser.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/unmarshal.cpp
-	${ANTLR_AMLParser_CXX_OUTPUTS}
-	${ANTLR_pyA2LLexer_CXX_OUTPUTS}
-)
+#add_executable(if_data_parser ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/if_data_parser.cpp
+#	${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/unmarshal.cpp
+#	${ANTLR_AMLParser_CXX_OUTPUTS}
+#	${ANTLR_pyA2LLexer_CXX_OUTPUTS}
+#)
 
 target_link_libraries(aml_tester antlr4_static ${SYSTEM_LIBS})
-target_link_libraries(if_data_parser antlr4_static ${SYSTEM_LIBS})
+#target_link_libraries(if_data_parser antlr4_static ${SYSTEM_LIBS})
 
 # target_include_directories(aml_tester PUBLIC $<BUILD_INTERFACE:${ANTLR4_INCLUDE_DIRS})
  target_include_directories(aml_tester PUBLIC ${ANTLR4_INCLUDE_DIRS} ${ANTLR_AMLParser_OUTPUT_DIR} ${PROJECT_SOURCE_DIR}/pya2l/aml)
- target_include_directories(if_data_parser PUBLIC ${ANTLR4_INCLUDE_DIRS} ${ANTLR_pyA2LLexer_OUTPUT_DIR} ${ANTLR_AMLParser_OUTPUT_DIR} ${PROJECT_SOURCE_DIR}/pya2l/aml)	# !?
+ #target_include_directories(if_data_parser PUBLIC ${ANTLR4_INCLUDE_DIRS} ${ANTLR_pyA2LLexer_OUTPUT_DIR} ${ANTLR_AMLParser_OUTPUT_DIR} ${PROJECT_SOURCE_DIR}/pya2l/aml)	# !?
 
 message("aml_tester / output: " ${aml_tester_OUTPUT_DIRECTORY})
 
@@ -150,7 +148,7 @@ pybind11_add_module(amlparser_ext pya2l/amlparser_wrapper.cpp ${CMAKE_CURRENT_SO
 target_link_libraries(amlparser_ext PRIVATE antlr4_static) # ${SYSTEM_LIBS})
 target_compile_options(a2lparser_ext PUBLIC "-DEXTENSION_NAME=a2lparser_ext" PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
 target_compile_options(amlparser_ext PUBLIC "-DEXTENSION_NAME=amlparser_ext" PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
-target_compile_options(if_data_parser PUBLIC "-DEXTENSION_NAME=if_data_parser_ext" PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
+# target_compile_options(if_data_parser PUBLIC "-DEXTENSION_NAME=if_data_parser_ext" PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
 target_include_directories(amlparser_ext PUBLIC ${PROJECT_SOURCE_DIR}/pya2l/aml)
 
 

@@ -79,6 +79,8 @@ class Node {
     using terminal_t = std::variant<std::monostate, long long, double, std::string>;
     using list_t     = std::vector<Node>;
     using map_t      = std::map<std::string, Node>;
+	
+	using content_t = std::variant<terminal_t, list_t, map_t>;
 
     explicit Node() : m_aml_type(AmlType::NONE), m_node_type(NodeType::NONE) {
     }
@@ -101,10 +103,18 @@ class Node {
 		m_map = other.m_map;
 	}
 
+	content_t get_content()  const noexcept {
+		switch (m_node_type) {
+			case NodeType::TERMINAL:
+				return m_value;
+			case NodeType::AGGR:
+				return m_list;
+			case NodeType::MAP:
+				return m_map;
+		}
+	}
+
     const Node* find_block(const std::string& name) const noexcept {
-
-
-
         if (m_aml_type == AmlType::BLOCK) {
             const auto& tp = map().at("TYPE").map();
             const auto& members = tp.at("MEMBERS").list();
@@ -268,8 +278,7 @@ class Node {
 };
 
 inline Node make_pdt(AMLPredefinedType type) {
-    auto res = Node(Node::AmlType::PDT, static_cast<int>(type));
-    return res;
+    return Node(Node::AmlType::PDT, static_cast<int>(type));
 }
 
 inline Node make_referrer(ReferrerType category, const std::string& identifier) {
@@ -277,8 +286,7 @@ inline Node make_referrer(ReferrerType category, const std::string& identifier) 
         { "CATEGORY",   Node(Node::AmlType::TERMINAL, static_cast<int>(category)) },
         { "IDENTIFIER", Node(Node::AmlType::TERMINAL, identifier)                 }
     };
-    auto res = Node(Node::AmlType::REFERRER, map);
-    return res;
+    return Node(Node::AmlType::REFERRER, map);
 }
 
 using enumerators_t = std::map<std::string, std::uint32_t>;
@@ -288,8 +296,7 @@ inline Node make_enumerator(const std::string& name, std::uint32_t value) {
         { "NAME",  Node(Node::AmlType::TERMINAL, name)  },
         { "VALUE", Node(Node::AmlType::TERMINAL, value) }
     };
-    auto res = Node(Node::AmlType::ENUMERATOR, map);
-    return res;
+    return Node(Node::AmlType::ENUMERATOR, map);
 }
 
 inline Node make_enumeration(const std::string& name, const enumerators_t& values) {
@@ -302,9 +309,7 @@ inline Node make_enumeration(const std::string& name, const enumerators_t& value
         { "NAME",   Node(Node::AmlType::TERMINAL,    name) },
         { "VALUES", Node(Node::AmlType::ENUMERATORS, lst)  },
     };
-
-    auto res = Node(Node::AmlType::ENUMERATION, map);
-    return res;
+    return Node(Node::AmlType::ENUMERATION, map);
 };
 
 inline Node make_tagged_struct_definition(bool multiple, std::optional<Node> type) {
@@ -320,8 +325,7 @@ inline Node make_tagged_struct_definition(bool multiple, std::optional<Node> typ
         { "MULTIPLE", Node(Node::AmlType::TERMINAL, multiple) },
         { "MEMBER", type_node },
     };
-    auto res = Node(Node::AmlType::TAGGED_STRUCT_DEFINITION, map);
-    return res;
+    return Node(Node::AmlType::TAGGED_STRUCT_DEFINITION, map);
 }
 
 inline Node make_tagged_struct_member(bool multiple, const Node& definition) {
@@ -329,8 +333,7 @@ inline Node make_tagged_struct_member(bool multiple, const Node& definition) {
         { "MULTIPLE", Node(Node::AmlType::TERMINAL, multiple) },
         { "DEFINITION", definition },
     };
-    auto res = Node(Node::AmlType::TAGGED_STRUCT_MEMBER, map);
-    return res;
+    return Node(Node::AmlType::TAGGED_STRUCT_MEMBER, map);
 }
 
 inline Node make_tagged_struct(const std::string& name, std::vector<std::tuple<std::string, Node>> members) {
@@ -348,8 +351,7 @@ inline Node make_tagged_struct(const std::string& name, std::vector<std::tuple<s
         { "NAME",    Node(Node::AmlType::TERMINAL, name) },
         { "MEMBERS", Node(Node::AmlType::MEMBERS,  lst)  },
     };
-    auto res = Node(Node::AmlType::TAGGED_STRUCT, map);
-    return res;
+    return Node(Node::AmlType::TAGGED_STRUCT, map);
 }
 
 inline Node make_member(const std::vector<std::uint32_t>& array_spec, const Node& node, bool is_block) {
@@ -364,9 +366,7 @@ inline Node make_member(const std::vector<std::uint32_t>& array_spec, const Node
         { "NODE", node },
         { "ARR_SPEC", Node(Node::AmlType::MEMBERS, lst) },
     };
-
-    auto res = Node(Node::AmlType::MEMBER, map);
-    return res;
+    return Node(Node::AmlType::MEMBER, map);
 }
 
 inline Node make_block(const std::string& tag , const Node& type) {
@@ -374,16 +374,14 @@ inline Node make_block(const std::string& tag , const Node& type) {
         { "TAG", Node(Node::AmlType::TERMINAL, tag) },
         { "TYPE", type },
     };
-    auto res = Node(Node::AmlType::BLOCK, map);
-    return res;
+    return Node(Node::AmlType::BLOCK, map);
 }
 
 inline Node make_struct_member(const Node & member) {
     Node::map_t map = {
         { "MEMBER", member },
     };
-    auto res = Node(Node::AmlType::STRUCT_MEMBER, map);
-    return res;
+    return Node(Node::AmlType::STRUCT_MEMBER, map);
 }
 
 inline Node make_struct(const std::string& name, std::vector<Node>& members) {
@@ -391,8 +389,7 @@ inline Node make_struct(const std::string& name, std::vector<Node>& members) {
         { "NAME",    Node(Node::AmlType::TERMINAL, name)    },
         { "MEMBERS", Node(Node::AmlType::MEMBERS,  members) },
     };
-    auto res = Node(Node::AmlType::STRUCT, map);
-    return res;
+    return Node(Node::AmlType::STRUCT, map);
 }
 
 inline Node make_tagged_uinion_member(const std::string& tag, const Node& member) {
@@ -400,8 +397,7 @@ inline Node make_tagged_uinion_member(const std::string& tag, const Node& member
         { "TAG", Node(Node::AmlType::TERMINAL, tag) },
         { "MEMBER", member },
     };
-    auto res = Node(Node::AmlType::TAGGED_UNION_MEMBER, map);
-    return res;
+    return Node(Node::AmlType::TAGGED_UNION_MEMBER, map);
 }
 
 inline Node make_tagged_uniom(const std::string& name, std::vector<Node>& members) {
@@ -409,16 +405,14 @@ inline Node make_tagged_uniom(const std::string& name, std::vector<Node>& member
         { "NAME",    Node(Node::AmlType::TERMINAL, name)    },
         { "MEMBERS", Node(Node::AmlType::MEMBERS,  members) },
     };
-    auto res = Node(Node::AmlType::TAGGED_UNION, map);
-    return res;
+    return Node(Node::AmlType::TAGGED_UNION, map);
 }
 
 inline Node make_root(std::vector<Node>& members) {
     Node::map_t map = {
         { "MEMBERS", Node(Node::AmlType::MEMBERS, members) },
     };
-    auto res = Node(Node::AmlType::ROOT, map);
-    return res;
+    return Node(Node::AmlType::ROOT, map);
 }
 
 class Unmarshaller {
@@ -620,7 +614,5 @@ class Unmarshaller {
 
     Reader m_reader;
 };
-
-Node unmarshal(const std::stringstream& inbuf);
 
 #endif  // __UNMARSHAL_HPP
