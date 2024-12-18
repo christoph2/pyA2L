@@ -9,9 +9,13 @@
 
 #include <sstream>
 
+#include "a2llg.h"
+#include "antlr4-runtime.h"
+
 #include "unmarshal.hpp"
 
 namespace py = pybind11;
+using namespace antlr4;
 
 std::string parse(const std::string& aml_stuff);
 
@@ -21,6 +25,44 @@ Node unmarshal(const py::bytes& data) {
     auto unm    = Unmarshaller(inbuf);
     return unm.run();
 }
+
+
+class IfDataParser {
+   public:
+
+    using token_t = std::optional<std::tuple<int, std::string>>;
+
+    IfDataParser() = delete;
+
+    explicit IfDataParser(const std::string& ifdata_section) : m_ifdata_section(ifdata_section) {
+        m_input = ANTLRInputStream(m_ifdata_section);
+        m_lexer = std::make_unique<a2llg>(&m_input);
+        consume();
+    }
+
+    token_t next_token() {
+        auto tok        = m_lexer->nextToken();
+        auto token_type = tok->getType();
+        if (token_type == antlr4::Lexer::EOF) {
+            return std::nullopt;
+        }
+        return std::make_tuple<int, std::string>(token_type, tok->getText());
+    }
+
+    token_t current_token() {
+        return m_current_token;
+    }
+
+    void consume() {
+        m_current_token = next_token();
+    }
+private:	
+    const std::string       m_ifdata_section;
+    ANTLRInputStream        m_input;    
+    std::unique_ptr<a2llg>  m_lexer;
+    token_t                 m_current_token;	
+};
+
 
 inline auto unicode_decode(std::string_view value, const char * encoding) -> py::str {
 	py::handle py_s = PyUnicode_Decode(value.data(), value.length(), encoding, "strict");
@@ -35,6 +77,13 @@ PYBIND11_MODULE(amlparser_ext, m) {
 		return py::bytes(parse(aml_text)); 
 	}, py::return_value_policy::move);
 	m.def("unmarshal", &unmarshal, py::return_value_policy::move);
+
+	py::class_<IfDataParser>(m, "IfDataParser")
+		.def(py::init<const std::string&>())
+		.def("next_token", &IfDataParser::next_token)
+		.def("current_token", &IfDataParser::current_token)
+		.def("consume", &IfDataParser::consume)
+	;
 
 	py::class_<Node>(m, "Node")
 		.def(py::init<>())

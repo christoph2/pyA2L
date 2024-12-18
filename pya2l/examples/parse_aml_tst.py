@@ -1,5 +1,6 @@
 import sys
 import os
+from pprint import pprint
 
 import enum
 import typing
@@ -11,6 +12,140 @@ from pya2l import amlparser_ext as e
 os.chdir(r"C:\csProjects\pyA2L\pya2l\examples")
 sys.argv.append(r".\XCP_101.aml")
 
+
+CPLX = """
+/begin IF_DATA ASAP1B_CCP
+   /begin SOURCE
+      \"segment synchronous event channel\"
+      103
+      1
+      /begin QP_BLOB
+          0
+          LENGTH 8
+          CAN_ID_FIXED 0x330
+          FIRST_PID 0
+          RASTER 0
+      /end QP_BLOB
+  /end SOURCE
+
+   /begin SOURCE
+      \"10ms time synchronous event channel\"
+      4
+      1
+      /begin QP_BLOB
+          1
+          LENGTH 12
+          CAN_ID_FIXED 0x340
+          FIRST_PID 8
+          RASTER 1
+      /end QP_BLOB
+  /end SOURCE
+
+   /begin SOURCE
+      \"100ms time synchronous event channel\"
+      4
+      10
+      /begin QP_BLOB
+          2
+          LENGTH 8
+          CAN_ID_FIXED 0x350
+          FIRST_PID 20
+          RASTER 2
+      /end QP_BLOB
+  /end SOURCE
+
+   /begin RASTER
+      \"segment synchronous event channel\"
+      \"seg_sync\"
+      0
+      103
+      1
+  /end RASTER
+
+   /begin RASTER
+      \"10ms time synchronous event channel\"
+      \"10_ms\"
+      1
+      4
+      1
+  /end RASTER
+
+   /begin RASTER
+      \"100ms time synchronous event channel\"
+      \"100_ms\"
+      2
+      4
+      10
+  /end RASTER
+
+  /begin SEED_KEY
+       \"\"
+       \"\"
+       \"\"
+  /end SEED_KEY
+
+  /begin TP_BLOB
+       0x200
+       0x202
+       0x200
+       0x210
+       0x1234
+       1
+       
+      /begin CAN_PARAM
+           0x3E8
+           0x40
+           0x16
+      /end CAN_PARAM
+       
+      DAQ_MODE    BURST
+      CONSISTENCY DAQ
+       
+      /begin CHECKSUM_PARAM 
+           0xC001
+           0xFFFFFFFF
+          CHECKSUM_CALCULATION ACTIVE_PAGE
+       /end CHECKSUM_PARAM 
+       
+      /begin DEFINED_PAGES
+          1
+          \"reference page\"
+           0x00
+           0x8E0670
+           0x1C26C
+          ROM
+      /end DEFINED_PAGES
+       
+      /begin DEFINED_PAGES
+          2
+          \"working page\"
+           0x00
+           0x808E0670
+           0x1C26C
+          RAM
+          RAM_INIT_BY_ECU
+      /end DEFINED_PAGES
+       
+      OPTIONAL_CMD 0x11  
+      OPTIONAL_CMD 0xE  
+      OPTIONAL_CMD 0x19  
+      OPTIONAL_CMD 0x9  
+      OPTIONAL_CMD 0xC  
+      OPTIONAL_CMD 0xD  
+      OPTIONAL_CMD 0x12  
+      OPTIONAL_CMD 0x13  
+  /end TP_BLOB
+/end IF_DATA
+"""
+
+ifd = e.IfDataParser(CPLX)
+
+while True:
+    tok = ifd.next_token()
+    print(tok)
+    ifd.consume()
+    if tok is None:
+        break    
 
 def print_node(node):
     print(node.node_type, node.aml_type, node.content)
@@ -48,20 +183,22 @@ class Block:
     type_name: typing.Any
 
 @dataclass
+class Enum:
+    name: str
+    values: typing.Dict[str, int]
+
+@dataclass
+class TaggedUnionMember:
+    tag: str
+    member: typing.Any
+
+
+@dataclass
 class TaggedUnion:
     name: str
     members: list[typing.Any] = field(default_factory=[])
-    
-@dataclass
-class TaggedUnionMember:
-    name: str
-    member: typing.Any
-
-@dataclass
-class TaggedStruct:
-    name: str
-    members: list[typing.Any] = field(default_factory=[])
-    
+    tags: typing.Dict[str, TaggedUnionMember] = field(default_factory=dict)
+        
 @dataclass
 class TaggedStructMember:
     tag: str
@@ -73,11 +210,17 @@ class TaggedStructDefinition:
     definition: typing.Any
     block: typing.Any
 
+@dataclass
+class TaggedStruct:
+    name: str
+    members: list[TaggedStructMember] = field(default_factory=[])
+    tags: typing.Dict[str, TaggedStructDefinition] = field(default_factory=dict)
+
 
 @dataclass
 class Struct:
     name: str
-    members: list[typing.Any] = field(default_factory=[])
+    members: list[typing.Any] = field(default_factory=list)
 
 
 @dataclass
@@ -91,33 +234,30 @@ class Member:
     block: typing.Optional[Block]
 
 
-
 class TreeCreator:
     
     def __init__(self, root):
         if not hasattr(root, "map") and "MEMBERS" not in root.map:
             raise TypeError(f"{root} is not a root node.")
-        print_node(root)
-        self.do_members(root.content)
+        self.tree = self.do_members(root.content)
         
-    def do_members(self, node):        
-        print_node(node.get("MEMBERS"))
+    def do_members(self, node):
+        result = []
         for member in node.get("MEMBERS").list:
             tp = member.aml_type
             if tp == e.AmlType.BLOCK:
-                self.do_block(member)
+                result.append(self.do_block(member))
             else:
-                self.do_type_name(member)
+                result.append(self.do_type_name(member))
+        return result
                 
     def do_block(self, node):
         tag = node.content.get('TAG').content        
         tp = self.do_type_name(node.content.get('TYPE'))
-        print("blk", Block(tag, tp))        
         return Block(tag, tp)
         
     def do_type_name(self, node):
         tp = node.aml_type
-        print("TP", tp)
         if tp == e.AmlType.PDT:
             result = PDT(AMLPredefinedType(node.content))
         elif tp == e.AmlType.STRUCT:
@@ -132,13 +272,18 @@ class TreeCreator:
             category = ReferrerType(node.content.get("CATEGORY").content)
             identifier = node.content.get("IDENTIFIER").content
             result = Referrer(category, identifier)
-        print(result)
         return result
         
     def do_enumeration(self, node):
         name = node.map.get("NAME").content
         values = node.map.get("VALUES")
-        print("\tENUM", name, values.content)
+        values_dict = {}
+        for item in values.content:
+            cnt = item.content
+            name = cnt.get('NAME').content
+            value = cnt.get('VALUE').content
+            values_dict[name] = value
+        return Enum(name, values_dict)
         
     def do_struct(self, node):
         name = node.map.get("NAME").content
@@ -153,8 +298,9 @@ class TreeCreator:
         
     def do_tagged_union(self, node):
         name = node.map.get("NAME").content
-        members = node.map.get("MEMBERS")        
-        return TaggedUnion(name, self.do_tagged_union_members(members))
+        members = node.map.get("MEMBERS")
+        result = self.do_tagged_union_members(members)
+        return TaggedUnion(name, result, {mem.tag: mem.member for mem in result})
         
     def do_tagged_union_members(self, node):
         result = []
@@ -166,30 +312,27 @@ class TreeCreator:
                 mem = self.do_block(member)
             elif member.aml_type == e.AmlType.MEMBER:
                 mem = self.do_member(member)
-            else:
-                print("")
             result.append(TaggedUnionMember(tag, mem))
         return result
             
     def do_tagged_struct(self, node):
         name = node.map.get("NAME").content
-        members = node.map.get("MEMBERS")            
-        return TaggedStruct(name, self.do_tagged_struct_members(members))
+        members = node.map.get("MEMBERS")
+        result = self.do_tagged_struct_members(members)
+        return TaggedStruct(name, result,  {mem.tag: mem.member for mem in result})
 
     def do_tagged_struct_members(self, node):        
         result = []
         for member in node.content:          
             tag = member.map.get("TAG").content
             mem = member.map.get("MEMBER")
-            ## print("\tTSM", tag, mem.content)
             result.append(TaggedStructMember(tag, self.do_tagged_struct_definition(mem)))
         return result
             
     def do_tagged_struct_definition(self, node):
         content = node.content
         definition = content.get("DEFINITION")
-        multiple = True if content.get("MULTIPLE").content == 1 else False
-        ## print("\tTSD", definition.aml_type, definition.content)       
+        multiple = True if content.get("MULTIPLE").content == 1 else False       
         if definition.aml_type == e.AmlType.BLOCK:
             tp = definition.content.get("TYPE")
             return TaggedStructDefinition(multiple, None, self.do_block(definition))
@@ -208,9 +351,7 @@ class TreeCreator:
         if node.aml_type != e.AmlType.MEMBER        :
             return
         content = node.map
-        print("MEMBER:", content)
-        ## 'ARR_SPEC'
-        arr_spec = content.get("ARR_SPEC").content
+        arr_spec = tuple([c.content for c in content.get("ARR_SPEC").content])
         is_block = content.get("IS_BLOCK").content
         block_type = content.get("NODE")
         if is_block:
@@ -226,8 +367,6 @@ data = open(sys.argv[1], encoding="latin-1").read()
 res = e.parse_aml(data)
 
 tv = TreeCreator(e.unmarshal(res))
+print(tv.tree)
 
-#root = e.unmarshal(res)
-#print_node(root)
-#print(mem, mem.node_type, mem.aml_type, [c.content for c in mem.content])
 

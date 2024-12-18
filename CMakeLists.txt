@@ -115,27 +115,6 @@ antlr_target(AMLParser ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml.g4 LEXER PARSER
               # COMPILE_FLAGS -lib ${ANTLR_AMLParser_OUTPUT_DIR}
 			  )
 
-add_executable(aml_tester ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml_parser.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/aml_visitor.cpp ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/marshal.cpp ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/unmarshal.cpp
-	${ANTLR_AMLParser_CXX_OUTPUTS}
-)
-
-#add_executable(if_data_parser ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/if_data_parser.cpp
-#	${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/unmarshal.cpp
-#	${ANTLR_AMLParser_CXX_OUTPUTS}
-#	${ANTLR_pyA2LLexer_CXX_OUTPUTS}
-#)
-
-target_link_libraries(aml_tester antlr4_static ${SYSTEM_LIBS})
-#target_link_libraries(if_data_parser antlr4_static ${SYSTEM_LIBS})
-
-# target_include_directories(aml_tester PUBLIC $<BUILD_INTERFACE:${ANTLR4_INCLUDE_DIRS})
- target_include_directories(aml_tester PUBLIC ${ANTLR4_INCLUDE_DIRS} ${ANTLR_AMLParser_OUTPUT_DIR} ${PROJECT_SOURCE_DIR}/pya2l/aml)
- #target_include_directories(if_data_parser PUBLIC ${ANTLR4_INCLUDE_DIRS} ${ANTLR_pyA2LLexer_OUTPUT_DIR} ${ANTLR_AMLParser_OUTPUT_DIR} ${PROJECT_SOURCE_DIR}/pya2l/aml)	# !?
-
-message("aml_tester / output: " ${aml_tester_OUTPUT_DIRECTORY})
-
-
 # include generated files in project environment
 include_directories(${ANTLR_pyA2LLexer_OUTPUT_DIR}/pya2l)
 include_directories(${ANTLR_AMLParser_OUTPUT_DIR}/pya2l)
@@ -143,7 +122,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/pya2l/extensions)
 
 pybind11_add_module(a2lparser_ext pya2l/a2lparser_wrapper.cpp pya2l/extensions/exceptions.cpp pya2l/extensions/tokenizer.cpp)
 pybind11_add_module(amlparser_ext pya2l/amlparser_wrapper.cpp ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/aml_visitor.cpp ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/marshal.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/parser.cpp ${ANTLR_AMLParser_CXX_OUTPUTS})
+	${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/parser.cpp ${ANTLR_AMLParser_CXX_OUTPUTS} ${ANTLR_pyA2LLexer_CXX_OUTPUTS})
 
 target_link_libraries(amlparser_ext PRIVATE antlr4_static) # ${SYSTEM_LIBS})
 target_compile_options(a2lparser_ext PUBLIC "-DEXTENSION_NAME=a2lparser_ext" PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
@@ -163,5 +142,3 @@ ENDIF()
 
 install(TARGETS a2lparser_ext LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
 install(TARGETS amlparser_ext LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
-# install(TARGETS aml_tester LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
-# install(TARGETS if_data_parser LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
