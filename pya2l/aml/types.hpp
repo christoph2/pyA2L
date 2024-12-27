@@ -4,6 +4,7 @@
 
     #include <map>
     #include <optional>
+    #include <set>
     #include <variant>
 
 using string_opt_t = std::optional<std::string>;
@@ -16,8 +17,11 @@ enum class AMLPredefinedType : std::uint8_t {
     UCHAR  = 3,
     UINT   = 4,
     ULONG  = 5,
-    DOUBLE = 6,
-    FLOAT  = 7,
+    INT64   = 6,
+    UINT64 = 7,
+    DOUBLE = 8,
+    FLOAT  = 9,
+    FLOAT16 = 10,
 };
 
 enum class ReferrerType : std::uint8_t {
@@ -35,15 +39,22 @@ enum class TypeType : std::uint8_t {
     TaggedUnionType  = 4,
 };
 
-const std::map<std::string, AMLPredefinedType> PredefinedTypesMap{
-    { "char",   AMLPredefinedType::CHAR   },
-    { "int",    AMLPredefinedType::INT    },
-    { "long",   AMLPredefinedType::LONG   },
-    { "uchar",  AMLPredefinedType::UCHAR  },
-    { "uint",   AMLPredefinedType::UINT   },
-    { "ulong",  AMLPredefinedType::ULONG  },
-    { "double", AMLPredefinedType::DOUBLE },
-    { "float",  AMLPredefinedType::FLOAT  },
+const std::map<std::string, AMLPredefinedType> PredefinedTypesMap {
+    { "char",    AMLPredefinedType::CHAR    },
+    { "int",     AMLPredefinedType::INT     },
+    { "long",    AMLPredefinedType::LONG    },
+    { "uchar",   AMLPredefinedType::UCHAR   },
+    { "uint",    AMLPredefinedType::UINT    },
+    { "ulong",   AMLPredefinedType::ULONG   },	
+	{ "int64",   AMLPredefinedType::INT64   },
+	{ "uint64",  AMLPredefinedType::UINT64  },
+    { "double",  AMLPredefinedType::DOUBLE  },
+    { "float",   AMLPredefinedType::FLOAT   },
+	{ "float16", AMLPredefinedType::FLOAT16 },
+};
+
+const std::set<std::string> PredefinedTypesSet {
+    "char", "int", "long", "uchar", "uint", "ulong", "int64", "uint64",  "double", "float",  "float16"
 };
 
 inline AMLPredefinedType createPredefinedType(const std::string& name) {

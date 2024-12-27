@@ -9,13 +9,10 @@
 
 #include <sstream>
 
-#include "a2llg.h"
-#include "antlr4-runtime.h"
-
 #include "unmarshal.hpp"
+#include "ifdata_lexer.hpp"
 
 namespace py = pybind11;
-using namespace antlr4;
 
 std::string parse(const std::string& aml_stuff);
 
@@ -25,43 +22,6 @@ Node unmarshal(const py::bytes& data) {
     auto unm    = Unmarshaller(inbuf);
     return unm.run();
 }
-
-
-class IfDataParser {
-   public:
-
-    using token_t = std::optional<std::tuple<int, std::string>>;
-
-    IfDataParser() = delete;
-
-    explicit IfDataParser(const std::string& ifdata_section) : m_ifdata_section(ifdata_section) {
-        m_input = ANTLRInputStream(m_ifdata_section);
-        m_lexer = std::make_unique<a2llg>(&m_input);
-        consume();
-    }
-
-    token_t next_token() {
-        auto tok        = m_lexer->nextToken();
-        auto token_type = tok->getType();
-        if (token_type == antlr4::Lexer::EOF) {
-            return std::nullopt;
-        }
-        return std::make_tuple<int, std::string>(token_type, tok->getText());
-    }
-
-    token_t current_token() {
-        return m_current_token;
-    }
-
-    void consume() {
-        m_current_token = next_token();
-    }
-private:	
-    const std::string       m_ifdata_section;
-    ANTLRInputStream        m_input;    
-    std::unique_ptr<a2llg>  m_lexer;
-    token_t                 m_current_token;	
-};
 
 
 inline auto unicode_decode(std::string_view value, const char * encoding) -> py::str {
@@ -77,13 +37,52 @@ PYBIND11_MODULE(amlparser_ext, m) {
 		return py::bytes(parse(aml_text)); 
 	}, py::return_value_policy::move);
 	m.def("unmarshal", &unmarshal, py::return_value_policy::move);
-
-	py::class_<IfDataParser>(m, "IfDataParser")
-		.def(py::init<const std::string&>())
-		.def("next_token", &IfDataParser::next_token)
-		.def("current_token", &IfDataParser::current_token)
-		.def("consume", &IfDataParser::consume)
+	m.def("ifdata_lexer", &ifdata_lexer, py::return_value_policy::move);
+	
+	py::class_<Token>(m, "Token")
+		.def(py::init<const TokenType&, const TokenDataType&>())
+		.def("__repr__", [](const Token& self) {
+			std::stringstream ss;
+			ss << "Token(type=";
+			if (self.type == TokenType::NONE) {
+				ss << "NONE";
+			}
+			else if (self.type == TokenType::IDENT) {
+				ss << "IDENT";
+			}
+			else if (self.type == TokenType::FLOAT) {
+				ss << "FLOAT";
+			}
+			else if (self.type == TokenType::INT) {
+				ss << "INT";
+			}
+			else if (self.type == TokenType::COMMENT) {
+				ss << "COMMENT";
+			}
+			else if (self.type == TokenType::STRING) {
+				ss << "STRING";
+			}
+			else if (self.type == TokenType::BEGIN) {
+				ss << "BEGIN";
+			}
+			else if (self.type == TokenType::END) {
+				ss << "END";
+			}			
+			if (self.value) {
+				ss  << ", value=";
+				if (std::holds_alternative<std::int64_t>(*self.value)) {
+					ss << std::to_string(std::get<std::int64_t>(*self.value));
+				} else if (std::holds_alternative<long double>(*self.value)) {
+					ss << std::to_string(std::get<long double>(*self.value));
+				} else if (std::holds_alternative<std::string>(*self.value)) {
+					ss << "'" << std::get<std::string>(*self.value) << "'";
+				}
+			}
+			ss << ")";
+			return ss.str();		
+		})
 	;
+
 
 	py::class_<Node>(m, "Node")
 		.def(py::init<>())
@@ -110,6 +109,17 @@ PYBIND11_MODULE(amlparser_ext, m) {
 		.value("NONE", Node::NodeType::NONE)
 	;
 	
+	py::enum_<TokenType>(m, "TokenType")
+		.value("NONE", TokenType::NONE)
+		.value("IDENT", TokenType::IDENT)
+		.value("FLOAT", TokenType::FLOAT)
+		.value("INT", TokenType::INT)
+		.value("COMMENT", TokenType::COMMENT)
+		.value("STRING", TokenType::STRING)
+		.value("BEGIN", TokenType::BEGIN)
+		.value("END", TokenType::END)	
+	;
+		
 	py::enum_<Node::AmlType>(m, "AmlType")
 		.value("NONE", Node::AmlType::NONE)
 		.value("TYPE", Node::AmlType::TYPE)

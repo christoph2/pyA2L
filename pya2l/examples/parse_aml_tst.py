@@ -10,7 +10,8 @@ from pya2l import amlparser_ext as e
 
 
 os.chdir(r"C:\csProjects\pyA2L\pya2l\examples")
-sys.argv.append(r".\XCP_101.aml")
+# sys.argv.append(r".\XCP_101.aml")
+sys.argv.append(r".\AML.tmp")
 
 
 CPLX = """
@@ -138,14 +139,18 @@ CPLX = """
 /end IF_DATA
 """
 
-ifd = e.IfDataParser(CPLX)
+tokens = e.ifdata_lexer(CPLX)
+for token in tokens:
+    print(token)
 
+"""
 while True:
     tok = ifd.next_token()
     print(tok)
     ifd.consume()
     if tok is None:
         break    
+"""        
 
 def print_node(node):
     print(node.node_type, node.aml_type, node.content)

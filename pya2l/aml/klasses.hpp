@@ -2,6 +2,7 @@
 #if !defined(__KLASSES_HPP)
     #define __KLASSES_HPP
 
+    #include <any>
     #include <bit>
     #include <cstdint>
     #include <map>

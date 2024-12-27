@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 3.7...3.29)
+cmake_minimum_required(VERSION 3.10...3.29)
 project(pya2l_extensions LANGUAGES C CXX)
 
 cmake_policy(SET CMP0135 NEW)
@@ -52,13 +52,13 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	if (MSVC)
 		SET(MSVC_BASE_OPTIONS "${MSVC_BASE_OPTIONS} /Od /fsanitize=address /Zi /FAcs")
 	else()
-		SET(MSVC_BASE_OPTIONS "${MSVC_BASE_OPTIONS} -Og -g3 -ggdb --fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined -fsanitize=bounds")	# -fsanitize=hwaddress
+		SET(GCC_N_CLANG_BASE_OPTIONS "${GCC_N_CLANG_BASE_OPTIONS} -Og -g3 -ggdb --fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined -fsanitize=bounds")	# -fsanitize=hwaddress
 	endif()
 else ()
 	if (MSVC)
 		SET(MSVC_BASE_OPTIONS "${MSVC_BASE_OPTIONS} /Ox")
 	else()
-		SET(MSVC_BASE_OPTIONS "${MSVC_BASE_OPTIONS} -O3 --fomit-frame-pointer")
+		SET(GCC_N_CLANG_BASE_OPTIONS "${GCC_N_CLANG_BASE_OPTIONS} -O3 --fomit-frame-pointer")
 	endif()
  endif ()
 
@@ -104,14 +104,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
 # Call macro to add lexer and grammar to your build dependencies.
-antlr_target(pyA2LLexer ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/a2llg.g4 LEXER
-			OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
-			)
+# antlr_target(pyA2LLexer ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/a2llg.g4 LEXER
+#			OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
+#			)
 
 antlr_target(AMLParser ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml.g4 LEXER PARSER
 			  VISITOR
 			  OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
-              DEPENDS_ANTLR pyA2LLexer
+              # DEPENDS_ANTLR pyA2LLexer
               # COMPILE_FLAGS -lib ${ANTLR_AMLParser_OUTPUT_DIR}
 			  )
 
