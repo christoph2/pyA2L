@@ -9,34 +9,11 @@ find_package(Python3 COMPONENTS Interpreter Development)
 find_package(pybind11 REQUIRED)
 
 
-# set(ANTLR4_TAG 4.13.2)
-set(ANTLR4_TAG $ENV{ANTLR4_TAG})
-
-message("ANTLR4-TAG: " ${ANTLR4_TAG})
-
 SET(CMAKE_C_STANDARD 17)
 # set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD 20)
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/antlr_cmake)
-
-add_definitions(-DANTLR4CPP_STATIC)
-set(ANTLR4_WITH_STATIC_CRT OFF)
-include(ExternalAntlr4Cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-include_directories(SYSTEM ${ANTLR4_INCLUDE_DIRS})
-
-set(ANTLR_EXECUTABLE ${CMAKE_CURRENT_SOURCE_DIR}/antlr-tool/antlr-${ANTLR4_TAG}-complete.jar)
-
-if(NOT EXISTS "${ANTLR_EXECUTABLE}")
-    message ("ANTLR .jar \"${ANTLR_EXECUTABLE}\" does not exist!")
-    message("Downloading "  "https://www.antlr.org/download/antlr-${ANTLR4_TAG}-complete.jar")
-    file(DOWNLOAD "https://www.antlr.org/download/antlr-${ANTLR4_TAG}-complete.jar" "${ANTLR_EXECUTABLE}")
-endif()
-
-find_package(ANTLR REQUIRED)
-
 message( STATUS "Found pybind11 v${pybind11_VERSION} ${pybind11_VERSION_TYPE}: ${pybind11_INCLUDE_DIRS}")
 
 
@@ -102,32 +79,13 @@ message("Compiling Cpp with: " ${CMAKE_CXX_COMPILER_ID})
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-
-# Call macro to add lexer and grammar to your build dependencies.
-# antlr_target(pyA2LLexer ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/a2llg.g4 LEXER
-#			OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
-#			)
-
-antlr_target(AMLParser ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml.g4 LEXER PARSER
-			  VISITOR
-			  OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pya2l/aml/
-              # DEPENDS_ANTLR pyA2LLexer
-              # COMPILE_FLAGS -lib ${ANTLR_AMLParser_OUTPUT_DIR}
-			  )
-
-# include generated files in project environment
-include_directories(${ANTLR_pyA2LLexer_OUTPUT_DIR}/pya2l)
-include_directories(${ANTLR_AMLParser_OUTPUT_DIR}/pya2l)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/pya2l/extensions)
 
 pybind11_add_module(a2lparser_ext pya2l/a2lparser_wrapper.cpp pya2l/extensions/exceptions.cpp pya2l/extensions/tokenizer.cpp)
-pybind11_add_module(amlparser_ext pya2l/amlparser_wrapper.cpp ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/aml_visitor.cpp ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/marshal.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/parser.cpp ${ANTLR_AMLParser_CXX_OUTPUTS} ${ANTLR_pyA2LLexer_CXX_OUTPUTS})
+pybind11_add_module(amlparser_ext pya2l/amlparser_wrapper.cpp ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/marshal.cpp	${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/parser.cpp)
 
-target_link_libraries(amlparser_ext PRIVATE antlr4_static) # ${SYSTEM_LIBS})
 target_compile_options(a2lparser_ext PUBLIC "-DEXTENSION_NAME=a2lparser_ext" PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
 target_compile_options(amlparser_ext PUBLIC "-DEXTENSION_NAME=amlparser_ext" PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
-# target_compile_options(if_data_parser PUBLIC "-DEXTENSION_NAME=if_data_parser_ext" PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
 target_include_directories(amlparser_ext PUBLIC ${PROJECT_SOURCE_DIR}/pya2l/aml)
 
 

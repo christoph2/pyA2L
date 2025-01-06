@@ -27,6 +27,8 @@
 #include <cstring>
 #include <iomanip>
 
+#include "logger.hpp"
+
 std::vector<Token> split_by_new_line(std::string_view line, std::size_t start_line, std::size_t start_column) {
     auto set_line_numbers = [](LineNumbers &l, std::size_t sl, std::size_t sc, std::size_t el, std::size_t ec) {
         l.start_line = sl;
@@ -154,6 +156,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
     std::size_t                start_column      = 1;
     bool                       string_class      = false;
     bool                       multi_line_string = false;
+    auto logger = create_logger("preprocessor");
 
     const auto get_char_class = [](char ch) noexcept {
         return is_space(ch) ? CharClass::WHITESPACE : CharClass::REGULAR;
@@ -318,7 +321,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
 
             if ((multi_line_string == false) &&
                 ((string_state == StringStateType::IN_STRING) || (string_state == StringStateType::MAY_CLOSE))) {
-                std::cout << "[WARNING (pya2l.Preprocessor)]: Multiline string @ line: " << line - 1 << std::endl;
+                logger->debug("Multiline string @line: {}", line - 1);
                 multi_line_string = true;
             }
             if (comment_state == CommentStateType::SINGLE_LINE) {

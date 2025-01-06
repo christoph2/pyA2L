@@ -1,57 +1,56 @@
-
-
 #if !defined(__AML_PARSER_HPP)
-#define __AML_PARSER_HPP
+    #define __AML_PARSER_HPP
 
-#include "klasses.hpp"
+// namespace Aml {
+    #include "klasses.hpp"
+    #include "utils.hpp"
+
 
 class AMLParser {
-public:
+   public:
 
-    explicit AMLParser(const std::vector<Token>& tokens) : m_tokens(tokens), m_pos(0) {        
-
+    explicit AMLParser(const std::vector<AmlToken>& tokens) : m_tokens(tokens), m_pos(0) {
     }
 
-    const Token& current_token() const noexcept {
+    const AmlToken& current_token() const noexcept {
         return m_tokens[m_pos];
     }
 
-    const Token& la(std::size_t offs) const noexcept {
+    const AmlToken& la(std::size_t offs) const noexcept {
         return m_tokens[m_pos + offs];
     }
-
 
     void consume() noexcept {
         m_pos++;
     }
 
-    bool expect(TokenType type, TokenDataType value = std::nullopt) {
+    bool expect(AmlTokenType type, TokenDataType value = std::nullopt) {
         auto token = current_token();
         if (type != token.type) {
-            std::cerr << "Invalid token type!!!\n";
+            std::cerr << "Invalid AmlToken type!!!\n";
             return false;
         }
         if (value && token.value) {
             if (*value != *token.value) {
-                std::cerr << "Unexpected token value!!!\n";
+                std::cerr << "Unexpected AmlToken value!!!\n";
                 return false;
             }
         }
         return true;
     }
 
-    void match(TokenType type, bool consume_token=true) {
+    void match(AmlTokenType type, bool consume_token = true) {
         if (!expect(type)) {
-            throw std::runtime_error("Invalid token type.");
+            throw std::runtime_error("Invalid AmlToken type.");
         }
         if (consume_token) {
             consume();
         }
     }
 
-    auto match_get_value(TokenType type, bool consume_token = true) -> TokenDataType {
+    auto match_get_value(AmlTokenType type, bool consume_token = true) -> TokenDataType {
         if (!expect(type)) {
-            throw std::runtime_error("Invalid token type.");
+            throw std::runtime_error("Invalid AmlToken type.");
         }
         auto value = current_token().value;
 
@@ -61,272 +60,318 @@ public:
         return value;
     }
 
-
-
-    void parse() {
-        aml_file();
+    auto get_tag() -> std::string {
+        return variant_get<std::string>(*match_get_value(AmlTokenType::TAG));
     }
 
-    void aml_file() {
-        auto r1 = expect(TokenType::BEGIN);
+    auto get_ident() -> std::string {
+        return variant_get<std::string>(*match_get_value(AmlTokenType::IDENT));
+    }
+
+    auto get_int() -> std::int64_t {
+        auto token = current_token();
+        auto value = *token.value;
         consume();
-        auto t1 = current_token();
-        auto r2 = expect(TokenType::IDENT, "A2ML");
-        consume();        
-        declaration();
-        match(TokenType::END);
-        auto value = match_get_value(TokenType::IDENT);
-
+        if (std::holds_alternative<std::int64_t >(value)) {
+            return std::get<std::int64_t>(value);
+        } else if (std::holds_alternative<long double>(value)) {
+            return static_cast<long double>(std::get<long double>(value));
+        } else if (std::holds_alternative<std::string>(value)) {
+            return std::strtoll(std::get<std::string>(value).c_str(), nullptr, 10);
+        } else {
+            throw std::runtime_error("get_int(): Invalid AMLType.");
+        }
     }
 
-    void declaration() {
+    auto parse() -> AmlFile {
+        if (std::size(m_tokens) == 0) {
+            std::cout << "Empty AML section." << std::endl;
+            return {};
+        }
+        return aml_file();
+    }
+
+    auto aml_file() -> AmlFile {
+        std::string a2ml;
+
+        match(AmlTokenType::BEGIN);
+        a2ml = get_ident();
+        auto decls = declaration();
+        match(AmlTokenType::END);
+        a2ml = get_ident();
+        return AmlFile(decls);
+    }
+
+    auto declaration() -> std::vector<Declaration> {
+        std::vector<Declaration> decls;
         while (true) {
             auto token = current_token();
-            if (token.type == TokenType::END) {
+            if (token.type == AmlTokenType::END) {
                 break;
             }
-            if (token.type == TokenType::BLOCK) {
-                block_definition();
+            if (token.type == AmlTokenType::BLOCK) {
+                decls.emplace_back(nullptr, std::make_shared<BlockDefinition>(block_definition()));
+            } else {
+                decls.emplace_back(std::make_shared<TypeDefinition>(type_definition()), nullptr);
             }
-            else {
-                type_definition();
+            token = current_token();
+            if (token.type == AmlTokenType::SEMI) {
+                match(AmlTokenType::SEMI);
             }
-            token = current_token(); 
-            if (token.type == TokenType::SEMI) {
-                match(TokenType::SEMI);
-            }
-        }        
+        }
+        return decls;
     }
 
-    void type_definition() {
-        type_name();
+    auto type_definition() -> TypeDefinition {
+        auto tn = type_name();
+        return TypeDefinition(std::make_shared<Type>(tn));
     }
 
-    void type_name() {
-
+    auto type_name() -> Type {
         auto token = current_token();
 
-        if (token.type == TokenType::STRUCT) {
-            struct_type_name();
-        } else if(token.type == TokenType::TAGGED_STRUCT) {
-            taggedstruct_type_name();
-        } else if (token.type == TokenType::TAGGED_UNION) {
-            taggedunion_type_name();
-        } else if (token.type == TokenType::PDT) {
-            predefined_type_name();
-        } else if (token.type == TokenType::ENUM) {
-            enum_type_name();
-        }
-        else {
-            throw std::runtime_error("NO type...\n");
+        if (token.type == AmlTokenType::STRUCT) {
+            return struct_type_name();
+        } else if (token.type == AmlTokenType::TAGGED_STRUCT) {
+            return taggedstruct_type_name();
+        } else if (token.type == AmlTokenType::TAGGED_UNION) {
+            return taggedunion_type_name();
+        } else if (token.type == AmlTokenType::PDT) {
+            return predefined_type_name();
+        } else if (token.type == AmlTokenType::ENUM) {
+            return enum_type_name();
+        } else {
+            std::cerr << "Unexpected token (not an AML type)\n";
+            consume();
         }
     }
 
-    void predefined_type_name() {
-        auto value = match_get_value(TokenType::PDT);
-       // match(TokenType::SEMI);
+    auto predefined_type_name() -> AMLPredefinedType {
+        auto pdt        = variant_get<AMLPredefinedTypeEnum>(*match_get_value(AmlTokenType::PDT));
+        auto array_spec = array_specifier();
+        return AMLPredefinedType(pdt, array_spec);
     }
 
-    void block_definition() {
+    auto block_definition() -> BlockDefinition {
         bool multiple{ false };
-        match(TokenType::BLOCK);
-        auto tag = match_get_value(TokenType::TAG);
+        match(AmlTokenType::BLOCK);
+        auto tag = get_tag();
 
         auto token = current_token();
-        if (token.type == TokenType::LPARAN) {
-            match(TokenType::LPARAN);
+        if (token.type == AmlTokenType::LPARAN) {
+            match(AmlTokenType::LPARAN);
             multiple = true;
-            token = current_token();
+            token    = current_token();
         }
-
-        type_name();
+        auto tp = type_name();
         token = current_token();
-        if (token.type == TokenType::LSQ) {
-            while (true) {
-                array_specifier();
-                token = current_token();
-                if (token.type != TokenType::LSQ) {
-                    break;
-                }
-            }
-        }
-
         if (multiple) {
-            match(TokenType::RPARAN);
-            match(TokenType::STAR);
+            match(AmlTokenType::RPARAN);
+            match(AmlTokenType::STAR);
         }
+        return BlockDefinition(tag, std::make_shared<Type>(tp), multiple);
     }
 
-    void struct_type_name() {
-        match(TokenType::STRUCT);
+    auto struct_type_name() -> StructOrReferrer {
+        std::string               name;
+        std::vector<StructMember> members;
+
+        match(AmlTokenType::STRUCT);
         auto token = current_token();
-        if (token.type == TokenType::IDENT) {
-            auto value = match_get_value(TokenType::IDENT);
+        if (token.type == AmlTokenType::IDENT) {
+            name  = get_ident();
             token = current_token();
         }
-        if (token.type == TokenType::LBRACE) {
-            match(TokenType::LBRACE);
-            while (true) {                
-                struct_member();    // rep!!!
+        if (token.type == AmlTokenType::LBRACE) {
+            match(AmlTokenType::LBRACE);
+            while (true) {
                 token = current_token();
-                if (token.type == TokenType::RBRACE) {
+                if (token.type == AmlTokenType::RBRACE) {
                     break;
                 }
+                members.emplace_back(struct_member());
             }
-            match(TokenType::RBRACE);
+            match(AmlTokenType::RBRACE);
+            return Struct(name, members);
+        } else {
+            return Referrer(ReferrerType::StructType, name);
         }
     }
 
-    void struct_member() {
+    auto struct_member() -> StructMember {
         auto token = current_token();
-        if (token.type == TokenType::RBRACE) {
-            return; // Empty.
+        if (token.type == AmlTokenType::RBRACE) {
+            return StructMember(std::nullopt);
         }
-        member();
-        token = current_token();
-        if (token.type == TokenType::SEMI) {
+        auto mem = member();
+        token    = current_token();
+        if (token.type == AmlTokenType::SEMI) {
             consume();  // Optional ';'
         }
+        return StructMember(std::move(mem));
     }
 
-    void taggedstruct_type_name() {
-        match(TokenType::TAGGED_STRUCT);
+    auto taggedstruct_type_name() -> TaggedStructOrReferrer {
+        std::string name;
+        std::vector< TaggedStructMember> members;
+
+        match(AmlTokenType::TAGGED_STRUCT);
         auto token = current_token();
-        if (token.type == TokenType::IDENT) {
-            auto value = match_get_value(TokenType::IDENT);
+        if (token.type == AmlTokenType::IDENT) {
+            name  = get_ident();
             token = current_token();
         }
-        if (token.type == TokenType::LBRACE) {
-            match(TokenType::LBRACE);                        
+        if (token.type == AmlTokenType::LBRACE) {
+            match(AmlTokenType::LBRACE);
             while (true) {
-                tagged_struct_member();
                 token = current_token();
-                if (token.type == TokenType::RBRACE) {
+                if (token.type == AmlTokenType::RBRACE) {
                     break;
                 }
+                members.emplace_back(tagged_struct_member());
             }
-            match(TokenType::RBRACE);
+            match(AmlTokenType::RBRACE);
+        } else {
+            return Referrer(ReferrerType::TaggedStructType, name);
         }
         token = current_token();
-        if (token.type == TokenType::SEMI) {
+        if (token.type == AmlTokenType::SEMI) {
             consume();  // Optional ';'
         }
+        return TaggedStruct(name, std::move(members));
     }
 
-    void tagged_struct_member() {
+    auto tagged_struct_member() -> TaggedStructMember {
         bool multiple{ false };
+        TaggedStructDefinition tsd;
+        BlockDefinition        block;
+
         auto token = current_token();
 
-        if (token.type == TokenType::LPARAN) {
-            match(TokenType::LPARAN);
-            multiple = true;            
-            token = current_token();
+        if (token.type == AmlTokenType::LPARAN) {
+            match(AmlTokenType::LPARAN);
+            multiple = true;
+            token    = current_token();
         }
-        if (token.type == TokenType::BLOCK) {
-            block_definition();
-        }
-        else {
-            taggedstruct_definition();
+        if (token.type == AmlTokenType::BLOCK) {
+            block = block_definition();
+        } else {
+            tsd = taggedstruct_definition();
         }
         if (multiple) {
-            std::cout << "multiple\n";
-            match(TokenType::RPARAN);
-            match(TokenType::STAR);
+            token = current_token();
+            if (token.type == AmlTokenType::SEMI) {
+                match(AmlTokenType::SEMI);
+            }
+            match(AmlTokenType::RPARAN);
+            match(AmlTokenType::STAR);
         }
         token = current_token();
-        if (token.type == TokenType::SEMI) {
-            match(TokenType::SEMI);
+        if (token.type == AmlTokenType::SEMI) {
+            match(AmlTokenType::SEMI);
         }
+        return TaggedStructMember(std::move(tsd), std::make_shared<BlockDefinition>(block), multiple);
     }
 
-    void taggedstruct_definition() {
-        bool multiple{ false };
-        auto tag = match_get_value(TokenType::TAG);
+    auto taggedstruct_definition() -> TaggedStructDefinition {
+        std::string tag;
+        Member      mem;
+        bool        multiple{ false };
+        auto        token = current_token();
+        if (token.type != AmlTokenType::TAG) {
+            std::cerr << "Missing required TAG\n";
+        } else {
+            tag = get_tag();
+        }
 
-        auto token = current_token();
-        if (token.type == TokenType::LPARAN) {
-            match(TokenType::LPARAN);
+        token = current_token();
+        if (token.type == AmlTokenType::LPARAN) {
+            match(AmlTokenType::LPARAN);
             multiple = true;
         }
         // TODO: check empty, i.e SEMI!!!
-        if (token.type == TokenType::SEMI) {
+        if (token.type == AmlTokenType::SEMI) {
             if (multiple) {
                 throw std::runtime_error("Did not expect empty taggedstruct_definition with multiple");
             }
-        }
-        else {
-            member();
+        } else {
+            mem = member();
             token = current_token();
-            if (token.type == TokenType::SEMI) {
-                match(TokenType::SEMI);
+            if (token.type == AmlTokenType::SEMI) {
+                match(AmlTokenType::SEMI);
             }
             if (multiple) {
-                match(TokenType::RPARAN);
-                match(TokenType::STAR);
-
+                match(AmlTokenType::RPARAN);
+                match(AmlTokenType::STAR);
             }
         }
+        return TaggedStructDefinition(tag, std::move(mem), multiple);
     }
 
-    void taggedunion_type_name() {
-        match(TokenType::TAGGED_UNION);
+    auto taggedunion_type_name() -> TaggedUnionOrReferrer {
+        std::string name;
+        std::vector< TaggedUnionMember> members;
+
+        match(AmlTokenType::TAGGED_UNION);
         auto token = current_token();
-        if (token.type == TokenType::IDENT) {
-            auto value = match_get_value(TokenType::IDENT);
+        if (token.type == AmlTokenType::IDENT) {
+            name  = get_ident();
             token = current_token();
         }
-        if (token.type == TokenType::LBRACE) {
-            match(TokenType::LBRACE);
+        if (token.type == AmlTokenType::LBRACE) {
+            match(AmlTokenType::LBRACE);
             while (true) {
-                tagged_union_member();
                 token = current_token();
-                if (token.type == TokenType::RBRACE) {
+                if (token.type == AmlTokenType::RBRACE) {
                     break;
                 }
+                members.emplace_back(tagged_union_member());
             }
-            match(TokenType::RBRACE);
-        }
-        else {
-            // Referrer
+            match(AmlTokenType::RBRACE);
+            return TaggedUnion(name, std::move(members));
+        } else {
+            return Referrer(ReferrerType::TaggedUnionType, name);
         }
     }
 
-    void tagged_union_member() {
+    auto tagged_union_member() -> TaggedUnionMember {
+        std::string     tag;
+        Member          mem;
+        BlockDefinition block;
+
         auto token = current_token();
-        if (token.type == TokenType::TAG) {
-            auto tag = match_get_value(TokenType::TAG);
-            member();
+        if (token.type == AmlTokenType::TAG) {
+            tag = get_tag();
+            mem = member();
+        } else if (token.type == AmlTokenType::BLOCK) {
+            block = block_definition();
         }
-        else if (token.type == TokenType::BLOCK) {
-            block_definition();
-        } else if (token.type == TokenType::SEMI) {
-            match(TokenType::SEMI);
+        token = current_token();
+        if (token.type == AmlTokenType::SEMI) {
+            match(AmlTokenType::SEMI);
             token = current_token();
-            std::cout << "TAG only.\n";
         }
-        else {
-            std::cerr << "Error!!!\n";
-        }
+        return TaggedUnionMember(tag, std::move(mem), std::make_shared<BlockDefinition>(block));
     }
 
-    void enum_type_name() {
-        match(TokenType::ENUM);
+    auto enum_type_name() -> EnumerationOrReferrer {
+        std::string             name;
+        std::vector<Enumerator> enumerators;
+
+        match(AmlTokenType::ENUM);
         auto token = current_token();
-        if (token.type == TokenType::IDENT) {
-            auto value = match_get_value(TokenType::IDENT);
+        if (token.type == AmlTokenType::IDENT) {
+            name  = get_ident();
             token = current_token();
         }
-        if (token.type == TokenType::LBRACE) {
-            match(TokenType::LBRACE);
-            while (true) {
-                enumerator_list();
-                token = current_token();
-                if (token.type == TokenType::RBRACE) {
-                    break;
-                }
-            }
-            match(TokenType::RBRACE);
+        if (token.type == AmlTokenType::LBRACE) {
+            match(AmlTokenType::LBRACE);
+            enumerators = enumerator_list();
+            match(AmlTokenType::RBRACE);
+        } else {
+            return Referrer(ReferrerType::Enumeration, name);
         }
+        return Enumeration(name, enumerators);
     }
 
     auto enumerator_list() -> std::vector<Enumerator> {
@@ -334,104 +379,65 @@ public:
         while (true) {
             result.emplace_back(enumerator());
             auto token = current_token();
-            if (token.type != TokenType::COLON) {
+            if (token.type != AmlTokenType::COLON) {
                 break;
             }
-            match(TokenType::COLON);
+            match(AmlTokenType::COLON);
         }
         return result;
     }
 
     auto enumerator() -> Enumerator {
         std::optional<numeric_t> value;
-        auto tag_r = match_get_value(TokenType::TAG);
-        auto tag = std::get<std::string>(*tag_r);
-        auto token = current_token();
+        auto                     tag   = get_tag();
+        auto                     token = current_token();
 
-        if (token.type == TokenType::EQU) {
-            match(TokenType::EQU);
-            token = current_token();
-            value = std::get<long long int>(*token.value);
-            consume();
+        if (token.type == AmlTokenType::EQU) {
+            match(AmlTokenType::EQU);
+            value = get_int();
         }
         return Enumerator(tag, value);
     }
 
-
-    void member() {
+    auto member() -> Member {
         auto token = current_token();
 
-        if (token.type == TokenType::BLOCK) {
-            block_definition();
+        if (token.type == AmlTokenType::BLOCK) {
+            return Member(std::make_shared<BlockDefinition>(block_definition()), nullptr);
+        } else {
+            if (token.type == AmlTokenType::SEMI) {
+                return Member();  // Empty.
+            }
+            auto tp = type_name();            
+            return Member(nullptr, tp.get_type().valueless_by_exception() == false? std::make_shared<Type>(tp): nullptr);
         }
-        else {
-            type_name();
-            token = current_token();
-            if (token.type == TokenType::LSQ) {
-                while (true) {
-                    array_specifier();
-                    token = current_token();
-                    if (token.type == TokenType::SEMI) {
-                        break;
-                    }
+    }
+
+    auto array_specifier() -> std::vector<std::int64_t> {
+        std::vector<std::int64_t> result;
+        std::int64_t              value;
+        auto                      token = current_token();
+        if (token.type == AmlTokenType::LSQ) {
+            while (true) {
+                token = current_token();
+                if (token.type != AmlTokenType::LSQ) {
+                    break;
                 }
-                match(TokenType::SEMI);
+                match(AmlTokenType::LSQ);
+                value = get_int();
+                result.push_back(value);
+                match(AmlTokenType::RSQ);
             }
         }
+        return result;
     }
 
-    void array_specifier() {
-        match(TokenType::LSQ);
-        auto token = current_token();
-        auto value = token.value;   // numeric
-        consume();
-        match(TokenType::RSQ);
-    }
+   private:
 
-#if 0
-    amlFile:
-    '/begin' 'A2ML'
-        (d += declaration) *
-        '/end' 'A2ML'
-        ;
-
-declaration:
-    (t = type_definition ';')
-        | (b = block_definition ';')
-        ;
-
-type_definition:
-    type_name
-        ;
-
-type_name:
-    pr = predefined_type_name
-        | st = struct_type_name
-        | ts = taggedstruct_type_name
-        | tu = taggedunion_type_name
-        | en = enum_type_name
-        ;
-
-predefined_type_name:
-    (
-      name = 'char'
-    | name = 'int'
-    | name = 'long'
-    | name = 'uchar'
-    | name = 'uint'
-    | name = 'ulong'
-    | name = 'int64'
-    | name = 'uint64'
-    | name = 'double'
-    | name = 'float'
-    )
-        ;
-#endif
-
-private:
-    std::vector<Token> m_tokens;
-    std::size_t m_pos;
+    std::vector<AmlToken> m_tokens;
+    std::size_t           m_pos;
 };
 
+// };   // namespace Aml
 
-#endif // __AML_PARSER_HPP
+#endif  // __AML_PARSER_HPP

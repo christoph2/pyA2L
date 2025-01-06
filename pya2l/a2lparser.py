@@ -353,7 +353,6 @@ class A2LParser:
 
         keyword_counter, values, tables = ext.parse(str(a2l_fn), encoding)
         self.counter = 0
-
         progress_columns = (
             SpinnerColumn(style="white"),
             "[progress.description]{task.description}",

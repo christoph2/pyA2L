@@ -10,18 +10,21 @@
 #include <sstream>
 
 #include "unmarshal.hpp"
-#include "ifdata_lexer.hpp"
+//#include "marshal.hpp"
+//#include "ifdata_lexer.hpp"
 
 namespace py = pybind11;
 
 std::string parse(const std::string& aml_stuff);
 
 
+//#if 0
 Node unmarshal(const py::bytes& data) {
 	std::stringstream inbuf{data};
     auto unm    = Unmarshaller(inbuf);
     return unm.run();
 }
+//#endif
 
 
 inline auto unicode_decode(std::string_view value, const char * encoding) -> py::str {
@@ -37,8 +40,9 @@ PYBIND11_MODULE(amlparser_ext, m) {
 		return py::bytes(parse(aml_text)); 
 	}, py::return_value_policy::move);
 	m.def("unmarshal", &unmarshal, py::return_value_policy::move);
-	m.def("ifdata_lexer", &ifdata_lexer, py::return_value_policy::move);
+	//m.def("ifdata_lexer", &ifdata_lexer, py::return_value_policy::move);
 	
+#if 0	
 	py::class_<Token>(m, "Token")
 		.def(py::init<const TokenType&, const TokenDataType&>())
 		.def("__repr__", [](const Token& self) {
@@ -82,7 +86,7 @@ PYBIND11_MODULE(amlparser_ext, m) {
 			return ss.str();		
 		})
 	;
-
+#endif
 
 	py::class_<Node>(m, "Node")
 		.def(py::init<>())
@@ -108,7 +112,7 @@ PYBIND11_MODULE(amlparser_ext, m) {
 		.value("AGGR", Node::NodeType::AGGR)
 		.value("NONE", Node::NodeType::NONE)
 	;
-	
+#if 0	
 	py::enum_<TokenType>(m, "TokenType")
 		.value("NONE", TokenType::NONE)
 		.value("IDENT", TokenType::IDENT)
@@ -119,7 +123,7 @@ PYBIND11_MODULE(amlparser_ext, m) {
 		.value("BEGIN", TokenType::BEGIN)
 		.value("END", TokenType::END)	
 	;
-		
+#endif
 	py::enum_<Node::AmlType>(m, "AmlType")
 		.value("NONE", Node::AmlType::NONE)
 		.value("TYPE", Node::AmlType::TYPE)

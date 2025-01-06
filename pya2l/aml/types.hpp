@@ -6,11 +6,12 @@
     #include <optional>
     #include <set>
     #include <variant>
+	
 
 using string_opt_t = std::optional<std::string>;
 using numeric_t    = std::variant<std::monostate, std::int64_t, long double>;
 
-enum class AMLPredefinedType : std::uint8_t {
+enum class AMLPredefinedTypeEnum : std::uint8_t {
     CHAR   = 0,
     INT    = 1,
     LONG   = 2,
@@ -39,25 +40,25 @@ enum class TypeType : std::uint8_t {
     TaggedUnionType  = 4,
 };
 
-const std::map<std::string, AMLPredefinedType> PredefinedTypesMap {
-    { "char",    AMLPredefinedType::CHAR    },
-    { "int",     AMLPredefinedType::INT     },
-    { "long",    AMLPredefinedType::LONG    },
-    { "uchar",   AMLPredefinedType::UCHAR   },
-    { "uint",    AMLPredefinedType::UINT    },
-    { "ulong",   AMLPredefinedType::ULONG   },	
-	{ "int64",   AMLPredefinedType::INT64   },
-	{ "uint64",  AMLPredefinedType::UINT64  },
-    { "double",  AMLPredefinedType::DOUBLE  },
-    { "float",   AMLPredefinedType::FLOAT   },
-	{ "float16", AMLPredefinedType::FLOAT16 },
+const std::map<std::string, AMLPredefinedTypeEnum> PredefinedTypesMap {
+    { "char",    AMLPredefinedTypeEnum::CHAR    },
+    { "int",     AMLPredefinedTypeEnum::INT     },
+    { "long",    AMLPredefinedTypeEnum::LONG    },
+    { "uchar",   AMLPredefinedTypeEnum::UCHAR   },
+    { "uint",    AMLPredefinedTypeEnum::UINT    },
+    { "ulong",   AMLPredefinedTypeEnum::ULONG   },	
+	{ "int64",   AMLPredefinedTypeEnum::INT64   },
+	{ "uint64",  AMLPredefinedTypeEnum::UINT64  },
+    { "double",  AMLPredefinedTypeEnum::DOUBLE  },
+    { "float",   AMLPredefinedTypeEnum::FLOAT   },
+	{ "float16", AMLPredefinedTypeEnum::FLOAT16 },
 };
 
 const std::set<std::string> PredefinedTypesSet {
     "char", "int", "long", "uchar", "uint", "ulong", "int64", "uint64",  "double", "float",  "float16"
 };
 
-inline AMLPredefinedType createPredefinedType(const std::string& name) {
+inline AMLPredefinedTypeEnum createPredefinedType(const std::string& name) {
     return PredefinedTypesMap.at(name);
 }
 

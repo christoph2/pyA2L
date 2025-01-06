@@ -109,6 +109,7 @@ def import_a2l(
     ----
     ``AML`` and ``IF_DATA`` sections are currently not processed.
     """
+    
     a2l_parser = A2LParser()
     db = a2l_parser.parse(
         file_name=file_name, local=local, in_memory=in_memory, encoding=encoding, remove_existing=remove_existing, loglevel=loglevel

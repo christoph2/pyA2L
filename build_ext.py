@@ -131,9 +131,6 @@ def build_extension(debug: bool = False, use_temp_dir=False) -> None:
     use_temp_dir = use_temp_dir or get_env_bool("BUILD_TEMP")
     debug = debug or get_env_bool("BUILD_DEBUG")
 
-    antlr4_tag = most_recent_tag("https://github.com/antlr/antlr4")
-    print("antlr4_tag", antlr4_tag)
-    os.environ["ANTLR4_TAG"] = antlr4_tag
     debug = int(os.environ.get("DEBUG", 0)) or debug
     cfg = "Debug" if debug else "Release"
 
@@ -150,7 +147,7 @@ def build_extension(debug: bool = False, use_temp_dir=False) -> None:
         )
         if py_cfg["libdir"]:
             cmake_args.append(f"-DPython3_LIBRARY={str(Path(py_cfg['libdir']) / Path(py_cfg['library']))}")  # noqa: RUF010
-    build_args = ["--config Release", "--verbose"]  # f"-DANTLR4_TAG={antlr4_tag}"
+    build_args = ["--config Release", "--verbose"]
 
     if sys.platform.startswith("darwin"):
         # Cross-compile support for macOS - respect ARCHFLAGS if set
@@ -184,4 +181,4 @@ def build_extension(debug: bool = False, use_temp_dir=False) -> None:
 if __name__ == "__main__":
     includes = subprocess.getoutput("pybind11-config --cmakedir")  # nosec
     os.environ["pybind11_DIR"] = includes
-    build_extension(use_temp_dir=False)
+    build_extension(use_temp_dir=True)

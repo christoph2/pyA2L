@@ -9,8 +9,11 @@
     #include <optional>
     #include <sstream>
     #include <variant>
+	#include <vector>
 
     #include "types.hpp"
+
+#include <iostream>
 
 template<typename... Ts>
 struct Overload : Ts... {
@@ -170,72 +173,133 @@ using EnumerationOrReferrer = std::variant<std::monostate, Referrer, Enumeration
 
 class Type;
 
+struct TypeRegistry {
+    ~TypeRegistry() {
+        for (auto& elem : m_registry) {
+            delete elem;
+        }
+    }
+
+    void add(Type* entry) {
+        m_registry.push_back(entry);
+    }
+
+    std::vector<Type*> m_registry{};
+};
+
+static TypeRegistry type_registry;
+
+template<typename Ty>
+Type* make_type(const Ty& value) {
+    auto result = new Type(value);
+    type_registry.add(result);
+    return result;
+}
+
 class BlockDefinition {
 public:
 
-    BlockDefinition() : m_tag(), m_type(nullptr) {
+    BlockDefinition() : m_tag(), m_type(nullptr), m_multiple(false) {
     }
 
-    explicit BlockDefinition(const std::string& tag, Type* type) :
-        m_tag(tag), m_type(type) {
+    explicit BlockDefinition(const std::string& tag, std::shared_ptr<Type> type, bool multiple) :
+        m_tag(tag), m_type(type), m_multiple(multiple) {
     }
 
     const std::string& get_tag() const noexcept {
         return m_tag;
     }
 
-    const Type* get_type() const noexcept {
+    const std::shared_ptr<Type> get_type() const noexcept {
         return m_type;
+    }
+
+    bool get_multiple() const noexcept {
+        return m_multiple;
     }
 
 private:
 
     std::string m_tag;
-    Type* m_type;
+    std::shared_ptr<Type> m_type;
+    bool m_multiple;
 };
+
+
+class AMLPredefinedType {
+public:
+
+    AMLPredefinedType() = delete;
+
+    AMLPredefinedType(AMLPredefinedTypeEnum pdt, const std::vector<std::int64_t>& arr_spec) :
+        m_pdt(pdt), m_arr_spec(arr_spec) {
+    }
+
+    AMLPredefinedTypeEnum get_pdt() const noexcept {
+        return m_pdt;
+    }
+
+    const std::vector<std::int64_t>& get_array_spec() const noexcept {
+        return m_arr_spec;
+    }
+
+private:
+
+    AMLPredefinedTypeEnum m_pdt;
+    std::vector<std::int64_t> m_arr_spec{};
+};
+
 
 class Member {
    public:
 
-    Member() : m_block(std::nullopt), m_type(nullptr) {
+    Member() : m_block(nullptr), m_type(nullptr) {
     }
 
-    explicit Member(std::optional<BlockDefinition> block, Type* type, const std::vector<std::uint64_t>& arr_spec) :
-        m_block(block), m_type(type), m_arr_spec(arr_spec) {
+    Member(const Member& other) {
+        m_block = other.get_block();
+        m_type  = other.get_type();
     }
 
-    const std::optional<BlockDefinition> get_block() const noexcept {
+    explicit Member(std::shared_ptr<BlockDefinition> block, std::shared_ptr<Type> type) :
+        m_block(block), m_type(type) {
+    }
+
+    const std::shared_ptr<BlockDefinition> get_block() const noexcept {
         return m_block;
     };
 
-    const Type* get_type() const noexcept {
+    const std::shared_ptr<Type> get_type() const noexcept {
         return m_type;
     }
 
-    const std::vector<std::uint64_t>& get_array_spec() const noexcept {
-        return m_arr_spec;
+    bool is_empty() const noexcept {
+        return ((!m_block) && (!m_type));
     }
 
    private:
 
-       std::optional<BlockDefinition> m_block;
-    Type*                      m_type;
-    std::vector<std::uint64_t> m_arr_spec{};
+    std::shared_ptr<BlockDefinition> m_block;
+    std::shared_ptr<Type>                      m_type;
 };
 
 class StructMember {
    public:
 
-    explicit StructMember(const Member& member) : m_member(member) {
+    explicit StructMember(std::optional<Member>&& member) : m_member(std::move(member)) {
     }
 
-    const Member& get_member() const noexcept {
+    StructMember(const StructMember& other) {
+        m_member = other.get_member();
+    }
+
+    const std::optional<Member>& get_member() const noexcept {
         return m_member;
     }
 
    private:
 
-    Member m_member;
+   std::optional<Member> m_member;
 };
 
 class Struct {
@@ -265,8 +329,14 @@ class TaggedStructDefinition {
 
     TaggedStructDefinition() = default;
 
-    explicit TaggedStructDefinition(const std::string& tag, const Member& member, bool multiple) :
-        m_tag(tag), m_member(member), m_multiple(multiple) {
+    explicit TaggedStructDefinition(const std::string& tag, Member&& member, bool multiple) :
+        m_tag(tag), m_member(std::move(member)), m_multiple(multiple) {
+    }
+
+    TaggedStructDefinition(const TaggedStructDefinition& other) {
+        m_tag = other.get_tag();
+        m_member = other.get_member();
+        m_multiple = other.get_multiple();
     }
 
     const std::string& get_tag() const noexcept {
@@ -293,15 +363,30 @@ class TaggedStructMember {
 
     TaggedStructMember() = default;
 
-    explicit TaggedStructMember(const TaggedStructDefinition& tsd, const BlockDefinition& block, bool multiple) :
-        m_tsd(tsd), m_block(block), m_multiple(multiple) {
+    explicit TaggedStructMember(TaggedStructDefinition&& tsd, std::shared_ptr<BlockDefinition> block, bool multiple) :
+        m_tsd(std::move(tsd)), m_block(block), m_multiple(multiple) {
+    }
+
+    TaggedStructMember(const TaggedStructMember& other) {
+        // impl!!!
+        m_tsd = other.get_tagged_struct_def();
+        m_block = other.get_block();
+        m_multiple = other.get_multiple();
+    }
+
+    TaggedStructMember& operator=(const TaggedStructMember& other) {
+        m_tsd      = other.get_tagged_struct_def();
+        m_block    = other.get_block();
+        m_multiple = other.get_multiple();
+
+        return *this;
     }
 
     const TaggedStructDefinition& get_tagged_struct_def() const noexcept {
         return m_tsd;
     }
 
-    const BlockDefinition& get_block() const noexcept {
+    const std::shared_ptr<BlockDefinition> get_block() const noexcept {
         return m_block;
     }
 
@@ -312,27 +397,30 @@ class TaggedStructMember {
    private:
 
     TaggedStructDefinition m_tsd;
-    BlockDefinition        m_block;
+    std::shared_ptr<BlockDefinition>        m_block;
     bool                   m_multiple;
 };
 
 class TaggedStruct {
    public:
 
-    explicit TaggedStruct(const std::string& name, const std::vector<TaggedStructMember>& members) :
-        m_name(name), m_members(members) {
+    explicit TaggedStruct(const std::string& name, std::vector<TaggedStructMember>&& members) :
+        m_name(name), m_members(std::move(members)) {
         for (const auto& elem : m_members) {
             const auto  block = elem.get_block();
-            const auto  tsd   = elem.get_tagged_struct_def();
+            const auto&  tsd   = elem.get_tagged_struct_def();
             std::string tag{};
 
-            if (block.get_type()) {
-                tag = block.get_tag();
+            if (block->get_type()) {
+                tag = block->get_tag();
             } else {
                 tag = tsd.get_tag();
             }
             if (tag != "") {
                 m_tags[tag] = elem;
+            }
+            else {
+                std::cout << "NO TAG\n";
             }
         }
     }
@@ -363,8 +451,21 @@ class TaggedUnionMember {
 
     TaggedUnionMember() = default;
 
-    explicit TaggedUnionMember(const std::string& tag, const Member& member, const BlockDefinition& block) :
-        m_tag(tag), m_member(member), m_block(block) {
+    explicit TaggedUnionMember(const std::string& tag, Member&& member, std::shared_ptr<BlockDefinition> block) :
+        m_tag(tag), m_member(std::move(member)), m_block(block) {
+    }
+
+    TaggedUnionMember(const TaggedUnionMember& other) {
+        m_tag = other.get_tag();
+        m_member = other.get_member();
+        m_block  = other.get_block();
+    }
+
+    TaggedUnionMember& operator=(const TaggedUnionMember& other) {
+        m_tag    = other.get_tag();
+        m_member = other.get_member();
+        m_block  = other.get_block();
+        return *this;
     }
 
     const std::string& get_tag() const noexcept {
@@ -375,7 +476,7 @@ class TaggedUnionMember {
         return m_member;
     }
 
-    const BlockDefinition& get_block() const noexcept {
+    const std::shared_ptr<BlockDefinition> get_block() const noexcept {
         return m_block;
     }
 
@@ -383,24 +484,26 @@ class TaggedUnionMember {
 
     std::string     m_tag;
     Member          m_member;
-    BlockDefinition m_block;
+    std::shared_ptr<BlockDefinition> m_block;
 };
 
 class TaggedUnion {
    public:
 
-    explicit TaggedUnion(const std::string& name, const std::vector<TaggedUnionMember>& members) :
-        m_name(name), m_members(members) {
-        for (const auto& elem : members) {
-            const auto mem   = elem.get_member();
-            const auto block = elem.get_block();
-            if (block.get_type()) {
-                const auto tag = block.get_tag();
+    explicit TaggedUnion(const std::string& name, std::vector<TaggedUnionMember>&& members) :
+        m_name(name), m_members(std::move(members)) {
+        for (const auto& elem : m_members) {
+            const auto& mem   = elem.get_member();
+            const auto& block = elem.get_block();
+            if (block->get_type()) {
+                const auto tag = block->get_tag();
                 m_tags[tag]    = elem;
-            }
-            if (mem.get_type()) {
+            } else {
                 const auto tag = elem.get_tag();
                 m_tags[tag]    = elem;
+                if (elem.get_tag() == "") {
+                    std::cout << "NO TAG\n";
+                }
             }
         }
     }
@@ -468,36 +571,36 @@ class TypeDefinition {
     TypeDefinition() : m_tp(nullptr) {
     }
 
-    explicit TypeDefinition(Type* tp) : m_tp(tp) {
+    explicit TypeDefinition(std::shared_ptr<Type> tp) : m_tp(tp) {
     }
 
-    Type* get_type() const noexcept {
+    std::shared_ptr<Type> get_type() const noexcept {
         return m_tp;
     }
 
    private:
 
-    Type* m_tp;
+    std::shared_ptr<Type> m_tp;
 };
 
 class Declaration {
    public:
 
-    explicit Declaration(TypeDefinition td, const BlockDefinition& block) : m_td(td), m_block(block) {
+    explicit Declaration(std::shared_ptr<TypeDefinition> td, std::shared_ptr < BlockDefinition> block) : m_td(td), m_block(block) {
     }
 
-    const TypeDefinition& get_type() const noexcept {
+    std::shared_ptr < TypeDefinition> get_type() const noexcept {
         return m_td;
     }
 
-    const BlockDefinition& get_block() const noexcept {
+    std::shared_ptr< BlockDefinition> get_block() const noexcept {
         return m_block;
     }
 
    private:
 
-    TypeDefinition  m_td;
-    BlockDefinition m_block;
+    std::shared_ptr < TypeDefinition> m_td;
+    std::shared_ptr < BlockDefinition> m_block;
 };
 
 class AmlFile {
@@ -505,6 +608,8 @@ class AmlFile {
 
     explicit AmlFile(const std::vector<Declaration>& decls) : m_decls(decls) {
     }
+
+    AmlFile() = default;
 
     const std::vector<Declaration>& get_decls() const noexcept {
         return m_decls;
