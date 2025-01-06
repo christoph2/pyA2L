@@ -12,6 +12,7 @@ find_package(pybind11 REQUIRED)
 SET(CMAKE_C_STANDARD 17)
 # set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 message( STATUS "Found pybind11 v${pybind11_VERSION} ${pybind11_VERSION_TYPE}: ${pybind11_INCLUDE_DIRS}")
@@ -29,13 +30,13 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	if (MSVC)
 		SET(MSVC_BASE_OPTIONS "${MSVC_BASE_OPTIONS} /Od /fsanitize=address /Zi /FAcs")
 	else()
-		SET(GCC_N_CLANG_BASE_OPTIONS "${GCC_N_CLANG_BASE_OPTIONS} -Og -g3 -ggdb --fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined -fsanitize=bounds")	# -fsanitize=hwaddress
+		SET(GCC_N_CLANG_BASE_OPTIONS "${GCC_N_CLANG_BASE_OPTIONS} -Og -g3 -ggdb -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined -fsanitize=bounds")	# -fsanitize=hwaddress
 	endif()
 else ()
 	if (MSVC)
 		SET(MSVC_BASE_OPTIONS "${MSVC_BASE_OPTIONS} /Ox")
 	else()
-		SET(GCC_N_CLANG_BASE_OPTIONS "${GCC_N_CLANG_BASE_OPTIONS} -O3 --fomit-frame-pointer")
+		SET(GCC_N_CLANG_BASE_OPTIONS "${GCC_N_CLANG_BASE_OPTIONS} -O3 -fomit-frame-pointer")
 	endif()
  endif ()
 

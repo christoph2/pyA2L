@@ -7,6 +7,7 @@
     #include <cstdint>
     #include <map>
     #include <optional>
+    #include <memory>
     #include <sstream>
     #include <variant>
 	#include <vector>

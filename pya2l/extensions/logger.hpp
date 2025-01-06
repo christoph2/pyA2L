@@ -1,7 +1,8 @@
 #if !defined(__LOGGER_HPP)
 #define __LOGGER_HPP
 
-#define SPDLOG_USE_STD_FORMAT   (1)
+
+#define SPDLOG_USE_STD_FORMAT   (0)
 
 #include "spdlog/spdlog.h"
 //#include "spdlog/sinks/ansicolor_sink.h"
