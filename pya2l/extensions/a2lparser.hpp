@@ -82,12 +82,9 @@ class A2LParser {
 //        m_idr         = std::make_unique<IfDataReader>(std::get<2>(prepro_result.value()));
         m_table_count = 0;
 
-        // logger.setName("pya2l.A2LParser");
-        // auto new_logger = spdlog::basic_logger_mt("pya2l.A2LParser", "logs/new-default-log.txt", true);
-        //spdlog::set_default_logger(new_logger);
-        spdlog::set_level(spdlog::level::info);
+        m_logger = create_logger("a2lparser");
         parse(file_name, encoding);
-        spdlog::info("Parsing done.");
+        m_logger->info("Parsing done.");
         spdlog::shutdown();
     }
 
@@ -134,7 +131,7 @@ class A2LParser {
 
             if (token->getType() == ANTLRToken::_EOF) {
                 if (std::size(m_kw_stack) > 1) {
-                    spdlog::error("Premature end of file!!!");
+                    m_logger->error("Premature end of file!!!");
                 }
                 break;
             }
@@ -148,9 +145,9 @@ class A2LParser {
                 //
                 // TODO: Addressmapper
                 auto kwt = kw_tos();
-                spdlog::error("Invalid token : {}", token->toString());
+                m_logger->error("Invalid token : {}", token->toString());
                 if ((token->getText() == "IF_DATA") && (kwt.m_name == "ROOT")) {
-                    spdlog::error("No top-level PROJECT element. This is probably an include file?");
+                    m_logger->error("No top-level PROJECT element. This is probably an include file?");
                 }
                 break;
             }
@@ -180,7 +177,7 @@ class A2LParser {
                 }
                 if (m_asam_version.is_valid() && (m_asam_version.major() == 1)) {
                     if (m_asam_version.minor() <= 5) {
-                        spdlog::warn("ASAP version {}.{} may only parsed with errors.", m_asam_version.major(), m_asam_version.minor());
+                        m_logger->warn("ASAP version {}.{} may only parsed with errors.", m_asam_version.major(), m_asam_version.minor());
                     }
                 }
             }
@@ -234,10 +231,10 @@ class A2LParser {
                     ((token_type() == A2LTokenType::END) && (parameter.is_multiple() == false))) {
                     // Not all parameters are present.
 
-                    spdlog::error("{} is missing one or more required parameters: ", kw_tos().m_name);
+                    m_logger->error("{} is missing one or more required parameters: ", kw_tos().m_name);
                     for (std::size_t idx = param_count; idx < std::size(kw_tos().m_parameters); ++idx) {
                         auto p = kw_tos().m_parameters[idx];
-                        spdlog::error("\t{}", p.get_name());
+                        m_logger->error("\t{}", p.get_name());
                         switch (p.get_type()) {
                             case PredefinedType::Int:
                             case PredefinedType::Uint:
@@ -268,7 +265,7 @@ class A2LParser {
                         tuple_parser.feed(token);
                         if (tuple_parser.get_state() == ParameterTupleParser::StateType::FINISHED) {
                             if (!std::holds_alternative<std::string>(parameter_list[0])) {
-                                spdlog::error("Invalid tuple.");
+                                m_logger->error("Invalid tuple.");
                                 break;
                             }
                             m_tables.push_back({ value_tos().get_name(), std::get<std::string>(parameter_list[0]),
@@ -301,7 +298,7 @@ class A2LParser {
 
                     const auto valid = validate(parameter, token, value);
                     if (!valid) {
-                       spdlog::error("Invalid param: {} token: {}", parameter.get_name(), token->toString());
+                       m_logger->error("Invalid param: {} token: {}", parameter.get_name(), token->toString());
                     }
 
                     if (parameter.is_multiple() == true) {
@@ -341,6 +338,7 @@ class A2LParser {
    private:
 
     std::optional<preprocessor_result_t> m_prepro_result;
+	std::shared_ptr<spdlog::logger>      m_logger;
     std::unique_ptr<IfDataReader>        m_idr;
     std::string                          m_encoding;
     std::unique_ptr<TokenReader>         m_reader;
