@@ -3,7 +3,6 @@
     #define __ASAM_TYPES_HPP
 
 using toke_type = std::size_t;
-// using AsamVariantType = std::variant<std::string, unsigned long long, signed long long,long double>;
 
 enum class PredefinedType : std::uint16_t {
     Int        = 1,

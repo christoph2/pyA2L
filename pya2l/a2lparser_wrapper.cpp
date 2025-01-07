@@ -29,23 +29,24 @@ inline auto unicode_decode(std::string_view value, const char * encoding) -> py:
 auto parse(const std::string& file_name, const std::string& encoding) -> std::tuple<std::size_t, const ValueContainer, const std::vector<A2LParser::value_table_t>> {
 	Preprocessor p{ "INFO" };
 	std::vector<A2LParser::value_table_t> converted_tables{};
+    auto logger = create_logger("a2l");
 
     std::chrono::steady_clock::time_point start1 = std::chrono::steady_clock::now();
     const auto& res                   = p.process(file_name, encoding);
     const auto& [fns, linemap, ifdr] = res;
     p.finalize();
     std::chrono::steady_clock::time_point stop1 = std::chrono::steady_clock::now();
-    spdlog::info("Elapsed Time: {}[s]", (std::chrono::duration_cast<std::chrono::milliseconds>(stop1 - start1).count()) / 1000.0);
+    logger->info("Elapsed Time: {}[s]", (std::chrono::duration_cast<std::chrono::milliseconds>(stop1 - start1).count()) / 1000.0);
 
     std::chrono::steady_clock::time_point start2 = std::chrono::steady_clock::now();
-	spdlog::info("Start parsing...");
+	logger->info("Start parsing...");
     const auto&        parser = A2LParser(res, fns.a2l, encoding);
-	spdlog::info("after parsing...");
+	logger->info("after parsing...");
     auto counter = parser.get_keyword_counter();
     const auto& values = parser.get_values();
     std::chrono::steady_clock::time_point stop2 = std::chrono::steady_clock::now();
-    spdlog::info("Elapsed Time: {}[s]", (std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - start2).count()) / 1000.0);
-    spdlog::info("Number of keywords: {}", counter);
+    logger->info("Elapsed Time: {}[s]", (std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - start2).count()) / 1000.0);
+    logger->info("Number of keywords: {}", counter);
 	const auto& tables = parser.get_tables();
 	for (const auto&[tp, name, rows]: tables) {
 		const auto& tpt = unicode_decode(tp, encoding.c_str());

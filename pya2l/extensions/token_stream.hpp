@@ -13,6 +13,7 @@
     #include "exceptions.hpp"
     #include "tempfile.hpp"
     #include "tokenizer.hpp"
+
     #if defined(_WIN32)
         #pragma warning(disable: 4251 4273)
     #endif
@@ -241,26 +242,11 @@ class TokenFactory /*: public antlr4::TokenFactory<ANTLRToken>*/ {
     }
 };
 
-class TokenSource {
-   public:
-
-    TokenSource() {
-        m_token_factory = TokenFactory();
-    }
-
-    const TokenFactory &getFactory() const noexcept {
-        return m_token_factory;
-    }
-
-   private:
-
-    TokenFactory m_token_factory;
-};
 
 class TokenReader {
    public:
 
-    TokenReader(std::string_view fname) : m_file_name(fname), _p(0), _numMarkers{}, _currentTokenIndex{ 0 } {
+    TokenReader(std::string_view fname) : m_file_name(fname), _p(0), m_numMarkers{}, m_currentTokenIndex{ 0 } {
         open();
         fill(1);
     }
@@ -279,7 +265,7 @@ class TokenReader {
 
     ANTLRToken *LT(std::int64_t i) {
         if (i == -1) {
-            return &_lastToken;
+            return &m_lastToken;
         }
 
         sync(i);
@@ -307,75 +293,71 @@ class TokenReader {
         }
 
         // buf always has at least tokens[p==0] in this method due to ctor
-        _lastToken = _tokens[_p];  // track last token for LT(-1)
+        m_lastToken = _tokens[_p];  // track last token for LT(-1)
 
         // if we're at last token and no markers, opportunity to flush buffer
-        if (_p == _tokens.size() - 1 && _numMarkers == 0) {
+        if (_p == _tokens.size() - 1 && m_numMarkers == 0) {
             _tokens.clear();
             _p                    = 0;
-            _lastTokenBufferStart = _lastToken;
+            m_lastTokenBufferStart = m_lastToken;
         } else {
             ++_p;
         }
 
-        ++_currentTokenIndex;
+        ++m_currentTokenIndex;
         sync(1);
     }
 
     std::size_t mark() noexcept {
-        if (_numMarkers == 0) {
-            _lastTokenBufferStart = _lastToken;
+        if (m_numMarkers == 0) {
+            m_lastTokenBufferStart = m_lastToken;
         }
 
-        int mark = -_numMarkers - 1;
-        _numMarkers++;
+        int mark = -m_numMarkers - 1;
+        m_numMarkers++;
         return mark;
     }
 
     void release(std::size_t marker) {
-        if (const std::size_t expectedMark = -_numMarkers; marker != expectedMark) {
+        if (const std::size_t expectedMark = -m_numMarkers; marker != expectedMark) {
             throw IllegalStateException("release() called with an invalid marker.");
         }
 
-        _numMarkers--;
-        if (_numMarkers == 0) {  // can we release buffer?
+        m_numMarkers--;
+        if (m_numMarkers == 0) {  // can we release buffer?
             if (_p > 0) {
                 // Copy tokens[p]..tokens[n-1] to tokens[0]..tokens[(n-1)-p], reset ptrs
                 // p is last valid token; move nothing if p==n as we have no valid char
                 _tokens.erase(_tokens.begin(), _tokens.begin() + _p);
                 _p = 0;
             }
-            _lastTokenBufferStart = _lastToken;
+            m_lastTokenBufferStart = m_lastToken;
         }
     }
 
     std::size_t index() const noexcept {
-        return _currentTokenIndex;
+        return m_currentTokenIndex;
     }
 
     std::size_t getBufferStartIndex() const noexcept {
-        return _currentTokenIndex - _p;
+        return m_currentTokenIndex - _p;
     }
 
-    [[noreturn]] std::size_t size() const {
+    std::size_t size() const {
         throw UnsupportedOperationException("Size of stream is not known.");
     }
 
-    [[noreturn]] ANTLRToken *get(size_t index) const {
+    ANTLRToken *get(size_t index) const {
         throw UnsupportedOperationException("get() operation not supported.");
     }
 
-    [[noreturn]] TokenSource *getTokenSource() const {
-        throw UnsupportedOperationException("getTokenSource() operation not supported.");
-    }
-
     void seek(std::size_t index) {
-        if (index == _currentTokenIndex) {
+        if (index == m_currentTokenIndex) {
             return;
         }
 
-        if (index > _currentTokenIndex) {
-            sync(std::size_t(index - _currentTokenIndex));
+        if (index > m_currentTokenIndex) {
+            sync(std::size_t(index - m_currentTokenIndex));
             index = std::min(index, getBufferStartIndex() + _tokens.size() - 1);
         }
 
@@ -393,11 +375,11 @@ class TokenReader {
         }
 
         _p                 = i;
-        _currentTokenIndex = index;
+        m_currentTokenIndex = index;
         if (_p == 0) {
-            _lastToken = _lastTokenBufferStart;
+            m_lastToken = m_lastTokenBufferStart;
         } else {
-            _lastToken = _tokens[_p - 1];
+            m_lastToken = _tokens[_p - 1];
         }
     }
 
@@ -460,7 +442,7 @@ class TokenReader {
             token_type = ANTLRToken::_EOF;
         }
 
-        return ANTLRToken(_currentTokenIndex, token_type, start_line, start_col, end_line, end_col, data);
+        return ANTLRToken(m_currentTokenIndex, token_type, start_line, start_col, end_line, end_col, data);
     }
 
     std::size_t read_int() const {
@@ -485,12 +467,10 @@ class TokenReader {
     std::string             m_file_name;
     std::FILE              *m_file{ nullptr };
     size_t                  _p;
-    int                     _numMarkers;
-    ANTLRToken              _lastToken;
-    ANTLRToken              _lastTokenBufferStart;
-    size_t                  _currentTokenIndex;
-
-    TokenSource m_source;
+    int                     m_numMarkers;
+    ANTLRToken              m_lastToken;
+    ANTLRToken              m_lastTokenBufferStart;
+    size_t                  m_currentTokenIndex;
 };
 
 #endif  // __TOKEN_STREAM_HPP

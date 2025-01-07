@@ -6,28 +6,6 @@
 
 #include "klasses.hpp"
 
-struct TypeRegistry {
-    ~TypeRegistry() {
-        for (auto &elem : m_registry) {
-            delete elem;
-        }
-    }
-
-    void add(Type *entry) {
-        m_registry.push_back(entry);
-    }
-
-    std::vector<Type *> m_registry{};
-};
-
-static TypeRegistry type_registry;
-
-template<typename Ty>
-Type *make_type(const Ty &value) {
-    auto result = new Type(value);
-    type_registry.add(result);
-    return result;
-}
 
 ////// utils ///////////////
 
@@ -127,7 +105,7 @@ std::any AmlVisitor::visitType_name(amlParser::Type_nameContext *ctx) {
     const auto  ctx_en = ctx->en;
 
     if (ctx_pr) {
-        auto pdt = std::any_cast<AMLPredefinedType>(visit(ctx_pr));
+        auto pdt = std::any_cast<AMLPredefinedTypeEnum>(visit(ctx_pr));
         return make_type(pdt);
     }
     if (ctx_st) {

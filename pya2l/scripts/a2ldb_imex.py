@@ -29,6 +29,7 @@ import pathlib
 import sys
 
 from pya2l import DB
+from pya2l.version import __version__
 
 import os
 
@@ -76,10 +77,18 @@ def main():
         type=str,
         default="info",
     )
+    parser.add_argument(
+        "-V",
+        help="Print pya2ldb version information and exit.",
+        action="store_true",
+        dest="version",
+    )
     # parser.add_argument("-f", "--force-overwrite", help = "Force overwrite of existing file", default = False, action = "store_true")
 
     args = parser.parse_args()
-    # print(args)
+    if args.version:
+        print(f"pya2ldb version: {__version__}")
+        sys.exit(1)
     if not (args.ifn or args.efn):
         print("Either -i or -e option is required.")
         sys.exit(2)
