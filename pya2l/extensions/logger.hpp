@@ -1,9 +1,7 @@
 #if !defined(__LOGGER_HPP)
 #define __LOGGER_HPP
 
-#if !defined(__APPLE__)
-    #define SPDLOG_USE_STD_FORMAT   (1)
-#else
+#if defined(__APPLE__)
     #include <cstdio>
     #if !defined(EOF)
         #define EOF (-1)
