@@ -5,7 +5,7 @@ project(pya2l_extensions LANGUAGES C CXX)
 cmake_policy(SET CMP0135 NEW)
 cmake_policy(SET CMP0094 NEW)
 
-find_package(Python3 COMPONENTS Interpreter Development)
+find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
 find_package(pybind11 REQUIRED)
 
 
