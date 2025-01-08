@@ -79,7 +79,9 @@ class A2LParser {
         m_prepro_result(prepro_result), m_keyword_counter(0), m_table(PARSER_TABLE), m_root("root"), m_finalized(false) {
         kw_push(m_table);
         m_value_stack.push(&m_root);
-//        m_idr         = std::make_unique<IfDataReader>(std::get<2>(prepro_result.value()));
+        if (prepro_result) {
+            m_idr = std::make_unique<IfDataReader>(std::get<2>(prepro_result.value()));
+        }
         m_table_count = 0;
 
         m_logger = create_logger("a2lparser");
@@ -156,7 +158,7 @@ class A2LParser {
                 if (m_prepro_result) {
                     if_data_section = m_idr->get({ token->getLine(), token->column() + 1 });
                     if (if_data_section) {
-                    }
+                   }
                 }
             }
             m_reader->consume();

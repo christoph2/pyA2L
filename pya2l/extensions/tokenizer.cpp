@@ -156,7 +156,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
     std::size_t                start_column      = 1;
     bool                       string_class      = false;
     bool                       multi_line_string = false;
-    auto logger = create_logger("preprocessor");
+    auto logger = create_logger("tokenizer");
 
     const auto get_char_class = [](char ch) noexcept {
         return is_space(ch) ? CharClass::WHITESPACE : CharClass::REGULAR;
