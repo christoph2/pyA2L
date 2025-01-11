@@ -20,14 +20,14 @@ void dumps(std::stringstream& ss, std::shared_ptr<Type> tp_);
 // AMLPredefinedType
 inline void dumps(std::stringstream& ss, const AMLPredefinedType& pdt) {
     ss << to_binary<std::string>("PD");
-    auto value = static_cast<std::uint8_t>(pdt.get_pdt());	
+    auto value = static_cast<std::uint8_t>(pdt.get_pdt());
     ss << to_binary(value);
 	const auto& arr_spec = pdt.get_array_spec();
 	const std::size_t array_size = std::size(arr_spec);
 	ss << to_binary(array_size);
 	for (std::uint32_t arr : arr_spec) {
 		ss << to_binary<std::uint32_t>(arr);
-	}	
+	}
 }
 
 // Referrer.
@@ -58,27 +58,24 @@ inline void dumps(std::stringstream& ss, std::shared_ptr<BlockDefinition> block)
 inline void dumps(std::stringstream& ss, const Member& mem) {
     auto tp = mem.get_type();
     if (mem.is_empty()) {
-        std::cout << "mem-e\n";
         ss << false_value();
         return;
     }
     ss << true_value();
     if (tp != nullptr) {
         ss << to_binary<std::string>("T");
-        
         if (tp->get_type().valueless_by_exception() == true) {
-            std::cout << "sh\n";
         } else {
             dumps(ss, tp);
-        }        
+        }
     }
-    else {       
+    else {
         const auto blk = mem.get_block();
         if (blk) {
             dumps(ss, blk);
         } else {
-            std::cout << "sb\n";
-        } 
+            // FIX-ME!
+        }
     }
 }
 
@@ -183,15 +180,13 @@ inline void dumps(std::stringstream& ss, const StructOrReferrer& sr) {
 			const auto mem = sm.get_member();
             if (mem) {
                 if (mem->is_empty()) {
-                    std::cout << "empty\n";
                     ss << false_value();
                 } else {
                     ss << true_value();
                     dumps(ss, *mem);
-                }				
+                }
 			} else {
-			    std::cout << "Signal NULL\n";
-                ss << null_pointer();               
+                ss << null_pointer();
 			}
         }
     } else if (std::holds_alternative<Referrer>(sr)) {
@@ -233,7 +228,7 @@ inline void dumps(std::stringstream& ss, std::shared_ptr<Type> tp_) {
         [&ss, &tp](auto&& arg) {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, std::monostate>) {
-                std::cout << "std::monostate!? " << '\n';
+                // std::cout << "std::monostate!? " << '\n';
             } else if constexpr (std::is_same_v<T, AMLPredefinedType>) {
                 dumps(ss, arg);
             } else if constexpr (std::is_same_v<T, EnumerationOrReferrer>) {
@@ -252,7 +247,7 @@ inline void dumps(std::stringstream& ss, std::shared_ptr<Type> tp_) {
 
 // Typedefinition
 inline void dumps(std::stringstream& ss, std::shared_ptr<TypeDefinition> type_def) {
-    auto tp = type_def->get_type();   
+    auto tp = type_def->get_type();
     dumps(ss, tp);
 }
 

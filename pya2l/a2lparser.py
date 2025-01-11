@@ -351,7 +351,11 @@ class A2LParser:
         self.db = model.A2LDatabase(str(db_fn), debug=self.debug)
         self.logger.info(f"Importing {a2l_fn!r} [{encoding}] ==> DB {db_fn!r}.")
 
-        keyword_counter, values, tables = ext.parse(str(a2l_fn), encoding, loglevel.upper())
+        keyword_counter, values, tables, aml_data = ext.parse(str(a2l_fn), encoding, loglevel.upper())
+        aml_section = model.AMLSection()
+        aml_section.text = aml_data.text
+        aml_section.parsed = aml_data.parsed
+        self.db.session.add(aml_section)
         self.counter = 0
         progress_columns = (
             SpinnerColumn(style="white"),
