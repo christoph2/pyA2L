@@ -234,6 +234,10 @@ class TokenFactory /*: public antlr4::TokenFactory<ANTLRToken>*/ {
         std::string source, std::size_t type, const std::string &text, std::size_t channel, std::size_t start, std::size_t stop,
         std::size_t line, std::size_t column
     ) noexcept {
+		PP_UNREFERENCED_PARAMETER(source);
+		PP_UNREFERENCED_PARAMETER(channel);
+		PP_UNREFERENCED_PARAMETER(start);
+		PP_UNREFERENCED_PARAMETER(stop);
         return std::make_unique<ANTLRToken>(ANTLRToken(0, type, line, column, line, column, text));
     }
 
@@ -348,6 +352,7 @@ class TokenReader {
     }
 
     ANTLRToken *get(size_t index) const {
+		PP_UNREFERENCED_PARAMETER(index);
         throw UnsupportedOperationException("get() operation not supported.");
     }
 

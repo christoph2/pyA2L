@@ -75,7 +75,7 @@ def get_py_config() -> dict:
             elif uname.system == "Linux":
                 full_path = [Path(dir_name) / arch / library, Path(dir_name) / library]
             else:
-                print("PF?", uname.system)
+                pass
             for fp in full_path:
                 print(f"Trying {fp!r}")
                 if fp.exists():
@@ -126,8 +126,6 @@ def get_env_bool(name: str, default: int = 0) -> bool:
 
 
 def build_extension(debug: bool = False, use_temp_dir=False) -> None:
-    print("build_ext::build_extension()")
-
     use_temp_dir = use_temp_dir or get_env_bool("BUILD_TEMP")
     debug = debug or get_env_bool("BUILD_DEBUG")
 
@@ -159,7 +157,6 @@ def build_extension(debug: bool = False, use_temp_dir=False) -> None:
         build_temp = Path(TemporaryDirectory(suffix=".build-temp").name) / "extension_it_in"
     else:
         build_temp = Path(".")
-    # print("cwd:", os.getcwd(), "build-dir:", build_temp, "top:", str(TOP_DIR))
     if not build_temp.exists():
         build_temp.mkdir(parents=True)
 
