@@ -178,4 +178,4 @@ def build_extension(debug: bool = False, use_temp_dir=False) -> None:
 if __name__ == "__main__":
     includes = subprocess.getoutput("pybind11-config --cmakedir")  # nosec
     os.environ["pybind11_DIR"] = includes
-    build_extension(use_temp_dir=True)
+    build_extension(use_temp_dir=False)
