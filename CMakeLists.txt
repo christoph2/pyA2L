@@ -80,15 +80,12 @@ message("Compiling Cpp with: " ${CMAKE_CXX_COMPILER_ID})
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/pya2l/extensions)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/pya2l/extensions ${PROJECT_SOURCE_DIR}/pya2l/aml)
 
-pybind11_add_module(a2lparser_ext pya2l/a2lparser_wrapper.cpp pya2l/extensions/exceptions.cpp pya2l/extensions/tokenizer.cpp)
-pybind11_add_module(amlparser_ext pya2l/amlparser_wrapper.cpp ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/marshal.cpp	${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/parser.cpp)
+pybind11_add_module(a2lparser_ext ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/a2lparser_wrapper.cpp ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/extensions/exceptions.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/pya2l/extensions/tokenizer.cpp ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/marshal.cpp	${CMAKE_CURRENT_SOURCE_DIR}/pya2l/aml/parser.cpp)
 
 target_compile_options(a2lparser_ext PUBLIC "-DEXTENSION_NAME=a2lparser_ext" PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
-target_compile_options(amlparser_ext PUBLIC "-DEXTENSION_NAME=amlparser_ext" PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
-target_include_directories(amlparser_ext PUBLIC ${PROJECT_SOURCE_DIR}/pya2l/aml)
-
 
 set(LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pya2l")
 
@@ -100,4 +97,3 @@ ELSEIF (CMAKE_C_COMPILER_ID MATCHES "MSVC")
 ENDIF()
 
 install(TARGETS a2lparser_ext LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
-install(TARGETS amlparser_ext LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)

@@ -10,7 +10,6 @@
 #include <sstream>
 
 #include "unmarshal.hpp"
-//#include "marshal.hpp"
 //#include "ifdata_lexer.hpp"
 
 namespace py = pybind11;
@@ -18,14 +17,11 @@ namespace py = pybind11;
 std::string parse(const std::string& aml_stuff);
 
 
-//#if 0
 Node unmarshal(const py::bytes& data) {
 	std::stringstream inbuf{data};
     auto unm    = Unmarshaller(inbuf);
     return unm.run();
 }
-//#endif
-
 
 inline auto unicode_decode(std::string_view value, const char * encoding) -> py::str {
 	py::handle py_s = PyUnicode_Decode(value.data(), value.length(), encoding, "strict");
@@ -36,57 +32,11 @@ inline auto unicode_decode(std::string_view value, const char * encoding) -> py:
 }
 
 PYBIND11_MODULE(amlparser_ext, m) {
-    m.def("parse_aml", [](const std::string& aml_text) { 
-		return py::bytes(parse(aml_text)); 
+    m.def("parse_aml", [](const std::string& aml_text) {
+		return py::bytes(parse(aml_text));
 	}, py::return_value_policy::move);
 	m.def("unmarshal", &unmarshal, py::return_value_policy::move);
 	//m.def("ifdata_lexer", &ifdata_lexer, py::return_value_policy::move);
-	
-#if 0	
-	py::class_<Token>(m, "Token")
-		.def(py::init<const TokenType&, const TokenDataType&>())
-		.def("__repr__", [](const Token& self) {
-			std::stringstream ss;
-			ss << "Token(type=";
-			if (self.type == TokenType::NONE) {
-				ss << "NONE";
-			}
-			else if (self.type == TokenType::IDENT) {
-				ss << "IDENT";
-			}
-			else if (self.type == TokenType::FLOAT) {
-				ss << "FLOAT";
-			}
-			else if (self.type == TokenType::INT) {
-				ss << "INT";
-			}
-			else if (self.type == TokenType::COMMENT) {
-				ss << "COMMENT";
-			}
-			else if (self.type == TokenType::STRING) {
-				ss << "STRING";
-			}
-			else if (self.type == TokenType::BEGIN) {
-				ss << "BEGIN";
-			}
-			else if (self.type == TokenType::END) {
-				ss << "END";
-			}			
-			if (self.value) {
-				ss  << ", value=";
-				if (std::holds_alternative<std::int64_t>(*self.value)) {
-					ss << std::to_string(std::get<std::int64_t>(*self.value));
-				} else if (std::holds_alternative<long double>(*self.value)) {
-					ss << std::to_string(std::get<long double>(*self.value));
-				} else if (std::holds_alternative<std::string>(*self.value)) {
-					ss << "'" << std::get<std::string>(*self.value) << "'";
-				}
-			}
-			ss << ")";
-			return ss.str();		
-		})
-	;
-#endif
 
 	py::class_<Node>(m, "Node")
 		.def(py::init<>())
@@ -103,27 +53,16 @@ PYBIND11_MODULE(amlparser_ext, m) {
 		.def_property_readonly("multiple", &Node::is_multiple)
 		.def_property_readonly("type", &Node::get_type)
 		.def_property_readonly("members", &Node::get_members)
-		.def_property_readonly("tagged_struct_members", &Node::get_tagged_struct_members)		
+		.def_property_readonly("tagged_struct_members", &Node::get_tagged_struct_members)
 	;
-	
+
 	py::enum_<Node::NodeType>(m, "NodeType")
 		.value("TERMINAL", Node::NodeType::TERMINAL)
 		.value("MAP", Node::NodeType::MAP)
 		.value("AGGR", Node::NodeType::AGGR)
 		.value("NONE", Node::NodeType::NONE)
 	;
-#if 0	
-	py::enum_<TokenType>(m, "TokenType")
-		.value("NONE", TokenType::NONE)
-		.value("IDENT", TokenType::IDENT)
-		.value("FLOAT", TokenType::FLOAT)
-		.value("INT", TokenType::INT)
-		.value("COMMENT", TokenType::COMMENT)
-		.value("STRING", TokenType::STRING)
-		.value("BEGIN", TokenType::BEGIN)
-		.value("END", TokenType::END)	
-	;
-#endif
+
 	py::enum_<Node::AmlType>(m, "AmlType")
 		.value("NONE", Node::AmlType::NONE)
 		.value("TYPE", Node::AmlType::TYPE)
@@ -144,6 +83,6 @@ PYBIND11_MODULE(amlparser_ext, m) {
 		.value("TAGGED_STRUCT_DEFINITION", Node::AmlType::TAGGED_STRUCT_DEFINITION)
 		.value("TAGGED_STRUCT_MEMBER", Node::AmlType::TAGGED_STRUCT_MEMBER)
 		.value("TAGGED_UNION", Node::AmlType::TAGGED_UNION)
-		.value("TAGGED_UNION_MEMBER", Node::AmlType::TAGGED_UNION_MEMBER)		
+		.value("TAGGED_UNION_MEMBER", Node::AmlType::TAGGED_UNION_MEMBER)
 	;
 }

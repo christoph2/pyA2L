@@ -75,34 +75,20 @@ class Preprocessor {
     const std::string AML_TMP    = "AML.tmp";
     const std::string IFDATA_TMP = "IFDATA.tmp";
 
-    Preprocessor(const std::string& loglevel) :
-        m_loglevel(loglevel),
+    Preprocessor(spdlog::level::level_enum log_level) :
         tmp_a2l(A2L_TMP, true),
         tmp_aml(AML_TMP),
         tmp_ifdata(IFDATA_TMP, true),
         a2l_token_writer(tmp_a2l),
         ifdata_builder{ tmp_ifdata.handle() } {
-            //logger.setName("pya2l.Preprocessor");
             get_include_paths_from_env();
-            // tmp_a2l.to_stdout();
             m_filenames.a2l    = tmp_a2l.abs_path();
             m_filenames.aml    = tmp_aml.abs_path();
             m_filenames.ifdata = tmp_ifdata.abs_path();
-
-            m_logger = create_logger("preprocessor");
-#if 0
-            m_logger = spdlog::get("preprocessor");
-            if (!m_logger) {
-                m_logger = spdlog::stdout_color_mt("preprocessor");
-            }
-            auto level = m_logger->level();         
-            if (level != spdlog::level::info) {
-                m_logger->set_level(spdlog::level::info);
-            }           
-#endif
+            m_logger = create_logger("preprocessor", log_level);
     }
 
-    ~Preprocessor() {      
+    ~Preprocessor() {
         tmp_a2l.close();
         tmp_aml.close();
         tmp_ifdata.close();
@@ -369,7 +355,6 @@ class Preprocessor {
 
    private:
 
-    std::string              m_loglevel;
     std::shared_ptr<spdlog::logger>    m_logger;
     TempFile                 tmp_a2l;
     TempFile                 tmp_aml;

@@ -5,16 +5,35 @@
 #include <sstream>
 
 #include "a2lparser.hpp"
+#include "parser.hpp"
 #include "preprocessor.hpp"
 
 namespace py = pybind11;
 
 std::string ValueContainer::s_encoding{ "ascii" };
 
+// AmlData parse_aml(const std::string& aml_file_name);
 
-void set_loglevel(const std::string& level) {
-    //logger.setLevel(level);
-	std::cout << "LOG-LEVEL request: " << level << std::endl;
+auto convert_loglevel(const std::string& level) -> spdlog::level::level_enum {
+    spdlog::level::level_enum result = spdlog::level::level_enum::warn;
+
+	if (level == "CRITICAL") {
+		result = spdlog::level::critical;
+	} else if (level == "FATAL") {
+		result = spdlog::level::critical;
+	} else if (level == "ERROR") {
+		result = spdlog::level::err;
+	} else if (level == "WARN") {
+		result = spdlog::level::warn;
+	} else if (level == "WARNING") {
+		result = spdlog::level::warn;
+	} else if (level == "INFO") {
+		result = spdlog::level::info;
+	} else if (level == "DEBUG") {
+		result = spdlog::level::debug;
+	}
+
+	return result;
 }
 
 
@@ -26,9 +45,9 @@ inline auto unicode_decode(std::string_view value, const char * encoding) -> py:
     return py::reinterpret_steal<py::str>(py_s);
 }
 
-auto parse(const std::string& file_name, const std::string& encoding) -> std::tuple<std::size_t, const ValueContainer, const std::vector<A2LParser::value_table_t>> {
-	auto logger = create_logger("a2l");
-	Preprocessor p{ "INFO" };
+auto parse(const std::string& file_name, const std::string& encoding, const std::string& log_level) -> std::tuple<std::size_t, const ValueContainer, const std::vector<A2LParser::value_table_t>> {
+	auto logger = create_logger("a2l", convert_loglevel(log_level));
+	Preprocessor p{ convert_loglevel(log_level) };
 	std::vector<A2LParser::value_table_t> converted_tables{};
 
     std::chrono::steady_clock::time_point start1 = std::chrono::steady_clock::now();
@@ -40,7 +59,7 @@ auto parse(const std::string& file_name, const std::string& encoding) -> std::tu
 
     std::chrono::steady_clock::time_point start2 = std::chrono::steady_clock::now();
 	logger->info("Start parsing...");
-    const auto&        parser = A2LParser(res, fns.a2l, encoding);
+    const auto&        parser = A2LParser(res, fns.a2l, encoding, convert_loglevel(log_level));
     auto counter = parser.get_keyword_counter();
     const auto& values = parser.get_values();
     std::chrono::steady_clock::time_point stop2 = std::chrono::steady_clock::now();
@@ -64,7 +83,7 @@ auto parse(const std::string& file_name, const std::string& encoding) -> std::tu
 		}
 		converted_tables.emplace_back(tpt, namet, result);
 	}
-
+	auto aml_data = parse_aml(fns.aml);
     return {counter, values, converted_tables};
 }
 
@@ -76,7 +95,6 @@ struct Overload : Ts... {
 
 PYBIND11_MODULE(a2lparser_ext, m) {
     m.def("parse", &parse, py::return_value_policy::move);
-    m.def("set_loglevel", &set_loglevel);
 
     py::class_<ValueContainer>(m, "ValueContainer")
         .def(py::init<std::string_view>(), py::arg("name"))

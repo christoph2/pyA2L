@@ -148,22 +148,20 @@ skips = ["B307", "B404", "B605", "B607", "B603"]
 
 [tool.cibuildwheel]
 build-verbosity = 3
+#test-command = "pya2l {package}/tests"
 
 build = "cp3{8,9,10,11,12,13}-*"
-skip = ["*-manylinux_i686", "*-musllinux_x86_64", "*-musllinux_i686", "cp38-manylinux*", "cp39-manylinux*"]
+skip = ["*-manylinux_i686", "*-musllinux_x86_64", "*-musllinux_i686", "cp38-manylinux*"]
 build-frontend = "build"
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "universal2", "arm64"]
 
 [tool.cibuildwheel.windows]
-archs = ["AMD64"]
-
-[[tool.cibuildwheel.overrides]]
-select = "cp3?-*"
-manylinux-x86_64-image = "manylinux_2_35"
-manylinux-aarch64-image = "manylinux_2_35"
+archs = ["AMD64"]	# , "ARM64"
 
 [tool.cibuildwheel.linux]
+# archs = ["auto", "aarch64"]
 archs = ["x86_64", "aarch64"]
+# before-all = "yum install -y libffi openssl openssl-devel gcc libpython3-dev"
 manylinux-x86_64-image = "manylinux_2_28"

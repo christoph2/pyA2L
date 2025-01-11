@@ -74,19 +74,20 @@ class A2LParser {
     using value_table_t = std::tuple<std::string, std::string, std::vector<std::vector<AsamVariantType>>>;
 
     explicit A2LParser(
-        std::optional<preprocessor_result_t> prepro_result, const std::string& file_name, const std::string& encoding
+        std::optional<preprocessor_result_t> prepro_result, const std::string& file_name, const std::string& encoding,
+        spdlog::level::level_enum log_level
     ) :
         m_prepro_result(prepro_result), m_keyword_counter(0), m_table(PARSER_TABLE), m_root("root"), m_finalized(false) {
         kw_push(m_table);
         m_value_stack.push(&m_root);
         if (prepro_result) {
             m_idr = std::make_unique<IfDataReader>(std::get<2>(prepro_result.value()));
+            m_idr->open();
         }
         m_table_count = 0;
 
-        m_logger = create_logger("a2lparser");
+        m_logger = create_logger("a2lparser", log_level);
         parse(file_name, encoding);
-        m_logger->info("Parsing done.");
         spdlog::shutdown();
     }
 
@@ -100,6 +101,10 @@ class A2LParser {
         if (!m_finalized) {
             m_reader->close();
             m_finalized = true;
+
+            if (m_prepro_result) {
+                m_idr->close();
+            }
         }
     }
 
@@ -107,12 +112,10 @@ class A2LParser {
         ValueContainer::set_encoding(encoding);
         std::optional<std::string> if_data_section;
         m_reader = std::make_unique<TokenReader>(file_name);
-        if (m_prepro_result) {
-            auto idr = std::get<2>(m_prepro_result.value());
-            idr.open();
-        }
+
         while (true) {
             const auto token = m_reader->LT(1);
+            if_data_section  = std::nullopt;
 
             if (token_type() == A2LTokenType::BEGIN) {
                 m_reader->consume();
@@ -144,7 +147,7 @@ class A2LParser {
                 auto& vref = value_tos().add_keyword(ValueContainer(ttype.m_class_name));
                 m_value_stack.push(&vref);
             } else {
-                //
+
                 // TODO: Addressmapper
                 auto kwt = kw_tos();
                 m_logger->error("Invalid token : {}", token->toString());
@@ -168,8 +171,9 @@ class A2LParser {
             auto [p, m] = do_parameters();
             value_tos().set_parameters(std::move(p));
             value_tos().set_multiple_values(std::move(m));
-            value_tos().set_if_data(std::move(if_data_section));
-#if 0
+            if (if_data_section) {
+                value_tos().set_if_data(std::move(if_data_section));
+            }
             if (value_tos().get_name() == "Asap2Version") {
                 const auto& version_par_vec = value_tos().get_parameters();
                 if (std::size(version_par_vec) == 2) {
@@ -183,7 +187,6 @@ class A2LParser {
                     }
                 }
             }
-#endif
             if (kw_tos().m_block == false) {
                 kw_pop();
                 m_value_stack.pop();

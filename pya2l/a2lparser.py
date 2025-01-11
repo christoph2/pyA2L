@@ -332,9 +332,9 @@ class A2LParser:
         local: bool = False,
         remove_existing: bool = False,
         loglevel: str = "INFO",
+        progress_bar: bool = True,
     ):
-        self.silent = loglevel.upper() == "CRITICAL"
-        # ext.set_loglevel(loglevel.upper())
+        self.silent = not progress_bar
         a2l_fn, db_fn = path_components(in_memory, file_name, local)
         if not in_memory:
             if remove_existing:
@@ -351,7 +351,7 @@ class A2LParser:
         self.db = model.A2LDatabase(str(db_fn), debug=self.debug)
         self.logger.info(f"Importing {a2l_fn!r} [{encoding}] ==> DB {db_fn!r}.")
 
-        keyword_counter, values, tables = ext.parse(str(a2l_fn), encoding)
+        keyword_counter, values, tables = ext.parse(str(a2l_fn), encoding, loglevel.upper())
         self.counter = 0
         progress_columns = (
             SpinnerColumn(style="white"),

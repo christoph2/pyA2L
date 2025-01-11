@@ -192,12 +192,11 @@ class IfDataReader : public IfDataBase {
         }
 
         if (offset >= m_size) {
-            spdlog::error("file offset {} is out of range of file size {}", offset, m_size);
+            spdlog::get("a2lparser")->error("file offset {} is out of range of file size {}", offset, m_size);
             return std::nullopt;
         }
 
         ::fseek(m_file, offset, SEEK_SET);
-        // std::cout << "\t\tOK\n";
 
         auto length     = read_int();
         auto start_line = read_int();
@@ -209,7 +208,6 @@ class IfDataReader : public IfDataBase {
         auto end_col = read_int();
         // assert(std::get<3>(line) == end_col);
         auto ifdata = read_string(length);
-
         return ifdata;
     }
 
