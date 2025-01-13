@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pya2ldb"
-version = "0.14.1"
+version = "0.14.2"
 description = "A2L for Python"
 authors = ["Christoph Schueler <cpu12.gems@googlemail.com>"]
 license = "GPLv2"
