@@ -125,26 +125,21 @@ def get_env_bool(name: str, default: int = 0) -> bool:
     return get_env_int(name, default)
 
 
-def build_extension(debug: bool = False, use_temp_dir=False) -> None:
+def build_extension(debug: bool = False, use_temp_dir: bool = False) -> None:
     use_temp_dir = use_temp_dir or get_env_bool("BUILD_TEMP")
     debug = debug or get_env_bool("BUILD_DEBUG")
 
-    debug = int(os.environ.get("DEBUG", 0)) or debug
     cfg = "Debug" if debug else "Release"
+    py_cfg = get_py_config()
 
     cmake_args = [
+        f"-DPython3_EXECUTABLE={py_cfg['exe']}",
+        f"-DPython3_INCLUDE_DIR={py_cfg['include']}",
         f"-DCMAKE_BUILD_TYPE={cfg}",  # not used on MSVC, but no harm
     ]
-    if uname.system != "Windows":
-       py_cfg = get_py_config()
-       cmake_args.extend(
-           [
-               f"-DPython3_EXECUTABLE={py_cfg['exe']}",
-               f"-DPython3_INCLUDE_DIR={py_cfg['include']}",
-           ]
-       )
-       if py_cfg["libdir"]:
-           cmake_args.append(f"-DPython3_LIBRARY={str(Path(py_cfg['libdir']) / Path(py_cfg['library']))}")  # noqa: RUF010
+    if py_cfg["libdir"]:
+        cmake_args.append(f"-DPython3_LIBRARY={str(Path(py_cfg['libdir']) / Path(py_cfg['library']))}")
+
     build_args = ["--config Release", "--verbose"]
 
     if sys.platform.startswith("darwin"):
@@ -171,7 +166,7 @@ def build_extension(debug: bool = False, use_temp_dir=False) -> None:
     subprocess.run(["cmake", "--build", str(build_temp), *build_args], cwd=TOP_DIR, check=True)  # nosec
 
     banner("Step #3: Install")
-    subprocess.run(["cmake", "--install", "."], cwd=build_temp, check=True)  # nosec
+    # subprocess.run(["cmake", "--install", "."], cwd=build_temp, check=True)  # nosec
     subprocess.run(["cmake", "--install", build_temp], cwd=TOP_DIR, check=True)  # nosec
 
 
