@@ -174,29 +174,6 @@ using EnumerationOrReferrer = std::variant<std::monostate, Referrer, Enumeration
 
 class Type;
 
-struct TypeRegistry {
-    ~TypeRegistry() {
-        for (auto& elem : m_registry) {
-            delete elem;
-        }
-    }
-
-    void add(Type* entry) {
-        m_registry.push_back(entry);
-    }
-
-    std::vector<Type*> m_registry{};
-};
-
-static TypeRegistry type_registry;
-
-template<typename Ty>
-Type* make_type(const Ty& value) {
-    auto result = new Type(value);
-    type_registry.add(result);
-    return result;
-}
-
 class BlockDefinition {
 public:
 
