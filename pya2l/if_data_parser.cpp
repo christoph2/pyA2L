@@ -9,6 +9,9 @@
 
 using namespace antlr4;
 
+Node unmarshal(const std::stringstream& data);
+	
+
 Node load_grammar(const std::string& file_name) {
     std::ifstream aml_stream;
     aml_stream.open(file_name, std::ios_base::binary);

@@ -75,7 +75,7 @@ def get_py_config() -> dict:
             elif uname.system == "Linux":
                 full_path = [Path(dir_name) / arch / library, Path(dir_name) / library]
             else:
-                print("PF?", uname.system)
+                pass
             for fp in full_path:
                 print(f"Trying {fp!r}")
                 if fp.exists():
@@ -125,32 +125,22 @@ def get_env_bool(name: str, default: int = 0) -> bool:
     return get_env_int(name, default)
 
 
-def build_extension(debug: bool = False, use_temp_dir=False) -> None:
-    print("build_ext::build_extension()")
-
+def build_extension(debug: bool = False, use_temp_dir: bool = False) -> None:
     use_temp_dir = use_temp_dir or get_env_bool("BUILD_TEMP")
     debug = debug or get_env_bool("BUILD_DEBUG")
 
-    antlr4_tag = most_recent_tag("https://github.com/antlr/antlr4")
-    print("antlr4_tag", antlr4_tag)
-    os.environ["ANTLR4_TAG"] = antlr4_tag
-    debug = int(os.environ.get("DEBUG", 0)) or debug
     cfg = "Debug" if debug else "Release"
+    py_cfg = get_py_config()
 
     cmake_args = [
+        f"-DPython3_EXECUTABLE={py_cfg['exe']}",
+        f"-DPython3_INCLUDE_DIR={py_cfg['include']}",
         f"-DCMAKE_BUILD_TYPE={cfg}",  # not used on MSVC, but no harm
     ]
-    if uname.system != "Windows":
-        py_cfg = get_py_config()
-        cmake_args.extend(
-            [
-                f"-DPython3_EXECUTABLE={py_cfg['exe']}",
-                f"-DPython3_INCLUDE_DIR={py_cfg['include']}",
-            ]
-        )
-        if py_cfg["libdir"]:
-            cmake_args.append(f"-DPython3_LIBRARY={str(Path(py_cfg['libdir']) / Path(py_cfg['library']))}")  # noqa: RUF010
-    build_args = ["--config Release", "--verbose"]  # f"-DANTLR4_TAG={antlr4_tag}"
+    if py_cfg["libdir"]:
+        cmake_args.append(f"-DPython3_LIBRARY={str(Path(py_cfg['libdir']) / Path(py_cfg['library']))}")
+
+    build_args = ["--config Release", "--verbose"]
 
     if sys.platform.startswith("darwin"):
         # Cross-compile support for macOS - respect ARCHFLAGS if set
@@ -162,7 +152,6 @@ def build_extension(debug: bool = False, use_temp_dir=False) -> None:
         build_temp = Path(TemporaryDirectory(suffix=".build-temp").name) / "extension_it_in"
     else:
         build_temp = Path(".")
-    # print("cwd:", os.getcwd(), "build-dir:", build_temp, "top:", str(TOP_DIR))
     if not build_temp.exists():
         build_temp.mkdir(parents=True)
 
@@ -177,7 +166,7 @@ def build_extension(debug: bool = False, use_temp_dir=False) -> None:
     subprocess.run(["cmake", "--build", str(build_temp), *build_args], cwd=TOP_DIR, check=True)  # nosec
 
     banner("Step #3: Install")
-    subprocess.run(["cmake", "--install", "."], cwd=build_temp, check=True)  # nosec
+    # subprocess.run(["cmake", "--install", "."], cwd=build_temp, check=True)  # nosec
     subprocess.run(["cmake", "--install", build_temp], cwd=TOP_DIR, check=True)  # nosec
 
 

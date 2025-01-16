@@ -192,24 +192,23 @@ class IfDataReader : public IfDataBase {
         }
 
         if (offset >= m_size) {
-            spdlog::error("file offset {} is out of range of file size {}", offset, m_size);
+            spdlog::get("a2lparser")->error("file offset {} is out of range of file size {}", offset, m_size);
             return std::nullopt;
         }
 
         ::fseek(m_file, offset, SEEK_SET);
-        // std::cout << "\t\tOK\n";
-
         auto length     = read_int();
+#if (defined(CMAKE_BUILD_TYPE)) && (CMAKE_BUILD_TYPE == Debug)
         auto start_line = read_int();
-        // assert(std::get<0>(line) == start_line);
+        assert(std::get<0>(line) == start_line);
         auto start_col = read_int();
-        // assert(std::get<1>(line) == start_col);
+        assert(std::get<1>(line) == start_col);
         auto end_line = read_int();
-        // assert(std::get<2>(line) == end_line);
+        assert(std::get<2>(line) == end_line);
         auto end_col = read_int();
-        // assert(std::get<3>(line) == end_col);
+        assert(std::get<3>(line) == end_col);
+#endif
         auto ifdata = read_string(length);
-
         return ifdata;
     }
 

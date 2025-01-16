@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2022 by Christoph Schueler <github.com/Christoph2,
+   (C) 2022-2025 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -24,13 +22,11 @@ __copyright__ = """
 """
 
 import argparse
-from pathlib import Path
-import pathlib
 import sys
+from pathlib import Path
 
 from pya2l import DB
-
-import os
+from pya2l.version import __version__
 
 
 def main():
@@ -71,15 +67,34 @@ def main():
     parser.add_argument(
         "-l",
         help="Verbosity of log messages",
-        choices=["warn", "info", "error", "debug", "critical"],
+        choices=["warn", "info", "error", "debug", "critical", "WARN", "INFO", "ERROR", "DEBUG", "CRITICAL"],
         dest="loglevel",
         type=str,
         default="info",
     )
-    # parser.add_argument("-f", "--force-overwrite", help = "Force overwrite of existing file", default = False, action = "store_true")
+
+    #
+    parser.add_argument(
+        "-p",
+        help="Disable progress bar",
+        action="store_true",
+        dest="no_progress_bar",
+    )
+    #
+
+    parser.add_argument(
+        "-V",
+        help="Print pya2ldb version information and exit.",
+        action="store_true",
+        dest="version",
+    )
+    # parser.add_argument("-f", "--force-overwrite", help = "Force overwrite of existing file",
+    # default = False, action = "store_true")
 
     args = parser.parse_args()
-    # print(args)
+    if args.version:
+        print(f"pya2ldb version: {__version__}")
+        sys.exit(1)
     if not (args.ifn or args.efn):
         print("Either -i or -e option is required.")
         sys.exit(2)
@@ -91,7 +106,7 @@ def main():
         db.export_a2l(sys.stdout)
     else:
         ifn = Path(args.ifn)
-        db.import_a2l(ifn, encoding=args.encoding, loglevel=args.loglevel, local=args.local)
+        db.import_a2l(ifn, encoding=args.encoding, loglevel=args.loglevel, local=args.local, progress_bar=not args.no_progress_bar)
 
 
 if __name__ == "__main__":

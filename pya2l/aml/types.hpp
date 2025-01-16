@@ -4,20 +4,25 @@
 
     #include <map>
     #include <optional>
+    #include <set>
     #include <variant>
+	
 
 using string_opt_t = std::optional<std::string>;
 using numeric_t    = std::variant<std::monostate, std::int64_t, long double>;
 
-enum class AMLPredefinedType : std::uint8_t {
+enum class AMLPredefinedTypeEnum : std::uint8_t {
     CHAR   = 0,
     INT    = 1,
     LONG   = 2,
     UCHAR  = 3,
     UINT   = 4,
     ULONG  = 5,
-    DOUBLE = 6,
-    FLOAT  = 7,
+    INT64   = 6,
+    UINT64 = 7,
+    DOUBLE = 8,
+    FLOAT  = 9,
+    FLOAT16 = 10,
 };
 
 enum class ReferrerType : std::uint8_t {
@@ -35,18 +40,25 @@ enum class TypeType : std::uint8_t {
     TaggedUnionType  = 4,
 };
 
-const std::map<std::string, AMLPredefinedType> PredefinedTypesMap{
-    { "char",   AMLPredefinedType::CHAR   },
-    { "int",    AMLPredefinedType::INT    },
-    { "long",   AMLPredefinedType::LONG   },
-    { "uchar",  AMLPredefinedType::UCHAR  },
-    { "uint",   AMLPredefinedType::UINT   },
-    { "ulong",  AMLPredefinedType::ULONG  },
-    { "double", AMLPredefinedType::DOUBLE },
-    { "float",  AMLPredefinedType::FLOAT  },
+const std::map<std::string, AMLPredefinedTypeEnum> PredefinedTypesMap {
+    { "char",    AMLPredefinedTypeEnum::CHAR    },
+    { "int",     AMLPredefinedTypeEnum::INT     },
+    { "long",    AMLPredefinedTypeEnum::LONG    },
+    { "uchar",   AMLPredefinedTypeEnum::UCHAR   },
+    { "uint",    AMLPredefinedTypeEnum::UINT    },
+    { "ulong",   AMLPredefinedTypeEnum::ULONG   },	
+	{ "int64",   AMLPredefinedTypeEnum::INT64   },
+	{ "uint64",  AMLPredefinedTypeEnum::UINT64  },
+    { "double",  AMLPredefinedTypeEnum::DOUBLE  },
+    { "float",   AMLPredefinedTypeEnum::FLOAT   },
+	{ "float16", AMLPredefinedTypeEnum::FLOAT16 },
 };
 
-inline AMLPredefinedType createPredefinedType(const std::string& name) {
+const std::set<std::string> PredefinedTypesSet {
+    "char", "int", "long", "uchar", "uint", "ulong", "int64", "uint64",  "double", "float",  "float16"
+};
+
+inline AMLPredefinedTypeEnum createPredefinedType(const std::string& name) {
     return PredefinedTypesMap.at(name);
 }
 

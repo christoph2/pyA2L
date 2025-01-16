@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "a2lparser.hpp"
+#include "parser.hpp"
 #include "preprocessor.hpp"
 
 namespace py = pybind11;
@@ -12,9 +13,25 @@ namespace py = pybind11;
 std::string ValueContainer::s_encoding{ "ascii" };
 
 
-void set_loglevel(const std::string& level) {
-    //logger.setLevel(level);
-	std::cout << "LOG-LEVEL request: " << level << std::endl;
+auto convert_loglevel(const std::string& level) -> spdlog::level::level_enum {
+    spdlog::level::level_enum result = spdlog::level::level_enum::warn;
+
+	if (level == "CRITICAL") {
+		result = spdlog::level::critical;
+	} else if (level == "FATAL") {
+		result = spdlog::level::critical;
+	} else if (level == "ERROR") {
+		result = spdlog::level::err;
+	} else if (level == "WARN") {
+		result = spdlog::level::warn;
+	} else if (level == "WARNING") {
+		result = spdlog::level::warn;
+	} else if (level == "INFO") {
+		result = spdlog::level::info;
+	} else if (level == "DEBUG") {
+		result = spdlog::level::debug;
+	}
+	return result;
 }
 
 
@@ -26,26 +43,26 @@ inline auto unicode_decode(std::string_view value, const char * encoding) -> py:
     return py::reinterpret_steal<py::str>(py_s);
 }
 
-auto parse(const std::string& file_name, const std::string& encoding) -> std::tuple<std::size_t, const ValueContainer, const std::vector<A2LParser::value_table_t>> {
-	Preprocessor p{ "INFO" };
+auto parse(const std::string& file_name, const std::string& encoding, const std::string& log_level) -> std::tuple<std::size_t, const ValueContainer, const std::vector<A2LParser::value_table_t>, AmlData> {
+	auto logger = create_logger("a2l", convert_loglevel(log_level));
+	Preprocessor p{ convert_loglevel(log_level) };
 	std::vector<A2LParser::value_table_t> converted_tables{};
 
     std::chrono::steady_clock::time_point start1 = std::chrono::steady_clock::now();
-    const auto& res                   = p.process(file_name, encoding);
-    const auto& [fns, linemap, ifdr] = res;
+    const auto res                   = p.process(file_name, encoding);
+    const auto [fns, linemap, ifdr] = res;
     p.finalize();
     std::chrono::steady_clock::time_point stop1 = std::chrono::steady_clock::now();
-    spdlog::info("Elapsed Time: {}[s]", (std::chrono::duration_cast<std::chrono::milliseconds>(stop1 - start1).count()) / 1000.0);
+    logger->info("Elapsed Time: {}[s]", (std::chrono::duration_cast<std::chrono::milliseconds>(stop1 - start1).count()) / 1000.0);
 
     std::chrono::steady_clock::time_point start2 = std::chrono::steady_clock::now();
-	spdlog::info("Start parsing...");
-    const auto&        parser = A2LParser(res, fns.a2l, encoding);
-	spdlog::info("after parsing...");
+	logger->info("Start parsing...");
+    const auto&        parser = A2LParser(res, fns.a2l, encoding, convert_loglevel(log_level));
     auto counter = parser.get_keyword_counter();
     const auto& values = parser.get_values();
     std::chrono::steady_clock::time_point stop2 = std::chrono::steady_clock::now();
-    spdlog::info("Elapsed Time: {}[s]", (std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - start2).count()) / 1000.0);
-    spdlog::info("Number of keywords: {}", counter);
+    logger->info("Elapsed Time: {}[s]", (std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - start2).count()) / 1000.0);
+    logger->info("Number of keywords: {}", counter);
 	const auto& tables = parser.get_tables();
 	for (const auto&[tp, name, rows]: tables) {
 		const auto& tpt = unicode_decode(tp, encoding.c_str());
@@ -64,8 +81,8 @@ auto parse(const std::string& file_name, const std::string& encoding) -> std::tu
 		}
 		converted_tables.emplace_back(tpt, namet, result);
 	}
-
-    return {counter, values, converted_tables};
+	auto aml_data = parse_aml(fns.aml);
+    return {counter, values, converted_tables, aml_data};
 }
 
 template<typename... Ts>
@@ -76,7 +93,14 @@ struct Overload : Ts... {
 
 PYBIND11_MODULE(a2lparser_ext, m) {
     m.def("parse", &parse, py::return_value_policy::move);
-    m.def("set_loglevel", &set_loglevel);
+
+	py::class_<AmlData>(m, "AmlData")
+		.def(py::init<const std::string&, const std::string&>())
+		.def_property_readonly("text", &AmlData::get_text)
+		.def_property_readonly("parsed", [](const AmlData& self) {
+			return py::bytes(self.parsed);
+		})
+	;
 
     py::class_<ValueContainer>(m, "ValueContainer")
         .def(py::init<std::string_view>(), py::arg("name"))

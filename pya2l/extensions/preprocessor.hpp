@@ -49,8 +49,8 @@ namespace fs = std::filesystem;
     #include "token_stream.hpp"
     #include "tokenizer.hpp"
     #include "utils.hpp"
+    #include "logger.hpp"
 
-#include "spdlog/spdlog.h"
 
 struct Filenames {
     Filenames()                 = default;
@@ -75,28 +75,20 @@ class Preprocessor {
     const std::string AML_TMP    = "AML.tmp";
     const std::string IFDATA_TMP = "IFDATA.tmp";
 
-    Preprocessor(const std::string& loglevel) :
-        m_loglevel(loglevel),
+    Preprocessor(spdlog::level::level_enum log_level) :
         tmp_a2l(A2L_TMP, true),
         tmp_aml(AML_TMP),
         tmp_ifdata(IFDATA_TMP, true),
         a2l_token_writer(tmp_a2l),
         ifdata_builder{ tmp_ifdata.handle() } {
-            //logger.setName("pya2l.Preprocessor");
             get_include_paths_from_env();
-            // tmp_a2l.to_stdout();
             m_filenames.a2l    = tmp_a2l.abs_path();
             m_filenames.aml    = tmp_aml.abs_path();
             m_filenames.ifdata = tmp_ifdata.abs_path();
-
-            spdlog::set_level(spdlog::level::info);
-            spdlog::debug("This message should not be displayed!");
-            spdlog::set_level(spdlog::level::trace);
-            spdlog::debug("This message should be displayed..");
+            m_logger = create_logger("preprocessor", log_level);
     }
 
     ~Preprocessor() {
-        spdlog::shutdown();
         tmp_a2l.close();
         tmp_aml.close();
         tmp_ifdata.close();
@@ -110,6 +102,7 @@ class Preprocessor {
     }
 
     void finalize() {
+        spdlog::shutdown();
         tmp_a2l.close();
         tmp_aml.close();
         tmp_ifdata.close();
@@ -154,8 +147,7 @@ class Preprocessor {
         }
 
         if (file.is_open()) {
-            //logger.info("Preprocessing and tokenizing '" + filename + "'.");
-            spdlog::info("Preprocessing and tokenizing '{}'.", filename);
+            m_logger->info("Preprocessing and tokenizing '{}'.", filename);
             std::size_t end_line{ 0 };
 
             skip_bom(file);
@@ -246,8 +238,7 @@ class Preprocessor {
                             const auto length = (end_line - start_line_number);
                             update_line_map(abs_pth, line_offset, line_offset + length - 1, start_line_number, end_line - 1);
                             line_offset += length;
-                            //logger.info("Including '" + incl_file.value().string() + "'.");
-                            spdlog::info("Including '{}'.", incl_file.value().string());
+                            m_logger->info("Including '{}'.", incl_file.value().string());
                             _process_file(incl_file.value().string());
                         } else {
                             throw std::runtime_error(
@@ -364,7 +355,7 @@ class Preprocessor {
 
    private:
 
-    std::string              m_loglevel;
+    std::shared_ptr<spdlog::logger>    m_logger;
     TempFile                 tmp_a2l;
     TempFile                 tmp_aml;
     TempFile                 tmp_ifdata;

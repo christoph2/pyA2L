@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pya2ldb"
-version = "0.13.6"
+version = "0.14.3"
 description = "A2L for Python"
 authors = ["Christoph Schueler <cpu12.gems@googlemail.com>"]
 license = "GPLv2"
@@ -34,7 +34,7 @@ python = "^3.9"
 chardet = "^5.2.0"
 Mako = "^1.3.5"
 SQLAlchemy = "^2.0.30"
-numpy = "^2.1.3"
+numpy = ">=1.26.4,<2.1.3"
 scipy = "^1.13.1"
 rich = "^13.7.1"
 
@@ -148,11 +148,20 @@ skips = ["B307", "B404", "B605", "B607", "B603"]
 
 [tool.cibuildwheel]
 build-verbosity = 3
+#test-command = "pya2l {package}/tests"
+
 build = "cp3{8,9,10,11,12,13}-*"
-#test-command = "pytest -svv"
+skip = ["*-manylinux_i686", "*-musllinux_x86_64", "*-musllinux_i686", "cp38-manylinux*"]
 build-frontend = "build"
-#build-frontend = "pip"
+
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "universal2", "arm64"]
+
+[tool.cibuildwheel.windows]
+archs = ["AMD64"]	# , "ARM64"
 
 [tool.cibuildwheel.linux]
+# archs = ["auto", "aarch64"]
 archs = ["x86_64", "aarch64"]
-before-build = "yum install -y libffi openssl openssl-devel libpython3-dev"
+# before-all = "yum install -y libffi openssl openssl-devel gcc libpython3-dev"
+manylinux-x86_64-image = "manylinux_2_28"

@@ -3,7 +3,7 @@
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2024 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2025 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -69,6 +69,7 @@ def import_a2l(
     local: bool = False,
     encoding: str = "latin-1",
     loglevel: str = "INFO",
+    progress_bar: bool = True,
 ):
     """Import `.a2l` file to `.a2ldb` database.
 
@@ -96,6 +97,9 @@ def import_a2l(
     loglevel: str
         "INFO" | "WARN" | "DEBUG" | "ERROR" | "CRITICAL"
 
+    progress_bar: bool
+        Disable progress bar.
+
     Returns
     -------
     SQLAlchemy session object.
@@ -109,9 +113,16 @@ def import_a2l(
     ----
     ``AML`` and ``IF_DATA`` sections are currently not processed.
     """
+
     a2l_parser = A2LParser()
     db = a2l_parser.parse(
-        file_name=file_name, local=local, in_memory=in_memory, encoding=encoding, remove_existing=remove_existing, loglevel=loglevel
+        file_name=file_name,
+        local=local,
+        in_memory=in_memory,
+        encoding=encoding,
+        remove_existing=remove_existing,
+        loglevel=loglevel,
+        progress_bar=progress_bar,
     )
     session = db.session
 
@@ -221,8 +232,9 @@ class DB:
         local: bool = False,
         encoding: str = "",
         loglevel: str = "INFO",
+        progress_bar: bool = True,
     ):
-        return import_a2l(file_name, debug, in_memory, remove_existing, local, encoding, loglevel)
+        return import_a2l(file_name, debug, in_memory, remove_existing, local, encoding, loglevel, progress_bar)
 
     @staticmethod
     def open_existing(file_name: str, loglevel: str = "INFO"):
