@@ -7,6 +7,7 @@
 #include "a2lparser.hpp"
 #include "parser.hpp"
 #include "preprocessor.hpp"
+#include "sysconsts.hpp"
 
 namespace py = pybind11;
 
@@ -93,14 +94,15 @@ struct Overload : Ts... {
 
 PYBIND11_MODULE(a2lparser_ext, m) {
     m.def("parse", &parse, py::return_value_policy::move);
+    m.def("process_sys_consts", &process_sys_consts, py::return_value_policy::move);
 
-	py::class_<AmlData>(m, "AmlData")
-		.def(py::init<const std::string&, const std::string&>())
-		.def_property_readonly("text", &AmlData::get_text)
-		.def_property_readonly("parsed", [](const AmlData& self) {
-			return py::bytes(self.parsed);
-		})
-	;
+    py::class_<AmlData>(m, "AmlData")
+        .def(py::init<const std::string&, const std::string&>())
+        .def_property_readonly("text", &AmlData::get_text)
+        .def_property_readonly("parsed", [](const AmlData& self) {
+            return py::bytes(self.parsed);
+        })
+    ;
 
     py::class_<ValueContainer>(m, "ValueContainer")
         .def(py::init<std::string_view>(), py::arg("name"))

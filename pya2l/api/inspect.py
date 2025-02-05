@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2020-2022 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2020-2025 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -29,23 +28,25 @@ __copyright__ = """
 import collections
 import copy
 import itertools
-from operator import itemgetter
 import weakref
+from operator import itemgetter
 
-from sqlalchemy import exists, not_, and_
+from sqlalchemy import and_, exists, not_
 
+import pya2l.model as model
 from pya2l import exceptions
+from pya2l.a2lparser_ext import process_sys_consts
 from pya2l.functions import (
-    RatFunc,
+    Formula,
     Identical,
+    InterpolatedTable,
     Linear,
     LookupTable,
     LookupTableWithRanges,
-    Formula,
-    InterpolatedTable,
+    RatFunc,
 )
-import pya2l.model as model
-from pya2l.utils import align_as, ffs, SingletonBase
+from pya2l.utils import SingletonBase, align_as, ffs
+
 
 DB_CACHE_SIZE = 4096  # Completly arbitrary, could be configurable.
 
@@ -64,6 +65,21 @@ ASAM_TO_NUMPY_TYPES = {
     "FLOAT16_IEEE": "float16",
     "FLOAT32_IEEE": "float32",
     "FLOAT64_IEEE": "float64",
+}
+
+
+ASAM_INTEGER_QUANTITIES = {
+    "UBYTE": "uint8",
+    "SBYTE": "int8",
+    "BYTE": "int8",
+    "UWORD": "uint16",
+    "SWORD": "int16",
+    "WORD": "int16",
+    "ULONG": "uint32",
+    "SLONG": "int32",
+    "LONG": "int32",
+    "A_UINT64": "uint64",
+    "A_INT64": "int64",
 }
 
 ASAM_TYPE_SIZES = {
@@ -388,26 +404,15 @@ class ModPar(CachedBase):
         self.version = self.modpar.version.versionIdentifier if self.modpar.version else None
 
     @staticmethod
-    def exists(session, name=None, module_name: str = None):  # TODO: Better move to base class...
+    def exists(session, name: str = None, module_name: str = None) -> bool:  # TODO: Better move to base class...
         module = get_module(session, module_name)
         return module.mod_par is not None
 
     @staticmethod
-    def _dissect_sysc(constants):
+    def _dissect_sysc(constants: list):
         if constants is not None:
-            result = {}
-            for const in constants:
-                try:
-                    value = int(const.value)
-                except ValueError:
-                    try:
-                        value = float(const.value)
-                    except ValueError:
-                        value = const.value
-                result[const.name] = value
-        else:
-            result = None
-        return result
+            return process_sys_consts(list((c.name, c.value) for c in constants))
+        return []
 
     @staticmethod
     def _dissect_memory_layouts(layouts):
@@ -856,7 +861,7 @@ class Characteristic(CachedBase):
     def __init__(self, session, name: str, module_name: str = None):
         self.characteristic = session.query(model.Characteristic).filter(model.Characteristic.name == name).first()
         if self.characteristic is None:
-            raise ValueError("'{}' object does not exist.".format(name))
+            raise ValueError(f"'{name}' object does not exist.")
         self.name = name
         self.longIdentifier = self.characteristic.longIdentifier
         self.type = self.characteristic.type
@@ -938,7 +943,7 @@ class Characteristic(CachedBase):
             index = axis
         elif isinstance(axis, str):
             if axis not in MAP:
-                raise ValueError("'{}' is an invalid axis name.".format(axis))
+                raise ValueError(f"'{axis}' is an invalid axis name.")
             index = MAP.get(axis)
         if index > len(descriptions) - 1:
             raise ValueError("axis value out of range.")
@@ -1784,7 +1789,7 @@ class RecordLayout(CachedBase):
     def __init__(self, session, name: str, module_name: str = None):
         self.layout = session.query(model.RecordLayout).filter(model.RecordLayout.name == name).first()
         if self.layout is None:
-            print("RECORD_LAYOUT '{}' not found".format(name))
+            print(f"RECORD_LAYOUT '{name}' not found")
         self._mod_common = ModCommon.get(session)
         self.name = name
         self.alignment = {
@@ -2189,7 +2194,7 @@ class RecordLayoutComponents:
                     mem_size = 0  # No memory occupied in case of fix axis.
                 else:
                     # Should never be reached.
-                    raise TypeError("No axis_pts {}".format(axis_descr.attribute))
+                    raise TypeError(f"No axis_pts {axis_descr.attribute}")
             self.axes(axis)["maxAxisPoints"] = maxAxisPoints
             self.axes(axis)["memSize"] = mem_size
             if axis_pts:
@@ -2205,7 +2210,7 @@ class RecordLayoutComponents:
         if not axis_pts:
             axis_res = x_axis.get("axisRescale")  # Rescale axis?
             if not axis_res:
-                raise TypeError("Type of axis '{}' is neither standard nor rescale".format(self.parent.name))
+                raise TypeError(f"Type of axis '{self.parent.name}' is neither standard nor rescale")
             # noRescale = x_axis.get("noRescale")
             element_size = asam_type_size(axis_res.get("datatype")) * 2  # In this case elements are pairs.
         else:
@@ -2320,13 +2325,12 @@ class RecordLayoutComponents:
             self._components_by_pos = list(tmp_dict.items())
 
     def __next__(self):
-        for item in self._components_by_pos:
-            yield item
+        yield from self._components_by_pos
 
     def __str__(self):
-        result = ["{}(".format(self.__class__.__name__)]
+        result = [f"{self.__class__.__name__}("]
         for key, value in self:
-            result.append("    {} ==> {}".format(key, value))
+            result.append(f"    {key} ==> {value}")
         result.append(")")
         return "\n".join(result)
 
@@ -2550,7 +2554,7 @@ class CompuMethod(CachedBase):
                 pairs = zip(self.tab_verb["in_values"], self.tab_verb["text_values"])
                 self.evaluator = LookupTable(pairs, default)
         else:
-            raise ValueError("Unknown conversation type '{}'.".format(conversionType))
+            raise ValueError(f"Unknown conversation type '{conversionType}'.")
 
     def int_to_physical(self, i):
         """Evaluate computation method INT ==> PHYS
@@ -3399,7 +3403,7 @@ class VariantCoding(CachedBase):
                     address = None
                 else:
                     address = addresses.pop(0)
-                    c_name = "{}{}{}".format(name, self._separator, idx)
+                    c_name = f"{name}{self._separator}{idx}"
                 combis.append(VarCombination(compo, c_name, address))
             self._combinations[name] = combis
 
