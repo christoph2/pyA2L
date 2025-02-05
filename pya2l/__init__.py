@@ -210,7 +210,7 @@ def export_a2l(db_name: str, output: typing.Union[TextIOWrapper, str, typing.Any
     namespace = dict(session=session, model=model)
     data = doTemplateFromText(A2L_TEMPLATE, namespace, formatExceptions=False, encoding=encoding)
     if isinstance(output, TextIOWrapper):
-        output(data)
+        output.write(data)
     else:
         with open(file=output, mode="w", encoding=encoding) as outf:
             outf.write(data)

@@ -31,23 +31,17 @@ from pya2l.version import __version__
 
 def main():
     parser = argparse.ArgumentParser(description="Import/export from/to a2l(db) files.")
-    group = parser.add_mutually_exclusive_group()
+    
+    group = parser.add_argument_group()
     group.add_argument(
-        "-i",
-        "--import",
-        help="A2L file to import",
-        dest="ifn",
+        "-o",
+        "--output",
+        help="output file when exporting",
+        dest="output",
         type=str,
-        metavar="A2L_file",
+        metavar="output_file",
     )
-    group.add_argument(
-        "-e",
-        "--export",
-        help="A2LDB file to export",
-        dest="efn",
-        type=str,
-        metavar="DB_file",
-    )
+    
     parser.add_argument(
         "-E",
         "--encoding",
@@ -73,21 +67,37 @@ def main():
         default="info",
     )
 
-    #
     parser.add_argument(
         "-p",
         help="Disable progress bar",
         action="store_true",
         dest="no_progress_bar",
     )
-    #
 
     parser.add_argument(
         "-V",
         help="Print pya2ldb version information and exit.",
         action="store_true",
         dest="version",
+    )    
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "-i",
+        "--import",
+        help="A2L file to import",
+        dest="ifn",
+        type=str,
+        metavar="A2L_file",
     )
+    group.add_argument(
+        "-e",
+        "--export",
+        help="A2LDB file to export",
+        dest="efn",
+        type=str,
+        metavar="DB_file",
+    )
+    
     # parser.add_argument("-f", "--force-overwrite", help = "Force overwrite of existing file",
     # default = False, action = "store_true")
 
@@ -102,8 +112,7 @@ def main():
 
     if args.efn:
         efn = Path(args.efn)
-        db.open_existing(efn)
-        db.export_a2l(sys.stdout)
+        db.export_a2l(efn, args.output or sys.stdout)
     else:
         ifn = Path(args.ifn)
         db.import_a2l(ifn, encoding=args.encoding, loglevel=args.loglevel, local=args.local, progress_bar=not args.no_progress_bar)
