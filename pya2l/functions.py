@@ -3,7 +3,7 @@
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2024 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2025 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -248,6 +248,7 @@ class RatFunc:
             self.p_inv = np.poly1d([(f / b), -((f * c) / (b * f))])
         else:
             self.p_inv = None
+        self.coeffs = coeffs
 
     def physical_to_int(self, p):
         """Evaluate function PHYS ==> INT
@@ -278,6 +279,11 @@ class RatFunc:
         else:
             raise NotImplementedError("Cannot invert quadratic function.")
 
+    def __str__(self) -> str:
+        return f"RatFunc(coeffs=(a={self.coeffs.get('a')}, b={self.coeffs.get('b')}, c={self.coeffs.get('c')}, d={self.coeffs.get('d')}, e={self.coeffs.get('e')}, f={self.coeffs.get('f')}))"
+
+    __repr__ = __str__
+
 
 class Identical:
     """Identity function."""
@@ -290,6 +296,11 @@ class Identical:
 
     def physical_to_int(self, p):
         return p
+
+    def __str__(self) -> str:
+        return "Identical()"
+
+    __repr__ = __str__
 
 
 class Linear:
@@ -312,6 +323,8 @@ class Linear:
     def __init__(self, coeffs):
         a, b = coeffs["a"], coeffs["b"]
         self.p = np.poly1d([a, b])
+        self.a = a
+        self.b = b
 
     def int_to_physical(self, i):
         """"""  # noqa: DAR101, DAR201
@@ -326,6 +339,11 @@ class Linear:
             return [self._eval_pti(i) for i in p]
         else:
             return self._eval_pti(p)
+
+    def __str__(self) -> str:
+        return f"Linear(coeffs=(a={self.a}, b={self.b}))"
+
+    __repr__ = __str__
 
 
 class LookupTable:
@@ -384,6 +402,11 @@ class InterpolatedTable:
     def physical_to_int(self, p):
         """"""  # noqa: DAR101, DAR201, DAR401
         raise NotImplementedError()
+
+    def __str__(self) -> str:
+        return f"InterpolatedTable(x={self.interp.interp.x}, y={self.interp.interp.y}, max_x={self.interp.max_x}, max_y={self.interp.max_y})"
+
+    __repr__ = __str__
 
 
 class LookupTableWithRanges:
