@@ -236,10 +236,10 @@ class A2LParser {
                     ((token_type() == A2LTokenType::END) && (parameter.is_multiple() == false))) {
                     // Not all parameters are present.
 
-                    m_logger->error("{} is missing one or more required parameters: ", kw_tos().m_name);
+                    m_logger->warn("{} is missing one or more required parameters: ", kw_tos().m_name);
                     for (std::size_t idx = param_count; idx < std::size(kw_tos().m_parameters); ++idx) {
                         auto p = kw_tos().m_parameters[idx];
-                        m_logger->error("\t{}", p.get_name());
+                        m_logger->warn("\t{}", p.get_name());
                         switch (p.get_type()) {
                             case PredefinedType::Int:
                             case PredefinedType::Uint:
