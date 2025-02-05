@@ -31,7 +31,7 @@ from pya2l.version import __version__
 
 def main():
     parser = argparse.ArgumentParser(description="Import/export from/to a2l(db) files.")
-    
+
     group = parser.add_argument_group()
     group.add_argument(
         "-o",
@@ -41,7 +41,7 @@ def main():
         type=str,
         metavar="output_file",
     )
-    
+
     parser.add_argument(
         "-E",
         "--encoding",
@@ -79,7 +79,7 @@ def main():
         help="Print pya2ldb version information and exit.",
         action="store_true",
         dest="version",
-    )    
+    )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "-i",
@@ -97,7 +97,7 @@ def main():
         type=str,
         metavar="DB_file",
     )
-    
+
     # parser.add_argument("-f", "--force-overwrite", help = "Force overwrite of existing file",
     # default = False, action = "store_true")
 
