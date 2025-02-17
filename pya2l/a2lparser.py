@@ -349,8 +349,8 @@ class A2LParser:
             encoding = detect_encoding(file_name=a2l_fn)
         start_time = perf_counter()
         self.db = model.A2LDatabase(str(db_fn), debug=self.debug)
+        self.db.session.commit()
         self.logger.info(f"Importing {a2l_fn!r} [{encoding}] ==> DB {db_fn!r}.")
-
         keyword_counter, values, tables, aml_data = ext.parse(str(a2l_fn), encoding, loglevel.upper())
         aml_section = model.AMLSection()
         aml_section.text = aml_data.text
@@ -377,7 +377,6 @@ class A2LParser:
         self.db.session.commit()
         update_tables(self.db.session, tables)
         self.db.session.commit()
-        self.db.close()
         self.logger.info(f"Done. Elapsed time [{perf_counter() - start_time:.2f}s].")
         return self.db
 

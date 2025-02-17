@@ -230,7 +230,7 @@ class DB:
         in_memory: bool = False,
         remove_existing: bool = False,
         local: bool = False,
-        encoding: str = "",
+        encoding: str = "latin-1",
         loglevel: str = "INFO",
         progress_bar: bool = True,
     ):
@@ -241,7 +241,7 @@ class DB:
         return open_existing(file_name, loglevel)
 
     @staticmethod
-    def open_create(file_name: str, local: bool = False, encoding: str = "", loglevel: str = "INFO"):
+    def open_create(file_name: str, local: bool = False, encoding: str = "latin-1", loglevel: str = "INFO"):
         return open_create(file_name, local, encoding, loglevel)
 
     @staticmethod
