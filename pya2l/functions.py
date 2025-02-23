@@ -336,7 +336,7 @@ class Linear:
     def physical_to_int(self, p):
         """"""  # noqa: DAR101, DAR201
         if hasattr(p, "__iter__"):
-            return [self._eval_pti(i) for i in p]
+            return np.array([self._eval_pti(i) for i in p])
         else:
             return self._eval_pti(p)
 
@@ -460,7 +460,7 @@ class LookupTableWithRanges:
     def int_to_physical(self, i):
         """"""  # noqa: DAR101, DAR201
         if hasattr(i, "__iter__"):
-            return [self._lookup(r) for r in i]
+            return np.array([self._lookup(r) for r in i])
         else:
             return self._lookup(i)
 
@@ -571,7 +571,7 @@ if has_numexpr:
             return numexpr.evaluate(self.formula, local_dict=self._build_namespace(*args))
 
         def physical_to_int(self, *args):
-            """"""  # noqa: DAR101, DAR201
+            """"""  # noqa: DAR101, DAR201, DAR401
             if self.inverse_formula is None:
                 raise NotImplementedError("Formula: physical_to_int() requires inverse_formula.")
             return numexpr.evaluate(self.inverse_formula, local_dict=self._build_namespace(*args))
@@ -619,7 +619,7 @@ else:
             return eval(self.formula, dict(), self._build_namespace(*args))
 
         def physical_to_int(self, *args):
-            """"""  # noqa: DAR101, DAR201
+            """"""  # noqa: DAR101, DAR201, DAR401
             if self.inverse_formula is None:
                 raise NotImplementedError("Formula: physical_to_int() requires inverse_formula.")
             return eval(self.inverse_formula, dict(), self._build_namespace(*args))
