@@ -408,7 +408,10 @@ class TokenReader {
     }
 
     void close() noexcept {
-        ::fclose(m_file);
+        if (m_file != nullptr) {
+            ::fclose(m_file);
+            m_file = nullptr;
+        }
     }
 
    protected:
