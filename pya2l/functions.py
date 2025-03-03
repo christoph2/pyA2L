@@ -534,13 +534,14 @@ if has_numexpr:
         MATH_FUNCS = {}
 
         def _replace_special_symbols(self, text):
+            text = text.upper()
             result = (
                 text.replace("&&", " and ")
                 .replace("||", " or ")
                 .replace("!", "not ")
-                .replace("acos", "arccos")
-                .replace("asin", "arcsin")
-                .replace("atan", "arctan")
+                .replace("ACOS", "arccos")
+                .replace("ASIN", "arcsin")
+                .replace("ATAN", "arctan")
             )
             while True:
                 # replace 'pow(a, b)' with '(a ** b)'
@@ -612,7 +613,7 @@ else:
         }
 
         def _replace_special_symbols(self, text):
-            return text.replace("&&", " and ").replace("||", " or ").replace("!", "not ")
+            return text.upper().replace("&&", " and ").replace("||", " or ").replace("!", "not ")
 
         def int_to_physical(self, *args):
             """"""  # noqa: DAR101, DAR201
