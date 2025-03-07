@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-
+"""Classes for easy, convenient, read-only access to A2L databases.
+"""
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
@@ -22,16 +23,13 @@ __copyright__ = """
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
-"""Classes for easy, convenient, read-only access to A2L databases.
-"""
-
 import collections
 import copy
 import itertools
 import weakref
 from operator import itemgetter
 
-from sqlalchemy import and_, exists, not_
+from sqlalchemy import exists, not_
 
 import pya2l.model as model
 from pya2l import exceptions
@@ -2190,7 +2188,7 @@ class RecordLayoutComponents:
             if axis_pts:
                 mem_size = maxAxisPoints * asam_type_size(axis_pts["datatype"])
             else:
-                if axis_descr.attribute == "FIX_AXIS":
+                if axis_descr.attribute in ("FIX_AXIS", "COM_AXIS"):
                     mem_size = 0  # No memory occupied in case of fix axis.
                 else:
                     # Should never be reached.
