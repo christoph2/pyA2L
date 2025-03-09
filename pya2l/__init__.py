@@ -124,6 +124,7 @@ def import_a2l(
         loglevel=loglevel,
         progress_bar=progress_bar,
     )
+    # db.close()
     session = db.session
 
     # self.logger.info("Parsing AML section ...")

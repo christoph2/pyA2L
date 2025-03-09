@@ -115,7 +115,10 @@ def main():
         db.export_a2l(efn, args.output or sys.stdout)
     else:
         ifn = Path(args.ifn)
-        db.import_a2l(ifn, encoding=args.encoding, loglevel=args.loglevel, local=args.local, progress_bar=not args.no_progress_bar)
+        session = db.import_a2l(
+            ifn, encoding=args.encoding, loglevel=args.loglevel, local=args.local, progress_bar=not args.no_progress_bar
+        )
+        session.close()
 
 
 if __name__ == "__main__":
