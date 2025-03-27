@@ -247,7 +247,7 @@ def make_zipper(kw) -> typing.Callable[[typing.Container[typing.Any]], typing.Di
 
                 def zipper(values, mult_values: list[typing.Any]):
                     # Scalars, the final value is a list.
-                    result = dict(zip([p.name for p in kw.__required_parameters__[:-1]], values, strict=False))
+                    result = dict(zip([p.name for p in kw.__required_parameters__[:-1]], values))  # noqa: B905
                     result[MULT_COLUMN[table_name]] = mult_values
                     return result
 
@@ -255,7 +255,7 @@ def make_zipper(kw) -> typing.Callable[[typing.Container[typing.Any]], typing.Di
 
             def zipper(values, mult_values: list[typing.Any]):
                 # Standard case -- all scalar values.
-                return dict(zip([p.name for p in kw.__required_parameters__], values, strict=False))
+                return dict(zip([p.name for p in kw.__required_parameters__], values))  # noqa: B905
 
     else:
 
@@ -302,7 +302,7 @@ def update_tables(session, tables):
         master_table, tuple_table, assoc, counter, columns = MAP[table_type]
         result = []
         for row in values:
-            result.append(tuple_table(**dict(zip(columns, row, strict=False))))
+            result.append(tuple_table(**dict(zip(columns, row))))  # noqa: B905
         session.add_all(result)
         inst = session.query(master_table).filter(master_table.name == name).first()
         if inst is not None:
