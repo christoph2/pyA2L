@@ -1248,7 +1248,6 @@ class AxisPts(CachedBase):
         self.annotations = _annotations(session, self.axis.annotation)
         self.byteOrder = self.axis.byte_order.byteOrder if self.axis.byte_order else None
         self.calibrationAccess = self.axis.calibration_access
-        self.deposit = self.axis.deposit.mode if self.axis.deposit else None
         self.displayIdentifier = self.axis.display_identifier.display_name if self.axis.display_identifier else None
         self.ecuAddressExtension = self.axis.ecu_address_extension.extension if self.axis.ecu_address_extension else 0
         self.extendedLimits = self._dissect_extended_limits(self.axis.extended_limits)
@@ -1317,6 +1316,27 @@ class AxisPts(CachedBase):
         else:
             result = None
         return result
+
+    @property
+    def fnc_asam_dtype(self):
+        """Return `str` (e.g. `SLONG`)."""
+        if self.depositAttr is None:
+            return None
+        x_axis = self.depositAttr.axisPts.get("x")
+        if x_axis is None:
+            return None
+        return x_axis.get("datatype")
+
+    @property
+    def fnc_np_dtype(self):
+        """Return `str` (e.g. `int32`) suitable for Numpy."""
+        if self.depositAttr is None:
+            return None
+        x_axis = self.depositAttr.axisPts.get("x")
+        if x_axis is None:
+            return None
+        datatype = x_axis.get("datatype")
+        return ASAM_TO_NUMPY_TYPES.get(datatype)
 
     def __str__(self):
         names = (
