@@ -109,8 +109,19 @@ PYBIND11_MODULE(a2lparser_ext, m) {
         .def("get_name", &ValueContainer::get_name)
         .def("get_keywords", &ValueContainer::get_keywords)
         .def("get_parameters", &ValueContainer::get_parameters)
-        .def("get_multiple_values", &ValueContainer::get_multiple_values)
-        .def("get_if_data", &ValueContainer::get_if_data)
+	.def_property_readonly("multiple_values", [](const ValueContainer& self) {
+	    std::vector<AsamVariantType> result{};
+	    auto        encoding = ValueContainer::get_encoding().c_str();
+
+	    for (const auto& elem: self.get_multiple_values()) {
+		if (std::holds_alternative<std::string>(elem)) {
+		    result.emplace_back(unicode_decode(std::get<std::string>(elem), encoding));
+		} else {
+		    result.emplace_back(elem);
+		}
+	    }
+	    return result;
+	})
         .def_property_readonly(
             "if_data",
             [](const ValueContainer& self) {

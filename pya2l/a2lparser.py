@@ -400,7 +400,7 @@ class A2LParser:
                 print(e, "***", tree, name, table)
                 params = {}
                 # if_data = []
-            mult = tree.get_multiple_values()
+            mult = tree.multiple_values
             if_data = tree.if_data
 
             values = zipper(params, mult)
