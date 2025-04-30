@@ -301,6 +301,8 @@ class Identical:
         pass
 
     def int_to_physical(self, i):
+        if isinstance(i, np.ndarray):
+            return i.copy()
         return i
 
     def physical_to_int(self, p):
