@@ -29,6 +29,7 @@
 
 #include "logger.hpp"
 
+
 std::vector<Token> split_by_new_line(std::string_view line, std::size_t start_line, std::size_t start_column) {
     auto set_line_numbers = [](LineNumbers &l, std::size_t sl, std::size_t sc, std::size_t el, std::size_t ec) {
         l.start_line = sl;
@@ -144,7 +145,7 @@ auto split_multi_line_comment(
 
 Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool supress_whitespace) {
     char                       ch{ '\x00' };
-    char                       previos_ch{ '\x00' };
+    char                       previous_ch{ '\x00' };
     StringStateType            string_state{ StringStateType::IDLE };
     CommentStateType           comment_state{ CommentStateType::IDLE };
     CharClass                  current{ CharClass::NONE };
@@ -162,7 +163,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
         return is_space(ch) ? CharClass::WHITESPACE : CharClass::REGULAR;
     };
 
-    const auto char_class_to_int = [](const CharClass &cc) noexcept {
+    constexpr auto char_class_to_int = [](const CharClass &cc) noexcept {
         return static_cast<std::int8_t>(cc);
     };
 
@@ -173,6 +174,29 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
 
     const auto in_string = [&string_state]() noexcept {
         return (string_state == StringStateType::IN_STRING) || (string_state == StringStateType::MAY_CLOSE);
+    };
+
+    auto regular_double_quote = [&token, &char_class_to_int]() noexcept {
+        const auto &token_str = token[char_class_to_int(CharClass::REGULAR)].c_str();
+        const auto  token_length = std::strlen(token_str);
+        const auto  previous_ch   = token_str[token_length - 1];
+        auto        previous_bs   = (previous_ch == BSLASH);
+        if (token_length >= 2) {
+            const auto prev_previous_ch = token_str[token_length - 2];
+            auto       prev_previous_bs    = (prev_previous_ch == BSLASH);
+            if (token_length >= 3) {
+                const auto prev_prev_previous_ch = token_str[token_length - 3];
+                auto       prev_prev_previous_bs = (prev_prev_previous_ch == BSLASH);
+                if (prev_prev_previous_bs && prev_previous_bs && previous_bs) {
+                    return false;
+                }
+
+            }
+            if (prev_previous_bs && previous_bs) {
+                return true;    // Escaped back-slash.
+            }
+        }
+        return previous_ch != BSLASH;    // Escaped " or not.
     };
 
     while (!stream.eof()) {
@@ -231,7 +255,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
                 if (string_state == StringStateType::IDLE) {
                     string_state = StringStateType::IN_STRING;
                     string_class = true;
-                } else if ((string_state == StringStateType::IN_STRING) && (previos_ch != BSLASH)) {
+                } else if ((string_state == StringStateType::IN_STRING) && regular_double_quote()) {
                     string_state = StringStateType::MAY_CLOSE;
                 } else {
                     string_state        = StringStateType::IN_STRING;
@@ -248,7 +272,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
         } else {
             if (previous == current) {
                 if ((string_state == StringStateType::IDLE) && (!in_comment())) {
-                    if (previos_ch == DQUOTE) {
+                    if (previous_ch == DQUOTE) {
                         LineNumbers line_numbers{ start_line, start_column, line, column - 1 };
                         co_yield { Token(TokenClass::STRING, line_numbers, token[char_class_to_int(current)]) };
                         token[char_class_to_int(CharClass::REGULAR)].clear();
@@ -314,7 +338,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
             }
         }
         previous   = current;
-        previos_ch = ch;
+        previous_ch = ch;
         if (ch == NL) {
             line++;
             column = 0;
