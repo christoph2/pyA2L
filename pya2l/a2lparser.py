@@ -286,6 +286,13 @@ class FakeRoot:
         return True
 
 
+def update_tuple_table(tuple_table, rows: list, columns: list) -> list:
+    result = []
+    for row in rows:
+        result.append(tuple_table(**dict(zip(columns, row))))  # noqa: B905
+    return result
+
+
 def update_tables(session, tables):
     MAP = {
         "CompuTab": (model.CompuTab, model.CompuTabPair, "pairs", "numberValuePairs", ("inVal", "outVal")),
@@ -297,20 +304,31 @@ def update_tables(session, tables):
             "numberValueTriples",
             ("inValMin", "inValMax", "outVal"),
         ),
+        "VarForbiddenComb": (
+            model.VarForbiddenComb,
+            model.VarForbiddedCombPair,
+            "pairs",
+            "numberValuePairs",
+            ("criterionName", "criterionValue"),
+        ),
     }
+    combinations = session.query(model.VarForbiddenComb).all()
     for table_type, name, values in tables:
         master_table, tuple_table, assoc, counter, columns = MAP[table_type]
-        result = []
-        for row in values:
-            result.append(tuple_table(**dict(zip(columns, row))))  # noqa: B905
+        if table_type == "VarForbiddenComb":
+            combi = combinations.pop(0)
+            result = update_tuple_table(tuple_table, values, columns)
+            session.add_all(result)
+            setattr(master_table, counter, len(values))
+            combi.pairs.extend(result)
+            continue
+        result = update_tuple_table(tuple_table, values, columns)
         session.add_all(result)
         inst = session.query(master_table).filter(master_table.name == name).first()
         if inst is not None:
             setattr(inst, counter, len(values))
             getattr(inst, assoc).extend(result)
             session.add(inst)
-        else:
-            print(f"error {name!r}")
 
 
 class A2LParser:
@@ -374,6 +392,7 @@ class A2LParser:
         fr = FakeRoot()
         with self.progress_bar:
             self.traverse(values, fr, None, False)
+        self.db.session.commit()
         update_tables(self.db.session, tables)
         self.db.session.commit()
         self.logger.info(f"Done. Elapsed time [{perf_counter() - start_time:.2f}s].")

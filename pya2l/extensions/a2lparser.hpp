@@ -168,6 +168,10 @@ class A2LParser {
             m_keyword_counter++;
             auto kw = ValueContainer(kw_tos().m_name);
 
+            if (kw.get_name() == "VAR_FORBIDDEN_COMB") {
+                auto fc = true;
+            }
+
             auto [p, m] = do_parameters();
             value_tos().set_parameters(std::move(p));
             value_tos().set_multiple_values(std::move(m));
@@ -236,36 +240,42 @@ class A2LParser {
                     ((token_type() == A2LTokenType::END) && (parameter.is_multiple() == false))) {
                     // Not all parameters are present.
 
-                    m_logger->warn("{} is missing one or more required parameters: ", kw_tos().m_name);
-                    for (std::size_t idx = param_count; idx < std::size(kw_tos().m_parameters); ++idx) {
-                        auto p = kw_tos().m_parameters[idx];
-                        m_logger->warn("\t{}", p.get_name());
-                        switch (p.get_type()) {
-                            case PredefinedType::Int:
-                            case PredefinedType::Uint:
-                            case PredefinedType::Long:
-                            case PredefinedType::Ulong:
-                                parameter_list.push_back(0);
-                                break;
+					if (!((std::size(parameter_list) == (std::size(kw_tos().m_parameters) - 1)) && parameter.is_multiple())) {
+						m_logger->warn("{} is missing one or more required parameters: ", kw_tos().m_name);
 
-                            case PredefinedType::Float:
-                                parameter_list.push_back(0.0);
-                                break;
+                        for (std::size_t idx = param_count; idx < std::size(kw_tos().m_parameters); ++idx) {
+                            auto p = kw_tos().m_parameters[idx];
+                            m_logger->warn("\t{}", p.get_name());
+                            switch (p.get_type()) {
+                                case PredefinedType::Int:
+                                case PredefinedType::Uint:
+                                case PredefinedType::Long:
+                                case PredefinedType::Ulong:
+                                    parameter_list.push_back(0);
+                                    break;
 
-                            default:
-                                parameter_list.push_back("");
-                                break;
+                                case PredefinedType::Float:
+                                    parameter_list.push_back(0.0);
+                                    break;
+
+                                default:
+                                    parameter_list.push_back("");
+                                    break;
+                            }
                         }
                     }
                     return { parameter_list, m_multiple_values };
+
                 }
                 param_count++;
 
                 if (parameter.is_tuple()) {
                     auto tuple_parser = ParameterTupleParser(parameter);
-                    tuple_parser.feed(token);
-                    m_reader->consume();
-                    while (true) {  // TODO: check for \end.
+                    if (parameter.tuple_has_counter()) {
+                        tuple_parser.feed(token);
+                        m_reader->consume();
+                    }
+                    while (true) {
                         token = m_reader->LT(1);
                         tuple_parser.feed(token);
                         if (tuple_parser.get_state() == ParameterTupleParser::StateType::FINISHED) {
@@ -275,6 +285,13 @@ class A2LParser {
                             }
                             m_tables.push_back({ value_tos().get_name(), std::get<std::string>(parameter_list[0]),
                                                  tuple_parser.get_table() });
+                            m_reader->consume();
+                            break;
+                        }
+                        auto next_token = m_reader->LT(2);
+                        if (static_cast<A2LTokenType>(next_token->getType()) == A2LTokenType::END) {
+                            m_tables.push_back({ value_tos().get_name(), "", tuple_parser.get_table() });
+                            tuple_parser.finished();
                             m_reader->consume();
                             break;
                         }

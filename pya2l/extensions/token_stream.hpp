@@ -18,6 +18,12 @@
         #pragma warning(disable: 4251 4273)
     #endif
 
+ #ifdef _WIN64
+typedef __int64 ssize_t;
+    #else
+typedef __int32 ssize_t;
+    #endif
+
 template<typename Ty_>
 class FixedSizeStack {
    public:
@@ -312,18 +318,18 @@ class TokenReader {
         sync(1);
     }
 
-    std::size_t mark() noexcept {
+    ssize_t mark() noexcept {
         if (m_numMarkers == 0) {
             m_lastTokenBufferStart = m_lastToken;
         }
 
-        int mark = -m_numMarkers - 1;
+        int mark = -static_cast<ssize_t>(m_numMarkers) - 1;
         m_numMarkers++;
         return mark;
     }
 
-    void release(std::size_t marker) {
-        if (const std::size_t expectedMark = -m_numMarkers; marker != expectedMark) {
+    void release(ssize_t marker) {
+        if (const ssize_t expectedMark = -m_numMarkers; marker != expectedMark) {
             throw IllegalStateException("release() called with an invalid marker.");
         }
 
@@ -426,8 +432,8 @@ class TokenReader {
         return n;
     }
 
-    void sync(std::size_t want) {
-        std::size_t need = (static_cast<std::size_t>(_p) + want - 1) - static_cast<std::size_t>(_tokens.size()) + 1;
+    void sync(ssize_t want) {
+        ssize_t need = (static_cast<ssize_t >(_p) + want - 1) - static_cast<ssize_t>(_tokens.size()) + 1;
         if (need > 0) {
             fill(static_cast<std::size_t>(need));
         }

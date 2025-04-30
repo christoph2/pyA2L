@@ -20,23 +20,35 @@ class Parameter {
 
     // Integral types and the like.
     Parameter(PredefinedType type, std::string_view name, bool multiple = false) :
-        m_type(type), m_name(name), m_multiple(multiple), m_tuple{ false } {
+        m_type(type), m_name(name), m_multiple(multiple), m_tuple{ false }, m_has_counter{ false } {
     }
 
     // Enumerations.
     Parameter(PredefinedType type, std::string_view name, const std::set<std::string>& values) :
-        m_type(type), m_name(name), m_multiple(false), m_tuple{ false }, m_enumerators{ values } {
+        m_type(type), m_name(name), m_multiple(false), m_tuple{ false }, m_has_counter{ false }, m_enumerators{ values } {
     }
 
     // Tuples.
     Parameter(const tuple_element_t& counter, const std::vector<tuple_element_t>& elements) :
-        m_type(PredefinedType::Tuple), m_multiple(false), m_tuple{ true }, m_counter{ counter }, m_tuple_elements{ elements } {
+        m_type(PredefinedType::Tuple), m_multiple(false), m_tuple{ true }, m_has_counter{ false }, m_counter{ counter }, m_tuple_elements{ elements } {
+    }
+
+    Parameter(const std::vector<tuple_element_t>& elements) :
+        m_type(PredefinedType::Tuple), m_multiple(false), m_tuple{ true }, m_has_counter{ true }, m_tuple_elements{ elements } {
     }
 
     virtual ~Parameter() noexcept = default;
 
     PredefinedType get_type() const noexcept {
         return m_type;
+    }
+
+    bool tuple_has_counter() const noexcept {
+        if ((m_type == PredefinedType::Tuple) && (m_tuple == true) && (m_has_counter == true)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     const std::string& get_name() const noexcept {
@@ -72,6 +84,7 @@ class Parameter {
     std::string                    m_name;
     bool                           m_multiple;
     bool                           m_tuple;
+    bool                           m_has_counter;
     std::set<std::string>          m_enumerators;
     std::optional<tuple_element_t> m_counter;
     std::vector<tuple_element_t>   m_tuple_elements{};
@@ -152,6 +165,9 @@ class ParameterTupleParser {
         m_tuple_size(0),
         m_started(false),
         m_token_count(0) {
+        if (!parameter.get_counter().has_value()) {
+            m_started = true;
+        }
     }
 
     void feed(const ANTLRToken* token) noexcept {
@@ -174,6 +190,12 @@ class ParameterTupleParser {
             m_started     = true;
             m_state       = StateType::COLLECTING;
         } else {
+            if (std::size(m_row) == 0) {
+                m_tuple_size = std::size(m_parameter.get_tuple_elements());
+                m_row.resize(m_tuple_size);
+                m_state = StateType::COLLECTING;
+                m_token_count = std::numeric_limits<std::uint64_t>::max();
+            }
             auto type       = std::get<0>(m_tuple_elements[m_column]);
             m_row[m_column] = convert(type, token->getText());
             m_column++;
@@ -183,7 +205,7 @@ class ParameterTupleParser {
             }
             m_idx++;
             if (m_idx >= m_token_count) {
-                m_state = StateType::FINISHED;
+                finished();
             }
         }
     }
@@ -194,6 +216,10 @@ class ParameterTupleParser {
 
     table_t get_table() const noexcept {
         return m_rows;
+    }
+
+    void finished() noexcept {
+        m_state = StateType::FINISHED;
     }
 
    private:

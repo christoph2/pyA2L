@@ -2260,7 +2260,13 @@ inline Keyword PARSER_TABLE = Keyword(
                                     }
                                 ),
                                 Keyword(
-                                    A2LTokenType::VAR_FORBIDDEN_COMB, "VAR_FORBIDDEN_COMB", "VarForbiddenComb", true, true, {}, {}
+                                    A2LTokenType::VAR_FORBIDDEN_COMB, "VAR_FORBIDDEN_COMB", "VarForbiddenComb", true, true, {
+									Parameter(
+                                           // { PredefinedType::Uint, "NumberValuePairs"},
+										{ { PredefinedType::Ident, "CriterionName" }, { PredefinedType::Ident, "CriterionValue" } }
+									),
+
+									}, {}
                                 ),
                                 Keyword(
                                     A2LTokenType::VAR_NAMING, "VAR_NAMING", "VarNaming", false, false,
