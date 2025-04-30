@@ -29,6 +29,7 @@ import bisect
 import math
 import re
 import typing
+from dataclasses import dataclass
 from operator import itemgetter
 
 import numpy as np
@@ -45,9 +46,24 @@ except ImportError:
 else:
     has_numexpr = True
 
+POW = re.compile(r"pow\s*\((?P<params>.*?)\s*\)", re.IGNORECASE)
+SYSC = re.compile(r"sysc\s*\((?P<param>.*?)\s*\)", re.IGNORECASE)
 
-POW = re.compile(r"pow\s*\((?P<params>.*?)\s*\)")
-SYSC = re.compile(r"sysc\s*\((?P<param>.*?)\s*\)")
+
+@dataclass
+class Coeffs:
+    a: float
+    b: float
+    c: float
+    d: float
+    e: float
+    f: float
+
+
+@dataclass
+class CoeffsLinear:
+    a: float
+    b: float
 
 
 def fix_axis_par(offset: int, shift: int, num_apo: int) -> list:
@@ -219,7 +235,7 @@ class RatFunc:
 
     Parameters
     ----------
-    coeffs: dict containing coefficients.
+    coeffs: Coeffs
         a, b, c, d, e, f - coefficients for the specified formula:
         f(x) = (axx + bx + c) / (dxx + ex + f)
 
@@ -233,15 +249,8 @@ class RatFunc:
         `Linear` is PHYS = f(INT)!!!
     """
 
-    def __init__(self, coeffs):
-        a, b, c, d, e, f = (
-            coeffs["a"],
-            coeffs["b"],
-            coeffs["c"],
-            coeffs["d"],
-            coeffs["e"],
-            coeffs["f"],
-        )
+    def __init__(self, coeffs: Coeffs):
+        a, b, c, d, e, f = (coeffs.a, coeffs.b, coeffs.c, coeffs.d, coeffs.e, coeffs.f)
         self.p = np.poly1d([a, b, c])
         self.q = np.poly1d([d, e, f])
         if self.p.order == 1 and self.q.order == 0:
@@ -280,7 +289,7 @@ class RatFunc:
             raise NotImplementedError("Cannot invert quadratic function.")
 
     def __str__(self) -> str:
-        return f"RatFunc(coeffs=(a={self.coeffs.get('a')}, b={self.coeffs.get('b')}, c={self.coeffs.get('c')}, d={self.coeffs.get('d')}, e={self.coeffs.get('e')}, f={self.coeffs.get('f')}))"
+        return f"RatFunc(coeffs=(a={self.coeffs.a}, b={self.coeffs.b}, c={self.coeffs.c}, d={self.coeffs.d}, e={self.coeffs.e}, f={self.coeffs.f}))"
 
     __repr__ = __str__
 
@@ -308,7 +317,7 @@ class Linear:
 
     Parameters
     ----------
-    coeffs: dict containing coefficients.
+    coeffs: CoeffsLinear
         a, b - coefficients for the specified formula:
         coefficients for the specified formula:
         f(x) = ax + b
@@ -320,8 +329,8 @@ class Linear:
         `RatFunc` is INT = f(PHYS)!!!
     """
 
-    def __init__(self, coeffs):
-        a, b = coeffs["a"], coeffs["b"]
+    def __init__(self, coeffs: CoeffsLinear):
+        a, b = coeffs.a, coeffs.b
         self.p = np.poly1d([a, b])
         self.a = a
         self.b = b
@@ -513,6 +522,11 @@ class FormulaBase:
         namespace["sysc"] = self.sysc
         return namespace
 
+    @staticmethod
+    def names_tolower(text):
+        MATH_FUNCTIONS = re.compile("abs|acos|asin|atan|cos|cosh|exp|log|log10|pow|sin|sinh|sqrt|tan|tanh", re.IGNORECASE)
+        return MATH_FUNCTIONS.sub(lambda m: m.group(0).lower(), text)
+
 
 if has_numexpr:
 
@@ -534,15 +548,15 @@ if has_numexpr:
         MATH_FUNCS = {}
 
         def _replace_special_symbols(self, text):
-            text = text.upper()
             result = (
                 text.replace("&&", " and ")
                 .replace("||", " or ")
                 .replace("!", "not ")
-                .replace("ACOS", "arccos")
-                .replace("ASIN", "arcsin")
-                .replace("ATAN", "arctan")
+                .replace("acos", "arccos")
+                .replace("asin", "arcsin")
+                .replace("atan", "arctan")
             )
+            text = FormulaBase.names_tolower(result)
             while True:
                 # replace 'pow(a, b)' with '(a ** b)'
                 match = POW.search(result)
@@ -569,13 +583,21 @@ if has_numexpr:
 
         def int_to_physical(self, *args):
             """"""  # noqa: DAR101, DAR201
-            return numexpr.evaluate(self.formula, local_dict=self._build_namespace(*args))
+            try:
+                return numexpr.evaluate(self.formula, local_dict=self._build_namespace(*args))
+            except Exception as e:
+                print(f"Error evaluating formula: {e!r})")
+                return np.array([])
 
         def physical_to_int(self, *args):
             """"""  # noqa: DAR101, DAR201, DAR401
             if self.inverse_formula is None:
                 raise NotImplementedError("Formula: physical_to_int() requires inverse_formula.")
-            return numexpr.evaluate(self.inverse_formula, local_dict=self._build_namespace(*args))
+            try:
+                return numexpr.evaluate(self.inverse_formula, local_dict=self._build_namespace(*args))
+            except Exception as e:
+                print(f"Error evaluating inverse formula: {e!r})")
+                return np.array([])
 
 else:
 
@@ -613,7 +635,8 @@ else:
         }
 
         def _replace_special_symbols(self, text):
-            return text.upper().replace("&&", " and ").replace("||", " or ").replace("!", "not ")
+            text = FormulaBase.names_tolower(text)
+            return text.replace("&&", " and ").replace("||", " or ").replace("!", "not ")
 
         def int_to_physical(self, *args):
             """"""  # noqa: DAR101, DAR201

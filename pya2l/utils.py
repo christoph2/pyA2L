@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2010-2021 by Christoph Schueler <cpu12.gems.googlemail.com>
+   (C) 2010-2025 by Christoph Schueler <cpu12.gems.googlemail.com>
 
    All Rights Reserved
 
@@ -32,6 +31,7 @@ import pathlib
 import subprocess
 import sys
 import threading
+from enum import IntEnum
 from unicodedata import normalize
 
 from chardet.universaldetector import UniversalDetector
@@ -64,13 +64,13 @@ CYG_PREFIX = "/cygdrive/"
 def cygpathToWin(path):
     if path.startswith(CYG_PREFIX):
         path = path[len(CYG_PREFIX) :]
-        driveLetter = "{0}:\\".format(path[0])
+        driveLetter = f"{path[0]}:\\"
         path = path[2:].replace("/", "\\")
-        path = "{0}{1}".format(driveLetter, path)
+        path = f"{driveLetter}{path}"
     return path
 
 
-class SingletonBase(object):
+class SingletonBase:
     _lock = threading.Lock()
 
     def __new__(cls):
@@ -119,20 +119,20 @@ class StructureWithEnums(ctypes.Structure):
 
     def __str__(self):
         result = []
-        result.append("struct {0} {{".format(self.__class__.__name__))
+        result.append(f"struct {self.__class__.__name__} {{")
         for field in self._fields_:
             attr, attrType = field
             if attr in self._map:
                 attrType = self._map[attr]
             value = getattr(self, attr)
-            result.append("    {0} [{1}] = {2!r};".format(attr, attrType.__name__, value))
+            result.append(f"    {attr} [{attrType.__name__}] = {value!r};")
         result.append("};")
         return "\n".join(result)
 
     __repr__ = __str__
 
 
-class Tristate(object):
+class Tristate:
     def __init__(self, value=None):
         if any(value is v for v in (True, False, None)):
             self.value = value
@@ -159,7 +159,7 @@ class Bunch(dict):
     """"""
 
     def __init__(self, *args, **kwds):
-        super(Bunch, self).__init__(*args, **kwds)
+        super().__init__(*args, **kwds)
         self.__dict__ = self
 
 
@@ -172,7 +172,7 @@ def runCommand(cmd):
     result = proc.communicate()
     proc.wait()
     if proc.returncode:
-        raise CommandError("{0}".format(result[1]))
+        raise CommandError(f"{result[1]}")
     return result[0]
 
 
@@ -252,3 +252,27 @@ def detect_encoding(file_name: str = None, text: str = None) -> str:
     result = detector.result["encoding"] if detector.done else "ascii"
     detector.close()
     return result
+
+
+def enum_from_str(enum_class: IntEnum, enumerator: str) -> IntEnum:
+    """Create an `IntEnum` instance from an enumerator `str`.
+
+    Parameters
+    ----------
+    enum_class: IntEnum
+
+    enumerator: str
+
+    Example
+    -------
+
+    class Color(enum.IntEnum):
+        RED = 0
+        GREEN = 1
+        BLUE = 2
+
+    color: Color = enum_from_str(Color, "GREEN")
+
+
+    """
+    return enum_class(enum_class.__members__.get(enumerator))
