@@ -2723,8 +2723,8 @@ class VarCriterion:
     name: str
     longIdentifier: str
     values: List[str]
-    characteristic: Optional[str]
-    measurement: Optional[str]
+    var_characteristic: Optional[str]
+    var_measurement: Optional[str]
 
 
 @dataclass
@@ -2765,8 +2765,11 @@ class VariantCoding(CachedBase):
     _combination_cache: Dict[str, str] = field(repr=False)
     _product_cache: Dict[List[str], Tuple[str]] = field(repr=False)
 
-    def __init__(self, session, module_name: str = None):
-        variant_coding = session.query(model.VariantCoding).first()
+    def __init__(self, session, name: str=None, module_name: str = None):
+        variant_coding = session.query(model.VariantCoding) # .filter(model.Module.name == module_name).first()
+        if module_name is not None:
+            variant_coding.filter(model.Module.name == module_name)
+        variant_coding = variant_coding.first()
         self.session = session
         if variant_coding:
             self.variant_coded = True
@@ -2790,9 +2793,10 @@ class VariantCoding(CachedBase):
                     criterion.name,
                     criterion.longIdentifier,
                     criterion.value,
-                    criterion.var_measurement.name if criterion.var_measurement else None,
                     criterion.var_selection_characteristic.name if criterion.var_selection_characteristic else None,
+                    criterion.var_measurement.name if criterion.var_measurement else None,
                 )
+
             for comb in variant_coding.var_forbidden_comb:
                 self.forbidden_combs.append({p.criterionName: p.criterionValue for p in comb.pairs})
         else:
