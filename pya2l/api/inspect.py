@@ -142,6 +142,7 @@ class MemoryType(IntEnum):
     FLASH = 2
     RAM = 3
     ROM = 4
+    NOT_IN_ECU = 5
 
 
 class SegmentAttributeType(IntEnum):
@@ -1339,7 +1340,7 @@ def create_record_layout_components(parent) -> Dict:
         if name in ("fix_no_axis_pts",):
             continue
         aligned_address = record_layout.alignment.align(attr.data_type, base_address)
-        attr.address = base_address
+        attr.address = aligned_address
         if name == "axis_pts":
             if "fix_no_axis_pts" in record_layout.axes[attr.axis]:
                 max_axis_points = record_layout.axes[attr.axis].get("fix_no_axis_pts").number
@@ -2765,8 +2766,8 @@ class VariantCoding(CachedBase):
     _combination_cache: Dict[str, str] = field(repr=False)
     _product_cache: Dict[List[str], Tuple[str]] = field(repr=False)
 
-    def __init__(self, session, name: str=None, module_name: str = None):
-        variant_coding = session.query(model.VariantCoding) # .filter(model.Module.name == module_name).first()
+    def __init__(self, session, name: str = None, module_name: str = None):
+        variant_coding = session.query(model.VariantCoding)
         if module_name is not None:
             variant_coding.filter(model.Module.name == module_name)
         variant_coding = variant_coding.first()
