@@ -1323,7 +1323,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                         ),
                                         Parameter(
                                             PredefinedType::Enum, "MemoryType",
-                                            { "EEPROM", "EPROM", "FLASH", "RAM", "ROM", "REGISTER" }
+                                            { "EEPROM", "EPROM", "FLASH", "RAM", "ROM", "REGISTER", "NOT_IN_ECU" }
                                         ),
                                         Parameter(PredefinedType::Enum, "Attribute", { "INTERN", "EXTERN" }),
                                         Parameter(PredefinedType::Ulong, "Address"),

@@ -1112,7 +1112,7 @@ class MEMORY_SEGMENT(Keyword):
                 "VARIABLES",
             ),
         ),
-        (Enum, "MemoryType", ("EEPROM", "EPROM", "FLASH", "RAM", "ROM", "REGISTER")),
+        (Enum, "MemoryType", ("EEPROM", "EPROM", "FLASH", "RAM", "ROM", "REGISTER", "NOT_IN_ECU")),
         (Enum, "Attribute", ("INTERN", "EXTERN")),
         (Ulong, "Address"),
         (Ulong, "Size"),

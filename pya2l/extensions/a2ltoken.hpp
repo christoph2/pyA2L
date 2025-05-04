@@ -296,6 +296,8 @@ enum class A2LTokenType : std::uint16_t {
     COMMENT                      = 282,
     WS                           = 283,
     STRING                       = 284,
+	// Ext.
+	NOT_IN_ECU					 = 290,
 };
 
 #endif  // __A2LTOKEN_HPP

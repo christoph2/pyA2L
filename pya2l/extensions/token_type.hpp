@@ -289,6 +289,7 @@ const std::map<std::string, int, std::less<>> A2L_KEYWORDS{
     { "SYMBOL_TYPE_LINK",             275 },
     { "/begin",                       276 },
     { "/end",                         277 },
+	{ "NOT_IN_ECU",					  290 },
 };
 
 enum class TokenType : std::uint16_t {
@@ -577,6 +578,8 @@ enum class TokenType : std::uint16_t {
     COMMENT = 282,
     WS      = 283,
     STRING  = 284,
+	// Ext.
+	T_290	= 290,
 };
 
 constexpr std::uint16_t DATA_TYPE_MIN = static_cast<std::uint16_t>(TokenType::IDENT);
