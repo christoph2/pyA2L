@@ -498,11 +498,13 @@ class FormulaBase:
     system_constants: list of 2-tuples (name, value)
     """
 
-    def __init__(self, formula, inverse_formula=None, system_constants=None):
+    def __init__(
+        self, formula: str, inverse_formula: typing.Optional[str] = None, system_constants: typing.Optional[typing.Dict] = None
+    ):
         if not formula:
             raise ValueError("Formula cannot be None or empty.")
         if system_constants:
-            self.system_constants = dict(system_constants)
+            self.system_constants = system_constants
         else:
             self.system_constants = {}
         self.formula = self._replace_special_symbols(formula)
@@ -519,8 +521,7 @@ class FormulaBase:
             xs["X"] = xs.get("X1")  # ... create an alias.
         namespace = self.MATH_FUNCS
         namespace.update(xs)
-        for key in self.system_constants.keys():
-            namespace[key] = key
+        namespace.update(self.system_constants)
         namespace["sysc"] = self.sysc
         return namespace
 

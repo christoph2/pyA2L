@@ -373,6 +373,18 @@ class MemorySegment:
 
 
 @dataclass
+class DependentCharacteristic:
+    formula: str
+    characteristics: List[str]
+
+
+@dataclass
+class VirtualCharacteristic:
+    formula: str
+    characteristics: List[str]
+
+
+@dataclass
 class AxisInfo:
     data_type: str
     category: str
@@ -434,8 +446,8 @@ def fnc_np_shape(matrixDim: MatrixDim) -> tuple:
         return ()
     result = []
     for n, dim in sorted(asdict(matrixDim).items(), key=lambda x: x[0]):
-        if dim is None or dim <= 1:
-            break
+        if dim is None or dim < 1:
+            continue
         else:
             result.append(dim)
     return tuple(result)
@@ -644,21 +656,8 @@ class CompuMethod(CachedBase):
         elif conversionType == "FORM":
             formula = self.formula["formula"]
             formula_inv = self.formula["formula_inv"]
-            system_constants = []
-            constants_text = session.query(model.SystemConstant).all()
-            for cons in constants_text:
-                name = cons.name
-                text = cons.value
-                try:
-                    value = float(text)
-                except ValueError:
-                    value = text
-                system_constants.append(
-                    (
-                        name,
-                        value,
-                    )
-                )
+            mod_par = ModPar.get(session)
+            system_constants = mod_par.systemConstants
             self.evaluator = Formula(formula, formula_inv, system_constants)
         elif conversionType == "LINEAR":
             coeffs = self.coeffs_linear
@@ -842,7 +841,7 @@ class ModPar(CachedBase):
     noOfInterfaces: Optional[int]
     phoneNo: Optional[str]
     supplier: Optional[str]
-    systemConstants: List[Any]
+    systemConstants: Dict[str, Union[str, float]]
     user: Optional[str]
     version: Optional[str]
 
@@ -872,9 +871,17 @@ class ModPar(CachedBase):
         return module.mod_par is not None
 
     @staticmethod
-    def _dissect_sysc(constants: list):
+    def _dissect_sysc(constants: list) -> Dict:
         if constants is not None:
-            return process_sys_consts(list((c.name, c.value) for c in constants))
+            return process_sys_consts(
+                list(
+                    (
+                        c.name,
+                        c.value,
+                    )
+                    for c in constants
+                )
+            )
         return []
 
     @staticmethod
@@ -1228,11 +1235,9 @@ def create_record_layout_components(parent) -> Dict:
     result["axes"] = {}
     result["elements"] = {}
     if isinstance(parent, AxisPts):
-        axes_desc = [parent]
         record_layout = parent.depositAttr
     elif isinstance(parent, Characteristic):
         record_layout = parent.deposit
-        axes_desc = parent.axisDescriptions
     base_address = parent.address
     elements = []
     axes_names = record_layout.axes.keys()
@@ -1242,7 +1247,7 @@ def create_record_layout_components(parent) -> Dict:
             if parent.type == "VAL_BLK":
                 max_axis_points = reduce(mul, parent.fnc_np_shape, 1)
             else:
-                axis_desc = axes_desc[idx]
+                axis_desc = parent.axisDescription(axis_name)
                 max_axis_points = axis_desc.maxAxisPoints
         else:
             max_axis_points = parent.maxAxisPoints
@@ -1553,6 +1558,11 @@ class AxisDescr(CachedBase):
         else:
             return FixAxisParDist()
 
+    def axisDescription(self, axis):
+        if axis == 0 or axis.lower() == "x":
+            return self
+        raise ValueError("axis value out of range.")
+
 
 @dataclass
 class Characteristic(CachedBase):
@@ -1595,7 +1605,7 @@ class Characteristic(CachedBase):
     compuMethod: CompuMethod
     calibrationAccess: Optional[str]
     comparisonQuantity: Optional[str]
-    dependentCharacteristic: Optional[str]
+    dependent_characteristic: DependentCharacteristic
     discrete: bool
     displayIdentifier: Optional[str]
     ecuAddressExtension: int
@@ -1612,7 +1622,7 @@ class Characteristic(CachedBase):
     refMemorySegment: Optional[str]
     stepSize: Optional[float]
     symbolLink: Optional[str]
-    virtualCharacteristic: List
+    virtual_characteristic: VirtualCharacteristic
     fnc_np_shape: tuple
     record_layout_components: Dict
 
@@ -1635,12 +1645,17 @@ class Characteristic(CachedBase):
         self.annotations = _annotations(session, self.characteristic.annotation)
         self.bitMask = self.characteristic.bit_mask.mask if self.characteristic.bit_mask else None
         self.byteOrder = self.characteristic.byte_order.byteOrder if self.characteristic.byte_order else None
+        # all_axes_names()
         self.axisDescriptions = [AxisDescr.get(session, a) for a in self.characteristic.axis_descr]
         self.calibrationAccess = self.characteristic.calibration_access
         self.comparisonQuantity = self.characteristic.comparison_quantity
-        self.dependentCharacteristic = (
-            self.characteristic.dependent_characteristic.formula if self.characteristic.dependent_characteristic else None
-        )
+        if self.characteristic.dependent_characteristic:
+            self.dependent_characteristic = DependentCharacteristic(
+                self.characteristic.dependent_characteristic.formula,
+                list(self.characteristic.dependent_characteristic.characteristic_id),
+            )
+        else:
+            self.dependent_characteristic = None
         self.discrete = self.characteristic.discrete
         self.displayIdentifier = (
             self.characteristic.display_identifier.display_name if self.characteristic.display_identifier else None
@@ -1661,13 +1676,17 @@ class Characteristic(CachedBase):
         self.refMemorySegment = self.characteristic.ref_memory_segment.name if self.characteristic.ref_memory_segment else None
         self.stepSize = self.characteristic.step_size
         self.symbolLink = self._dissect_symbol_link(self.characteristic.symbol_link)
-        self.virtualCharacteristic = (
-            self.characteristic.virtual_characteristic.formula if self.characteristic.virtual_characteristic else []
-        )
+        if self.characteristic.virtual_characteristic:
+            self.virtual_characteristic = VirtualCharacteristic(
+                self.characteristic.virtual_characteristic.formula,
+                list(self.characteristic.virtual_characteristic.characteristic_id),
+            )
+        else:
+            self.virtual_characteristic = None
         self.fnc_np_shape = fnc_np_shape(self.matrixDim) or (() if self.number is None else (self.number,))
         self.record_layout_components = create_record_layout_components(self)
 
-    def axisDescription(self, axis):
+    def axisDescription(self, axis) -> AxisDescr:
         MAP = {
             "x": 0,
             "y": 1,
@@ -1775,6 +1794,10 @@ class Characteristic(CachedBase):
     def total_allocated_memory(self):
         """Total amount of statically allocated memory by Characteristic."""
         return self.record_layout_components.sizeof
+
+    def axis_info(self, axis_name: str) -> AxisInfo:
+        axes = self.record_layout_components.get("axes")
+        return axes.get(axis_name)
 
     @property
     def dim(self):
