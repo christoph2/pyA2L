@@ -385,13 +385,55 @@ class VirtualCharacteristic:
 
 
 @dataclass
+class MaxRefresh:
+    scalingUnit: Optional[int] = field(default=None)
+    rate: Optional[int] = field(default=None)
+
+
+@dataclass
+class SymbolLink:
+    symbolLink: Optional[str] = field(default=None)
+    offset: Optional[int] = field(default=None)
+
+
+@dataclass
+class CompuTable:
+    num_values: Optional[int] = field(default=None)
+    interpolation: Optional[bool] = field(default=None)
+    default_value: Optional[float] = field(default=None)
+    in_values: List[float] = field(default_factory=list)
+    out_values: List[float] = field(default_factory=list)
+
+
+@dataclass
+class CompuTableVerb:
+    num_values: Optional[int] = field(default=None)
+    ranges: Optional[bool] = field(default=None)
+    default_value: Optional[str] = field(default=None)
+    in_values: List[float] = field(default_factory=list)
+    text_values: List[str] = field(default_factory=list)
+
+
+@dataclass
+class CompuTableVerbRanges:
+    num_values: Optional[int] = field(default=None)
+    ranges: Optional[bool] = field(default=None)
+    default_value: Optional[str] = field(default=None)
+    lower_values: List[float] = field(default_factory=list)
+    upper_values: List[float] = field(default_factory=list)
+    text_values: List[str] = field(default_factory=list)
+
+
+@dataclass
 class AxisInfo:
     data_type: str
     category: str
-    maximum_points: int
+    maximum_element_count: int
     reversed_storage: bool
     addressing: str
     elements: Dict = field(default_factory=dict)
+    adjustable: bool = field(default=False)
+    actual_element_count: Optional[int] = field(default=None)
 
 
 def asam_type_size(datatype: str) -> str:
@@ -572,8 +614,8 @@ class CompuMethod(CachedBase):
     coeffs: Coeffs
     coeffs_linear: CoeffsLinear
     formula: Dict[str, float]
-    tab: Dict
-    tab_verb: Dict
+    tab: CompuTable
+    tab_verb: Union[CompuTableVerb, CompuTableVerbRanges]
     statusStringRef: Optional[str]
     refUnit: Optional[str]
     evaluator: Callable = field(repr=False, default=Identical())
@@ -595,6 +637,8 @@ class CompuMethod(CachedBase):
         cm_type = self.conversionType
         self.coeffs_linear = None
         self.coeffs = None
+        self.tab = CompuTable()
+        self.tab_verb = CompuTableVerb()
         if cm_type == "IDENTICAL":
             pass
         elif cm_type == "FORM":
@@ -618,11 +662,13 @@ class CompuMethod(CachedBase):
                 session.query(model.CompuTab).filter(model.CompuTab.name == self.compu_method.compu_tab_ref.conversionTable).first()
             )
             pairs = cvt.pairs
-            self.tab["num_values"] = len(pairs)
-            self.tab["interpolation"] = True if cm_type == "TAB_INTP" else False
-            self.tab["default_value"] = cvt.default_value_numeric.display_value if cvt.default_value_numeric else None
-            self.tab["in_values"] = [x.inVal for x in pairs]
-            self.tab["out_values"] = [x.outVal for x in pairs]
+            self.tab = CompuTable(
+                num_values=len(pairs),
+                interpolation=True if cm_type == "TAB_INTP" else False,
+                default_value=cvt.default_value_numeric.display_value if cvt.default_value_numeric else None,
+                in_values=[x.inVal for x in pairs],
+                out_values=[x.outVal for x in pairs],
+            )
         elif cm_type == "TAB_VERB":
             cvt = (
                 session.query(model.CompuVtab)
@@ -630,12 +676,14 @@ class CompuMethod(CachedBase):
                 .first()
             )
             if cvt:
-                self.tab_verb["ranges"] = False
                 pairs = cvt.pairs
-                self.tab_verb["num_values"] = len(pairs)
-                self.tab_verb["in_values"] = [x.inVal for x in pairs]
-                self.tab_verb["text_values"] = [x.outVal for x in pairs]
-                self.tab_verb["default_value"] = cvt.default_value.display_string if cvt.default_value else None
+                self.tab_verb = CompuTableVerb(
+                    ranges=False,
+                    num_values=len(pairs),
+                    default_value=cvt.default_value.display_string if cvt.default_value else None,
+                    in_values=[x.inVal for x in pairs],
+                    text_values=[x.outVal for x in pairs],
+                )
             else:
                 cvt = (
                     session.query(model.CompuVtabRange)
@@ -643,13 +691,15 @@ class CompuMethod(CachedBase):
                     .first()
                 )
                 if cvt:
-                    self.tab_verb["ranges"] = True
                     triples = cvt.triples
-                    self.tab_verb["num_values"] = len(triples)
-                    self.tab_verb["lower_values"] = [x.inValMin for x in triples]
-                    self.tab_verb["upper_values"] = [x.inValMax for x in triples]
-                    self.tab_verb["text_values"] = [x.outVal for x in triples]
-                    self.tab_verb["default_value"] = cvt.default_value.display_string if cvt.default_value else None
+                    self.tab_verb = CompuTableVerbRanges(
+                        ranges=True,
+                        num_values=len(triples),
+                        lower_values=[x.inValMin for x in triples],
+                        upper_values=[x.inValMax for x in triples],
+                        text_values=[x.outVal for x in triples],
+                        default_value=cvt.default_value.display_string if cvt.default_value else None,
+                    )
         conversionType = cm_type
         if conversionType in ("IDENTICAL", "NO_COMPU_METHOD"):
             self.evaluator = Identical()
@@ -670,21 +720,21 @@ class CompuMethod(CachedBase):
                 raise exceptions.StructuralError("'RAT_FUNC' requires coefficients (COEFFS).")
             self.evaluator = RatFunc(coeffs)
         elif conversionType in ("TAB_INTP", "TAB_NOINTP"):
-            klass = InterpolatedTable if self.tab["interpolation"] else LookupTable
-            pairs = zip(self.tab["in_values"], self.tab["out_values"])
-            default = self.tab["default_value"]
+            klass = InterpolatedTable if self.tab.interpolation else LookupTable
+            pairs = zip(self.tab.in_values, self.tab.out_values)
+            default = self.tab.default_value
             self.evaluator = klass(pairs, default)
         elif conversionType == "TAB_VERB":
-            default = self.tab_verb["default_value"]
-            if self.tab_verb["ranges"]:
+            default = self.tab_verb.default_value
+            if self.tab_verb.ranges:
                 triples = zip(
-                    self.tab_verb["lower_values"],
-                    self.tab_verb["upper_values"],
-                    self.tab_verb["text_values"],
+                    self.tab_verb.lower_values,
+                    self.tab_verb.upper_values,
+                    self.tab_verb.text_values,
                 )
                 self.evaluator = LookupTableWithRanges(triples, default)
             else:
-                pairs = zip(self.tab_verb["in_values"], self.tab_verb["text_values"])
+                pairs = zip(self.tab_verb.in_values, self.tab_verb.text_values)
                 self.evaluator = LookupTable(pairs, default)
         else:
             raise ValueError(f"Unknown conversation type '{conversionType}'.")
@@ -1234,11 +1284,14 @@ def create_record_layout_components(parent) -> Dict:
     result = {}
     result["axes"] = {}
     result["elements"] = {}
+    result["variables"] = {}
+    result["position"] = []
     if isinstance(parent, AxisPts):
         record_layout = parent.depositAttr
     elif isinstance(parent, Characteristic):
         record_layout = parent.deposit
     base_address = parent.address
+    dynamic_record_layout = not record_layout.staticRecordLayout
     elements = []
     axes_names = record_layout.axes.keys()
     for idx, axis_name in enumerate(axes_names):
@@ -1260,12 +1313,17 @@ def create_record_layout_components(parent) -> Dict:
                 reversed_storage = True
             else:
                 reversed_storage = False
+            if "no_axis_pts" in axis_components and dynamic_record_layout:
+                adjustable = True
+            else:
+                adjustable = False
             axis_info = AxisInfo(
                 data_type=axis_pts.data_type,
                 category="COM_AXIS",
-                maximum_points=max_axis_points,
+                maximum_element_count=max_axis_points,
                 reversed_storage=reversed_storage,
                 addressing=axis_pts.addressing,
+                adjustable=adjustable,
             )
         elif "axis_rescale" in axis_components:
             axis_rescale = axis_components.get("axis_rescale")
@@ -1274,16 +1332,17 @@ def create_record_layout_components(parent) -> Dict:
                 reversed_storage = True
             else:
                 reversed_storage = False
-            if "no_rescale" in axis_components:
-                axis_components.get("no_rescale")
+            if "no_rescale" in axis_components and dynamic_record_layout:
+                adjustable = True
             else:
-                pass
+                adjustable = False
             axis_info = AxisInfo(
                 data_type=axis_rescale.data_type,
                 category="RES_AXIS",
-                maximum_points=axis_rescale.maxNumberOfRescalePairs << 1,
+                maximum_element_count=axis_rescale.maxNumberOfRescalePairs,  # NOTE: Element count here is number of *PAIRS*
                 reversed_storage=reversed_storage,
                 addressing=axis_rescale.addressing,
+                adjustable=adjustable,
             )
         elif "offset" in axis_components:
             offset = axis_components.get("offset")
@@ -1300,7 +1359,7 @@ def create_record_layout_components(parent) -> Dict:
             axis_info = AxisInfo(
                 data_type="FLOAT64_IEEE",
                 category="FIX_AXIS",
-                maximum_points=axis_desc.maxAxisPoints,
+                maximum_element_count=axis_desc.maxAxisPoints,
                 reversed_storage=False,
                 addressing="DIRECT",
             )
@@ -1309,7 +1368,7 @@ def create_record_layout_components(parent) -> Dict:
             axis_info = AxisInfo(
                 data_type="-",
                 category="COM_AXIS",
-                maximum_points=fix_no_axis_pts.number,
+                maximum_element_count=fix_no_axis_pts.number,
                 reversed_storage=False,
                 addressing="DIRECT",
             )
@@ -1317,7 +1376,7 @@ def create_record_layout_components(parent) -> Dict:
             axis_info = AxisInfo(
                 data_type="-",
                 category="COM_AXIS",
-                maximum_points=axis_desc.maxAxisPoints,
+                maximum_element_count=axis_desc.maxAxisPoints,
                 reversed_storage=False,
                 addressing="DIRECT",
             )
@@ -1342,6 +1401,12 @@ def create_record_layout_components(parent) -> Dict:
             result["elements"][elment_name] = reserved
     elements = sorted(elements, key=lambda x: x[1].position)
     for name, attr in elements:
+        result["position"].append(
+            (
+                name,
+                attr,
+            )
+        )
         if name in ("fix_no_axis_pts",):
             continue
         aligned_address = record_layout.alignment.align(attr.data_type, base_address)
@@ -1350,7 +1415,7 @@ def create_record_layout_components(parent) -> Dict:
             if "fix_no_axis_pts" in record_layout.axes[attr.axis]:
                 max_axis_points = record_layout.axes[attr.axis].get("fix_no_axis_pts").number
             else:
-                max_axis_points = result["axes"][attr.axis].maximum_points
+                max_axis_points = result["axes"][attr.axis].maximum_element_count
             base_address = aligned_address + (attr.byte_size * max_axis_points)
         elif name == "axis_rescale":
             base_address = attr.byte_size * attr.maxNumberOfRescalePairs * 2
@@ -1389,7 +1454,7 @@ class AxisPts(CachedBase):
     readOnly: bool
     refMemorySegment: Optional[str]
     stepSize: Optional[float]
-    symbolLink: Dict
+    symbolLink: SymbolLink
     depositAttr: RecordLayout
     record_layout_components: Dict
 
@@ -1449,12 +1514,9 @@ class AxisPts(CachedBase):
     @staticmethod
     def _dissect_symbol_link(sym_link):
         if sym_link is not None:
-            result = {}
-            result["symbolName"] = sym_link.symbolName
-            result["offset"] = sym_link.offset
+            return SymbolLink(sym_link.symbolName, sym_link.offset)
         else:
-            result = None
-        return result
+            return SymbolLink()
 
     @property
     def fnc_asam_dtype(self):
@@ -1615,7 +1677,7 @@ class Characteristic(CachedBase):
     guardRails: bool
     mapList: List
     matrixDim: MatrixDim
-    maxRefresh: Dict
+    maxRefresh: MaxRefresh
     number: Optional[int]
     physUnit: Optional[str]
     readOnly: bool
@@ -1854,22 +1916,16 @@ class Characteristic(CachedBase):
     @staticmethod
     def _dissect_max_refresh(max_ref):
         if max_ref is not None:
-            result = {}
-            result["scalingUnit"] = max_ref.scalingUnit
-            result["rate"] = max_ref.rate
+            return MaxRefresh(max_ref.scalingUnit, max_ref.rate)
         else:
-            result = None
-        return result
+            return MaxRefresh()
 
     @staticmethod
     def _dissect_symbol_link(sym_link):
         if sym_link is not None:
-            result = {}
-            result["symbolName"] = sym_link.symbolName
-            result["offset"] = sym_link.offset
+            return SymbolLink(sym_link.symbolName, sym_link.offset)
         else:
-            result = None
-        return result
+            return SymbolLink()
 
 
 def axispts_or_characteristic(session, name: str) -> Union[AxisPts, Characteristic]:
@@ -2103,11 +2159,11 @@ class Measurement(CachedBase):
     functionList: List[Dict]
     layout: Optional[str]
     matrixDim: MatrixDim
-    maxRefresh: Dict
+    maxRefresh: MaxRefresh
     physUnit: Optional[str]
     readWrite: bool
     refMemorySegment: Optional[str]
-    symbolLink: Dict
+    symbolLink: SymbolLink
     virtual: List[str]
     compuMethod: CompuMethod
     fnc_np_shape: tuple
@@ -2177,22 +2233,16 @@ class Measurement(CachedBase):
     @staticmethod
     def _dissect_max_refresh(max_ref):
         if max_ref is not None:
-            result = {}
-            result["scalingUnit"] = max_ref.scalingUnit
-            result["rate"] = max_ref.rate
+            return MaxRefresh(max_ref.scalingUnit, max_ref.rate)
         else:
-            result = None
-        return result
+            MaxRefresh()
 
     @staticmethod
     def _dissect_symbol_link(sym_link):
         if sym_link is not None:
-            result = {}
-            result["symbolName"] = sym_link.symbolName
-            result["offset"] = sym_link.offset
+            return SymbolLink(sym_link.symbolName, sym_link.offset)
         else:
-            result = None
-        return result
+            return SymbolLink()
 
 
 def get_characteristic_or_axispts(session, name):
