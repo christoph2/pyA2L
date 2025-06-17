@@ -124,7 +124,7 @@ class Preprocessor {
     }
 
     void _process_file(const std::string& filename) {
-        std::uint64_t      start_line_number = 1;
+        uint64_t      start_line_number = 1;
         fs::path           path{ filename };
         auto               abs_pth = fs::absolute(path);
         std::ifstream      file(abs_pth, std::ios::binary);
@@ -134,7 +134,7 @@ class Preprocessor {
         bool               ifdata_name = false;
         bool               collect{ false };
         bool               include     = false;
-        std::uint8_t       skip_tokens = 0;
+        uint8_t       skip_tokens = 0;
         std::vector<Token> collected_tokens{};
         bool               suppress_comments{ true };
 
@@ -326,7 +326,7 @@ class Preprocessor {
     }
 
     void update_line_map(
-        const fs::path& path, std::uint64_t abs_start, std::uint64_t abs_end, std::uint64_t rel_start, std::uint64_t rel_end
+        const fs::path& path, uint64_t abs_start, uint64_t abs_end, uint64_t rel_start, uint64_t rel_end
     ) {
         const auto key = shorten_file_name(path);
         line_map.add_entry(path.string(), abs_start, abs_end, rel_start, rel_end);

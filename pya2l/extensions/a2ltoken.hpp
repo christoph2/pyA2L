@@ -10,7 +10,7 @@
     #include <map>
     #include <string>
 
-enum class A2LTokenType : std::uint16_t {
+enum class A2LTokenType : uint16_t {
     INVALID                      = 0,
     ALIGNMENT_BYTE               = 1,
     ALIGNMENT_FLOAT16_IEEE       = 2,

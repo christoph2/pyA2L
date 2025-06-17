@@ -33,7 +33,7 @@
 
     #define PP_UNREFERENCED_PARAMETER(p) ((p) = (p))
 
-enum class State : std::uint8_t {
+enum class State : uint8_t {
     IDLE,
     IN_STRING,
 };
@@ -92,7 +92,7 @@ static inline void rstrip(std::string &s) noexcept {
 /*
  * Cut out section of text and replace it with a single space.
  */
-inline void blank_out(std::string &text, std::int32_t start, std::int32_t end) noexcept {
+inline void blank_out(std::string &text, int32_t start, int32_t end) noexcept {
     if (end == -1) {
         text.resize(start);
     } else {

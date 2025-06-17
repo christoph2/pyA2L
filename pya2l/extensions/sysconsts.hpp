@@ -11,7 +11,7 @@
 #include "ctre.hpp"
 
 
-using sys_const_variant_t = std::variant<std::monostate, std::int64_t, long double, std::string>;
+using sys_const_variant_t = std::variant<std::monostate, int64_t, long double, std::string>;
 using sys_const_t = std::map<std::string, sys_const_variant_t>;
 
 

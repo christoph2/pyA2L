@@ -1097,7 +1097,7 @@ inline auto to_nonnegative_int(T value, Int upper) -> Int {
   return int_value;
 }
 
-constexpr auto pow10(std::uint32_t n) -> long long {
+constexpr auto pow10(uint32_t n) -> long long {
   return n == 0 ? 1 : 10 * pow10(n - 1);
 }
 

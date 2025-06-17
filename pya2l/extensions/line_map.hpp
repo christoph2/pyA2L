@@ -52,7 +52,7 @@ class LineMap {
         if (item.has_value()) {
             auto idx                                             = item.value();
             auto& [abs_start, abs_end, rel_start, rel_end, name] = m_items[idx];
-            std::int64_t offset                                  = (abs_start - rel_start);
+            int64_t offset                                  = (abs_start - rel_start);
             return std::tuple<std::string, std::size_t>(name, line_no - offset);
         } else {
             return std::nullopt;
@@ -60,7 +60,7 @@ class LineMap {
     }
 
     void add_entry(
-        const std::string& path, std::uint64_t abs_start, std::uint64_t abs_end, std::uint64_t rel_start, std::uint64_t rel_end
+        const std::string& path, uint64_t abs_start, uint64_t abs_end, uint64_t rel_start, uint64_t rel_end
     ) {
         m_items.push_back(
             std::tuple<decltype(abs_start), decltype(abs_end), decltype(rel_start), decltype(rel_end), decltype(path)>{

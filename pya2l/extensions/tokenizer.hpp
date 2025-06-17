@@ -33,7 +33,7 @@
     #include "token_type.hpp"
     #include "utils.hpp"
 
-enum class CharClass : std::int8_t {
+enum class CharClass : int8_t {
     NONE       = -1,
     WHITESPACE = 0,
     REGULAR    = 1,
@@ -47,13 +47,13 @@ constexpr char NL      = '\n';
 constexpr char CR      = '\r';
 constexpr char DQUOTE  = '"';
 
-enum class StringStateType : std::uint8_t {
+enum class StringStateType : uint8_t {
     IDLE,
     IN_STRING,
     MAY_CLOSE,
 };
 
-enum class CommentStateType : std::uint8_t {
+enum class CommentStateType : uint8_t {
     IDLE,
     MAY_START,
     SINGLE_LINE,
@@ -61,7 +61,7 @@ enum class CommentStateType : std::uint8_t {
     MAY_CLOSE
 };
 
-enum class TokenClass : std::uint8_t {
+enum class TokenClass : uint8_t {
     REGULAR,
     WHITESPACE,
     COMMENT,
@@ -91,7 +91,7 @@ struct Token {
     Token(Token &&)                 = default;
 
     TokenClass    m_token_class;
-    std::uint16_t m_token_type{ std::bit_cast<std::uint16_t>(INVALID) };
+    uint16_t m_token_type{ std::bit_cast<uint16_t>(INVALID) };
     LineNumbers   m_line_numbers;
     std::string   m_payload;
 
@@ -104,27 +104,27 @@ struct Token {
 
     void set_token_type() {
         if (m_token_class == TokenClass::WHITESPACE) {
-            m_token_type = static_cast<std::uint16_t>(WS);
+            m_token_type = static_cast<uint16_t>(WS);
         } else if (m_token_class == TokenClass::COMMENT) {
-            m_token_type = static_cast<std::uint16_t>(COMMENT);
+            m_token_type = static_cast<uint16_t>(COMMENT);
         } else if (m_token_class == TokenClass::STRING) {
-            m_token_type = static_cast<std::uint16_t>(STRING);
+            m_token_type = static_cast<uint16_t>(STRING);
             trim(m_payload);
         } else {
             const auto entry = A2L_KEYWORDS.find(m_payload);
 
             if (entry != A2L_KEYWORDS.end()) {
-                m_token_type = static_cast<std::uint16_t>(entry->second);
+                m_token_type = static_cast<uint16_t>(entry->second);
             } else {
                 if (ctre::match<PAT_INT>(m_payload)) {
-                    m_token_type = static_cast<std::uint16_t>(INT);
+                    m_token_type = static_cast<uint16_t>(INT);
                 } else if (ctre::match<PAT_HEX>(m_payload)) {
-                    m_token_type = static_cast<std::uint16_t>(HEX);
+                    m_token_type = static_cast<uint16_t>(HEX);
                 } else if (ctre::match<PAT_FLOAT>(m_payload)) {
-                    m_token_type = static_cast<std::uint16_t>(FLOAT);
+                    m_token_type = static_cast<uint16_t>(FLOAT);
                 } else {
                     // std::cout << "\tIDEN�T: " << m_payload << std::endl;
-                    m_token_type = static_cast<std::uint16_t>(IDENT);
+                    m_token_type = static_cast<uint16_t>(IDENT);
                 }
             }
         }

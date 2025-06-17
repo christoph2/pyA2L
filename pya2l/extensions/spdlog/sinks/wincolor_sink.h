@@ -30,7 +30,7 @@ public:
     wincolor_sink &operator=(const wincolor_sink &other) = delete;
 
     // change the color for the given level
-    void set_color(level::level_enum level, std::uint16_t color);
+    void set_color(level::level_enum level, uint16_t color);
     void log(const details::log_msg &msg) final override;
     void flush() final override;
     void set_pattern(const std::string &pattern) override final;
@@ -43,10 +43,10 @@ protected:
     mutex_t &mutex_;
     bool should_do_colors_;
     std::unique_ptr<spdlog::formatter> formatter_;
-    std::array<std::uint16_t, level::n_levels> colors_;
+    std::array<uint16_t, level::n_levels> colors_;
 
     // set foreground color and return the orig console attributes (for resetting later)
-    std::uint16_t set_foreground_color_(std::uint16_t attribs);
+    uint16_t set_foreground_color_(uint16_t attribs);
 
     // print a range of formatted message to console
     void print_range_(const memory_buf_t &formatted, size_t start, size_t end);

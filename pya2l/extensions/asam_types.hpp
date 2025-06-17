@@ -5,7 +5,7 @@
 
 using toke_type = std::size_t;
 
-enum class PredefinedType : std::uint16_t {
+enum class PredefinedType : uint16_t {
     Int        = 1,
     Uint       = 2,
     Long       = 3,
@@ -128,13 +128,13 @@ struct IntegralType : public AsamType {
     const bool              is_signed = std::is_signed_v<Ty>;
 };
 
-struct Int : IntegralType<std::int16_t> {};
+struct Int : IntegralType<int16_t> {};
 
-struct UInt : public IntegralType<std::uint16_t> {};
+struct UInt : public IntegralType<uint16_t> {};
 
-struct Long : public IntegralType<std::int32_t> {};
+struct Long : public IntegralType<int32_t> {};
 
-struct ULong : public IntegralType<std::uint32_t> {};
+struct ULong : public IntegralType<uint32_t> {};
 
 struct Float : public AsamType {
     Float() {
@@ -147,7 +147,7 @@ struct Float : public AsamType {
         // return (value < m_limits.min() || value > m_limits.max()) ? false : true;
     }
 
-    long double tofloat(std::string_view text_value, std::uint8_t radix = 10) const {
+    long double tofloat(std::string_view text_value, uint8_t radix = 10) const {
         return std::strtold(text_value.data(), nullptr);
     }
 

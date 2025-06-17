@@ -95,8 +95,8 @@ class IfDataBuilder : public IfDataBase {
    private:
 
     void set_line_numbers() noexcept {
-        std::uint64_t start_line = 0;
-        std::uint64_t start_col  = 0;
+        uint64_t start_line = 0;
+        uint64_t start_col  = 0;
 
         for (auto tk : m_tokens) {
             if ((tk.m_token_class == TokenClass::REGULAR) && (tk.m_payload == "IF_DATA")) {
