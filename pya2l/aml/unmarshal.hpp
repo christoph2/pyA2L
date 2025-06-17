@@ -46,14 +46,14 @@ class Reader {
 class Node {
    public:
 
-    enum class NodeType : std::uint8_t {
+    enum class NodeType : uint8_t {
         TERMINAL,
         MAP,
         AGGR,
         NONE,
     };
 
-    enum class AmlType : std::uint8_t {
+    enum class AmlType : uint8_t {
         NONE,
         TYPE,
         TERMINAL,
@@ -309,7 +309,7 @@ class Node {
     map_t      m_map{};
 };
 
-inline Node make_pdt(AMLPredefinedTypeEnum type, const std::vector<std::uint32_t>& array_spec) {
+inline Node make_pdt(AMLPredefinedTypeEnum type, const std::vector<uint32_t>& array_spec) {
     Node::list_t lst{};
 
     for (const auto& arrs : array_spec) {
@@ -331,9 +331,9 @@ inline Node make_referrer(ReferrerType category, const std::string& identifier) 
     return Node(Node::AmlType::REFERRER, map);
 }
 
-using enumerators_t = std::map<std::string, std::uint32_t>;
+using enumerators_t = std::map<std::string, uint32_t>;
 
-inline Node make_enumerator(const std::string& name, std::uint32_t value) {
+inline Node make_enumerator(const std::string& name, uint32_t value) {
     Node::map_t map = {
         { "NAME",  Node(Node::AmlType::TERMINAL, name)  },
         { "VALUE", Node(Node::AmlType::TERMINAL, value) }
@@ -457,17 +457,17 @@ class Unmarshaller {
     }
 
     Node load_pdt() {
-        auto tp = static_cast<AMLPredefinedTypeEnum>(m_reader.from_binary<std::uint8_t>());
+        auto tp = static_cast<AMLPredefinedTypeEnum>(m_reader.from_binary<uint8_t>());
         auto                       arr_count = m_reader.from_binary<std::size_t>();
-        std::vector<std::uint32_t> array_spec;
+        std::vector<uint32_t> array_spec;
         for (auto idx = 0UL; idx < arr_count; ++idx) {
-            array_spec.push_back(m_reader.from_binary<std::uint32_t>());
+            array_spec.push_back(m_reader.from_binary<uint32_t>());
         }
         return make_pdt(tp, array_spec);
     }
 
     Node load_referrrer() {
-        const auto  cat        = ReferrerType(m_reader.from_binary<std::uint8_t>());
+        const auto  cat        = ReferrerType(m_reader.from_binary<uint8_t>());
         const auto& identifier = m_reader.from_binary_str();
         return make_referrer(cat, identifier);
     }
@@ -481,7 +481,7 @@ class Unmarshaller {
 
             for (auto idx = 0UL; idx < enumerator_count; ++idx) {
                 auto tag   = m_reader.from_binary_str();
-                auto value = m_reader.from_binary< std::uint32_t>();
+                auto value = m_reader.from_binary< uint32_t>();
                 enumerators.emplace(tag, value);
             }
             return make_enumeration(name, enumerators);

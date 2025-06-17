@@ -17,7 +17,7 @@
 
 static const std::regex AML_REGEX{ R"""(((/\*.*?\*/)|(//.*?$))|(\"[^\"]*?\")|(/begin|/end|block|enum|taggedstruct|taggedunion|struct)|([;,=\*\{\}\[\]\(\)])|(char|long|uchar|ulong|int64|uint64|int|uint|double|float|float16)|(\b[a-zA-Z_][a-zA-Z_0-9.]*\b)|(\b([+\-]?(\d+([.]\d*)?([eE][+\-]?\d+)?|[.]\d+([eE][+\-]?\d+)?))\b)|(\b((0[xX][0-9a-fA-F]+)|([+\-]?[0-9]+))\b))""", std::regex_constants::ECMAScript };    // std::regex_constants::ECMAScript, std::regex::extended
 
-enum class AmlTokenType : std::uint8_t {
+enum class AmlTokenType : uint8_t {
     NONE = 0,
     IDENT = 1,
     FLOAT = 2,
@@ -44,7 +44,7 @@ enum class AmlTokenType : std::uint8_t {
     BLOCK = 24,
 };
 
-using TokenDataType = std::optional<std::variant<std::int64_t, long double, std::string, AMLPredefinedTypeEnum>>;
+using TokenDataType = std::optional<std::variant<int64_t, long double, std::string, AMLPredefinedTypeEnum>>;
 
 struct AmlToken {
     AmlTokenType type{ AmlTokenType::NONE };
