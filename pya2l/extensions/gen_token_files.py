@@ -410,7 +410,7 @@ with open("token_type.hpp", "wt") as of:
             item = f'"{item}"'
         of.write(f"""    {{{item}, {idx}}},\n""")
     of.write("};\n\n")
-    of.write("enum class TokenType: std::uint16_t {\n")
+    of.write("enum class TokenType: uint16_t {\n")
     for idx in range(275):
         of.write(f"\tT__{idx}={idx + 1},\n")
     for n, v in TPs:
@@ -420,7 +420,7 @@ with open("token_type.hpp", "wt") as of:
 
 with open("a2ltoken.hpp", "wt") as of:
     of.write(HEADER2)
-    of.write("enum class A2LTokenType: std::uint16_t {\n")
+    of.write("enum class A2LTokenType: uint16_t {\n")
 
     li = [(idx, item) for idx, item in enumerate(literalNames)]
     li.extend([(v, k) for k, v in TPs])

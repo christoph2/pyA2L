@@ -40,7 +40,7 @@ std::vector<Token> split_by_new_line(std::string_view line, std::size_t start_li
 
     char const        *cstr     = line.data();
     char const * const START    = line.data();
-    const std::int64_t LAST_IDX = line.length() - 1;
+    const int64_t LAST_IDX = line.length() - 1;
 
     if (LAST_IDX < 1) {
         return std::vector<Token>{
@@ -53,8 +53,8 @@ std::vector<Token> split_by_new_line(std::string_view line, std::size_t start_li
         };
     }
 
-    std::int64_t       pos  = 0;
-    std::int64_t       prev = -1;
+    int64_t       pos  = 0;
+    int64_t       prev = -1;
     auto               row  = start_line;
     LineNumbers        line_numbers{};
     std::vector<Token> result;
@@ -164,7 +164,7 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
     };
 
     constexpr auto char_class_to_int = [](const CharClass &cc) noexcept {
-        return static_cast<std::int8_t>(cc);
+        return static_cast<int8_t>(cc);
     };
 
     const auto in_comment = [&comment_state]() noexcept {

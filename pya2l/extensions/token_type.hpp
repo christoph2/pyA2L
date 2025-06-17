@@ -292,7 +292,7 @@ const std::map<std::string, int, std::less<>> A2L_KEYWORDS{
 	{ "NOT_IN_ECU",					  290 },
 };
 
-enum class TokenType : std::uint16_t {
+enum class TokenType : uint16_t {
     T__0    = 1,
     T__1    = 2,
     T__2    = 3,
@@ -582,6 +582,6 @@ enum class TokenType : std::uint16_t {
 	T_290	= 290,
 };
 
-constexpr std::uint16_t DATA_TYPE_MIN = static_cast<std::uint16_t>(TokenType::IDENT);
+constexpr uint16_t DATA_TYPE_MIN = static_cast<uint16_t>(TokenType::IDENT);
 
 #endif  // __TOKEN_TYPE_HPP

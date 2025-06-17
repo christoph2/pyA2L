@@ -10,7 +10,7 @@
 class Parameter {
    public:
 
-    using type_t = enum class ParameterType : std::uint8_t {
+    using type_t = enum class ParameterType : uint8_t {
         INTEGRAL,
         ENUMERATION,
         TUPLE
@@ -94,7 +94,7 @@ bool validate(const Parameter& p, const ANTLRToken* token, const AsamVariantType
     bool ok{ false };
 
     if (std::size(p.get_enumerators()) == 0) {
-        const auto entry = ASAM_TYPES[std::bit_cast<std::uint16_t>(p.m_type) - 1];
+        const auto entry = ASAM_TYPES[std::bit_cast<uint16_t>(p.m_type) - 1];
         ok              = entry->validate(value);
 		if (!ok) {
             spdlog::get("a2lparser")->warn("Value out of range [{}:{}]", token->line(), token->column());
@@ -147,7 +147,7 @@ AsamVariantType convert(PredefinedType type, std::string_view text) {
 class ParameterTupleParser {
    public:
 
-    enum class StateType : std::uint8_t {
+    enum class StateType : uint8_t {
         IDLE = 0,
         COLLECTING,
         EXCESS_TOKENS,
@@ -194,7 +194,7 @@ class ParameterTupleParser {
                 m_tuple_size = std::size(m_parameter.get_tuple_elements());
                 m_row.resize(m_tuple_size);
                 m_state = StateType::COLLECTING;
-                m_token_count = std::numeric_limits<std::uint64_t>::max();
+                m_token_count = std::numeric_limits<uint64_t>::max();
             }
             auto type       = std::get<0>(m_tuple_elements[m_column]);
             m_row[m_column] = convert(type, token->getText());

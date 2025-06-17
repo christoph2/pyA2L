@@ -8,7 +8,7 @@
 template<>
 struct std::hash<A2LTokenType> {
     std::size_t operator()(const A2LTokenType &s) const noexcept {
-        return std::hash<std::uint16_t>{}(static_cast<std::uint16_t>(s));
+        return std::hash<uint16_t>{}(static_cast<uint16_t>(s));
     }
 };
 

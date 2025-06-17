@@ -42,7 +42,7 @@ SPDLOG_INLINE wincolor_sink<ConsoleMutex>::~wincolor_sink() {
 // change the color for the given level
 template <typename ConsoleMutex>
 void SPDLOG_INLINE wincolor_sink<ConsoleMutex>::set_color(level::level_enum level,
-                                                          std::uint16_t color) {
+                                                          uint16_t color) {
     std::lock_guard<mutex_t> lock(mutex_);
     colors_[static_cast<size_t>(level)] = color;
 }
@@ -112,8 +112,8 @@ void SPDLOG_INLINE wincolor_sink<ConsoleMutex>::set_color_mode_impl(color_mode m
 
 // set foreground color and return the orig console attributes (for resetting later)
 template <typename ConsoleMutex>
-std::uint16_t SPDLOG_INLINE
-wincolor_sink<ConsoleMutex>::set_foreground_color_(std::uint16_t attribs) {
+uint16_t SPDLOG_INLINE
+wincolor_sink<ConsoleMutex>::set_foreground_color_(uint16_t attribs) {
     CONSOLE_SCREEN_BUFFER_INFO orig_buffer_info;
     if (!::GetConsoleScreenBufferInfo(static_cast<HANDLE>(out_handle_), &orig_buffer_info)) {
         // just return white if failed getting console info
@@ -125,7 +125,7 @@ wincolor_sink<ConsoleMutex>::set_foreground_color_(std::uint16_t attribs) {
     auto ignored =
         ::SetConsoleTextAttribute(static_cast<HANDLE>(out_handle_), static_cast<WORD>(new_attribs));
     (void)(ignored);
-    return static_cast<std::uint16_t>(orig_buffer_info.wAttributes);  // return orig attribs
+    return static_cast<uint16_t>(orig_buffer_info.wAttributes);  // return orig attribs
 }
 
 // print a range of formatted message to console

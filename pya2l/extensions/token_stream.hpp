@@ -18,7 +18,7 @@
         #pragma warning(disable: 4251 4273)
     #endif
 
- #if defined(_WIN64)
+#if defined(_WIN64)
 typedef __int64 ssize_t;
 #elif defined(_WIN32) && !defined(_SSIZE_T_DEFINED)
 typedef __int32 ssize_t;
