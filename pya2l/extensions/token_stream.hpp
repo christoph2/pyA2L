@@ -18,11 +18,14 @@
         #pragma warning(disable: 4251 4273)
     #endif
 
- #ifdef _WIN64
+ #if defined(_WIN64)
 typedef __int64 ssize_t;
-    #else
+#elif defined(_WIN32) && !defined(_SSIZE_T_DEFINED)
 typedef __int32 ssize_t;
-    #endif
+#define _SSIZE_T_DEFINED
+#else
+#include <unistd.h>  // On POSIX systems, ssize_t is already defined here
+#endif
 
 template<typename Ty_>
 class FixedSizeStack {
@@ -162,7 +165,7 @@ class ANTLRToken /*: public antlr4::Token*/ {
                std::to_string(m_start_line) + ":" + std::to_string(m_start_column - 1) + "]";
     }
 
-    std::int16_t channel() const {
+    int16_t channel() const {
         return DEFAULT_CHANNEL;
     }
 
@@ -273,19 +276,19 @@ class TokenReader {
         }
     }
 
-    ANTLRToken *LT(std::int64_t i) {
+    ANTLRToken *LT(int64_t i) {
         if (i == -1) {
             return &m_lastToken;
         }
 
         sync(i);
 
-        std::int64_t index = static_cast<std::int64_t>(_p) + i - 1;
+        int64_t index = static_cast<int64_t>(_p) + i - 1;
         if (index < 0) {
             throw IndexOutOfBoundsException(std::string("LT(") + std::to_string(i) + std::string(") gives negative index"));
         }
 
-        if (index >= static_cast<std::int64_t>(_tokens.size())) {
+        if (index >= static_cast<int64_t>(_tokens.size())) {
             // assert(_tokens.size() > 0 && _tokens.back()->type()) == ANTLRToken::EOF);
             return &_tokens.back();
         }
@@ -293,7 +296,7 @@ class TokenReader {
         return &_tokens[static_cast<std::size_t>(index)];
     }
 
-    ANTLRToken::token_t LA(std::int64_t k) noexcept {
+    ANTLRToken::token_t LA(int64_t k) noexcept {
         return LT(k)->type();
     }
 

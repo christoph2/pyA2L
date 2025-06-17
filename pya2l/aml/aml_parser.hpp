@@ -68,12 +68,12 @@ class AMLParser {
         return variant_get<std::string>(*match_get_value(AmlTokenType::IDENT));
     }
 
-    auto get_int() -> std::int64_t {
+    auto get_int() -> int64_t {
         auto token = current_token();
         auto value = *token.value;
         consume();
-        if (std::holds_alternative<std::int64_t >(value)) {
-            return std::get<std::int64_t>(value);
+        if (std::holds_alternative<int64_t >(value)) {
+            return std::get<int64_t>(value);
         } else if (std::holds_alternative<long double>(value)) {
             return static_cast<long double>(std::get<long double>(value));
         } else if (std::holds_alternative<std::string>(value)) {
@@ -413,9 +413,9 @@ class AMLParser {
         }
     }
 
-    auto array_specifier() -> std::vector<std::int64_t> {
-        std::vector<std::int64_t> result;
-        std::int64_t              value;
+    auto array_specifier() -> std::vector<int64_t> {
+        std::vector<int64_t> result;
+        int64_t              value;
         auto                      token = current_token();
         if (token.type == AmlTokenType::LSQ) {
             while (true) {

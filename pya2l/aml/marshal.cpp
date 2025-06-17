@@ -20,20 +20,20 @@ void dumps(std::stringstream& ss, std::shared_ptr<Type> tp_);
 // AMLPredefinedType
 inline void dumps(std::stringstream& ss, const AMLPredefinedType& pdt) {
     ss << to_binary<std::string>("PD");
-    auto value = static_cast<std::uint8_t>(pdt.get_pdt());
+    auto value = static_cast<uint8_t>(pdt.get_pdt());
     ss << to_binary(value);
 	const auto& arr_spec = pdt.get_array_spec();
 	const std::size_t array_size = std::size(arr_spec);
 	ss << to_binary(array_size);
-	for (std::uint32_t arr : arr_spec) {
-		ss << to_binary<std::uint32_t>(arr);
+	for (uint32_t arr : arr_spec) {
+		ss << to_binary<uint32_t>(arr);
 	}
 }
 
 // Referrer.
 inline void dumps(std::stringstream& ss, const Referrer& ref) {
     ss << to_binary<std::string>("R");
-    auto cat = static_cast<std::uint8_t>(ref.get_category());
+    auto cat = static_cast<uint8_t>(ref.get_category());
     auto idf = ref.get_identifier();
     ss << to_binary(cat);
     ss << to_binary(idf);
@@ -208,7 +208,7 @@ inline void dumps(std::stringstream& ss, const EnumerationOrReferrer& er) {
         ss << to_binary(enumerator_count);
         for (const auto& [tag, value] : enumerators) {
             ss << to_binary(tag);
-            ss << to_binary<std::uint32_t>(value);
+            ss << to_binary<uint32_t>(value);
         }
     } else if (std::holds_alternative<Referrer>(er)) {
         auto ref = std::get<Referrer>(er);

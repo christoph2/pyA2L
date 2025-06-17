@@ -64,8 +64,8 @@ inline std::string get_string(auto var) {
 }
 
 inline long double as_double(const numeric_t& value) {
-    if (std::holds_alternative<std::int64_t>(value)) {
-        return static_cast<long double>(std::get<std::int64_t>(value));
+    if (std::holds_alternative<int64_t>(value)) {
+        return static_cast<long double>(std::get<int64_t>(value));
     } else if (std::holds_alternative<long double>(value)) {
         return std::get<long double>(value);
     }
@@ -135,18 +135,18 @@ class Enumeration {
    public:
 
     explicit Enumeration(const std::string& name, const std::vector<Enumerator>& enumerators) : m_name(name) {
-        std::uint64_t last_idx = 0ULL;
-        std::int64_t  value    = 0ULL;
+        uint64_t last_idx = 0ULL;
+        int64_t  value    = 0ULL;
         for (const auto& en : enumerators) {
             auto tag       = en.get_tag();
             auto value_opt = en.get_value();
             if (value_opt) {
                 auto value_cont = *value_opt;
 
-                if (std::holds_alternative<std::int64_t>(value_cont)) {
-                    value = std::get<std::int64_t>(value_cont);
+                if (std::holds_alternative<int64_t>(value_cont)) {
+                    value = std::get<int64_t>(value_cont);
                 } else if (std::holds_alternative<long double>(value_cont)) {
-                    value = static_cast<std::int64_t>(std::get<long double>(value_cont));
+                    value = static_cast<int64_t>(std::get<long double>(value_cont));
                 }
                 m_enumerators[tag] = value;
                 last_idx           = value + 1ULL;
@@ -160,14 +160,14 @@ class Enumeration {
         return m_name;
     }
 
-    const std::map<std::string, std::uint64_t>& get_enumerators() const noexcept {
+    const std::map<std::string, uint64_t>& get_enumerators() const noexcept {
         return m_enumerators;
     }
 
    private:
 
     std::string                          m_name;
-    std::map<std::string, std::uint64_t> m_enumerators{};
+    std::map<std::string, uint64_t> m_enumerators{};
 };
 
 using EnumerationOrReferrer = std::variant<std::monostate, Referrer, Enumeration>;
@@ -209,7 +209,7 @@ public:
 
     AMLPredefinedType() = delete;
 
-    AMLPredefinedType(AMLPredefinedTypeEnum pdt, const std::vector<std::int64_t>& arr_spec) :
+    AMLPredefinedType(AMLPredefinedTypeEnum pdt, const std::vector<int64_t>& arr_spec) :
         m_pdt(pdt), m_arr_spec(arr_spec) {
     }
 
@@ -217,14 +217,14 @@ public:
         return m_pdt;
     }
 
-    const std::vector<std::int64_t>& get_array_spec() const noexcept {
+    const std::vector<int64_t>& get_array_spec() const noexcept {
         return m_arr_spec;
     }
 
 private:
 
     AMLPredefinedTypeEnum m_pdt;
-    std::vector<std::int64_t> m_arr_spec{};
+    std::vector<int64_t> m_arr_spec{};
 };
 
 

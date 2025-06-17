@@ -275,7 +275,7 @@ std::any AmlVisitor::visitMember(amlParser::MemberContext *ctx) {
     const auto            ctx_a = ctx->a;
     const auto            ctx_b = ctx->b;
     std::vector<uint64_t> arrary_specifier{};
-    std::int64_t          value{ 0 };
+    int64_t          value{ 0 };
     Type                 *tp = nullptr;
     std::optional<BlockDefinition> block{std::nullopt};
 
@@ -294,11 +294,11 @@ std::any AmlVisitor::visitMember(amlParser::MemberContext *ctx) {
         for (const auto& elem : ctx_a) {
             const auto value_cont = std::any_cast<numeric_t>(visit(elem));
 
-            if (std::holds_alternative<std::int64_t>(value_cont)) {
-                value = std::get<std::int64_t>(value_cont);
+            if (std::holds_alternative<int64_t>(value_cont)) {
+                value = std::get<int64_t>(value_cont);
             }
             else if (std::holds_alternative<long double>(value_cont)) {
-                value = static_cast<std::int64_t>(std::get<long double>(value_cont));
+                value = static_cast<int64_t>(std::get<long double>(value_cont));
             }
             arrary_specifier.push_back(value);
         }

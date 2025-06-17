@@ -9,9 +9,9 @@
 	
 
 using string_opt_t = std::optional<std::string>;
-using numeric_t    = std::variant<std::monostate, std::int64_t, long double>;
+using numeric_t    = std::variant<std::monostate, int64_t, long double>;
 
-enum class AMLPredefinedTypeEnum : std::uint8_t {
+enum class AMLPredefinedTypeEnum : uint8_t {
     CHAR   = 0,
     INT    = 1,
     LONG   = 2,
@@ -25,14 +25,14 @@ enum class AMLPredefinedTypeEnum : std::uint8_t {
     FLOAT16 = 10,
 };
 
-enum class ReferrerType : std::uint8_t {
+enum class ReferrerType : uint8_t {
     Enumeration      = 0,
     StructType       = 1,
     TaggedStructType = 2,
     TaggedUnionType  = 3,
 };
 
-enum class TypeType : std::uint8_t {
+enum class TypeType : uint8_t {
     PredefinedType   = 0,
     Enumeration      = 1,
     StructType       = 2,
