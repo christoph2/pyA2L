@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pya2ldb"
-version = "0.15.4"
+version = "0.15.5"
 description = "A2L for Python"
 authors = ["Christoph Schueler <cpu12.gems@googlemail.com>"]
 license = "GPLv2"
@@ -130,15 +130,6 @@ show_error_context = true
 
 [tool.ruff]
 target-version = "py312"
-
-[tool.ruff.lint]
-extend-select = [
-  "B",    # flake8-bugbear
-  "I",    # isort
-  "PGH",  # pygrep-hooks
-  "RUF",  # Ruff-specific
-  "UP",   # pyupgrade
-]
 ignore = ["I001"]
 unfixable = ["B"]
 
