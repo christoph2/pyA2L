@@ -396,9 +396,7 @@ project = session.query(model.Project).first()
                     <% matrix_dim = entry3.matrix_dim %>
                             %if matrix_dim:
                     MATRIX_DIM
-                        ${matrix_dim.xDim}  /* xDim */
-                        ${matrix_dim.yDim}  /* yDim */
-                        ${matrix_dim.zDim}  /* zDim */
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in matrix_dim.numbers ])}
                     %endif
                     <% max_refresh = entry3.max_refresh %>
                             %if max_refresh:
@@ -739,6 +737,28 @@ project = session.query(model.Project).first()
                     "${entry3.longIdentifier}"  /* longIdentifier */
                     ${entry3.typeName}  /* typeName */
                     ${entry3.address}  /* address */
+                    <% comparison_quantity = entry3.comparison_quantity %>
+                            %if comparison_quantity:
+                    COMPARISON_QUANTITY
+                        ${comparison_quantity.name}  /* name */
+                    %endif
+                    <% dependent_characteristic = entry3.dependent_characteristic %>
+                            %if dependent_characteristic:
+                    /begin DEPENDENT_CHARACTERISTIC
+                        "${dependent_characteristic.formula}"  /* formula */
+                        ${" ".join([str(x) for x in dependent_characteristic.characteristic_id ])}
+                    /end DEPENDENT_CHARACTERISTIC
+                    %endif
+                    <% display_identifier = entry3.display_identifier %>
+                            %if display_identifier:
+                    DISPLAY_IDENTIFIER
+                        ${display_identifier.display_name}  /* display_name */
+                    %endif
+                    <% ecu_address_extension = entry3.ecu_address_extension %>
+                            %if ecu_address_extension:
+                    ECU_ADDRESS_EXTENSION
+                        ${ecu_address_extension.extension}  /* extension */
+                    %endif
                     <% if_data = entry3.if_data %>
                             %if if_data:
                     %for entry4 in if_data:
@@ -747,10 +767,21 @@ project = session.query(model.Project).first()
                         /end IF_DATA
                     %endfor
                     %endif
-                    <% ecu_address_extension = entry3.ecu_address_extension %>
-                            %if ecu_address_extension:
-                    ECU_ADDRESS_EXTENSION
-                        ${ecu_address_extension.extension}  /* extension */
+                    <% number = entry3.number %>
+                            %if number:
+                    NUMBER
+                        ${number.number}  /* number */
+                    %endif
+                    <% matrix_dim = entry3.matrix_dim %>
+                            %if matrix_dim:
+                    MATRIX_DIM
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in matrix_dim.numbers ])}
+                    %endif
+                    <% symbol_link = entry3.symbol_link %>
+                            %if symbol_link:
+                    SYMBOL_LINK
+                        "${symbol_link.symbolName}"  /* symbolName */
+                        ${symbol_link.offset}  /* offset */
                     %endif
                 /end INSTANCE
             %endfor
@@ -875,9 +906,7 @@ project = session.query(model.Project).first()
                     <% matrix_dim = entry3.matrix_dim %>
                             %if matrix_dim:
                     MATRIX_DIM
-                        ${matrix_dim.xDim}  /* xDim */
-                        ${matrix_dim.yDim}  /* yDim */
-                        ${matrix_dim.zDim}  /* zDim */
+                        ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in matrix_dim.numbers ])}
                     %endif
                     <% max_refresh = entry3.max_refresh %>
                             %if max_refresh:
@@ -1531,6 +1560,211 @@ project = session.query(model.Project).first()
                     ${entry3.conversion}  /* conversion */
                     ${entry3.lowerLimit}  /* lowerLimit */
                     ${entry3.upperLimit}  /* upperLimit */
+                    <% annotation = entry3.annotation %>
+                            %if annotation:
+                    %for entry4 in annotation:
+                        /begin ANNOTATION
+                            <% annotation_label = entry4.annotation_label %>
+                                      %if annotation_label:
+                              ANNOTATION_LABEL
+                                  "${annotation_label.label}"  /* label */
+                              %endif
+                            <% annotation_origin = entry4.annotation_origin %>
+                                      %if annotation_origin:
+                              ANNOTATION_ORIGIN
+                                  "${annotation_origin.origin}"  /* origin */
+                              %endif
+                            <% annotation_text = entry4.annotation_text %>
+                                      %if annotation_text:
+                              /begin ANNOTATION_TEXT
+                                  ${" ".join(["{1:}{0:}{1:}".format(str(x),  '"' ) for x in annotation_text.text ])}
+                              /end ANNOTATION_TEXT
+                              %endif
+                        /end ANNOTATION
+                    %endfor
+                    %endif
+                    <% axis_descr = entry3.axis_descr %>
+                            %if axis_descr:
+                    %for entry4 in axis_descr:
+                        /begin AXIS_DESCR
+                            ${entry4.attribute}  /* attribute */
+                            ${entry4.inputQuantity}  /* inputQuantity */
+                            ${entry4.conversion}  /* conversion */
+                            ${entry4.maxAxisPoints}  /* maxAxisPoints */
+                            ${entry4.lowerLimit}  /* lowerLimit */
+                            ${entry4.upperLimit}  /* upperLimit */
+                            <% annotation = entry4.annotation %>
+                                      %if annotation:
+                              %for entry5 in annotation:
+                                  /begin ANNOTATION
+                                      <% annotation_label = entry5.annotation_label %>
+                                                  %if annotation_label:
+                                          ANNOTATION_LABEL
+                                              "${annotation_label.label}"  /* label */
+                                          %endif
+                                      <% annotation_origin = entry5.annotation_origin %>
+                                                  %if annotation_origin:
+                                          ANNOTATION_ORIGIN
+                                              "${annotation_origin.origin}"  /* origin */
+                                          %endif
+                                      <% annotation_text = entry5.annotation_text %>
+                                                  %if annotation_text:
+                                          /begin ANNOTATION_TEXT
+                                              ${" ".join(["{1:}{0:}{1:}".format(str(x),  '"' ) for x in annotation_text.text ])}
+                                          /end ANNOTATION_TEXT
+                                          %endif
+                                  /end ANNOTATION
+                              %endfor
+                              %endif
+                            <% axis_pts_ref = entry4.axis_pts_ref %>
+                                      %if axis_pts_ref:
+                              AXIS_PTS_REF
+                                  ${axis_pts_ref.axisPoints}  /* axisPoints */
+                              %endif
+                            <% byte_order = entry4.byte_order %>
+                                      %if byte_order:
+                              BYTE_ORDER
+                                  ${byte_order.byteOrder}  /* byteOrder */
+                              %endif
+                            <% curve_axis_ref = entry4.curve_axis_ref %>
+                                      %if curve_axis_ref:
+                              CURVE_AXIS_REF
+                                  ${curve_axis_ref.curveAxis}  /* curveAxis */
+                              %endif
+                            <% deposit = entry4.deposit %>
+                                      %if deposit:
+                              DEPOSIT
+                                  ${deposit.mode}  /* mode */
+                              %endif
+                            <% extended_limits = entry4.extended_limits %>
+                                      %if extended_limits:
+                              EXTENDED_LIMITS
+                                  ${extended_limits.lowerLimit}  /* lowerLimit */
+                                  ${extended_limits.upperLimit}  /* upperLimit */
+                              %endif
+                            <% fix_axis_par = entry4.fix_axis_par %>
+                                      %if fix_axis_par:
+                              FIX_AXIS_PAR
+                                  ${fix_axis_par.offset}  /* offset */
+                                  ${fix_axis_par.shift}  /* shift */
+                                  ${fix_axis_par.numberapo}  /* numberapo */
+                              %endif
+                            <% fix_axis_par_dist = entry4.fix_axis_par_dist %>
+                                      %if fix_axis_par_dist:
+                              FIX_AXIS_PAR_DIST
+                                  ${fix_axis_par_dist.offset}  /* offset */
+                                  ${fix_axis_par_dist.distance}  /* distance */
+                                  ${fix_axis_par_dist.numberapo}  /* numberapo */
+                              %endif
+                            <% fix_axis_par_list = entry4.fix_axis_par_list %>
+                                      %if fix_axis_par_list:
+                              /begin FIX_AXIS_PAR_LIST
+                                  ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in fix_axis_par_list.axisPts_Value ])}
+                              /end FIX_AXIS_PAR_LIST
+                              %endif
+                            <% format = entry4.format %>
+                                      %if format:
+                              FORMAT
+                                  "${format.formatString}"  /* formatString */
+                              %endif
+                            <% max_grad = entry4.max_grad %>
+                                      %if max_grad:
+                              MAX_GRAD
+                                  ${max_grad.maxGradient}  /* maxGradient */
+                              %endif
+                            <% monotony = entry4.monotony %>
+                                      %if monotony:
+                              MONOTONY
+                                  ${monotony.monotony}  /* monotony */
+                              %endif
+                            <% phys_unit = entry4.phys_unit %>
+                                      %if phys_unit:
+                              PHYS_UNIT
+                                  "${phys_unit.unit}"  /* unit */
+                              %endif
+                            <% read_only = entry4.read_only %>
+                                      %if read_only:
+                              READ_ONLY
+                              %endif
+                            <% step_size = entry4.step_size %>
+                                      %if step_size:
+                              STEP_SIZE
+                                  ${step_size.stepSize}  /* stepSize */
+                              %endif
+                        /end AXIS_DESCR
+                    %endfor
+                    %endif
+                    <% bit_mask = entry3.bit_mask %>
+                            %if bit_mask:
+                    BIT_MASK
+                        ${bit_mask.mask}  /* mask */
+                    %endif
+                    <% byte_order = entry3.byte_order %>
+                            %if byte_order:
+                    BYTE_ORDER
+                        ${byte_order.byteOrder}  /* byteOrder */
+                    %endif
+                    <% calibration_access = entry3.calibration_access %>
+                            %if calibration_access:
+                    CALIBRATION_ACCESS
+                        ${calibration_access.type}  /* type */
+                    %endif
+                    <% discrete = entry3.discrete %>
+                            %if discrete:
+                    DISCRETE
+                    %endif
+                    <% extended_limits = entry3.extended_limits %>
+                            %if extended_limits:
+                    EXTENDED_LIMITS
+                        ${extended_limits.lowerLimit}  /* lowerLimit */
+                        ${extended_limits.upperLimit}  /* upperLimit */
+                    %endif
+                    <% format = entry3.format %>
+                            %if format:
+                    FORMAT
+                        "${format.formatString}"  /* formatString */
+                    %endif
+                    <% guard_rails = entry3.guard_rails %>
+                            %if guard_rails:
+                    GUARD_RAILS
+                    %endif
+                    <% max_refresh = entry3.max_refresh %>
+                            %if max_refresh:
+                    MAX_REFRESH
+                        ${max_refresh.scalingUnit}  /* scalingUnit */
+                        ${max_refresh.rate}  /* rate */
+                    %endif
+                    <% number = entry3.number %>
+                            %if number:
+                    NUMBER
+                        ${number.number}  /* number */
+                    %endif
+                    <% phys_unit = entry3.phys_unit %>
+                            %if phys_unit:
+                    PHYS_UNIT
+                        "${phys_unit.unit}"  /* unit */
+                    %endif
+                    <% read_only = entry3.read_only %>
+                            %if read_only:
+                    READ_ONLY
+                    %endif
+                    <% ref_memory_segment = entry3.ref_memory_segment %>
+                            %if ref_memory_segment:
+                    REF_MEMORY_SEGMENT
+                        ${ref_memory_segment.name}  /* name */
+                    %endif
+                    <% step_size = entry3.step_size %>
+                            %if step_size:
+                    STEP_SIZE
+                        ${step_size.stepSize}  /* stepSize */
+                    %endif
+                    <% virtual_characteristic = entry3.virtual_characteristic %>
+                            %if virtual_characteristic:
+                    /begin VIRTUAL_CHARACTERISTIC
+                        "${virtual_characteristic.formula}"  /* formula */
+                        ${" ".join([str(x) for x in virtual_characteristic.characteristic_id ])}
+                    /end VIRTUAL_CHARACTERISTIC
+                    %endif
                 /end TYPEDEF_CHARACTERISTIC
             %endfor
             %endif
@@ -1556,19 +1790,35 @@ project = session.query(model.Project).first()
                     ${entry3.name}  /* name */
                     "${entry3.longIdentifier}"  /* longIdentifier */
                     ${entry3.size}  /* size */
-                    ${entry3.link}  /* link */
-                    "${entry3.symbol}"  /* symbol */
                     <% structure_component = entry3.structure_component %>
                             %if structure_component:
                     %for entry4 in structure_component:
                         /begin STRUCTURE_COMPONENT
                             ${entry4.name}  /* name */
-                            ${entry4.deposit}  /* deposit */
+                            ${entry4.type_Ref}  /* type_Ref */
                             ${entry4.offset}  /* offset */
-                            ${entry4.link}  /* link */
-                            "${entry4.symbol}"  /* symbol */
+                            <% matrix_dim = entry4.matrix_dim %>
+                                      %if matrix_dim:
+                              MATRIX_DIM
+                                  ${" ".join(["{1:}{0:}{1:}".format(str(x), "") for x in matrix_dim.numbers ])}
+                              %endif
+                            <% number = entry4.number %>
+                                      %if number:
+                              NUMBER
+                                  ${number.number}  /* number */
+                              %endif
+                            <% symbol_type_link = entry4.symbol_type_link %>
+                                      %if symbol_type_link:
+                              SYMBOL_TYPE_LINK
+                                  "${symbol_type_link.link}"  /* link */
+                              %endif
                         /end STRUCTURE_COMPONENT
                     %endfor
+                    %endif
+                    <% symbol_type_link = entry3.symbol_type_link %>
+                            %if symbol_type_link:
+                    SYMBOL_TYPE_LINK
+                        "${symbol_type_link.link}"  /* link */
                     %endif
                 /end TYPEDEF_STRUCTURE
             %endfor

@@ -289,7 +289,13 @@ const std::map<std::string, int, std::less<>> A2L_KEYWORDS{
     { "SYMBOL_TYPE_LINK",             275 },
     { "/begin",                       276 },
     { "/end",                         277 },
-	{ "NOT_IN_ECU",					  290 },
+    { "NOT_IN_ECU",		      290 },
+    { "TYPEDEF_AXIS",                 291 },
+    { "MODEL_LINK",		      292 },
+    { "TRANSFORMER",		      293 },
+    { "TRANSFORMER_IN_OBJECTS",	      294 },
+    { "TRANSFORMER_OUT_OBJECTS",      295 },
+    { "BLOB",			      296 },
 };
 
 enum class TokenType : uint16_t {
@@ -579,7 +585,13 @@ enum class TokenType : uint16_t {
     WS      = 283,
     STRING  = 284,
 	// Ext.
-	T_290	= 290,
+    T_290   = 290,
+    T_291   = 291,
+    T_292   = 292,
+    T_293   = 293,
+    T_294   = 294,
+    T_295   = 295,
+    T_296   = 296,
 };
 
 constexpr uint16_t DATA_TYPE_MIN = static_cast<uint16_t>(TokenType::IDENT);

@@ -34,7 +34,8 @@ import threading
 from enum import IntEnum
 from unicodedata import normalize
 
-from chardet.universaldetector import UniversalDetector
+# from chardet.universaldetector import UniversalDetector
+import chardet
 
 
 def slicer(iterable, sliceLength, converter=None):
@@ -234,24 +235,20 @@ def detect_encoding(file_name: str = None, text: str = None) -> str:
     -------
     str: Useable as `encoding` paramter to `open`.
     """
+
     if not (file_name or text):
         raise ValueError("Please specify either `file_name` or `text`.")
     if file_name and text:
         raise ValueError("`file_name` and `text` are mutual exclusive.")
-    detector = UniversalDetector()
+    if isinstance(file_name, pathlib.WindowsPath):
+        file_name = str(file_name)
+    print("Detecting encoding...")  # TODO: logger
     if file_name:
-        if isinstance(file_name, str):
-            file_name = pathlib.Path(file_name)
-        obj = file_name.open("rb")
-    else:
-        obj = iter(text.splitlines())
-    for line in obj:
-        detector.feed(line)
-        if detector.done:
-            break
-    result = detector.result["encoding"] if detector.done else "ascii"
-    detector.close()
-    return result
+        with open(file_name, "rb") as inf:
+            text = inf.read()
+    encoding = chardet.detect(text, should_rename_legacy=True).get("encoding")
+    print(f"Detected encoding {encoding!r}")
+    return encoding
 
 
 def enum_from_str(enum_class: IntEnum, enumerator: str) -> IntEnum:

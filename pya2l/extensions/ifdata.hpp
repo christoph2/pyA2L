@@ -53,8 +53,44 @@ struct IfDataBase {
 class IfDataBuilder : public IfDataBase {
    public:
 
+    // Constructor
     IfDataBuilder(std::ofstream& out) noexcept : m_out(out) {
         m_out.seekp(0);
+    }
+
+    // Copy constructor - both objects will reference the same stream
+    IfDataBuilder(const IfDataBuilder& other) : m_out(other.m_out),
+        m_line_numbers(other.m_line_numbers),
+        m_tokens(other.m_tokens),
+        m_length(other.m_length),
+        m_offset(other.m_offset),
+        file_map(other.file_map) {
+    }
+
+    // Delete copy assignment operator - references can't be reseated
+    IfDataBuilder& operator=(const IfDataBuilder&) = delete;
+
+    // Move constructor - references can't be reseated, so we just keep our reference
+    IfDataBuilder(IfDataBuilder&& other) noexcept :
+        m_out(other.m_out),
+        m_line_numbers(std::move(other.m_line_numbers)),
+        m_tokens(std::move(other.m_tokens)),
+        m_length(other.m_length),
+        m_offset(other.m_offset),
+        file_map(std::move(other.file_map)) {
+    }
+
+    // Move assignment operator - references can't be reseated, so we just keep our reference
+    IfDataBuilder& operator=(IfDataBuilder&& other) noexcept {
+        if (this != &other) {
+            // Can't move m_out as it's a reference
+            m_line_numbers = std::move(other.m_line_numbers);
+            m_tokens = std::move(other.m_tokens);
+            m_length = other.m_length;
+            m_offset = other.m_offset;
+            file_map = std::move(other.file_map);
+        }
+        return *this;
     }
 
     ~IfDataBuilder() {
@@ -144,9 +180,39 @@ class IfDataReader : public IfDataBase {
         file_map    = std::move(other.file_map);
     }
 
-    IfDataReader& operator=(const IfDataReader&) = delete;
+    IfDataReader& operator=(const IfDataReader& other) {
+        if (this != &other) {
+            // Close current file if open
+            close();
 
-    IfDataReader& operator=(IfDataReader&&) = delete;
+            // Copy members
+            m_file_name = other.m_file_name;
+            m_file = nullptr; // Don't copy the file pointer, we'll reopen if needed
+            file_map = other.file_map;
+            m_size = other.m_size;
+            m_file_open = false;
+        }
+        return *this;
+    }
+
+    IfDataReader& operator=(IfDataReader&& other) noexcept {
+        if (this != &other) {
+            // Close current file if open
+            close();
+
+            // Move members
+            m_file_name = std::move(other.m_file_name);
+            m_file = other.m_file;
+            file_map = std::move(other.file_map);
+            m_size = other.m_size;
+            m_file_open = other.m_file_open;
+
+            // Reset other's file pointer to prevent double-close
+            other.m_file = nullptr;
+            other.m_file_open = false;
+        }
+        return *this;
+    }
 
     IfDataReader(std::string_view fname, IfDataBuilder& builder) : m_file_name(fname), file_map(std::move(builder.get_map())) {
     }

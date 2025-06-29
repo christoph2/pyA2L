@@ -296,8 +296,14 @@ enum class A2LTokenType : uint16_t {
     COMMENT                      = 282,
     WS                           = 283,
     STRING                       = 284,
-	// Ext.
-	NOT_IN_ECU					 = 290,
+    // Ext.
+    NOT_IN_ECU			 = 290,
+    TYPEDEF_AXIS                 = 291,
+    MODEL_LINK                   = 292,
+    TRANSFORMER			 = 293,
+    TRANSFORMER_IN_OBJECTS	 = 294,
+    TRANSFORMER_OUT_OBJECTS	 = 295,
+    BLOB			 = 296,
 };
 
 #endif  // __A2LTOKEN_HPP

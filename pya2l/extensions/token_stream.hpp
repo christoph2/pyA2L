@@ -63,9 +63,33 @@ class TokenWriter {
 
     const std::size_t HEADER_SIZE = sizeof(std::size_t) * 6;
 
+    // Delete default constructor
     TokenWriter() = delete;
 
+    // Constructor
     explicit TokenWriter(TempFile &outf) : m_outf(outf.handle()) {
+    }
+
+    // Copy constructor - both objects will reference the same stream
+    TokenWriter(const TokenWriter& other) : m_outf(other.m_outf) {
+    }
+
+    // Delete copy assignment operator - references can't be reseated
+    TokenWriter& operator=(const TokenWriter&) = delete;
+
+#if 0
+    // Move constructor - references can't be reseated, so we just keep our reference
+    TokenWriter(TokenWriter&& other) noexcept {
+        // Note: m_outf is a reference, so we can't actually move it
+        // We keep our original reference
+    }
+#endif
+
+    // Move assignment operator - references can't be reseated, so we just keep our reference
+    TokenWriter& operator=(TokenWriter&& other) noexcept {
+        // Note: m_outf is a reference, so we can't actually move it
+        // We keep our original reference
+        return *this;
     }
 
     void operator<<(const Token &token) const {
@@ -115,35 +139,48 @@ class ANTLRToken /*: public antlr4::Token*/ {
     static constexpr size_t HIDDEN_CHANNEL         = 1;
     static constexpr size_t MIN_USER_CHANNEL_VALUE = 2;
 
-    ANTLRToken()                   = default;
+    // Default constructor
+    ANTLRToken() = default;
+
+    // Copy constructor
     ANTLRToken(const ANTLRToken &) = default;
 
-    //~ANTLRToken() = default;
-
-    ANTLRToken(ANTLRToken &&other) noexcept {
-        // std::cout << "ANTLRToken(ANTLRToken&&) -- move constructor\n";
-        m_idx          = other.m_idx;
-        m_token_type   = other.m_token_type;
-        m_start_line   = other.m_start_line;
-        m_start_column = other.m_start_column;
-        m_end_line     = other.m_end_line;
-        m_end_column   = other.m_end_column;
-        // m_payload      = std::move(other.m_payload);
-
-        std::ranges::copy(other.m_payload, std::back_inserter(m_payload));
-        // other.m_payload = nullptr;
+    // Move constructor
+    ANTLRToken(ANTLRToken &&other) noexcept :
+        m_idx(other.m_idx),
+        m_token_type(other.m_token_type),
+        m_start_line(other.m_start_line),
+        m_start_column(other.m_start_column),
+        m_end_line(other.m_end_line),
+        m_end_column(other.m_end_column),
+        m_payload(std::move(other.m_payload)) {
     }
 
+    // Copy assignment operator
     ANTLRToken &operator=(const ANTLRToken &other) {
-        // std::cout << "ANTLRToken(ANTLRToken&&) -- copy assignment\n";
-        m_idx          = other.m_idx;
-        m_token_type   = other.m_token_type;
-        m_start_line   = other.m_start_line;
-        m_start_column = other.m_start_column;
-        m_end_line     = other.m_end_line;
-        m_end_column   = other.m_end_column;
-        m_payload      = other.m_payload;
+        if (this != &other) {
+            m_idx          = other.m_idx;
+            m_token_type   = other.m_token_type;
+            m_start_line   = other.m_start_line;
+            m_start_column = other.m_start_column;
+            m_end_line     = other.m_end_line;
+            m_end_column   = other.m_end_column;
+            m_payload      = other.m_payload;
+        }
+        return *this;
+    }
 
+    // Move assignment operator
+    ANTLRToken &operator=(ANTLRToken &&other) noexcept {
+        if (this != &other) {
+            m_idx          = other.m_idx;
+            m_token_type   = other.m_token_type;
+            m_start_line   = other.m_start_line;
+            m_start_column = other.m_start_column;
+            m_end_line     = other.m_end_line;
+            m_end_column   = other.m_end_column;
+            m_payload      = std::move(other.m_payload);
+        }
         return *this;
     }
 
@@ -259,11 +296,60 @@ class TokenFactory /*: public antlr4::TokenFactory<ANTLRToken>*/ {
 class TokenReader {
    public:
 
-    TokenReader(std::string_view fname) : m_file_name(fname), _p(0), m_numMarkers{}, m_currentTokenIndex{ 0 } {
+    // Constructor
+    TokenReader(std::string_view fname) :
+        m_file_name(fname),
+        _p(0),
+        m_numMarkers{},
+        m_currentTokenIndex{ 0 },
+        m_file(nullptr) {
         open();
         fill(1);
     }
 
+    // Delete copy constructor
+    TokenReader(const TokenReader&) = delete;
+
+    // Delete copy assignment operator
+    TokenReader& operator=(const TokenReader&) = delete;
+
+    // Move constructor
+    TokenReader(TokenReader&& other) noexcept :
+        m_file_name(std::move(other.m_file_name)),
+        _tokens(std::move(other._tokens)),
+        _p(other._p),
+        m_numMarkers(other.m_numMarkers),
+        m_lastToken(std::move(other.m_lastToken)),
+        m_lastTokenBufferStart(std::move(other.m_lastTokenBufferStart)),
+        m_currentTokenIndex(other.m_currentTokenIndex),
+        m_file(other.m_file) {
+        // Prevent double-close
+        other.m_file = nullptr;
+    }
+
+    // Move assignment operator
+    TokenReader& operator=(TokenReader&& other) noexcept {
+        if (this != &other) {
+            // Close current resources
+            close();
+
+            // Move resources from other
+            m_file_name = std::move(other.m_file_name);
+            _tokens = std::move(other._tokens);
+            _p = other._p;
+            m_numMarkers = other.m_numMarkers;
+            m_lastToken = std::move(other.m_lastToken);
+            m_lastTokenBufferStart = std::move(other.m_lastTokenBufferStart);
+            m_currentTokenIndex = other.m_currentTokenIndex;
+            m_file = other.m_file;
+
+            // Prevent double-close
+            other.m_file = nullptr;
+        }
+        return *this;
+    }
+
+    // Destructor
     ~TokenReader() {
         close();
     }
@@ -398,20 +484,22 @@ class TokenReader {
     }
 
     bool eof() const noexcept {
-        return ::feof(m_file) != 0;
+        return m_file == nullptr || ::feof(m_file) != 0;
     }
 
     void open() {
+        // Make sure file is closed before opening
+        close();
+
     #if defined(_MSC_VER)
         auto err = ::fopen_s(&m_file, m_file_name.c_str(), "rb");
         if (err != 0) {
-            throw std::runtime_error("Could not open file '" + m_file_name + "'.\n");
+            throw std::runtime_error("Could not open file '" + m_file_name + "'");
         }
-
     #else
         m_file = ::fopen(m_file_name.c_str(), "rb");
         if (m_file == nullptr) {
-            throw std::runtime_error("Could not open file '" + m_file_name + "'.\n");
+            throw std::runtime_error("Could not open file '" + m_file_name + "'");
         }
     #endif
     }

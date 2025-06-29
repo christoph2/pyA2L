@@ -42,6 +42,28 @@ class LineMap {
 
     LineMap(LineMap&& other) = default;
 
+    // Copy assignment operator
+    LineMap& operator=(const LineMap& other) {
+        if (this != &other) {
+            m_start_offsets = other.m_start_offsets;
+            m_last_line_no = other.m_last_line_no;
+            m_items = other.m_items;
+            m_keys = other.m_keys;
+        }
+        return *this;
+    }
+
+    // Move assignment operator
+    LineMap& operator=(LineMap&& other) noexcept {
+        if (this != &other) {
+            m_start_offsets = std::move(other.m_start_offsets);
+            m_last_line_no = other.m_last_line_no;
+            m_items = std::move(other.m_items);
+            m_keys = std::move(other.m_keys);
+        }
+        return *this;
+    }
+
     int contains(const std::string& key) const noexcept {
         return m_keys.contains(key);
     }

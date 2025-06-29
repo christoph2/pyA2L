@@ -519,6 +519,20 @@ class BIT_OPERATION(Keyword):
     block = True
 
 
+class BLOB(Keyword):
+    multiple = True
+    block = True
+    attrs = [
+        (Ident, "Name"),
+        (String, "LongIdentifier"),
+        (Ulong, "Address"),
+        (Ulong, "Length"),
+    ]
+    children = [
+        "CALIBRATION_ACCESS",
+    ]
+
+
 class BYTE_ORDER(Keyword):
     attrs = [(Byteorder, "ByteOrder")]
 
@@ -705,9 +719,6 @@ class COMPU_VTAB_RANGE(Keyword):
         (Ident, "Name"),
         (String, "LongIdentifier"),
         (Uint, "NumberValueTriples"),
-        ##
-        ##  TODO: (float InValMin float InValMax string OutVal)* !!!
-        ##
     ]
 
 
@@ -997,7 +1008,16 @@ class INSTANCE(Keyword):
         (Ident, "TypeName"),
         (Ulong, "Address"),
     ]
-    children = ["IF_DATA", "ECU_ADDRESS_EXTENSION"]
+    children = [
+        "COMPARISON_QUANTITY",
+        "DEPENDENT_CHARACTERISTIC",
+        "DISPLAY_IDENTIFIER",
+        "ECU_ADDRESS_EXTENSION",
+        "IF_DATA",
+        "NUMBER",
+        "MATRIX_DIM",
+        "SYMBOL_LINK",
+    ]
 
 
 class LAYOUT(Keyword):
@@ -1018,12 +1038,14 @@ class MAP_LIST(Keyword):
     attrs = [(Ident, "Name", MULTIPLE)]
 
 
-class MATRIX_DIM(Keyword):
+class MODEL_LINK(Keyword):
     attrs = [
-        (Uint, "xDim"),
-        (Uint, "yDim"),
-        (Uint, "zDim"),
+        (String, "Link"),
     ]
+
+
+class MATRIX_DIM(Keyword):
+    attrs = [(Uint, "Numbers", MULTIPLE)]
 
 
 class MAX_GRAD(Keyword):
@@ -1449,6 +1471,20 @@ class RECORD_LAYOUT(Keyword):
     ]
 
 
+class TRANSFORMER_IN_OBJECTS(Keyword):
+    block = True
+    attrs = [
+        (Ident, "Identifier", MULTIPLE),
+    ]
+
+
+class TRANSFORMER_OUT_OBJECTS(Keyword):
+    block = True
+    attrs = [
+        (Ident, "Identifier", MULTIPLE),
+    ]
+
+
 class REF_CHARACTERISTIC(Keyword):
     block = True
     attrs = [
@@ -1672,6 +1708,12 @@ class SYMBOL_LINK(Keyword):
     ]
 
 
+class SYMBOL_TYPE_LINK(Keyword):
+    attrs = [
+        (String, "Link"),
+    ]
+
+
 class SYSTEM_CONSTANT(Keyword):
     multiple = True
     attrs = [
@@ -1691,16 +1733,87 @@ class STRUCTURE_COMPONENT(Keyword):
     block = True
     attrs = [
         (Ident, "Name"),
-        (Ident, "Deposit"),
+        (Ident, "Type_Ref"),
         (Ulong, "Offset"),
-        (Linktype, "Link"),
-        (String, "Symbol"),
+    ]
+    children = [
+        "MATRIX_DIM",
+        "NUMBER",
+        "SYMBOL_TYPE_LINK",
+    ]
+
+
+class TRANSFORMER(Keyword):
+    multiple = True
+    block = True
+
+    attrs = [
+        (Ident, "Name"),
+        (String, "Version"),
+        (String, "DllName32"),
+        (String, "DllName64"),
+        (Ulong, "Timeout"),
+        (Ident, "Trigger"),
+        (Ident, "Reverse"),
+    ]
+
+    children = [
+        "TRANSFORMER_IN_OBJECTS",
+        "TRANSFORMER_OUT_OBJECTS",
+    ]
+
+
+class TYPEDEF_AXIS(Keyword):
+    multiple = True
+    block = True
+    children = [
+        "ANNOTATION",
+        "BYTE_ORDER",
+        "CALIBRATION_ACCESS",
+        "DEPOSIT",
+        "EXTENDED_LIMITS",
+        "FORMAT",
+        "GUARD_RAILS",
+        "MONOTONY",
+        "PHYS_UNIT",
+        "READ_ONLY",
+        "REF_MEMORY_SEGMENT",
+        "STEP_SIZE",
+    ]
+    attrs = [
+        (Ident, "Name"),
+        (String, "LongIdentifier"),
+        (Ident, "InputQuantity"),
+        (Ident, "DepositAttr"),
+        (Float, "MaxDiff"),
+        (Ident, "Conversion"),
+        (Uint, "MaxAxisPoints"),
+        (Float, "LowerLimit"),
+        (Float, "UpperLimit"),
     ]
 
 
 class TYPEDEF_CHARACTERISTIC(Keyword):
     multiple = True
     block = True
+    children = [
+        "ANNOTATION",
+        "AXIS_DESCR",
+        "BIT_MASK",
+        "BYTE_ORDER",
+        "CALIBRATION_ACCESS",
+        "DISCRETE",
+        "EXTENDED_LIMITS",
+        "FORMAT",
+        "GUARD_RAILS",
+        "MAX_REFRESH",
+        "NUMBER",
+        "PHYS_UNIT",
+        "READ_ONLY",
+        "REF_MEMORY_SEGMENT",
+        "STEP_SIZE",
+        "VIRTUAL_CHARACTERISTIC",
+    ]
     attrs = [
         (Ident, "Name"),
         (String, "LongIdentifier"),
@@ -1739,11 +1852,10 @@ class TYPEDEF_STRUCTURE(Keyword):
         (Ident, "Name"),
         (String, "LongIdentifier"),
         (Ulong, "Size"),
-        (Linktype, "Link"),
-        (String, "Symbol"),
     ]
     children = [
         "STRUCTURE_COMPONENT",
+        "SYMBOL_TYPE_LINK",
     ]
 
 
@@ -1910,6 +2022,7 @@ KEYWORD_MAP = {
     "AXIS_RESCALE_5": AXIS_RESCALE_5,
     "BIT_MASK": BIT_MASK,
     "BIT_OPERATION": BIT_OPERATION,
+    "BLOB": BLOB,
     "BYTE_ORDER": BYTE_ORDER,
     "CALIBRATION_ACCESS": CALIBRATION_ACCESS,
     "CALIBRATION_HANDLE": CALIBRATION_HANDLE,
@@ -1985,6 +2098,7 @@ KEYWORD_MAP = {
     "MOD_COMMON": MOD_COMMON,
     "MOD_PAR": MOD_PAR,
     "MODULE": MODULE,
+    "MODEL_LINK": MODEL_LINK,
     "MONOTONY": MONOTONY,
     "NO_AXIS_PTS_X": NO_AXIS_PTS_X,
     "NO_AXIS_PTS_Y": NO_AXIS_PTS_Y,
@@ -2045,8 +2159,13 @@ KEYWORD_MAP = {
     "SUB_GROUP": SUB_GROUP,
     "SUPPLIER": SUPPLIER,
     "SYMBOL_LINK": SYMBOL_LINK,
+    "SYMBOL_TYPE_LINK": SYMBOL_TYPE_LINK,
     "SYSTEM_CONSTANT": SYSTEM_CONSTANT,
     "S_REC_LAYOUT": S_REC_LAYOUT,
+    "TRANSFORMER_IN_OBJECTS": TRANSFORMER_IN_OBJECTS,
+    "TRANSFORMER_OUT_OBJECTS": TRANSFORMER_OUT_OBJECTS,
+    "TRANSFORMER": TRANSFORMER,
+    "TYPEDEF_AXIS": TYPEDEF_AXIS,
     "TYPEDEF_CHARACTERISTIC": TYPEDEF_CHARACTERISTIC,
     "TYPEDEF_MEASUREMENT": TYPEDEF_MEASUREMENT,
     "TYPEDEF_STRUCTURE": TYPEDEF_STRUCTURE,
