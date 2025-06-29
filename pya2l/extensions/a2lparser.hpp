@@ -32,22 +32,33 @@ using AsamVariantType = std::variant<std::string, unsigned long long, signed lon
 
 class AsapVersion {
 public:
+    // Default constructor
+    AsapVersion() noexcept : m_major(0), m_minor(0), m_valid(false) {}
 
-    AsapVersion() : m_valid(false) {}
-    AsapVersion(unsigned long long major, unsigned long long minor) : m_major(major), m_minor(minor), m_valid(true) {}
-    const AsapVersion& operator=(AsapVersion&& other) {
-        m_major = other.m_major;
-        m_minor = other.m_minor;
-        if (other.m_major > 0) {
-            m_valid = true;
-        }
-        else {
-            m_valid = false;
-        }
+    // Constructor with parameters
+    AsapVersion(unsigned long long major, unsigned long long minor) noexcept
+        : m_major(major), m_minor(minor), m_valid(major > 0) {}
 
+    // Copy constructor
+    AsapVersion(const AsapVersion& other) noexcept = default;
+
+    // Move constructor
+    AsapVersion(AsapVersion&& other) noexcept = default;
+
+    // Copy assignment operator
+    AsapVersion& operator=(const AsapVersion& other) noexcept = default;
+
+    // Move assignment operator
+    AsapVersion& operator=(AsapVersion&& other) noexcept {
+        if (this != &other) {
+            m_major = other.m_major;
+            m_minor = other.m_minor;
+            m_valid = other.m_major > 0;
+        }
         return *this;
     }
 
+    // Accessors
     bool is_valid() const noexcept {
         return m_valid;
     }
@@ -59,7 +70,6 @@ public:
     unsigned long long minor() const noexcept {
         return m_minor;
     }
-
 
 private:
     unsigned long long m_major;
@@ -77,34 +87,104 @@ class A2LParser {
         std::optional<preprocessor_result_t> prepro_result, const std::string& file_name, const std::string& encoding,
         spdlog::level::level_enum log_level
     ) :
-        m_prepro_result(prepro_result), m_keyword_counter(0), m_table(PARSER_TABLE), m_root("root"), m_finalized(false) {
+        m_prepro_result(std::move(prepro_result)),
+        m_keyword_counter(0),
+        m_table(PARSER_TABLE),
+        m_root("root"),
+        m_finalized(false),
+        m_table_count(0) {
+
         kw_push(m_table);
         m_value_stack.push(&m_root);
-        if (prepro_result) {
-            m_idr = std::make_unique<IfDataReader>(std::get<2>(prepro_result.value()));
+
+        if (m_prepro_result) {
+            m_idr = std::make_unique<IfDataReader>(std::get<2>(m_prepro_result.value()));
             m_idr->open();
         }
-        m_table_count = 0;
 
         m_logger = create_logger("a2lparser", log_level);
         parse(file_name, encoding);
-        spdlog::shutdown();
+        // Don't call spdlog::shutdown() here as it affects all loggers globally
     }
 
+    // Delete copy constructor
     A2LParser(const A2LParser&) = delete;
+
+    // Delete copy assignment operator
+    A2LParser& operator=(const A2LParser&) = delete;
+
+    // Move constructor
+    A2LParser(A2LParser&& other) noexcept
+        : m_prepro_result(std::move(other.m_prepro_result)),
+          m_logger(std::move(other.m_logger)),
+          m_idr(std::move(other.m_idr)),
+          m_encoding(std::move(other.m_encoding)),
+          m_reader(std::move(other.m_reader)),
+          m_keyword_counter(other.m_keyword_counter),
+          m_kw_stack(std::move(other.m_kw_stack)),
+          m_value_stack(std::move(other.m_value_stack)),
+          m_table(other.m_table),
+          m_root(std::move(other.m_root)),
+          m_tables(std::move(other.m_tables)),
+          m_table_count(other.m_table_count),
+          m_finalized(other.m_finalized),
+          m_asam_version(std::move(other.m_asam_version)) {
+
+        // Mark the moved-from object as finalized to prevent double-close
+        other.m_finalized = true;
+    }
+
+    // Move assignment operator
+    A2LParser& operator=(A2LParser&& other) noexcept {
+        if (this != &other) {
+            // Close current resources
+            close();
+
+            // Move resources from other
+            m_prepro_result = std::move(other.m_prepro_result);
+            m_logger = std::move(other.m_logger);
+            m_idr = std::move(other.m_idr);
+            m_encoding = std::move(other.m_encoding);
+            m_reader = std::move(other.m_reader);
+            m_keyword_counter = other.m_keyword_counter;
+            m_kw_stack = std::move(other.m_kw_stack);
+            m_value_stack = std::move(other.m_value_stack);
+            // m_table is a reference and can't be reseated
+            m_root = std::move(other.m_root);
+            m_tables = std::move(other.m_tables);
+            m_table_count = other.m_table_count;
+            m_finalized = other.m_finalized;
+            m_asam_version = std::move(other.m_asam_version);
+
+            // Mark the moved-from object as finalized to prevent double-close
+            other.m_finalized = true;
+        }
+        return *this;
+    }
 
     ~A2LParser() {
         close();
     }
 
-    void close() {
+    void close() noexcept {
         if (!m_finalized) {
-            m_reader->close();
-            m_finalized = true;
+            try {
+                if (m_reader) {
+                    m_reader->close();
+                }
 
-            if (m_prepro_result) {
-                m_idr->close();
+                if (m_prepro_result && m_idr) {
+                    m_idr->close();
+                }
+            } catch (...) {
+                // Suppress any exceptions during cleanup
+                // Log error if logger is available
+                if (m_logger) {
+                    m_logger->error("Exception during close operation");
+                }
             }
+
+            m_finalized = true;
         }
     }
 
@@ -121,16 +201,9 @@ class A2LParser {
                 m_reader->consume();
             }
 
-            // TODO:  Factor out.
+            // Handle END token
             if (token_type() == A2LTokenType::END) {
-                m_reader->consume();
-                const auto glied = m_reader->LT(1);
-                assert(kw_tos().m_name == glied->getText());    // TODO: handle error
-                if (kw_tos().m_name == glied->getText()) {
-                    kw_pop();
-                    m_value_stack.pop();
-                }
-                m_reader->consume();
+                handle_end_token();
                 continue;
             }
 
@@ -196,27 +269,20 @@ class A2LParser {
                 m_value_stack.pop();
             }
             if (token_type() == A2LTokenType::END) {
-                m_reader->consume();
-                const auto glied = m_reader->LT(1);
-                assert(kw_tos().m_name == glied->getText());
-                if (kw_tos().m_name == glied->getText()) {
-                    kw_pop();
-                    m_value_stack.pop();
-                }
-                m_reader->consume();
+                handle_end_token();
             }
         }
     }
 
-    const std::vector<value_table_t>& get_tables() const {
+    const std::vector<value_table_t>& get_tables() const noexcept {
         return m_tables;
     }
 
-    const ValueContainer& get_values() const {
+    const ValueContainer& get_values() const noexcept {
         return m_root;
     }
 
-    std::size_t get_keyword_counter() const {
+    std::size_t get_keyword_counter() const noexcept {
         return m_keyword_counter;
     }
 
@@ -303,17 +369,18 @@ class A2LParser {
                         continue;
                     }
 
-                    auto       token_text = token->getText();
+                    std::string token_text = token->getText();
                     const auto param_type = parameter.get_type();
                     using enum PredefinedType;
 
+                    // Handle sign for numeric types
                     if (((param_type == Int) || (param_type == Uint) || (param_type == Long) || (param_type == Ulong) ||
                          (param_type == Float)) &&
                         ((token_text == "-") || ((token_text == "+")))) {
                         m_reader->consume();
-                        auto number_text = m_reader->LT(1)->getText();
-
-                        token_text += number_text;
+                        // Reserve space for the concatenated string to avoid reallocation
+                        token_text.reserve(token_text.size() + m_reader->LT(1)->getText().size());
+                        token_text += m_reader->LT(1)->getText();
                     }
 
                     const auto value = convert(param_type, token_text);
@@ -337,7 +404,11 @@ class A2LParser {
 
     Keyword& kw_tos(std::size_t pos = 0) {
         const auto offset = std::size(m_kw_stack) - pos - 1;
+        return m_kw_stack[offset];
+    }
 
+    const Keyword& kw_tos(std::size_t pos = 0) const {
+        const auto offset = std::size(m_kw_stack) - pos - 1;
         return m_kw_stack[offset];
     }
 
@@ -353,8 +424,29 @@ class A2LParser {
         return *m_value_stack.top();
     }
 
-    A2LTokenType token_type(int k = 1) {
+    const ValueContainer& value_tos() const {
+        return *m_value_stack.top();
+    }
+
+    A2LTokenType token_type(int k = 1) const {
         return static_cast<A2LTokenType>(m_reader->LT(k)->getType());
+    }
+
+    // Handle END token processing
+    void handle_end_token() {
+        m_reader->consume();
+        const auto glied = m_reader->LT(1);
+
+        // Verify that the END token matches the current keyword
+        if (kw_tos().m_name != glied->getText()) {
+            m_logger->error("END token mismatch: expected '{}', got '{}'",
+                           kw_tos().m_name, glied->getText());
+        } else {
+            kw_pop();
+            m_value_stack.pop();
+        }
+
+        m_reader->consume();
     }
 
    private:

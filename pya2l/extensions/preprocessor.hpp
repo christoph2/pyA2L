@@ -56,6 +56,8 @@ struct Filenames {
     Filenames()                 = default;
     Filenames(const Filenames&) = default;
     Filenames(Filenames&&)      = default;
+    Filenames& operator=(const Filenames&) = default;
+    Filenames& operator=(Filenames&&) = default;
 
     Filenames(const std::string& _a2l, const std::string& _aml, const std::string& _ifdata) :
         a2l(_a2l), aml(_aml), ifdata(_ifdata) {
@@ -80,7 +82,8 @@ class Preprocessor {
         tmp_aml(AML_TMP),
         tmp_ifdata(IFDATA_TMP, true),
         a2l_token_writer(tmp_a2l),
-        ifdata_builder{ tmp_ifdata.handle() } {
+        ifdata_builder{ tmp_ifdata.handle() },
+        m_finalized(false) {
             get_include_paths_from_env();
             m_filenames.a2l    = tmp_a2l.abs_path();
             m_filenames.aml    = tmp_aml.abs_path();
@@ -88,10 +91,75 @@ class Preprocessor {
             m_logger = create_logger("preprocessor", log_level);
     }
 
+    // Delete copy constructor
+    Preprocessor(const Preprocessor&) = delete;
+
+    // Delete copy assignment operator
+    Preprocessor& operator=(const Preprocessor&) = delete;
+
+    // Move constructor
+    Preprocessor(Preprocessor&& other) noexcept :
+        tmp_a2l(std::move(other.tmp_a2l)),
+        tmp_aml(std::move(other.tmp_aml)),
+        tmp_ifdata(std::move(other.tmp_ifdata)),
+        a2l_token_writer(std::move(other.a2l_token_writer)),
+        ifdata_builder(std::move(other.ifdata_builder)),
+        m_logger(std::move(other.m_logger)),
+        m_filenames(std::move(other.m_filenames)),
+        include_paths(std::move(other.include_paths)),
+        line_offset(other.line_offset),
+        a2ml(other.a2ml),
+        m_finalized(other.m_finalized),
+        line_map(std::move(other.line_map)) {
+            // Mark the moved-from object as finalized to prevent double-close
+            other.m_finalized = true;
+    }
+
+    // Move assignment operator
+    Preprocessor& operator=(Preprocessor&& other) noexcept {
+        if (this != &other) {
+            // Close current resources
+            close();
+
+            // Move resources from other
+            tmp_a2l = std::move(other.tmp_a2l);
+            tmp_aml = std::move(other.tmp_aml);
+            tmp_ifdata = std::move(other.tmp_ifdata);
+            a2l_token_writer = std::move(other.a2l_token_writer);
+            ifdata_builder = std::move(other.ifdata_builder);
+            m_logger = std::move(other.m_logger);
+            m_filenames = std::move(other.m_filenames);
+            include_paths = std::move(other.include_paths);
+            line_offset = other.line_offset;
+            a2ml = other.a2ml;
+            m_finalized = other.m_finalized;
+            line_map = std::move(other.line_map);
+
+            // Mark the moved-from object as finalized to prevent double-close
+            other.m_finalized = true;
+        }
+        return *this;
+    }
+
     ~Preprocessor() {
-        tmp_a2l.close();
-        tmp_aml.close();
-        tmp_ifdata.close();
+        close();
+    }
+
+    void close() noexcept {
+        if (!m_finalized) {
+            try {
+                tmp_a2l.close();
+                tmp_aml.close();
+                tmp_ifdata.close();
+            } catch (...) {
+                // Suppress any exceptions during cleanup
+                // Log error if logger is available
+                if (m_logger) {
+                    m_logger->error("Exception during close operation");
+                }
+            }
+            m_finalized = true;
+        }
     }
 
     preprocessor_result_t process(const std::string& filename, const std::string& encoding) {
@@ -101,18 +169,17 @@ class Preprocessor {
         };
     }
 
-    void finalize() {
-        spdlog::shutdown();
-        tmp_a2l.close();
-        tmp_aml.close();
-        tmp_ifdata.close();
+    void finalize() noexcept {
+        // Don't call spdlog::shutdown() here as it affects all loggers globally
+        close();
     }
 
     LineMap line_map{};
 
    protected:
 
-    void skip_bom(auto& fs) {
+    template<typename Stream>
+    void skip_bom(Stream& fs) noexcept {
         const unsigned char boms[]{ 0xef, 0xbb, 0xbf };
         bool                have_bom{ true };
         for (const auto& c : boms) {
@@ -317,7 +384,7 @@ class Preprocessor {
         }
     }
 
-    std::string shorten_file_name(fs::path file_name) {
+    std::string shorten_file_name(const fs::path& file_name) const noexcept {
         if (file_name.parent_path() == fs::current_path()) {
             return file_name.filename().string();
         } else {
@@ -327,18 +394,19 @@ class Preprocessor {
 
     void update_line_map(
         const fs::path& path, uint64_t abs_start, uint64_t abs_end, uint64_t rel_start, uint64_t rel_end
-    ) {
+    ) noexcept {
         const auto key = shorten_file_name(path);
         line_map.add_entry(path.string(), abs_start, abs_end, rel_start, rel_end);
     }
 
-    void get_include_paths_from_env() {
+    void get_include_paths_from_env() noexcept {
         const auto var = get_env_var("ASAP_INCLUDE");
         include_paths  = split_path(var);
     }
 
-    std::optional<fs::path> locate_file(const std::string& file_name, const std::string& additional_path) {
+    std::optional<fs::path> locate_file(const std::string& file_name, const std::string& additional_path) const {
         std::vector<std::string> paths{};
+        paths.reserve(include_paths.size() + 2); // Reserve space to avoid reallocations
 
         paths.push_back(fs::current_path().string());
         paths.push_back(additional_path);
@@ -365,6 +433,7 @@ class Preprocessor {
     std::vector<std::string> include_paths{};
     std::size_t              line_offset{ 1 };
     bool                     a2ml{ false };
+    bool                     m_finalized{ false };
 };
 
 #endif  // __PREPROCESSOR_HPP

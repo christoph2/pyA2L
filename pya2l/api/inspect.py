@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""Classes for easy, convenient, read-only access to A2L databases.
-"""
+"""Classes for easy, convenient, read-only access to A2L databases."""
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
@@ -436,36 +435,73 @@ class AxisInfo:
     actual_element_count: Optional[int] = field(default=None)
 
 
-def asam_type_size(datatype: str) -> str:
-    """"""
+def asam_type_size(datatype: str) -> int:
+    """Get the size in bytes of an ASAM data type.
+
+    Parameters
+    ----------
+    datatype : str
+        The ASAM data type name (e.g., 'UBYTE', 'SWORD', 'FLOAT32_IEEE')
+
+    Returns
+    -------
+    int
+        Size of the data type in bytes
+
+    Raises
+    ------
+    KeyError
+        If the data type is not found in ASAM_TYPE_SIZES
+    """
     return ASAM_TYPE_SIZES[datatype]
 
 
 def all_axes_names() -> List[str]:
-    """"""
+    """Get a list of all possible axis names.
+
+    Returns
+    -------
+    List[str]
+        List of axis names: ['x', 'y', 'z', '4', '5']
+    """
     return list("x y z 4 5".split())
 
 
-def get_module(session, module_name: Optional[str] = None) -> model.Module:
-    """"""
+def get_module(session: Any, module_name: Optional[str] = None) -> Optional[model.Module]:
+    """Get a module from the database.
+
+    Parameters
+    ----------
+    session : Any
+        SQLAlchemy session object
+    module_name : Optional[str], optional
+        Name of the module to retrieve, by default None
+
+    Returns
+    -------
+    Optional[model.Module]
+        The module object if found, None otherwise
+    """
     query = session.query(model.Module)
     if module_name:
         query = query.filter(model.Module.name == module_name)
     return query.first()
 
 
-def _annotations(session, refs) -> List[Annotation]:
-    """
+def _annotations(session: Any, refs: Optional[List[Any]]) -> List[Annotation]:
+    """Extract annotation information from database objects.
+
     Parameters
     ----------
-    session: Sqlite3 session object
-
-    refs: list of raw database objects.
+    session : Any
+        SQLAlchemy session object
+    refs : Optional[List[Any]]
+        List of raw database objects containing annotation information
 
     Returns
     -------
-    Annotation
-
+    List[Annotation]
+        List of Annotation objects extracted from the database objects
     """
     items = []
     if refs is None:
@@ -482,8 +518,20 @@ def _annotations(session, refs) -> List[Annotation]:
     return items
 
 
-def fnc_np_shape(matrixDim: MatrixDim) -> tuple:
-    """Convert `matrixDim` dict to tuple suitable as Numpy array `shape` argument."""
+def fnc_np_shape(matrixDim: MatrixDim) -> Tuple[int, ...]:
+    """Convert MatrixDim object to tuple suitable as Numpy array `shape` argument.
+
+    Parameters
+    ----------
+    matrixDim : MatrixDim
+        MatrixDim object containing x, y, z dimensions
+
+    Returns
+    -------
+    Tuple[int, ...]
+        Tuple of dimensions suitable for Numpy array shape
+        Empty tuple if matrixDim is not valid
+    """
     if not matrixDim.valid():
         return ()
     result = []
@@ -495,12 +543,36 @@ def fnc_np_shape(matrixDim: MatrixDim) -> tuple:
     return tuple(result)
 
 
-def fnc_np_order(order):
-    """"""
+def fnc_np_order(order: Optional[str]) -> Optional[str]:
+    """Convert ASAM indexMode to NumPy array order string.
+
+    Parameters
+    ----------
+    order : Optional[str]
+        The indexMode string, either "COLUMN_DIR" or "ROW_DIR"
+
+    Returns
+    -------
+    Optional[str]
+        "F" for "COLUMN_DIR" (Fortran order, column-major)
+        "C" for "ROW_DIR" (C order, row-major)
+        None if order is None or not recognized
+    """
+    if order is None:
+        return None
+    if order == "COLUMN_DIR":
+        return "F"
+    elif order == "ROW_DIR":
+        return "C"
+    else:
+        return None
 
 
 class CachedBase:
     """Base class for all user classes in this module, implementing a cache manager.
+
+    This class provides a caching mechanism to avoid creating duplicate instances
+    of the same object, which can improve performance and memory usage.
 
     Note
     ----
@@ -513,11 +585,29 @@ class CachedBase:
     meas = Measurement(session, "someMeasurement")      # Constructor directly called, no caching.
     """
 
-    _cache = weakref.WeakValueDictionary()
-    _strong_ref = collections.deque(maxlen=DB_CACHE_SIZE)
+    _cache: weakref.WeakValueDictionary = weakref.WeakValueDictionary()
+    _strong_ref: collections.deque = collections.deque(maxlen=DB_CACHE_SIZE)
 
     @classmethod
-    def get(cls, session, name: str = None, module_name: str = None, *args):
+    def get(cls, session: Any, name: Optional[str] = None, module_name: Optional[str] = None, *args: Any) -> Any:
+        """Get an instance of the class, using cache if available.
+
+        Parameters
+        ----------
+        session : Any
+            SQLAlchemy session object
+        name : Optional[str], optional
+            Name of the object to retrieve, by default None
+        module_name : Optional[str], optional
+            Name of the module, by default None
+        *args : Any
+            Additional arguments to pass to the constructor
+
+        Returns
+        -------
+        Any
+            An instance of the class
+        """
         entry = (cls.__name__, name, args)
         if entry not in cls._cache:
             inst = cls(session, name, module_name, *args)
@@ -527,83 +617,239 @@ class CachedBase:
 
 
 class NoCompuMethod(SingletonBase):
-    """Sort of Null-Object for NO_COMPU_METHOD."""
+    """Null-Object implementation for NO_COMPU_METHOD.
 
-    def __init__(self):
-        self._name = None
-        self._longIdentifier = None
-        self._conversionType = "NO_COMPU_METHOD"
-        self._format = None
-        self._unit = None
-        self._coeffs = []
-        self._coeffs_linear = []
-        self._formula = None
-        self._tab = None
-        self._tab_verb = None
-        self._statusStringRef = None
-        self._refUnit = None
+    This class provides a placeholder for when no computation method is available,
+    implementing the same interface as CompuMethod but performing no conversion.
+    """
+
+    def __init__(self) -> None:
+        """Initialize a NoCompuMethod instance with default values."""
+        self._name: Optional[str] = None
+        self._longIdentifier: Optional[str] = None
+        self._conversionType: str = "NO_COMPU_METHOD"
+        self._format: Optional[str] = None
+        self._unit: Optional[str] = None
+        self._coeffs: List[float] = []
+        self._coeffs_linear: List[float] = []
+        self._formula: Optional[str] = None
+        self._tab: Optional[Any] = None
+        self._tab_verb: Optional[Any] = None
+        self._statusStringRef: Optional[str] = None
+        self._refUnit: Optional[str] = None
 
     @property
-    def name(self):
+    def name(self) -> Optional[str]:
+        """Get the name of the computation method.
+
+        Returns
+        -------
+        Optional[str]
+            Name of the computation method, None for NoCompuMethod
+        """
         return self._name
 
     @property
-    def longIdentifier(self):
+    def longIdentifier(self) -> Optional[str]:
+        """Get the long identifier of the computation method.
+
+        Returns
+        -------
+        Optional[str]
+            Long identifier, None for NoCompuMethod
+        """
         return self._longIdentifier
 
     @property
-    def conversionType(self):
+    def conversionType(self) -> str:
+        """Get the conversion type.
+
+        Returns
+        -------
+        str
+            Always "NO_COMPU_METHOD" for this class
+        """
         return self._conversionType
 
     @property
-    def format(self):
+    def format(self) -> Optional[str]:
+        """Get the format string.
+
+        Returns
+        -------
+        Optional[str]
+            Format string, None for NoCompuMethod
+        """
         return self._format
 
     @property
-    def unit(self):
+    def unit(self) -> Optional[str]:
+        """Get the unit.
+
+        Returns
+        -------
+        Optional[str]
+            Unit, None for NoCompuMethod
+        """
         return self._unit
 
     @property
-    def coeffs(self):
+    def coeffs(self) -> List[float]:
+        """Get the coefficients.
+
+        Returns
+        -------
+        List[float]
+            Empty list for NoCompuMethod
+        """
         return self._coeffs
 
     @property
-    def coeffs_linear(self):
+    def coeffs_linear(self) -> List[float]:
+        """Get the linear coefficients.
+
+        Returns
+        -------
+        List[float]
+            Empty list for NoCompuMethod
+        """
         return self._coeffs_linear
 
     @property
-    def formula(self):
+    def formula(self) -> Optional[str]:
+        """Get the formula.
+
+        Returns
+        -------
+        Optional[str]
+            Formula, None for NoCompuMethod
+        """
         return self._formula
 
     @property
-    def tab(self):
+    def tab(self) -> Optional[Any]:
+        """Get the table.
+
+        Returns
+        -------
+        Optional[Any]
+            Table, None for NoCompuMethod
+        """
         return self._tab
 
     @property
-    def tab_verb(self):
+    def tab_verb(self) -> Optional[Any]:
+        """Get the verbal table.
+
+        Returns
+        -------
+        Optional[Any]
+            Verbal table, None for NoCompuMethod
+        """
         return self._tab_verb
 
     @property
-    def statusStringRef(self):
+    def statusStringRef(self) -> Optional[str]:
+        """Get the status string reference.
+
+        Returns
+        -------
+        Optional[str]
+            Status string reference, None for NoCompuMethod
+        """
         return self._statusStringRef
 
     @property
-    def refUnit(self):
+    def refUnit(self) -> Optional[str]:
+        """Get the reference unit.
+
+        Returns
+        -------
+        Optional[str]
+            Reference unit, None for NoCompuMethod
+        """
         return self._refUnit
 
-    def int_to_physical(self, i):
+    def int_to_physical(self, i: Any) -> Any:
+        """Convert internal value to physical value (identity function).
+
+        Parameters
+        ----------
+        i : Any
+            Internal value
+
+        Returns
+        -------
+        Any
+            Same value (no conversion)
+        """
         return i
 
-    def physical_to_int(self, p):
+    def physical_to_int(self, p: Any) -> Any:
+        """Convert physical value to internal value (identity function).
+
+        Parameters
+        ----------
+        p : Any
+            Physical value
+
+        Returns
+        -------
+        Any
+            Same value (no conversion)
+        """
         return p
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Get string representation.
+
+        Returns
+        -------
+        str
+            String representation of the object
+        """
         return "NoCompuMethod()"
 
 
 @dataclass
 class CompuMethod(CachedBase):
-    """"""
+    """Computation method for converting between internal and physical values.
+
+    This class represents a computation method that defines how to convert between
+    internal (ECU) values and physical values. It supports various conversion types
+    such as linear, rational functions, tables, and formulas.
+
+    Attributes
+    ----------
+    compu_method : model.CompuMethod
+        Raw database object
+    name : str
+        Name of the computation method
+    longIdentifier : str
+        Description of the computation method
+    conversionType : str
+        Type of conversion (e.g., "IDENTICAL", "LINEAR", "RAT_FUNC", "TAB_INTP")
+    format : Optional[str]
+        Format string for displaying physical values
+    unit : Optional[str]
+        Physical unit of the values
+    coeffs : Coeffs
+        Coefficients for rational function conversion
+    coeffs_linear : CoeffsLinear
+        Coefficients for linear conversion
+    formula : Dict[str, float]
+        Formula for conversion
+    tab : CompuTable
+        Table for numeric conversion
+    tab_verb : Union[CompuTableVerb, CompuTableVerbRanges]
+        Table for verbal conversion
+    statusStringRef : Optional[str]
+        Reference to status strings
+    refUnit : Optional[str]
+        Reference unit
+    evaluator : Callable
+        Function object that performs the actual conversion
+    """
 
     compu_method: model.CompuMethod = field(repr=False)
     name: str
@@ -611,16 +857,27 @@ class CompuMethod(CachedBase):
     conversionType: str
     format: Optional[str]
     unit: Optional[str]
-    coeffs: Coeffs
-    coeffs_linear: CoeffsLinear
-    formula: Dict[str, float]
+    coeffs: Optional[Coeffs]
+    coeffs_linear: Optional[CoeffsLinear]
+    formula: Dict[str, Any]
     tab: CompuTable
     tab_verb: Union[CompuTableVerb, CompuTableVerbRanges]
     statusStringRef: Optional[str]
     refUnit: Optional[str]
     evaluator: Callable = field(repr=False, default=Identical())
 
-    def __init__(self, session, name: str, module_name: str = None):
+    def __init__(self, session: Any, name: str, module_name: Optional[str] = None) -> None:
+        """Initialize a CompuMethod instance.
+
+        Parameters
+        ----------
+        session : Any
+            SQLAlchemy session object
+        name : str
+            Name of the computation method to retrieve
+        module_name : Optional[str], optional
+            Name of the module, by default None
+        """
         self.compu_method = session.query(model.CompuMethod).filter(model.CompuMethod.name == name).first()
         if not self.compu_method:
             return
@@ -739,26 +996,56 @@ class CompuMethod(CachedBase):
         else:
             raise ValueError(f"Unknown conversation type '{conversionType}'.")
 
-    def int_to_physical(self, i):
-        """Evaluate computation method INT ==> PHYS
+    def int_to_physical(self, i: Union[int, float, Any]) -> Any:
+        """Convert internal value to physical value.
 
         Parameters
         ----------
-            x: int or float, scalar or array
+        i : Union[int, float, Any]
+            Internal value (can be scalar or array)
+
+        Returns
+        -------
+        Any
+            Physical value
         """
         return self.evaluator.int_to_physical(i)
 
-    def physical_to_int(self, p):
-        """Evaluate computation method PHYS ==> INT
+    def physical_to_int(self, p: Union[int, float, Any]) -> Any:
+        """Convert physical value to internal value.
 
         Parameters
         ----------
-            p: int or float, scalar or array
+        p : Union[int, float, Any]
+            Physical value (can be scalar or array)
+
+        Returns
+        -------
+        Any
+            Internal value
         """
         return self.evaluator.physical_to_int(p)
 
     @classmethod
-    def get(cls, session, name: str = None, module_name: str = None):
+    def get(
+        cls, session: Any, name: Optional[str] = None, module_name: Optional[str] = None
+    ) -> Union["CompuMethod", NoCompuMethod]:
+        """Get a CompuMethod instance, using cache if available.
+
+        Parameters
+        ----------
+        session : Any
+            SQLAlchemy session object
+        name : Optional[str], optional
+            Name of the computation method to retrieve, by default None
+        module_name : Optional[str], optional
+            Name of the module, by default None
+
+        Returns
+        -------
+        Union[CompuMethod, NoCompuMethod]
+            CompuMethod instance or NoCompuMethod instance if name is "NO_COMPU_METHOD"
+        """
         if name == "NO_COMPU_METHOD":
             return NoCompuMethod()
         else:

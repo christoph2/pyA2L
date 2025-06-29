@@ -1701,6 +1701,35 @@ class STRUCTURE_COMPONENT(Keyword):
 class TYPEDEF_CHARACTERISTIC(Keyword):
     multiple = True
     block = True
+    ###
+    children = [
+        "ANNOTATION",
+        "AXIS_DESCR",
+        "BIT_MASK",
+        "BYTE_ORDER",
+        "CALIBRATION_ACCESS",
+        "COMPARISON_QUANTITY",
+        "DEPENDENT_CHARACTERISTIC",
+        "DISCRETE",
+        "DISPLAY_IDENTIFIER",
+        "ECU_ADDRESS_EXTENSION",
+        "EXTENDED_LIMITS",
+        "FORMAT",
+        "FUNCTION_LIST",
+        "GUARD_RAILS",
+        "IF_DATA",
+        "MAP_LIST",
+        "MATRIX_DIM",
+        "MAX_REFRESH",
+        "NUMBER",
+        "PHYS_UNIT",
+        "READ_ONLY",
+        "REF_MEMORY_SEGMENT",
+        "STEP_SIZE",
+        "SYMBOL_LINK",
+        "VIRTUAL_CHARACTERISTIC",
+    ]
+    ###
     attrs = [
         (Ident, "Name"),
         (String, "LongIdentifier"),

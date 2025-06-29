@@ -1,7 +1,7 @@
 /*
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-    (C) 2023 by Christoph Schueler <cpu12.gems.googlemail.com>
+    (C) 2023-2024 by Christoph Schueler <cpu12.gems.googlemail.com>
 
     All Rights Reserved
 
@@ -28,6 +28,7 @@
     #include <filesystem>
     #include <fstream>
     #include <iostream>
+    #include <stdexcept>
 
 namespace fs = std::filesystem;
 
@@ -37,11 +38,49 @@ namespace fs = std::filesystem;
 class TempFile {
    public:
 
-    explicit TempFile(const std::string& path, bool binary = false) noexcept :
-        m_path(fs::path(path)), m_file(path, std::ios::trunc | std::ios::out | (binary ? std::ios::binary : std::ios::out)) {
+    explicit TempFile(const std::string& path, bool binary = false) :
+        m_path(fs::path(path)),
+        m_file(path, std::ios::trunc | std::ios::out | (binary ? std::ios::binary : std::ios::out)),
+        m_closed(false) {
+        if (!m_file.is_open()) {
+            throw std::runtime_error("Could not open file '" + path + "'");
+        }
     }
 
+    // Delete default constructor
     TempFile() = delete;
+
+    // Delete copy constructor
+    TempFile(const TempFile&) = delete;
+
+    // Delete copy assignment operator
+    TempFile& operator=(const TempFile&) = delete;
+
+    // Move constructor
+    TempFile(TempFile&& other) noexcept :
+        m_path(std::move(other.m_path)),
+        m_file(std::move(other.m_file)),
+        m_closed(other.m_closed) {
+        // Mark the moved-from object as closed
+        other.m_closed = true;
+    }
+
+    // Move assignment operator
+    TempFile& operator=(TempFile&& other) noexcept {
+        if (this != &other) {
+            // Close current resources
+            close();
+
+            // Move resources from other
+            m_path = std::move(other.m_path);
+            m_file = std::move(other.m_file);
+            m_closed = other.m_closed;
+
+            // Mark the moved-from object as closed
+            other.m_closed = true;
+        }
+        return *this;
+    }
 
     ~TempFile() noexcept {
         remove();
@@ -52,8 +91,9 @@ class TempFile {
     }
 
     void close() noexcept {
-        if (m_file.is_open()) {
+        if (!m_closed && m_file.is_open()) {
             m_file.close();
+            m_closed = true;
         }
     }
 
@@ -63,8 +103,7 @@ class TempFile {
 
     void remove() noexcept {
         close();
-        if (fs::exists(m_path)) {
-
+        if (!m_closed && fs::exists(m_path)) {
             // fs::remove(m_path);
         }
     }
@@ -81,6 +120,7 @@ class TempFile {
 
     fs::path      m_path;
     std::ofstream m_file;
+    bool          m_closed;
 };
 
 #endif  // __TEMPFILE_HPP
