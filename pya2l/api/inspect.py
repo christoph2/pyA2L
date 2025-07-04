@@ -332,6 +332,22 @@ class MatrixDim:
     y: Optional[int] = field(default=None)
     z: Optional[int] = field(default=None)
 
+    def __init__(self, matrix_dim):
+        self.numbers = ()
+        if matrix_dim is not None:
+            numbers = matrix_dim.numbers
+            self.numbers = numbers
+            length = len(numbers)
+            if length >= 3:
+                z = numbers[2]
+                y = numbers[1]
+                x = numbers[0]
+            elif length == 2:
+                y = numbers[1]
+                x = numbers[0]
+            elif length == 1:
+                x = numbers[0]
+
     def valid(self) -> bool:
         return self.x is not None and self.y is not None and self.z is not None
 
@@ -2032,8 +2048,14 @@ class Characteristic(CachedBase):
             )
         else:
             self.virtual_characteristic = None
-        self.fnc_np_shape = fnc_np_shape(self.matrixDim) or (() if self.number is None else (self.number,))
         self.record_layout_components = create_record_layout_components(self)
+        self.fnc_np_shape: tuple = ()
+        if self.matrixDim.valid():
+            self.fnc_np_shape = fnc_np_shape(self.matrixDim)
+        elif self.number is not None:
+            self.fnc_np_shape = (self.number,)
+        elif self.axisDescriptions:
+            self.fnc_np_shape = tuple([ax.maxAxisPoints for ax in self.axisDescriptions])
 
     def axisDescription(self, axis) -> AxisDescr:
         MAP = {
@@ -2096,8 +2118,9 @@ class Characteristic(CachedBase):
             return self.deposit.fnc_element_size
 
     @property
-    def fnc_allocated_memory(self):
+    def fnc_allocated_memory(self) -> int:
         """Statically allocated memory by function value(s)."""
+
         dim = self.dim
         element_size = self.fnc_element_size
         if self.type == "VALUE":
@@ -2105,44 +2128,48 @@ class Characteristic(CachedBase):
         elif self.type == "ASCII":
             return dim["x"]  # Chars are always 8bit quantities.
         else:
-            axes_names = all_axes_names()
-            result = 1
-            for axis in axes_names:
-                value = dim[axis]
-                if value is None:
-                    break
-                result *= value
-            return result * element_size
+            element_count = reduce(mul, [a.maxAxisPoints for a in self.axisDescriptions], 1)
+            return element_count * element_size
 
     @property
-    def axes_allocated_memory(self):
-        """Statically allocated memory by axes."""
+    def axes_allocated_memory(self) -> int:
+        """Statically allocated memory by axes (including meta-data)."""
+        allocated_memory: int = 0
         if self.type in ("VALUE", "ASCII", "VAL_BLK"):
             return 0
         else:
-            dim = self.dim
-            axes_names = all_axes_names()
-            result = 0
-            for axis in axes_names:
-                value = dim[axis]
-                if value is None:
-                    break
-                axis_desc = self.axisDescription(axis)
-                axis_pts = self.deposit.axisPts.get(axis)
-                if axis_desc.attribute in (
-                    "COM_AXIS",
-                    "FIX_AXIS",
+            for axis, deposit in zip(self.axisDescriptions, self.deposit.axes.values()):
+                if axis.attribute not in (
                     "RES_AXIS",
-                    "CURVE_AXIS",
+                    "STD_AXIS",
                 ):
                     continue
-                result += value * asam_type_size(axis_pts["datatype"])
-            return result
+                element_count = axis.maxAxisPoints
+                for attr_name, attr_value in deposit.items():
+                    if attr_name == "axis_pts":
+                        element_size = asam_type_size(deposit.get("axis_pts").data_type)
+                        allocated_memory += element_count * element_size
+                    elif attr_name == "axis_rescale":
+                        element_size = asam_type_size(deposit.get("axis_rescale").data_type) * 2  # pairs.
+                        allocated_memory += element_count * element_size
+                    elif attr_name != "fix_no_axis_pts":
+                        allocated_memory += asam_type_size(attr_value.data_type)
+            return allocated_memory
 
     @property
-    def total_allocated_memory(self):
+    def other_allocated_memory(self) -> int:
+        mem_size: int = 0
+        deposit = self.deposit
+        if deposit.identification.valid():
+            mem_size += asam_type_size(deposit.identification.data_type)
+        for reserved in deposit.reserved:
+            mem_size += asam_type_size(reserved.data_type)
+        return mem_size
+
+    @property
+    def total_allocated_memory(self) -> int:
         """Total amount of statically allocated memory by Characteristic."""
-        return self.record_layout_components.sizeof
+        return self.fnc_allocated_memory + self.axes_allocated_memory + self.other_allocated_memory
 
     def axis_info(self, axis_name: str) -> AxisInfo:
         axes = self.record_layout_components.get("axes")
@@ -2195,10 +2222,7 @@ class Characteristic(CachedBase):
 
     @staticmethod
     def _create_matrix_dim(matrix_dim):
-        if matrix_dim is not None:
-            return MatrixDim(matrix_dim.xDim, matrix_dim.yDim, matrix_dim.zDim)
-        else:
-            return MatrixDim()
+        return MatrixDim(matrix_dim)
 
     @staticmethod
     def _dissect_max_refresh(max_ref):
@@ -2512,10 +2536,7 @@ class Measurement(CachedBase):
 
     @staticmethod
     def _create_matrix_dim(matrix_dim):
-        if matrix_dim is not None:
-            return MatrixDim(matrix_dim.xDim, matrix_dim.yDim, matrix_dim.zDim)
-        else:
-            return MatrixDim()
+        return MatrixDim(matrix_dim)
 
     @staticmethod
     def _dissect_max_refresh(max_ref):

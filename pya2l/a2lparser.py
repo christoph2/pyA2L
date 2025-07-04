@@ -54,6 +54,7 @@ KW_MAP = {
     "AxisRescale5": model.AxisRescale5,
     "BitMask": model.BitMask,
     "BitOperation": model.BitOperation,
+    "Blob": model.Blob,
     "ByteOrder": model.ByteOrder,
     "CalibrationAccess": model.CalibrationAccess,
     "CalibrationHandle": model.CalibrationHandle,
@@ -127,6 +128,7 @@ KW_MAP = {
     "MemoryLayout": model.MemoryLayout,
     "MemorySegment": model.MemorySegment,
     "ModCommon": model.ModCommon,
+    "ModelLink": model.ModelLink,
     "ModPar": model.ModPar,
     "Module": model.Module,
     "Monotony": model.Monotony,
@@ -188,9 +190,14 @@ KW_MAP = {
     "SubGroup": model.SubGroup,
     "Supplier": model.Supplier,
     "StructureComponent": model.StructureComponent,
+    "SymbolTypeLink": model.SymbolTypeLink,
     "SymbolLink": model.SymbolLink,
     "SystemConstant": model.SystemConstant,
     "SRecLayout": model.SRecLayout,
+    "TransformerInObjects": model.TransformerInObjects,
+    "TransformerOutObjects": model.TransformerOutObjects,
+    "Transformer": model.Transformer,
+    "TypedefAxis": model.TypedefAxis,
     "TypedefCharacteristic": model.TypedefCharacteristic,
     "TypedefMeasurement": model.TypedefMeasurement,
     "TypedefStructure": model.TypedefStructure,
@@ -404,7 +411,6 @@ class A2LParser:
         mult: list = []
         name = tree.get_name()
 
-        # print("TABLE ==> ", name, parent, multiple)
         if not self.silent and self.counter % self.advance == 0:
             self.db.session.flush()
             self.progress_bar.update(self.task, advance=self.advance)

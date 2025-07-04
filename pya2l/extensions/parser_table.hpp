@@ -502,9 +502,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                 Keyword(
                                     A2LTokenType::MATRIX_DIM, "MATRIX_DIM", "MatrixDim", false, false,
                                     {
-                                        Parameter(PredefinedType::Uint, "xDim"),
-                                        Parameter(PredefinedType::Uint, "yDim"),
-                                        Parameter(PredefinedType::Uint, "zDim"),
+                                        Parameter(PredefinedType::Uint, "Numbers", true),
                                     },
                                     {}
                                 ),
@@ -516,6 +514,13 @@ inline Keyword PARSER_TABLE = Keyword(
                                     },
                                     {}
                                 ),
+								Keyword(
+									A2LTokenType::MODEL_LINK, "MODEL_LINK", "ModelLink", false, false,
+									{
+										Parameter(PredefinedType::String, "link"),
+									},
+									{}
+								),
                                 Keyword(
                                     A2LTokenType::NUMBER, "NUMBER", "Number", false, false,
                                     {
@@ -907,9 +912,25 @@ inline Keyword PARSER_TABLE = Keyword(
                             },
                             {
                                 Keyword(
-                                    A2LTokenType::IF_DATA, "IF_DATA", "IfData", true, true,
+                                    A2LTokenType::COMPARISON_QUANTITY, "COMPARISON_QUANTITY", "ComparisonQuantity", false, false,
                                     {
-                                        Parameter(PredefinedType::Ident, "name"),
+                                        Parameter(PredefinedType::Ident, "Name"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::DEPENDENT_CHARACTERISTIC, "DEPENDENT_CHARACTERISTIC", "DependentCharacteristic",
+                                    true, false,
+                                    {
+                                        Parameter(PredefinedType::String, "Formula"),
+                                        Parameter(PredefinedType::Ident, "Characteristic", true),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::DISPLAY_IDENTIFIER, "DISPLAY_IDENTIFIER", "DisplayIdentifier", false, false,
+                                    {
+                                        Parameter(PredefinedType::Ident, "display_name"),
                                     },
                                     {}
                                 ),
@@ -918,6 +939,35 @@ inline Keyword PARSER_TABLE = Keyword(
                                     false,
                                     {
                                         Parameter(PredefinedType::Int, "Extension"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::IF_DATA, "IF_DATA", "IfData", true, true,
+                                    {
+                                        Parameter(PredefinedType::Ident, "name"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::MATRIX_DIM, "MATRIX_DIM", "MatrixDim", false, false,
+                                    {
+                                        Parameter(PredefinedType::Uint, "Numbers", true),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::NUMBER, "NUMBER", "Number", false, false,
+                                    {
+                                        Parameter(PredefinedType::Uint, "Number"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::SYMBOL_LINK, "SYMBOL_LINK", "SymbolLink", false, false,
+                                    {
+                                        Parameter(PredefinedType::String, "SymbolName"),
+                                        Parameter(PredefinedType::Long, "Offset"),
                                     },
                                     {}
                                 ),
@@ -1071,9 +1121,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                 Keyword(
                                     A2LTokenType::MATRIX_DIM, "MATRIX_DIM", "MatrixDim", false, false,
                                     {
-                                        Parameter(PredefinedType::Uint, "xDim"),
-                                        Parameter(PredefinedType::Uint, "yDim"),
-                                        Parameter(PredefinedType::Uint, "zDim"),
+                                        Parameter(PredefinedType::Uint, "Numbers", true),
                                     },
                                     {}
                                 ),
@@ -2102,6 +2150,124 @@ inline Keyword PARSER_TABLE = Keyword(
                                 ),
                             }
                         ),
+						Keyword(
+                            A2LTokenType::TYPEDEF_AXIS, "TYPEDEF_AXIS", "TypedefAxis", true, true,
+                            {
+                                Parameter(PredefinedType::Ident, "Name"),
+                                Parameter(PredefinedType::String, "LongIdentifier"),
+                                Parameter(PredefinedType::Ident, "InputQuantity"),
+                                Parameter(PredefinedType::Ident, "DepositAttr"),
+                                Parameter(PredefinedType::Float, "MaxDiff"),
+                                Parameter(PredefinedType::Ident, "Conversion"),
+                                Parameter(PredefinedType::Uint, "MaxAxisPoints"),
+                                Parameter(PredefinedType::Float, "LowerLimit"),
+                                Parameter(PredefinedType::Float, "UpperLimit"),
+                            },
+                            {
+                                Keyword(
+                                    A2LTokenType::ANNOTATION, "ANNOTATION", "Annotation", true, true, {},
+                                    {
+                                        Keyword(
+                                            A2LTokenType::ANNOTATION_LABEL, "ANNOTATION_LABEL", "AnnotationLabel", false, false,
+                                            {
+                                                Parameter(PredefinedType::String, "Label"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::ANNOTATION_ORIGIN, "ANNOTATION_ORIGIN", "AnnotationOrigin", false, false,
+                                            {
+                                                Parameter(PredefinedType::String, "Origin"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::ANNOTATION_TEXT, "ANNOTATION_TEXT", "AnnotationText", true, false,
+                                            {
+                                                Parameter(PredefinedType::String, "Text", true),
+                                            },
+                                            {}
+                                        ),
+                                    }
+                                ),
+                                Keyword(
+                                    A2LTokenType::_BYTE_ORDER, "_BYTE_ORDER", "ByteOrder", false, false,
+                                    {
+                                        Parameter(
+                                            PredefinedType::Enum, "Byteorder",
+                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                        ),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::CALIBRATION_ACCESS, "CALIBRATION_ACCESS", "CalibrationAccess", false, false,
+                                    {
+                                        Parameter(
+                                            PredefinedType::Enum, "Type",
+                                            { "CALIBRATION", "NO_CALIBRATION", "NOT_IN_MCD_SYSTEM", "OFFLINE_CALIBRATION" }
+                                        ),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::DEPOSIT, "DEPOSIT", "Deposit", false, false,
+                                    {
+                                        Parameter(PredefinedType::Enum, "Mode", { "ABSOLUTE", "DIFFERENCE" }),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::EXTENDED_LIMITS, "EXTENDED_LIMITS", "ExtendedLimits", false, false,
+                                    {
+                                        Parameter(PredefinedType::Float, "LowerLimit"),
+                                        Parameter(PredefinedType::Float, "UpperLimit"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::FORMAT, "FORMAT", "Format", false, false,
+                                    {
+                                        Parameter(PredefinedType::String, "FormatString"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(A2LTokenType::GUARD_RAILS, "GUARD_RAILS", "GuardRails", false, false, {}, {}),
+                                Keyword(
+                                    A2LTokenType::MONOTONY, "MONOTONY", "Monotony", false, false,
+                                    {
+                                        Parameter(
+                                            PredefinedType::Enum, "Monotony",
+                                            { "MON_DECREASE", "MON_INCREASE", "STRICT_DECREASE", "STRICT_INCREASE", "MONOTONOUS",
+                                              "STRICT_MON", "NOT_MON" }
+                                        ),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::PHYS_UNIT, "PHYS_UNIT", "PhysUnit", false, false,
+                                    {
+                                        Parameter(PredefinedType::String, "Unit"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(A2LTokenType::READ_ONLY, "READ_ONLY", "ReadOnly", false, false, {}, {}),
+                                Keyword(
+                                    A2LTokenType::REF_MEMORY_SEGMENT, "REF_MEMORY_SEGMENT", "RefMemorySegment", false, false,
+                                    {
+                                        Parameter(PredefinedType::Ident, "Name"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::STEP_SIZE, "STEP_SIZE", "StepSize", false, false,
+                                    {
+                                        Parameter(PredefinedType::Float, "StepSize"),
+                                    },
+                                    {}
+                                ),
+                            }
+                        ),
                         Keyword(
                             A2LTokenType::TYPEDEF_CHARACTERISTIC, "TYPEDEF_CHARACTERISTIC", "TypedefCharacteristic", true, true,
                             {
@@ -2117,8 +2283,338 @@ inline Keyword PARSER_TABLE = Keyword(
                                 Parameter(PredefinedType::Float, "LowerLimit"),
                                 Parameter(PredefinedType::Float, "UpperLimit"),
                             },
-                            {}
+                                                        {
+                                Keyword(
+                                    A2LTokenType::ANNOTATION, "ANNOTATION", "Annotation", true, true, {},
+                                    {
+                                        Keyword(
+                                            A2LTokenType::ANNOTATION_LABEL, "ANNOTATION_LABEL", "AnnotationLabel", false, false,
+                                            {
+                                                Parameter(PredefinedType::String, "Label"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::ANNOTATION_ORIGIN, "ANNOTATION_ORIGIN", "AnnotationOrigin", false, false,
+                                            {
+                                                Parameter(PredefinedType::String, "Origin"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::ANNOTATION_TEXT, "ANNOTATION_TEXT", "AnnotationText", true, false,
+                                            {
+                                                Parameter(PredefinedType::String, "Text", true),
+                                            },
+                                            {}
+                                        ),
+                                    }
+                                ),
+                                Keyword(
+                                    A2LTokenType::AXIS_DESCR, "AXIS_DESCR", "AxisDescr", true, true,
+                                    {
+                                        Parameter(
+                                            PredefinedType::Enum, "Attribute",
+                                            { "CURVE_AXIS", "COM_AXIS", "FIX_AXIS", "RES_AXIS", "STD_AXIS" }
+                                        ),
+                                        Parameter(PredefinedType::Ident, "InputQuantity"),
+                                        Parameter(PredefinedType::Ident, "Conversion"),
+                                        Parameter(PredefinedType::Uint, "MaxAxisPoints"),
+                                        Parameter(PredefinedType::Float, "LowerLimit"),
+                                        Parameter(PredefinedType::Float, "UpperLimit"),
+                                    },
+                                    {
+                                        Keyword(
+                                            A2LTokenType::ANNOTATION, "ANNOTATION", "Annotation", true, true, {},
+                                            {
+                                                Keyword(
+                                                    A2LTokenType::ANNOTATION_LABEL, "ANNOTATION_LABEL", "AnnotationLabel", false,
+                                                    false,
+                                                    {
+                                                        Parameter(PredefinedType::String, "Label"),
+                                                    },
+                                                    {}
+                                                ),
+                                                Keyword(
+                                                    A2LTokenType::ANNOTATION_ORIGIN, "ANNOTATION_ORIGIN", "AnnotationOrigin", false,
+                                                    false,
+                                                    {
+                                                        Parameter(PredefinedType::String, "Origin"),
+                                                    },
+                                                    {}
+                                                ),
+                                                Keyword(
+                                                    A2LTokenType::ANNOTATION_TEXT, "ANNOTATION_TEXT", "AnnotationText", true, false,
+                                                    {
+                                                        Parameter(PredefinedType::String, "Text", true),
+                                                    },
+                                                    {}
+                                                ),
+                                            }
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::AXIS_PTS_REF, "AXIS_PTS_REF", "AxisPtsRef", false, false,
+                                            {
+                                                Parameter(PredefinedType::Ident, "AxisPoints"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::_BYTE_ORDER, "_BYTE_ORDER", "ByteOrder", false, false,
+                                            {
+                                                Parameter(
+                                                    PredefinedType::Enum, "Byteorder",
+                                                    { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                                ),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::CURVE_AXIS_REF, "CURVE_AXIS_REF", "CurveAxisRef", false, false,
+                                            {
+                                                Parameter(PredefinedType::Ident, "CurveAxis"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::DEPOSIT, "DEPOSIT", "Deposit", false, false,
+                                            {
+                                                Parameter(PredefinedType::Enum, "Mode", { "ABSOLUTE", "DIFFERENCE" }),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::EXTENDED_LIMITS, "EXTENDED_LIMITS", "ExtendedLimits", false, false,
+                                            {
+                                                Parameter(PredefinedType::Float, "LowerLimit"),
+                                                Parameter(PredefinedType::Float, "UpperLimit"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::FIX_AXIS_PAR, "FIX_AXIS_PAR", "FixAxisPar", false, false,
+                                            {
+                                                Parameter(PredefinedType::Int, "Offset"),
+                                                Parameter(PredefinedType::Int, "Shift"),
+                                                Parameter(PredefinedType::Uint, "Numberapo"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::FIX_AXIS_PAR_DIST, "FIX_AXIS_PAR_DIST", "FixAxisParDist", false, false,
+                                            {
+                                                Parameter(PredefinedType::Int, "Offset"),
+                                                Parameter(PredefinedType::Int, "Distance"),
+                                                Parameter(PredefinedType::Uint, "Numberapo"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::FIX_AXIS_PAR_LIST, "FIX_AXIS_PAR_LIST", "FixAxisParList", true, false,
+                                            {
+                                                Parameter(PredefinedType::Float, "AxisPts_Value", true),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::FORMAT, "FORMAT", "Format", false, false,
+                                            {
+                                                Parameter(PredefinedType::String, "FormatString"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::MAX_GRAD, "MAX_GRAD", "MaxGrad", false, false,
+                                            {
+                                                Parameter(PredefinedType::Float, "MaxGradient"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::MONOTONY, "MONOTONY", "Monotony", false, false,
+                                            {
+                                                Parameter(
+                                                    PredefinedType::Enum, "Monotony",
+                                                    { "MON_DECREASE", "MON_INCREASE", "STRICT_DECREASE", "STRICT_INCREASE",
+                                                      "MONOTONOUS", "STRICT_MON", "NOT_MON" }
+                                                ),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::PHYS_UNIT, "PHYS_UNIT", "PhysUnit", false, false,
+                                            {
+                                                Parameter(PredefinedType::String, "Unit"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(A2LTokenType::READ_ONLY, "READ_ONLY", "ReadOnly", false, false, {}, {}),
+                                        Keyword(
+                                            A2LTokenType::STEP_SIZE, "STEP_SIZE", "StepSize", false, false,
+                                            {
+                                                Parameter(PredefinedType::Float, "StepSize"),
+                                            },
+                                            {}
+                                        ),
+                                    }
+                                ),
+                                Keyword(
+                                    A2LTokenType::BIT_MASK, "BIT_MASK", "BitMask", false, false,
+                                    {
+                                        Parameter(PredefinedType::Ulong, "Mask"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::_BYTE_ORDER, "_BYTE_ORDER", "ByteOrder", false, false,
+                                    {
+                                        Parameter(
+                                            PredefinedType::Enum, "Byteorder",
+                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                        ),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::CALIBRATION_ACCESS, "CALIBRATION_ACCESS", "CalibrationAccess", false, false,
+                                    {
+                                        Parameter(
+                                            PredefinedType::Enum, "Type",
+                                            { "CALIBRATION", "NO_CALIBRATION", "NOT_IN_MCD_SYSTEM", "OFFLINE_CALIBRATION" }
+                                        ),
+                                    },
+                                    {}
+                                ),
+                                Keyword(A2LTokenType::DISCRETE, "DISCRETE", "Discrete", false, false, {}, {}),
+                                Keyword(
+                                    A2LTokenType::DISPLAY_IDENTIFIER, "DISPLAY_IDENTIFIER", "DisplayIdentifier", false, false,
+                                    {
+                                        Parameter(PredefinedType::Ident, "display_name"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::EXTENDED_LIMITS, "EXTENDED_LIMITS", "ExtendedLimits", false, false,
+                                    {
+                                        Parameter(PredefinedType::Float, "LowerLimit"),
+                                        Parameter(PredefinedType::Float, "UpperLimit"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::FORMAT, "FORMAT", "Format", false, false,
+                                    {
+                                        Parameter(PredefinedType::String, "FormatString"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(A2LTokenType::GUARD_RAILS, "GUARD_RAILS", "GuardRails", false, false, {}, {}),
+                                Keyword(
+                                    A2LTokenType::IF_DATA, "IF_DATA", "IfData", true, true,
+                                    {
+                                        Parameter(PredefinedType::Ident, "name"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::MAX_REFRESH, "MAX_REFRESH", "MaxRefresh", false, false,
+                                    {
+                                        Parameter(PredefinedType::Uint, "ScalingUnit"),
+                                        Parameter(PredefinedType::Ulong, "Rate"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::NUMBER, "NUMBER", "Number", false, false,
+                                    {
+                                        Parameter(PredefinedType::Uint, "Number"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::PHYS_UNIT, "PHYS_UNIT", "PhysUnit", false, false,
+                                    {
+                                        Parameter(PredefinedType::String, "Unit"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(A2LTokenType::READ_ONLY, "READ_ONLY", "ReadOnly", false, false, {}, {}),
+                                Keyword(
+                                    A2LTokenType::REF_MEMORY_SEGMENT, "REF_MEMORY_SEGMENT", "RefMemorySegment", false, false,
+                                    {
+                                        Parameter(PredefinedType::Ident, "Name"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::STEP_SIZE, "STEP_SIZE", "StepSize", false, false,
+                                    {
+                                        Parameter(PredefinedType::Float, "StepSize"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::VIRTUAL_CHARACTERISTIC, "VIRTUAL_CHARACTERISTIC", "VirtualCharacteristic", true,
+                                    false,
+                                    {
+                                        Parameter(PredefinedType::String, "Formula"),
+                                        Parameter(PredefinedType::Ident, "Characteristic", true),
+                                    },
+                                    {}
+                                ),
+                            }
                         ),
+						Keyword(
+							A2LTokenType::BLOB, "BLOB", "Blob", true, true,
+							{
+								Parameter(PredefinedType::Ident, "Name"),
+								Parameter(PredefinedType::String, "LongIdentifier"),
+								Parameter(PredefinedType::Ulong, "Address"),
+                                Parameter(PredefinedType::Ulong, "Length"),
+							},
+							{
+//#if 0
+                                Keyword(
+                                    A2LTokenType::CALIBRATION_ACCESS, "CALIBRATION_ACCESS", "CalibrationAccess", false, false,
+                                    {
+                                        Parameter(
+                                            PredefinedType::Enum, "Type",
+                                            { "CALIBRATION", "NO_CALIBRATION", "NOT_IN_MCD_SYSTEM", "OFFLINE_CALIBRATION" }
+                                        ),
+                                    },
+                                    {}
+                                ),
+//#endif
+							}
+                        ),
+						Keyword(
+							A2LTokenType::TRANSFORMER, "TRANSFORMER", "Transformer", true, true,
+							{
+								Parameter(PredefinedType::Ident, "Name"),
+								Parameter(PredefinedType::String, "Version"),
+								Parameter(PredefinedType::String, "Dllname32"),
+								Parameter(PredefinedType::String, "Dllname64"),
+								Parameter(PredefinedType::Ulong, "Timeout"),
+								Parameter(PredefinedType::Ident, "Trigger"),
+								Parameter(PredefinedType::Ident, "Reverse"),
+							},
+							{
+                                Keyword(
+                                    A2LTokenType::TRANSFORMER_IN_OBJECTS, "TRANSFORMER_IN_OBJECTS", "TransformerInObjects", true, false,
+                                    {
+                                        Parameter(PredefinedType::Ident, "Identifier", true),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::TRANSFORMER_OUT_OBJECTS, "TRANSFORMER_OUT_OBJECTS", "TransformerOutObjects", true, false,
+                                    {
+                                        Parameter(PredefinedType::Ident, "Identifier", true),
+                                    },
+                                    {}
+                                ),
+							}
+						),
                         Keyword(
                             A2LTokenType::TYPEDEF_MEASUREMENT, "TYPEDEF_MEASUREMENT", "TypedefMeasurement", true, true,
                             {
@@ -2143,21 +2639,46 @@ inline Keyword PARSER_TABLE = Keyword(
                                 Parameter(PredefinedType::Ident, "Name"),
                                 Parameter(PredefinedType::String, "LongIdentifier"),
                                 Parameter(PredefinedType::Ulong, "Size"),
-                                Parameter(PredefinedType::Enum, "Linktype", { "SYMBOL_TYPE_LINK", "" }),
-                                Parameter(PredefinedType::String, "Symbol"),
                             },
                             {
-                                Keyword(
-                                    A2LTokenType::STRUCTURE_COMPONENT, "STRUCTURE_COMPONENT", "StructureComponent", true, true,
-                                    {
-                                        Parameter(PredefinedType::Ident, "Name"),
-                                        Parameter(PredefinedType::Ident, "Deposit"),
-                                        Parameter(PredefinedType::Ulong, "Offset"),
-                                        Parameter(PredefinedType::Enum, "Linktype", { "SYMBOL_TYPE_LINK", "" }),
-                                        Parameter(PredefinedType::String, "Symbol"),
-                                    },
-                                    {}
-                                ),
+								Keyword(
+									A2LTokenType::STRUCTURE_COMPONENT, "STRUCTURE_COMPONENT", "StructureComponent", true, true,
+									{
+										Parameter(PredefinedType::Ident, "Name"),
+										Parameter(PredefinedType::Ident, "Type_Ref"),
+										Parameter(PredefinedType::Ulong, "Offset"),
+									},
+									{
+										Keyword(
+											A2LTokenType::MATRIX_DIM, "MATRIX_DIM", "MatrixDim", false, false,
+											{
+												Parameter(PredefinedType::Uint, "Numbers", true),
+											},
+											{}
+										),
+										Keyword(
+											A2LTokenType::NUMBER, "NUMBER", "Number", false, false,
+											{
+												Parameter(PredefinedType::Uint, "Number"),
+											},
+											{}
+										),
+										Keyword(
+											A2LTokenType::SYMBOL_TYPE_LINK, "SYMBOL_TYPE_LINK", "SymbolTypeLink", false, false,
+											{
+												Parameter(PredefinedType::String, "Link"),
+											},
+											{}
+										),
+									}
+								),
+								Keyword(
+									A2LTokenType::SYMBOL_TYPE_LINK, "SYMBOL_TYPE_LINK", "SymbolTypeLink", false, false,
+									{
+										Parameter(PredefinedType::String, "Link"),
+									},
+									{}
+								),
                             }
                         ),
                         Keyword(
