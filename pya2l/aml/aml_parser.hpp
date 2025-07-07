@@ -5,7 +5,6 @@
     #include "klasses.hpp"
     #include "utils.hpp"
 
-
 class AMLParser {
    public:
 
@@ -95,7 +94,7 @@ class AMLParser {
         std::string a2ml;
 
         match(AmlTokenType::BEGIN);
-        a2ml = get_ident();
+        a2ml       = get_ident();
         auto decls = declaration();
         match(AmlTokenType::END);
         a2ml = get_ident();
@@ -164,7 +163,7 @@ class AMLParser {
             token    = current_token();
         }
         auto tp = type_name();
-        token = current_token();
+        token   = current_token();
         if (multiple) {
             match(AmlTokenType::RPARAN);
             match(AmlTokenType::STAR);
@@ -212,7 +211,7 @@ class AMLParser {
     }
 
     auto taggedstruct_type_name() -> TaggedStructOrReferrer {
-        std::string name;
+        std::string                      name;
         std::vector< TaggedStructMember> members;
 
         match(AmlTokenType::TAGGED_STRUCT);
@@ -242,7 +241,7 @@ class AMLParser {
     }
 
     auto tagged_struct_member() -> TaggedStructMember {
-        bool multiple{ false };
+        bool                   multiple{ false };
         TaggedStructDefinition tsd;
         BlockDefinition        block;
 
@@ -295,7 +294,7 @@ class AMLParser {
                 throw std::runtime_error("Did not expect empty taggedstruct_definition with multiple");
             }
         } else {
-            mem = member();
+            mem   = member();
             token = current_token();
             if (token.type == AmlTokenType::SEMI) {
                 match(AmlTokenType::SEMI);
@@ -309,7 +308,7 @@ class AMLParser {
     }
 
     auto taggedunion_type_name() -> TaggedUnionOrReferrer {
-        std::string name;
+        std::string                     name;
         std::vector< TaggedUnionMember> members;
 
         match(AmlTokenType::TAGGED_UNION);
@@ -408,15 +407,15 @@ class AMLParser {
             if (token.type == AmlTokenType::SEMI) {
                 return Member();  // Empty.
             }
-            auto tp = type_name();            
-            return Member(nullptr, tp.get_type().valueless_by_exception() == false? std::make_shared<Type>(tp): nullptr);
+            auto tp = type_name();
+            return Member(nullptr, tp.get_type().valueless_by_exception() == false ? std::make_shared<Type>(tp) : nullptr);
         }
     }
 
     auto array_specifier() -> std::vector<int64_t> {
         std::vector<int64_t> result;
         int64_t              value;
-        auto                      token = current_token();
+        auto                 token = current_token();
         if (token.type == AmlTokenType::LSQ) {
             while (true) {
                 token = current_token();

@@ -1,7 +1,6 @@
 
 #include "klasses.hpp"
 
-
 inline std::string null_pointer() {
     return to_binary<nullptr_t>(nullptr);
 }
@@ -14,7 +13,6 @@ inline std::string true_value() {
     return to_binary<bool>(true);
 }
 
-
 void dumps(std::stringstream& ss, std::shared_ptr<Type> tp_);
 
 // AMLPredefinedType
@@ -22,12 +20,12 @@ inline void dumps(std::stringstream& ss, const AMLPredefinedType& pdt) {
     ss << to_binary<std::string>("PD");
     auto value = static_cast<uint8_t>(pdt.get_pdt());
     ss << to_binary(value);
-	const auto& arr_spec = pdt.get_array_spec();
-	const std::size_t array_size = std::size(arr_spec);
-	ss << to_binary(array_size);
-	for (uint32_t arr : arr_spec) {
-		ss << to_binary<uint32_t>(arr);
-	}
+    const auto&       arr_spec   = pdt.get_array_spec();
+    const std::size_t array_size = std::size(arr_spec);
+    ss << to_binary(array_size);
+    for (uint32_t arr : arr_spec) {
+        ss << to_binary<uint32_t>(arr);
+    }
 }
 
 // Referrer.
@@ -39,13 +37,12 @@ inline void dumps(std::stringstream& ss, const Referrer& ref) {
     ss << to_binary(idf);
 }
 
-
 // BlockDefinition.
 inline void dumps(std::stringstream& ss, std::shared_ptr<BlockDefinition> block) {
     ss << to_binary<std::string>("B");
-    const auto& tag = block->get_tag();
+    const auto& tag      = block->get_tag();
     auto        multiple = block->get_multiple();
-    auto  type = block->get_type();
+    auto        type     = block->get_type();
     ss << to_binary(tag);
     ss << to_binary(multiple);
     if (type) {
@@ -68,8 +65,7 @@ inline void dumps(std::stringstream& ss, const Member& mem) {
         } else {
             dumps(ss, tp);
         }
-    }
-    else {
+    } else {
         const auto blk = mem.get_block();
         if (blk) {
             dumps(ss, blk);
@@ -177,7 +173,7 @@ inline void dumps(std::stringstream& ss, const StructOrReferrer& sr) {
         ss << to_binary(name);
         ss << to_binary(member_count);
         for (const auto& sm : members) {
-			const auto mem = sm.get_member();
+            const auto mem = sm.get_member();
             if (mem) {
                 if (mem->is_empty()) {
                     ss << false_value();
@@ -185,9 +181,9 @@ inline void dumps(std::stringstream& ss, const StructOrReferrer& sr) {
                     ss << true_value();
                     dumps(ss, *mem);
                 }
-			} else {
+            } else {
                 ss << null_pointer();
-			}
+            }
         }
     } else if (std::holds_alternative<Referrer>(sr)) {
         auto ref = std::get<Referrer>(sr);
@@ -218,9 +214,9 @@ inline void dumps(std::stringstream& ss, const EnumerationOrReferrer& er) {
 
 // Type.
 inline void dumps(std::stringstream& ss, std::shared_ptr<Type> tp_) {
-    auto tp  = tp_->get_type();
-    //auto tag = tp_->get_tag();
-    //ss << to_binary(tag);
+    auto tp = tp_->get_type();
+    // auto tag = tp_->get_tag();
+    // ss << to_binary(tag);
     if (tp.valueless_by_exception() == true) {
         return;
     }
@@ -253,7 +249,7 @@ inline void dumps(std::stringstream& ss, std::shared_ptr<TypeDefinition> type_de
 
 // Declaration.
 inline void dumps(std::stringstream& ss, const Declaration& decl) {
-    auto  td    = decl.get_type();
+    auto td    = decl.get_type();
     auto block = decl.get_block();
     if (block) {
         ss << to_binary<std::string>("BL");

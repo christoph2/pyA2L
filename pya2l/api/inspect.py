@@ -339,14 +339,14 @@ class MatrixDim:
             self.numbers = numbers
             length = len(numbers)
             if length >= 3:
-                z = numbers[2]
-                y = numbers[1]
-                x = numbers[0]
+                self.z = numbers[2]
+                self.y = numbers[1]
+                self.x = numbers[0]
             elif length == 2:
-                y = numbers[1]
-                x = numbers[0]
+                self.y = numbers[1]
+                self.x = numbers[0]
             elif length == 1:
-                x = numbers[0]
+                self.x = numbers[0]
 
     def valid(self) -> bool:
         return self.x is not None and self.y is not None and self.z is not None
@@ -3215,3 +3215,17 @@ class VariantCoding(CachedBase):
         vcc = self.characteristics.get(ac.name)
         combis = self.valid_combinations(vcc.criterions)
         return [VarCombination(a, c) for c, a in zip(combis, vcc.addresses)]
+
+
+@dataclass
+class AMLSection(CachedBase):
+    session: Any = field(repr=False)
+    aml_section: model.AMLSection = field(repr=False)
+    text: Optional[str]
+    parsed: Optional[bytes]
+
+    def __init__(self, session):
+        self.session = session
+        self.aml_section = session.query(model.AMLSection).first()
+        self.text = self.aml_section.text
+        self.parsed = self.aml_section.parsed

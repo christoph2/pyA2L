@@ -8,6 +8,7 @@
 #include "parser.hpp"
 #include "preprocessor.hpp"
 #include "sysconsts.hpp"
+#include "unmarshal.hpp"
 
 namespace py = pybind11;
 
@@ -92,9 +93,19 @@ struct Overload : Ts... {
 };
 
 
+
+Node unmarshal(const py::bytes& data) {
+	std::stringstream inbuf{data};
+    auto unm    = Unmarshaller(inbuf);
+    return unm.run();
+}
+
+
 PYBIND11_MODULE(a2lparser_ext, m) {
     m.def("parse", &parse, py::return_value_policy::move);
     m.def("process_sys_consts", &process_sys_consts, py::return_value_policy::move);
+	m.def("unmarshal", &unmarshal, py::return_value_policy::move);
+	//m.def("ifdata_lexer", &ifdata_lexer, py::return_value_policy::move);
 
     py::class_<AmlData>(m, "AmlData")
         .def(py::init<const std::string&, const std::string&>())
@@ -182,4 +193,53 @@ PYBIND11_MODULE(a2lparser_ext, m) {
             }
             return result;
         });
+
+	py::class_<Node>(m, "Node")
+		.def(py::init<>())
+		.def_property_readonly("value", &Node::value)
+		.def_property_readonly("list", &Node::list)
+		.def_property_readonly("map", &Node::map, py::return_value_policy::copy)
+		.def_property_readonly("aml_type", &Node::aml_type)
+		.def_property_readonly("node_type", &Node::node_type)
+		.def_property_readonly("content", &Node::get_content)
+		.def("find_block", &Node::find_block)
+		.def("member_or_type", &Node::member_or_type)
+		.def("find_tag", &Node::find_tag)
+		.def_property_readonly("tag", &Node::get_tag)
+		.def_property_readonly("multiple", &Node::is_multiple)
+		.def_property_readonly("type", &Node::get_type)
+		.def_property_readonly("members", &Node::get_members)
+		.def_property_readonly("tagged_struct_members", &Node::get_tagged_struct_members)
+		.def("__repr__", [](const Node& self) { return self.to_string(); })
+	;
+
+	py::enum_<Node::NodeType>(m, "NodeType")
+		.value("TERMINAL", Node::NodeType::TERMINAL)
+		.value("MAP", Node::NodeType::MAP)
+		.value("AGGR", Node::NodeType::AGGR)
+		.value("NONE", Node::NodeType::NONE)
+	;
+
+	py::enum_<Node::AmlType>(m, "AmlType")
+		.value("NONE", Node::AmlType::NONE)
+		.value("TYPE", Node::AmlType::TYPE)
+		.value("TERMINAL", Node::AmlType::TERMINAL)
+		.value("BLOCK", Node::AmlType::BLOCK)
+		.value("BLOCK_INTERN", Node::AmlType::BLOCK_INTERN)
+		.value("ENUMERATION", Node::AmlType::ENUMERATION)
+		.value("ENUMERATOR", Node::AmlType::ENUMERATOR)
+		.value("ENUMERATORS", Node::AmlType::ENUMERATORS)
+		.value("MEMBER", Node::AmlType::MEMBER)
+		.value("MEMBERS", Node::AmlType::MEMBERS)
+		.value("PDT", Node::AmlType::PDT)
+		.value("REFERRER", Node::AmlType::REFERRER)
+		.value("ROOT", Node::AmlType::ROOT)
+		.value("STRUCT", Node::AmlType::STRUCT)
+		.value("STRUCT_MEMBER", Node::AmlType::STRUCT_MEMBER)
+		.value("TAGGED_STRUCT", Node::AmlType::TAGGED_STRUCT)
+		.value("TAGGED_STRUCT_DEFINITION", Node::AmlType::TAGGED_STRUCT_DEFINITION)
+		.value("TAGGED_STRUCT_MEMBER", Node::AmlType::TAGGED_STRUCT_MEMBER)
+		.value("TAGGED_UNION", Node::AmlType::TAGGED_UNION)
+		.value("TAGGED_UNION_MEMBER", Node::AmlType::TAGGED_UNION_MEMBER)
+	;
 }
