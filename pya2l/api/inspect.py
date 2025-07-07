@@ -3215,3 +3215,17 @@ class VariantCoding(CachedBase):
         vcc = self.characteristics.get(ac.name)
         combis = self.valid_combinations(vcc.criterions)
         return [VarCombination(a, c) for c, a in zip(combis, vcc.addresses)]
+
+
+@dataclass
+class AMLSection(CachedBase):
+    session: Any = field(repr=False)
+    aml_section: model.AMLSection = field(repr=False)
+    text: Optional[str]
+    parsed: Optional[bytes]
+
+    def __init__(self, session):
+        self.session = session
+        self.aml_section = session.query(model.AMLSection).first()
+        self.text = self.aml_section.text
+        self.parsed = self.aml_section.parsed

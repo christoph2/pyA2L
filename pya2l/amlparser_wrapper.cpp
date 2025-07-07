@@ -32,9 +32,10 @@ inline auto unicode_decode(std::string_view value, const char * encoding) -> py:
 }
 
 PYBIND11_MODULE(amlparser_ext, m) {
-    m.def("parse_aml", [](const std::string& aml_text) {
-		return py::bytes(parse(aml_text));
-	}, py::return_value_policy::move);
+    // m.def("parse_aml", [](const std::string& aml_text) {
+	// 	return py::bytes(parse(aml_text));
+	// }, py::return_value_policy::move);
+
 	m.def("unmarshal", &unmarshal, py::return_value_policy::move);
 	//m.def("ifdata_lexer", &ifdata_lexer, py::return_value_policy::move);
 
