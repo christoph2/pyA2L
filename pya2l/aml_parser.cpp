@@ -2,18 +2,15 @@
 
 #include <iostream>
 
-#include "amlLexer.h"
 #include "aml_visitor.h"
-#include "antlr4-runtime.h"
 
 // #include "boost/json/src.hpp"
-
-using namespace antlr4;
 
 void marshal(std::stringstream& ss, const AmlFile& amlf);
 
 const std::string BASE{ "C:/csProjects/" };
-//const std::string BASE{ "C:/Users/HP/PycharmProjects/" };
+
+// const std::string BASE{ "C:/Users/HP/PycharmProjects/" };
 
 int main(int argc, const char* argv[]) {
     std::ifstream stream;

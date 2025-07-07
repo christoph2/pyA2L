@@ -339,14 +339,14 @@ class MatrixDim:
             self.numbers = numbers
             length = len(numbers)
             if length >= 3:
-                z = numbers[2]
-                y = numbers[1]
-                x = numbers[0]
+                self.z = numbers[2]
+                self.y = numbers[1]
+                self.x = numbers[0]
             elif length == 2:
-                y = numbers[1]
-                x = numbers[0]
+                self.y = numbers[1]
+                self.x = numbers[0]
             elif length == 1:
-                x = numbers[0]
+                self.x = numbers[0]
 
     def valid(self) -> bool:
         return self.x is not None and self.y is not None and self.z is not None

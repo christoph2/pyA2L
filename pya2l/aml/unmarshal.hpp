@@ -79,8 +79,8 @@ class Node {
     using terminal_t = std::variant<std::monostate, long long, double, std::string>;
     using list_t     = std::vector<Node>;
     using map_t      = std::map<std::string, Node>;
-	
-	using content_t = std::variant<terminal_t, list_t, map_t>;
+
+    using content_t = std::variant<terminal_t, list_t, map_t>;
 
     explicit Node() : m_aml_type(AmlType::NONE), m_node_type(NodeType::NONE), m_value{}, m_list{}, m_map{} {
     }
@@ -92,38 +92,39 @@ class Node {
     explicit Node(AmlType aml_type, const list_t& list) : m_aml_type(aml_type), m_node_type(NodeType::AGGR), m_list(list) {
     }
 
-    explicit Node(AmlType aml_type, const map_t& map) : m_aml_type(aml_type), m_node_type(NodeType::MAP), m_map(map) {
+    explicit Node(AmlType aml_type, map_t&& map) : m_aml_type(aml_type), m_node_type(NodeType::MAP), m_map(std::move(map)) {
     }
 
-    //#if 0
-	Node(const Node& other) {
-		m_aml_type = other.m_aml_type;
-		m_node_type = other.m_node_type;
-		m_value = other.m_value;
-		m_list = other.m_list;
-        if (m_map.size() > 0) {
+    // #if 0
+    Node(const Node& other) {
+        m_aml_type  = other.m_aml_type;
+        m_node_type = other.m_node_type;
+        m_value     = other.m_value;
+        m_list      = other.m_list;
+        if (other.m_map.size() > 0) {
             m_map = other.m_map;
-        }		
-	}
-    //#endif
+        }
+    }
+
+    // #endif
 
     Node& operator=(const Node& other) {
         m_aml_type  = other.m_aml_type;
         m_node_type = other.m_node_type;
         m_value     = other.m_value;
         m_list      = other.m_list;
-        if (m_map.size() > 0) {
+        if (other.m_map.size() > 0) {
             m_map = other.m_map;
         }
         return *this;
     }
-
+    #if 0
     Node(Node&& other) {
         m_aml_type  = other.m_aml_type;
         m_node_type = other.m_node_type;
         m_value     = other.m_value;
         m_list      = std::move(other.m_list);
-        m_map = std::move(other.m_map);
+        m_map       = std::move(other.m_map);
     }
 
     Node& operator=(Node&& other) {
@@ -134,21 +135,21 @@ class Node {
         m_map       = std::move(other.m_map);
         return *this;
     }
-
-	content_t get_content()  const noexcept {
-		switch (m_node_type) {
-			case NodeType::TERMINAL:
-				return m_value;
-			case NodeType::AGGR:
-				return m_list;
-			case NodeType::MAP:
-				return m_map;
-		}
-	}
+    #endif
+    content_t get_content() const noexcept {
+        switch (m_node_type) {
+            case NodeType::TERMINAL:
+                return m_value;
+            case NodeType::AGGR:
+                return m_list;
+            case NodeType::MAP:
+                return m_map;
+        }
+    }
 
     const Node* find_block(const std::string& name) const noexcept {
         if (m_aml_type == AmlType::BLOCK) {
-            const auto& tp = map().at("TYPE").map();
+            const auto& tp      = map().at("TYPE").map();
             const auto& members = tp.at("MEMBERS").list();
             for (const auto& member : members) {
                 const auto& tag = member.get_tag();
@@ -162,14 +163,14 @@ class Node {
     }
 
     std::tuple<bool, std::optional<const Node*>, std::optional<const Node*>> member_or_type() const noexcept {
-            auto        multiple = is_multiple();
-            const auto& member   = m_map.at("MEMBER");
-            if (member.aml_type() == Node::AmlType::NONE) {
-                const auto& type = m_map.at("TYPE");
-                return { multiple, std::nullopt, &type };
-            } else {
-                return { multiple, &member, std::nullopt };
-            }
+        auto        multiple = is_multiple();
+        const auto& member   = m_map.at("MEMBER");
+        if (member.aml_type() == Node::AmlType::NONE) {
+            const auto& type = m_map.at("TYPE");
+            return { multiple, std::nullopt, &type };
+        } else {
+            return { multiple, &member, std::nullopt };
+        }
         return { false, {}, {} };
     }
 
@@ -214,8 +215,7 @@ class Node {
                 arr_spec.push_back(std::get<long long>(elem.value()));
             }
             return { arr_spec, &type };
-        }
-        else {
+        } else {
             return {};
         }
     }
@@ -234,24 +234,23 @@ class Node {
     }
 
     std::map<std::string, std::tuple<const Node*, bool, bool>> get_tagged_struct_members() const noexcept {
-
         std::map<std::string, std::tuple<const Node*, bool, bool>> result;
 
         if (m_aml_type != AmlType::TAGGED_STRUCT) {
             return {};
         }
-        const auto&  members = m_map.at("MEMBERS");
+        const auto& members = m_map.at("MEMBERS");
 
         for (const auto& member : members.list()) {
-            const auto& mmap = member.map();
+            const auto& mmap      = member.map();
             const auto& ts_member = mmap.at("MEMBER");
-            const auto& ts_tag = mmap.at("TAG").get_string();
-            const auto& ts_def = ts_member.map().at("DEFINITION");
-            const auto ts_mult = bool(ts_member.map().at("MULTIPLE").get_int());
+            const auto& ts_tag    = mmap.at("TAG").get_string();
+            const auto& ts_def    = ts_member.map().at("DEFINITION");
+            const auto  ts_mult   = bool(ts_member.map().at("MULTIPLE").get_int());
 
             const auto& tsd_member = ts_def.map().at("MEMBER");
-            const auto tsd_mult = bool(ts_def.map().at("MULTIPLE").get_int());
-            result.emplace(ts_tag, std::forward_as_tuple( & tsd_member, ts_mult, tsd_mult ));
+            const auto  tsd_mult   = bool(ts_def.map().at("MULTIPLE").get_int());
+            result.emplace(ts_tag, std::forward_as_tuple(&tsd_member, ts_mult, tsd_mult));
         }
         return result;
     }
@@ -276,7 +275,6 @@ class Node {
         }
         return std::get<std::string>(value());
     }
-
 
     ///////////////////////////////////////////////////////////////
 
@@ -317,10 +315,10 @@ inline Node make_pdt(AMLPredefinedTypeEnum type, const std::vector<uint32_t>& ar
     }
 
     Node::map_t map = {
-        {"TYPE", Node(Node::AmlType::TERMINAL, static_cast<int>(type))},
-        { "ARR_SPEC", Node(Node::AmlType::MEMBERS, lst) },
+        { "TYPE",     Node(Node::AmlType::TERMINAL, static_cast<int>(type)) },
+        { "ARR_SPEC", Node(Node::AmlType::MEMBERS,  lst)                    },
     };
-    return Node(Node::AmlType::PDT, map);
+    return Node(Node::AmlType::PDT, std::move(map));
 }
 
 inline Node make_referrer(ReferrerType category, const std::string& identifier) {
@@ -328,7 +326,7 @@ inline Node make_referrer(ReferrerType category, const std::string& identifier) 
         { "CATEGORY",   Node(Node::AmlType::TERMINAL, static_cast<int>(category)) },
         { "IDENTIFIER", Node(Node::AmlType::TERMINAL, identifier)                 }
     };
-    return Node(Node::AmlType::REFERRER, map);
+    return Node(Node::AmlType::REFERRER, std::move(map));
 }
 
 using enumerators_t = std::map<std::string, uint32_t>;
@@ -338,7 +336,7 @@ inline Node make_enumerator(const std::string& name, uint32_t value) {
         { "NAME",  Node(Node::AmlType::TERMINAL, name)  },
         { "VALUE", Node(Node::AmlType::TERMINAL, value) }
     };
-    return Node(Node::AmlType::ENUMERATOR, map);
+    return Node(Node::AmlType::ENUMERATOR, std::move(map));
 }
 
 inline Node make_enumeration(const std::string& name, const enumerators_t& values) {
@@ -351,7 +349,7 @@ inline Node make_enumeration(const std::string& name, const enumerators_t& value
         { "NAME",   Node(Node::AmlType::TERMINAL,    name) },
         { "VALUES", Node(Node::AmlType::ENUMERATORS, lst)  },
     };
-    return Node(Node::AmlType::ENUMERATION, map);
+    return Node(Node::AmlType::ENUMERATION, std::move(map));
 };
 
 inline Node make_tagged_struct_definition(bool multiple, std::optional<Node> type) {
@@ -367,7 +365,7 @@ inline Node make_tagged_struct_definition(bool multiple, std::optional<Node> typ
         { "MULTIPLE", Node(Node::AmlType::TERMINAL, multiple) },
         { "MEMBER", type_node },
     };
-    return Node(Node::AmlType::TAGGED_STRUCT_DEFINITION, map);
+    return Node(Node::AmlType::TAGGED_STRUCT_DEFINITION, std::move(map));
 }
 
 inline Node make_tagged_struct_member(bool multiple, const Node& definition) {
@@ -375,7 +373,7 @@ inline Node make_tagged_struct_member(bool multiple, const Node& definition) {
         { "MULTIPLE", Node(Node::AmlType::TERMINAL, multiple) },
         { "DEFINITION", definition },
     };
-    return Node(Node::AmlType::TAGGED_STRUCT_MEMBER, map);
+    return Node(Node::AmlType::TAGGED_STRUCT_MEMBER, std::move(map));
 }
 
 inline Node make_tagged_struct(const std::string& name, std::vector<std::tuple<std::string, Node>> members) {
@@ -386,37 +384,37 @@ inline Node make_tagged_struct(const std::string& name, std::vector<std::tuple<s
             { "TAG", Node(Node::AmlType::TERMINAL, tag) },
             { "MEMBER", member },
         };
-        lst.emplace_back(Node(Node::AmlType::MEMBER, mem_map));
+        lst.emplace_back(Node(Node::AmlType::MEMBER, std::move(mem_map)));
     }
 
     Node::map_t map = {
         { "NAME",    Node(Node::AmlType::TERMINAL, name) },
         { "MEMBERS", Node(Node::AmlType::MEMBERS,  lst)  },
     };
-    return Node(Node::AmlType::TAGGED_STRUCT, map);
+    return Node(Node::AmlType::TAGGED_STRUCT, std::move(map));
 }
 
-inline Node make_member(const Node& node, bool is_block) {
+inline Node make_member(Node&& node, bool is_block) {
     Node::map_t map = {
-        {"IS_BLOCK", Node(Node::AmlType::TERMINAL, is_block)},
+        { "IS_BLOCK", Node(Node::AmlType::TERMINAL, is_block) },
         { "NODE", node },
     };
-    return Node(Node::AmlType::MEMBER, map);
+    return Node(Node::AmlType::MEMBER, std::move(map));
 }
 
-inline Node make_block(const std::string& tag , const Node& type) {
+inline Node make_block(const std::string& tag, const Node& type) {
     Node::map_t map = {
         { "TAG", Node(Node::AmlType::TERMINAL, tag) },
         { "TYPE", type },
     };
-    return Node(Node::AmlType::BLOCK, map);
+    return Node(Node::AmlType::BLOCK, std::move(map));
 }
 
-inline Node make_struct_member(const Node & member) {
+inline Node make_struct_member(const Node& member) {
     Node::map_t map = {
         { "MEMBER", member },
     };
-    return Node(Node::AmlType::STRUCT_MEMBER, map);
+    return Node(Node::AmlType::STRUCT_MEMBER, std::move(map));
 }
 
 inline Node make_struct(const std::string& name, std::vector<Node>& members) {
@@ -424,7 +422,7 @@ inline Node make_struct(const std::string& name, std::vector<Node>& members) {
         { "NAME",    Node(Node::AmlType::TERMINAL, name)    },
         { "MEMBERS", Node(Node::AmlType::MEMBERS,  members) },
     };
-    return Node(Node::AmlType::STRUCT, map);
+    return Node(Node::AmlType::STRUCT, std::move(map));
 }
 
 inline Node make_tagged_uinion_member(const std::string& tag, const Node& member) {
@@ -432,7 +430,7 @@ inline Node make_tagged_uinion_member(const std::string& tag, const Node& member
         { "TAG", Node(Node::AmlType::TERMINAL, tag) },
         { "MEMBER", member },
     };
-    return Node(Node::AmlType::TAGGED_UNION_MEMBER, map);
+    return Node(Node::AmlType::TAGGED_UNION_MEMBER, std::move(map));
 }
 
 inline Node make_tagged_uniom(const std::string& name, std::vector<Node>& members) {
@@ -440,14 +438,14 @@ inline Node make_tagged_uniom(const std::string& name, std::vector<Node>& member
         { "NAME",    Node(Node::AmlType::TERMINAL, name)    },
         { "MEMBERS", Node(Node::AmlType::MEMBERS,  members) },
     };
-    return Node(Node::AmlType::TAGGED_UNION, map);
+    return Node(Node::AmlType::TAGGED_UNION, std::move(map));
 }
 
 inline Node make_root(std::vector<Node>& members) {
     Node::map_t map = {
         { "MEMBERS", Node(Node::AmlType::MEMBERS, members) },
     };
-    return Node(Node::AmlType::ROOT, map);
+    return Node(Node::AmlType::ROOT, std::move(map));
 }
 
 class Unmarshaller {
@@ -457,8 +455,8 @@ class Unmarshaller {
     }
 
     Node load_pdt() {
-        auto tp = static_cast<AMLPredefinedTypeEnum>(m_reader.from_binary<uint8_t>());
-        auto                       arr_count = m_reader.from_binary<std::size_t>();
+        auto                  tp        = static_cast<AMLPredefinedTypeEnum>(m_reader.from_binary<uint8_t>());
+        auto                  arr_count = m_reader.from_binary<std::size_t>();
         std::vector<uint32_t> array_spec;
         for (auto idx = 0UL; idx < arr_count; ++idx) {
             array_spec.push_back(m_reader.from_binary<uint32_t>());
@@ -579,20 +577,17 @@ class Unmarshaller {
         return result;
     }
 
-    Node load_member() {        
-        auto avail =  m_reader.from_binary<bool>();
+    Node load_member() {
+        auto avail = m_reader.from_binary<bool>();
         if (!avail) {
             return Node();
         }
-        const auto& disc  = m_reader.from_binary_str();
+        const auto& disc = m_reader.from_binary_str();
         if (disc == "T") {
-            return make_member(load_type(), false);
-        }
-        else if (disc == "B") {
-            return make_member(load_block(), true);
-        }
-        else {
-
+            return make_member(std::move(load_type()), false);
+        } else if (disc == "B") {
+            return make_member(std::move(load_block()), true);
+        } else {
         }
     }
 
@@ -606,11 +601,12 @@ class Unmarshaller {
             for (auto idx = 0UL; idx < member_count; ++idx) {
                 bool avail = m_reader.from_binary<bool>();
                 if (!avail) {
-                    //members.emplace_back(make_struct_member(Node()));
+                    // members.emplace_back(make_struct_member(Node()));
                     members.emplace_back(Node());
                 } else {
                     auto member = load_member();
-                    members.emplace_back(make_struct_member(member));
+                    members.emplace_back(std::move(make_struct_member(member)));
+                    // members.push_back(make_struct_member(member));
                 }
             }
             return make_struct(name, members);
@@ -620,22 +616,22 @@ class Unmarshaller {
     }
 
     Node load_block() {
-        const auto& tag  = m_reader.from_binary_str();
+        const auto& tag      = m_reader.from_binary_str();
         auto        multiple = m_reader.from_binary<bool>();
-        const auto& disc = m_reader.from_binary_str();
+        const auto& disc     = m_reader.from_binary_str();
 
         Node tp{};
         Node member{};
         if (disc == "T") {
             tp = load_type();
         }
-#if 0
+    #if 0
         else if (disc == "M") {
             member = load_member();
         }
-#endif
-        //auto multiple = m_reader.from_binary<bool>();
-        return make_block(tag, /*multiple,*/ tp/*, member*/);
+    #endif
+        // auto multiple = m_reader.from_binary<bool>();
+        return make_block(tag, /*multiple,*/ tp /*, member*/);
     }
 
     Node run() {
