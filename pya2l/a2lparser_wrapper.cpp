@@ -242,4 +242,20 @@ PYBIND11_MODULE(a2lparser_ext, m) {
 		.value("TAGGED_UNION", Node::AmlType::TAGGED_UNION)
 		.value("TAGGED_UNION_MEMBER", Node::AmlType::TAGGED_UNION_MEMBER)
 	;
+
+	py::enum_<AMLPredefinedTypeEnum>(m, "AMLPredefinedTypeEnum")
+		.value("CHAR", AMLPredefinedTypeEnum::CHAR)
+		.value("INT", AMLPredefinedTypeEnum::INT)
+		.value("LONG", AMLPredefinedTypeEnum::LONG)
+		.value("UCHAR", AMLPredefinedTypeEnum::UCHAR)
+		.value("UINT", AMLPredefinedTypeEnum::UINT)
+		.value("ULONG", AMLPredefinedTypeEnum::ULONG)
+		.value("INT64", AMLPredefinedTypeEnum::INT64)
+		.value("UINT64", AMLPredefinedTypeEnum::UINT64)
+		.value("DOUBLE", AMLPredefinedTypeEnum::DOUBLE)
+		.value("FLOAT", AMLPredefinedTypeEnum::FLOAT)
+		.value("FLOAT16", AMLPredefinedTypeEnum::FLOAT16)
+	;
+
+
 }
