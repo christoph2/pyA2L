@@ -13,7 +13,7 @@ static const std::regex AML_REGEX{
     std::regex_constants::ECMAScript | std::regex_constants::icase
 };
 
-enum class TokenType : uint8_t {
+enum class IfDataTokenType : uint8_t {
     NONE    = 0,
     IDENT   = 1,
     FLOAT   = 2,
@@ -26,47 +26,93 @@ enum class TokenType : uint8_t {
 
 using TokenDataType = std::optional<std::variant<int64_t, long double, std::string>>;
 
-struct Token {
-    TokenType     type{ TokenType::NONE };
+
+std::string token_data_type_to_string(IfDataTokenType value) {
+	switch (value) {
+		case IfDataTokenType::NONE:
+			return "NONE";
+		case IfDataTokenType::IDENT:
+			return "IDENT";
+		case IfDataTokenType::FLOAT:
+			return "FLOAT";
+		case IfDataTokenType::INT:
+			return "INT";
+		case IfDataTokenType::COMMENT:
+			return "COMMENT";
+		case IfDataTokenType::STRING:
+			return "STRING";
+		case IfDataTokenType::BEGIN:
+			return "BEGIN";
+		case IfDataTokenType::END:
+			return "END";
+	}
+    return "";
+}
+
+
+std::string value_type_to_string(TokenDataType value) {
+	if (value.has_value()) {
+		if (std::holds_alternative<int64_t>(*value)) {
+			return std::to_string(std::get<int64_t>(*value));
+		} else if (std::holds_alternative<long double>(*value)) {
+			return std::to_string(std::get<long double>(*value));
+		} else if (std::holds_alternative<std::string>(*value)) {
+			return std::get<std::string>(*value);
+		}
+	} else {
+		return "<null>";
+	}
+}
+
+
+struct IfDataToken {
+    IfDataTokenType     type{ IfDataTokenType::NONE };
     TokenDataType value{ std::nullopt };
+
+	std::string to_string() const noexcept {
+		std::stringstream ss;
+		ss << "Token(type=" << token_data_type_to_string(type) << ", value=" << value_type_to_string(value) << ")";
+        return ss.str();
+	}
+
 };
 
-auto ifdata_lexer(const std::string& ifdata_section) -> std::vector<Token> {
+auto ifdata_lexer(const std::string& ifdata_section) -> std::vector<IfDataToken> {
     std::smatch match;
     std::string input{ ifdata_section };
 
-    std::vector<Token> result;
+    std::vector<IfDataToken> result;
 
     while (std::regex_search(input, match, AML_REGEX)) {
         auto  idx = 0;
-        Token tok{};
+        IfDataToken tok{};
         for (auto x : match) {
             if ((x.matched) && (idx > 0)) {
                 const auto& tstr = x.str();
                 auto        base = 10;
                 switch (idx) {
                     case 1:
-                        tok.type  = TokenType::COMMENT;
+                        tok.type  = IfDataTokenType::COMMENT;
                         tok.value = x;
                         break;
                     case 4:
-                        tok.type  = TokenType::STRING;
+                        tok.type  = IfDataTokenType::STRING;
                         tok.value = x.str().substr(1, std::size(x.str()) - 2);
                         break;
                     case 5:
                         if (tstr == "/end") {
-                            tok.type = TokenType::END;
+                            tok.type = IfDataTokenType::END;
                         } else {
-                            tok.type = TokenType::BEGIN;
+                            tok.type = IfDataTokenType::BEGIN;
                         }
                         break;
                     case 6:
-                        tok.type  = TokenType::IDENT;
+                        tok.type  = IfDataTokenType::IDENT;
                         tok.value = x;
                         break;
                     case 7:
                     case 0x0d:
-                        tok.type = TokenType::INT;
+                        tok.type = IfDataTokenType::INT;
                         if (tstr.find('.') != std::string::npos) {
                             tok.value = std::strtold(tstr.c_str(), nullptr);
                         } else {

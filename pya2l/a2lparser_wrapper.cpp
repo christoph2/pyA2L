@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "a2lparser.hpp"
+#include "ifdata_lexer.hpp"
 #include "parser.hpp"
 #include "preprocessor.hpp"
 #include "sysconsts.hpp"
@@ -105,7 +106,7 @@ PYBIND11_MODULE(a2lparser_ext, m) {
     m.def("parse", &parse, py::return_value_policy::move);
     m.def("process_sys_consts", &process_sys_consts, py::return_value_policy::move);
 	m.def("unmarshal", &unmarshal, py::return_value_policy::move);
-	//m.def("ifdata_lexer", &ifdata_lexer, py::return_value_policy::move);
+	m.def("ifdata_lexer", &ifdata_lexer, py::return_value_policy::move);
 
     py::class_<AmlData>(m, "AmlData")
         .def(py::init<const std::string&, const std::string&>())
@@ -210,7 +211,7 @@ PYBIND11_MODULE(a2lparser_ext, m) {
 		.def_property_readonly("type", &Node::get_type)
 		.def_property_readonly("members", &Node::get_members)
 		.def_property_readonly("tagged_struct_members", &Node::get_tagged_struct_members)
-		.def("__repr__", [](const Node& self) { return self.to_string(); })
+		// .def("__repr__", [](const Node& self) { return self.to_string(); })
 	;
 
 	py::enum_<Node::NodeType>(m, "NodeType")
@@ -257,5 +258,20 @@ PYBIND11_MODULE(a2lparser_ext, m) {
 		.value("FLOAT16", AMLPredefinedTypeEnum::FLOAT16)
 	;
 
+	py::enum_<IfDataTokenType>(m, "IfDataTokenType")
+		.value("NONE", IfDataTokenType::NONE)
+		.value("IDENT", IfDataTokenType::IDENT)
+		.value("FLOAT", IfDataTokenType::FLOAT)
+		.value("INT", IfDataTokenType::INT)
+		.value("COMMENT", IfDataTokenType::COMMENT)
+		.value("STRING", IfDataTokenType::STRING)
+		.value("BEGIN", IfDataTokenType::BEGIN)
+		.value("END", IfDataTokenType::END)
+	;
+
+	py::class_<IfDataToken>(m, "IfDataToken")
+		.def(py::init<IfDataTokenType, TokenDataType>())
+		.def("__repr__", [](const IfDataToken& self) { return self.to_string(); })
+	;
 
 }

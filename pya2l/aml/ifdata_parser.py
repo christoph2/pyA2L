@@ -99,6 +99,13 @@ class Block:
     type: Any
 
 
+EOF = -1
+
+
+class EOFReached(Exception):
+    """Signals end of token stream."""
+
+
 class IfDataParser:
 
     def __init__(self, session):
@@ -106,8 +113,35 @@ class IfDataParser:
         if aml_section:
             aml_root = ext.unmarshal(aml_section.parsed)
             self.root = self.traverse(aml_root)
+            self.syntax_stack = [self.root]
         else:
             self.root = None
+
+    def parse(self, data):
+        self.tokens = ext.ifdata_lexer(data)
+        print("TOKENS", self.tokens)
+        self.token_idx = 0
+        self.level = 0
+        self.num_tokens = len(self.tokens)
+
+    def enter(self, name):
+        self.level += 1
+
+    def leave(self, name):
+        self.level -= 1
+
+    @property
+    def current_token(self):
+        """Get the token at the current stream position."""
+        return self.lookahead(0)
+
+    def lookahead(self, n=1):
+        """Get the token `n` elements ahead of current stream position."""
+        index = self.token_idx + n
+        if index < self.num_tokens:
+            return self.tokens[index]
+        else:
+            raise EOFReached()
 
     def traverse(self, node):
         result = None
