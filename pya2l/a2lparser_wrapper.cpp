@@ -272,6 +272,8 @@ PYBIND11_MODULE(a2lparser_ext, m) {
 	py::class_<IfDataToken>(m, "IfDataToken")
 		.def(py::init<IfDataTokenType, TokenDataType>())
 		.def("__repr__", [](const IfDataToken& self) { return self.to_string(); })
+        .def_property_readonly("type", &IfDataToken::get_type)
+        .def_property_readonly("value", &IfDataToken::get_value)
 	;
 
 }

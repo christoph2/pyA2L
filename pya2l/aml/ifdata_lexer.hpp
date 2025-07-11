@@ -75,6 +75,9 @@ struct IfDataToken {
         return ss.str();
 	}
 
+    auto get_type() const noexcept { return type; }
+    auto get_value() const noexcept { return value; }
+
 };
 
 auto ifdata_lexer(const std::string& ifdata_section) -> std::vector<IfDataToken> {

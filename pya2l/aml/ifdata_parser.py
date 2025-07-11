@@ -2,12 +2,15 @@ from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Any, Optional
 
-import pya2l.a2lparser_ext as ext
 import pya2l.model as model
-
-
-NodeType = ext.NodeType
-AmlType = ext.AmlType
+from pya2l.a2lparser_ext import (
+    AmlType,
+    IfDataToken,
+    IfDataTokenType,
+    NodeType,
+    ifdata_lexer,
+    unmarshal,
+)
 
 
 class AMLPredefinedTypeEnum(IntEnum):
@@ -106,42 +109,202 @@ class EOFReached(Exception):
     """Signals end of token stream."""
 
 
+def toplevel_ifdata(tree):
+    for member in tree.members:
+        if isinstance(member, Block):
+            if member.tag == "IF_DATA":
+                return member.type
+        else:
+            raise TypeError("Implement ME!!!")
+
+
 class IfDataParser:
 
-    def __init__(self, session):
+    def __init__(self, session) -> None:
         aml_section = session.query(model.AMLSection).first()
         if aml_section:
-            aml_root = ext.unmarshal(aml_section.parsed)
+            aml_root = unmarshal(aml_section.parsed)
             self.root = self.traverse(aml_root)
-            self.syntax_stack = [self.root]
+            self.syntax_stack = [toplevel_ifdata(self.root)]
         else:
             self.root = None
 
     def parse(self, data):
-        self.tokens = ext.ifdata_lexer(data)
-        print("TOKENS", self.tokens)
+        self.tokens = ifdata_lexer(data)
         self.token_idx = 0
         self.level = 0
         self.num_tokens = len(self.tokens)
 
-    def enter(self, name):
-        self.level += 1
+        self.match(IfDataTokenType.BEGIN)
+        self.match(IfDataTokenType.IDENT, "IF_DATA")
+        result = self.enter(self.syntax_tos)
+        self.leave()
+        self.match(IfDataTokenType.END)
+        self.match(IfDataTokenType.IDENT, "IF_DATA")
+        return result
 
-    def leave(self, name):
+    def block(self):
+        self.match(IfDataTokenType.BEGIN)
+        tk = self.current_token
+        tk_type = tk.type
+        tk_value = tk.value
+        if tk_type == IfDataTokenType.IDENT:
+            self.consume()
+            # elem = self.find_element(Block, tk_value)
+            result = self.enter(self.syntax_tos.type)
+            self.leave()
+            return result
+        else:
+            raise TypeError(f"Expected IDENT got {tk_type}[{tk_value!r}].")
+
+    def tagged_struct(self):
+        # self.match(IfDataTokenType.BEGIN)
+        if self.current_token.type == IfDataTokenType.BEGIN:
+            tk = self.lookahead(1)
+        else:
+            tk = self.current_token
+        tk_type = tk.type
+        tk_value = tk.value
+        if tk_type == IfDataTokenType.IDENT:
+            # self.consume()
+            elem = self.syntax_tos.members.get(tk_value)
+            if isinstance(elem, Block):
+                pass
+            multiple = elem.multiple
+            # print("ELEMENT", elem.definition)
+            result = self.enter(elem.definition)
+            self.leave()
+            return result
+
+    def tagged_union(self):
+        tk = self.current_token
+        if tk.type != IfDataTokenType.IDENT:
+            print(f"Invalid token {tk.type} for tagged union. Expected identifier.")
+            return
+        tk_value = tk.value
+        self.consume()
+        mem_dict = self.syntax_tos.members
+        print("TAG", tk)
+        if tk_value in mem_dict:
+            member = mem_dict[tk_value]
+            if member.is_block:
+                raise TypeError("Block definition is not IMPLEMENTED yet.")
+            result = self.enter(member.node)
+            self.leave()
+            return result
+        else:
+            raise ValueError(f"tag {tk_value} not found.")  # SyntaxError("Tag not found in struct")
+
+    def struct(self):
+        la1 = self.lookahead(1)
+        result: list = []
+        for member in self.syntax_tos.members:
+            result.append(self.enter(member.node))
+            self.leave()
+        return result
+
+    def validate_pdt(self, token):
+        pass
+
+    def pdt(self):
+        tk = self.current_token
+        self.consume()
+        arr_spec = self.syntax_tos.arr_spec
+        if arr_spec:
+            raise TypeError("No Arrays")
+        # TODO: Validate PDT
+        return tk.value
+
+    def enumeration(self):
+        tk = self.current_token
+        self.consume()
+        if not tk.value in self.syntax_tos.values:
+            pass
+        return tk.value
+
+    def member(self):
+        result = self.enter(self.syntax_tos.node)
+        self.leave()
+        return result
+
+    def tagged_struct_definition(self):
+        tk = self.current_token
+        self.consume()
+        result = self.enter(self.syntax_tos.member)
+        self.leave()
+        return result
+
+    def enter(self, klass) -> Any:
+        result: Any = None
+        self.syntax_stack.append(klass)
+        if isinstance(klass, Block):
+            result = self.block()
+        elif isinstance(klass, TaggedStruct):
+            result = self.tagged_struct()
+        elif isinstance(klass, TaggedUnion):
+            result = self.tagged_union()
+        elif isinstance(klass, Struct):
+            result = self.struct()
+        elif isinstance(klass, Enumeration):
+            result = self.enumeration()
+        elif isinstance(klass, Member):
+            result = self.member()
+        elif isinstance(klass, TaggedStructDefinition):
+            result = self.tagged_struct_definition()
+        elif isinstance(klass, PDT):
+            result = self.pdt()
+        else:
+            print("AND now???")
+        self.level += 1
+        return result
+
+    def leave(self) -> None:
+        self.syntax_stack.pop()
         self.level -= 1
 
+    def find_element(self, klass, name: str) -> Optional[Any]:
+        for elem in self.syntax_tos.members:
+            if isinstance(elem, klass):
+                # Hinweis: name und tag sind wichtig um die Ergebnis Datenstruktur zu erzeugen.
+                if isinstance(elem, Block):
+                    if elem.tag == name:
+                        return elem
+                else:
+                    if elem.name == name:
+                        return elem
+        return None
+
     @property
-    def current_token(self):
+    def syntax_tos(self):
+        return self.syntax_stack[-1]
+
+    @property
+    def current_token(self) -> IfDataToken:
         """Get the token at the current stream position."""
         return self.lookahead(0)
 
-    def lookahead(self, n=1):
+    def lookahead(self, n: int = 1) -> IfDataToken:
         """Get the token `n` elements ahead of current stream position."""
         index = self.token_idx + n
         if index < self.num_tokens:
             return self.tokens[index]
         else:
             raise EOFReached()
+
+    def consume(self) -> None:
+        """Increment token stream position by one."""
+        self.token_idx += 1
+
+    def match(self, token_type: IfDataTokenType, value: Optional[Any] = None) -> bool:
+        ok = self.current_token.type == token_type
+        token_value = self.current_token.value
+        self.consume()
+        if value is None:
+            return ok
+        else:
+            if not ok:
+                return False
+            return token_value == value
 
     def traverse(self, node):
         result = None
