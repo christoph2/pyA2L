@@ -150,31 +150,44 @@ class IfDataParser:
         tk_value = tk.value
         if tk_type == IfDataTokenType.IDENT:
             self.consume()
-            # elem = self.find_element(Block, tk_value)
             result = self.enter(self.syntax_tos.type)
             self.leave()
+            self.match(IfDataTokenType.END)
+            self.match(IfDataTokenType.IDENT, tk_value)
             return result
         else:
             raise TypeError(f"Expected IDENT got {tk_type}[{tk_value!r}].")
 
     def tagged_struct(self):
-        # self.match(IfDataTokenType.BEGIN)
-        if self.current_token.type == IfDataTokenType.BEGIN:
-            tk = self.lookahead(1)
-        else:
-            tk = self.current_token
-        tk_type = tk.type
-        tk_value = tk.value
-        if tk_type == IfDataTokenType.IDENT:
-            # self.consume()
-            elem = self.syntax_tos.members.get(tk_value)
-            if isinstance(elem, Block):
-                pass
-            multiple = elem.multiple
-            # print("ELEMENT", elem.definition)
-            result = self.enter(elem.definition)
-            self.leave()
-            return result
+        result: list[Any] = []
+        while True:
+            if self.current_token.type == IfDataTokenType.END:
+                break
+            elif self.current_token.type == IfDataTokenType.BEGIN:
+                tk = self.lookahead(1)
+            else:
+                tk = self.current_token
+            tk_type = tk.type
+            tk_value = tk.value
+            if tk_type == IfDataTokenType.IDENT:
+                # self.consume()
+                elem = self.syntax_tos.members.get(tk_value)
+                if (
+                    isinstance(elem, TaggedStructMember)
+                    and not isinstance(elem.definition, Block)
+                    and elem.definition.member is None
+                ):
+                    result.append(tk_value)  # Just a flag value with no further definition.
+                    self.consume()
+                else:
+                    if isinstance(elem, Block):
+                        pass
+                    multiple = elem.multiple
+                    result.append(self.enter(elem.definition))
+                    self.leave()
+                if self.current_token.type == IfDataTokenType.END:
+                    break
+        return result
 
     def tagged_union(self):
         tk = self.current_token
@@ -211,7 +224,8 @@ class IfDataParser:
         self.consume()
         arr_spec = self.syntax_tos.arr_spec
         if arr_spec:
-            raise TypeError("No Arrays")
+            # raise TypeError("No Arrays")
+            print("NO ARRAY")
         # TODO: Validate PDT
         return tk.value
 
@@ -261,18 +275,6 @@ class IfDataParser:
     def leave(self) -> None:
         self.syntax_stack.pop()
         self.level -= 1
-
-    def find_element(self, klass, name: str) -> Optional[Any]:
-        for elem in self.syntax_tos.members:
-            if isinstance(elem, klass):
-                # Hinweis: name und tag sind wichtig um die Ergebnis Datenstruktur zu erzeugen.
-                if isinstance(elem, Block):
-                    if elem.tag == name:
-                        return elem
-                else:
-                    if elem.name == name:
-                        return elem
-        return None
 
     @property
     def syntax_tos(self):
