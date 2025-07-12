@@ -110,12 +110,24 @@ class EOFReached(Exception):
 
 
 def toplevel_ifdata(tree):
-    for member in tree.members:
-        if isinstance(member, Block):
-            if member.tag == "IF_DATA":
-                return member.type
+    members = tree.members
+    blocks = [m for m in members if isinstance(m, Block)]
+    if blocks:
+        for member in members:
+            if isinstance(member, Block):
+                if member.tag == "IF_DATA":
+                    return member.type
+            else:
+                print(type(tree), [t.members.keys() for t in members])
+                raise TypeError("Implement ME!!!")
+    else:
+        if len(tree.members) == 1:
+            # return Block(tag="IF_DATA", type=members[0])
+            return members[0]
         else:
-            raise TypeError("Implement ME!!!")
+            raise ValueError("Dont know how to handle.")
+        print(len(tree.members), type(members[0]), [t.members.keys() for t in members])
+        raise TypeError("NO BLOCKS!!!")
 
 
 class IfDataParser:
@@ -172,6 +184,8 @@ class IfDataParser:
             if tk_type == IfDataTokenType.IDENT:
                 # self.consume()
                 elem = self.syntax_tos.members.get(tk_value)
+                if elem is None:
+                    print(f"{tk_value} NOT found!!!")
                 if (
                     isinstance(elem, TaggedStructMember)
                     and not isinstance(elem.definition, Block)
