@@ -95,9 +95,12 @@ auto ifdata_lexer(const std::string& ifdata_section) -> std::vector<IfDataToken>
                 auto        base = 10;
                 switch (idx) {
                     case 1:
+					/*
                         tok.type  = IfDataTokenType::COMMENT;
                         tok.value = x;
                         break;
+					*/
+						continue;
                     case 4:
                         tok.type  = IfDataTokenType::STRING;
                         tok.value = x.str().substr(1, std::size(x.str()) - 2);

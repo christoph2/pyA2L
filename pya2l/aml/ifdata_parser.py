@@ -182,7 +182,6 @@ class IfDataParser:
             tk_type = tk.type
             tk_value = tk.value
             if tk_type == IfDataTokenType.IDENT:
-                # self.consume()
                 elem = self.syntax_tos.members.get(tk_value)
                 if elem is None:
                     print(f"{tk_value} NOT found!!!")
@@ -201,6 +200,8 @@ class IfDataParser:
                     self.leave()
                 if self.current_token.type == IfDataTokenType.END:
                     break
+            else:
+                print(f"Invalid token {tk.type} for tagged struct. Expected identifier.")
         return result
 
     def tagged_union(self):
@@ -211,7 +212,6 @@ class IfDataParser:
         tk_value = tk.value
         self.consume()
         mem_dict = self.syntax_tos.members
-        print("TAG", tk)
         if tk_value in mem_dict:
             member = mem_dict[tk_value]
             if member.is_block:
@@ -238,8 +238,7 @@ class IfDataParser:
         self.consume()
         arr_spec = self.syntax_tos.arr_spec
         if arr_spec:
-            # raise TypeError("No Arrays")
-            print("NO ARRAY")
+            pass
         # TODO: Validate PDT
         return tk.value
 
@@ -256,10 +255,21 @@ class IfDataParser:
         return result
 
     def tagged_struct_definition(self):
+        result = None
         tk = self.current_token
+        multiple = self.syntax_tos.multiple
         self.consume()
-        result = self.enter(self.syntax_tos.member)
-        self.leave()
+        if multiple:
+            result = []
+            while True:
+                value = self.enter(self.syntax_tos.member)
+                self.leave()
+                result.append(value)
+                if self.current_token.type in (IfDataTokenType.IDENT, IfDataTokenType.BEGIN, IfDataTokenType.END):
+                    break
+        else:
+            result = self.enter(self.syntax_tos.member)
+            self.leave()
         return result
 
     def enter(self, klass) -> Any:
@@ -339,8 +349,6 @@ class IfDataParser:
                 result.members.append(self.traverse(mem))
         elif node.aml_type == AmlType.MEMBER:
             mp = node.map
-            if "IS_BLOCK" not in mp:
-                print()
             is_block = bool(mp.get("IS_BLOCK").value)
             tmp_node = self.traverse(mp.get("NODE"))
             result = Member(tmp_node, is_block)
