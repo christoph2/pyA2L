@@ -1,3 +1,4 @@
+from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Any, Optional
@@ -7,7 +8,6 @@ from pya2l.a2lparser_ext import (
     AmlType,
     IfDataToken,
     IfDataTokenType,
-    NodeType,
     ifdata_lexer,
     unmarshal,
 )
@@ -109,17 +109,33 @@ class EOFReached(Exception):
     """Signals end of token stream."""
 
 
-def toplevel_ifdata(tree):
+def create_ref_dict(tree) -> defaultdict[ReferrerType, dict]:
+    result: defaultdict[ReferrerType, dict] = defaultdict(dict)
+    members = tree.members
+    non_blocks = [m for m in members if not isinstance(m, Block)]
+    for member in non_blocks:
+        if isinstance(member, Struct):
+            tp = ReferrerType.StructType
+        elif isinstance(member, TaggedStruct):
+            tp = ReferrerType.TaggedStructType
+        elif isinstance(member, TaggedUnion):
+            tp = ReferrerType.TaggedUnionType
+        elif isinstance(member, Enumeration):
+            tp = ReferrerType.Enumeration
+        else:
+            raise TypeError("Implement ME!!!")
+        result[tp][member.name] = member
+    return result
+
+
+def toplevel_ifdata(tree) -> Any:
     members = tree.members
     blocks = [m for m in members if isinstance(m, Block)]
     if blocks:
-        for member in members:
+        for member in blocks:
             if isinstance(member, Block):
                 if member.tag == "IF_DATA":
                     return member.type
-            else:
-                print(type(tree), [t.members.keys() for t in members])
-                raise TypeError("Implement ME!!!")
     else:
         if len(tree.members) == 1:
             # return Block(tag="IF_DATA", type=members[0])
@@ -138,6 +154,7 @@ class IfDataParser:
             aml_root = unmarshal(aml_section.parsed)
             self.root = self.traverse(aml_root)
             self.syntax_stack = [toplevel_ifdata(self.root)]
+            self.ref_dict: defaultdict[ReferrerType, dict] = create_ref_dict(self.root)
         else:
             self.root = None
 
@@ -166,6 +183,7 @@ class IfDataParser:
             self.leave()
             self.match(IfDataTokenType.END)
             self.match(IfDataTokenType.IDENT, tk_value)
+            # return {tk_value: result}
             return result
         else:
             raise TypeError(f"Expected IDENT got {tk_type}[{tk_value!r}].")
@@ -181,10 +199,12 @@ class IfDataParser:
                 tk = self.current_token
             tk_type = tk.type
             tk_value = tk.value
+
+            if tk_value not in self.syntax_tos.members:
+                break
+
             if tk_type == IfDataTokenType.IDENT:
                 elem = self.syntax_tos.members.get(tk_value)
-                if elem is None:
-                    print(f"{tk_value} NOT found!!!")
                 if (
                     isinstance(elem, TaggedStructMember)
                     and not isinstance(elem.definition, Block)
@@ -195,8 +215,8 @@ class IfDataParser:
                 else:
                     if isinstance(elem, Block):
                         pass
-                    multiple = elem.multiple
-                    result.append(self.enter(elem.definition))
+                    # multiple = elem.multiple
+                    result.append({tk_value: self.enter(elem.definition)})
                     self.leave()
                 if self.current_token.type == IfDataTokenType.END:
                     break
@@ -218,12 +238,11 @@ class IfDataParser:
                 raise TypeError("Block definition is not IMPLEMENTED yet.")
             result = self.enter(member.node)
             self.leave()
-            return result
+            return {tk_value: result}
         else:
             raise ValueError(f"tag {tk_value} not found.")  # SyntaxError("Tag not found in struct")
 
     def struct(self):
-        la1 = self.lookahead(1)
         result: list = []
         for member in self.syntax_tos.members:
             result.append(self.enter(member.node))
@@ -245,7 +264,7 @@ class IfDataParser:
     def enumeration(self):
         tk = self.current_token
         self.consume()
-        if not tk.value in self.syntax_tos.values:
+        if tk.value not in self.syntax_tos.values:
             pass
         return tk.value
 
@@ -256,7 +275,6 @@ class IfDataParser:
 
     def tagged_struct_definition(self):
         result = None
-        tk = self.current_token
         multiple = self.syntax_tos.multiple
         self.consume()
         if multiple:
@@ -274,6 +292,10 @@ class IfDataParser:
 
     def enter(self, klass) -> Any:
         result: Any = None
+
+        if isinstance(klass, Referrer):
+            klass = self.ref_dict[klass.category][klass.identifier]
+
         self.syntax_stack.append(klass)
         if isinstance(klass, Block):
             result = self.block()
@@ -292,6 +314,7 @@ class IfDataParser:
         elif isinstance(klass, PDT):
             result = self.pdt()
         else:
+
             print("AND now???")
         self.level += 1
         return result
