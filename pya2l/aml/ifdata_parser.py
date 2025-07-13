@@ -189,7 +189,7 @@ class IfDataParser:
             raise TypeError(f"Expected IDENT got {tk_type}[{tk_value!r}].")
 
     def tagged_struct(self):
-        result: list[Any] = []
+        result = defaultdict(list)
         while True:
             if self.current_token.type == IfDataTokenType.END:
                 break
@@ -199,10 +199,8 @@ class IfDataParser:
                 tk = self.current_token
             tk_type = tk.type
             tk_value = tk.value
-
             if tk_value not in self.syntax_tos.members:
                 break
-
             if tk_type == IfDataTokenType.IDENT:
                 elem = self.syntax_tos.members.get(tk_value)
                 if (
@@ -210,19 +208,28 @@ class IfDataParser:
                     and not isinstance(elem.definition, Block)
                     and elem.definition.member is None
                 ):
-                    result.append(tk_value)  # Just a flag value with no further definition.
+                    result[tk_value].append(True)  # Just a flag value with no further definition.
                     self.consume()
                 else:
                     if isinstance(elem, Block):
                         pass
                     # multiple = elem.multiple
-                    result.append({tk_value: self.enter(elem.definition)})
+                    tmp_value = self.enter(elem.definition)
+                    if tmp_value:
+                        result[tk_value].append(tmp_value)
                     self.leave()
                 if self.current_token.type == IfDataTokenType.END:
                     break
             else:
                 print(f"Invalid token {tk.type} for tagged struct. Expected identifier.")
-        return result
+        return_value = {}
+        for k, v in result.items():
+            member = self.syntax_tos.members.get(k)
+            if not member.multiple:
+                return_value[k] = v[0]
+            else:
+                return_value[k] = v
+        return return_value
 
     def tagged_union(self):
         tk = self.current_token
