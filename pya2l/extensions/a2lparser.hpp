@@ -249,7 +249,7 @@ class A2LParser {
             value_tos().set_parameters(std::move(p));
             value_tos().set_multiple_values(std::move(m));
             if (if_data_section) {
-                value_tos().set_if_data(std::move(if_data_section));
+                value_tos().set_if_data(if_data_section.value());
             }
             if (value_tos().get_name() == "Asap2Version") {
                 const auto& version_par_vec = value_tos().get_parameters();

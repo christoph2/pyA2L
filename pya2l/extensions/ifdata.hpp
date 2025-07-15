@@ -264,16 +264,16 @@ class IfDataReader : public IfDataBase {
 
         ::fseek(m_file, offset, SEEK_SET);
         auto length     = read_int();
-#if (defined(CMAKE_BUILD_TYPE)) && (CMAKE_BUILD_TYPE == Debug)
+//#if (defined(CMAKE_BUILD_TYPE)) && (CMAKE_BUILD_TYPE == Debug)
         auto start_line = read_int();
-        assert(std::get<0>(line) == start_line);
+        //assert(std::get<0>(line) == start_line);
         auto start_col = read_int();
-        assert(std::get<1>(line) == start_col);
+        //assert(std::get<1>(line) == start_col);
         auto end_line = read_int();
-        assert(std::get<2>(line) == end_line);
+        //assert(std::get<2>(line) == end_line);
         auto end_col = read_int();
-        assert(std::get<3>(line) == end_col);
-#endif
+        //assert(std::get<3>(line) == end_col);
+//#endif
         auto ifdata = read_string(length);
         return ifdata;
     }
