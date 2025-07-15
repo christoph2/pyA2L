@@ -431,19 +431,16 @@ class A2LParser:
             values = zipper(params, mult)
             if name not in ("ReadOnly", "GuardRails", "Discrete"):
                 inst = table(**values)
-
                 if if_data:
                     #    print(parent, table, params, if_data)
                     if parent.if_data is None:
                         parent.if_data = []
-                    # ma = IFD_HEADER.search(if_data)
-                    ifd = model.IfData(raw=if_data)
-                    parent.if_data.append(ifd)
+                    for section in if_data:
+                        ifd_section = model.IfData(raw=section)
+                        parent.if_data.append(ifd_section)
                 # db.session.add(inst)
             else:
                 inst = True
-            # if name == "DependentCharacteristic":
-            #     print(values, inst)
             if multiple:
                 if getattr(parent, attr) is None:
                     setattr(parent, attr, [inst])

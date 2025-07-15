@@ -9,7 +9,7 @@ from pya2l import DB
 from pya2l.aml.ifdata_parser import IfDataParser
 
 
-os.chdir(r"C:\Users\HP\PycharmProjects\pyA2L\pya2l\examples")
+os.chdir(r"C:\csprojects\pyA2L\pya2l\examples")
 
 db = DB()
 # session = db.open_create("XCPsim2")
@@ -28,7 +28,7 @@ IFD0 = """/begin IF_DATA XCP
 
 pprint(ifdp.parse(IFD0))
 
-IFD1 = """    /begin IF_DATA XCP
+IFD1 = """/begin IF_DATA XCP
       /begin PROTOCOL_LAYER
         0x0100
         0x07D0

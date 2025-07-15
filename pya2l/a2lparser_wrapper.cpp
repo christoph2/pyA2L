@@ -85,6 +85,7 @@ auto parse(const std::string& file_name, const std::string& encoding, const std:
 		converted_tables.emplace_back(tpt, namet, result);
 	}
 	auto aml_data = parse_aml(fns.aml);
+	
     return {counter, values, converted_tables, aml_data};
 }
 
@@ -138,20 +139,21 @@ PYBIND11_MODULE(a2lparser_ext, m) {
             "if_data",
             [](const ValueContainer& self) {
                 auto        encoding = ValueContainer::get_encoding().c_str();
+				py::handle py_s;
                 std::string value;
-                auto        if_data = self.get_if_data();
+				std::vector<std::string> result;
+				
+                auto& if_data = self.get_if_data();					
+				for (auto& section: if_data) {
+					py_s = PyUnicode_Decode(section.data(), std::size(section), encoding, "strict");
 
-                if (if_data) {
-                    py::handle py_s = PyUnicode_Decode((*if_data).data(), (*if_data).length(), encoding, "strict");
+					if (!py_s) {
+						throw py::error_already_set();
+					}
 
-                    if (!py_s) {
-                        throw py::error_already_set();
-                    }
-
-                    return py::reinterpret_steal<py::str>(py_s);
-                } else {
-                    return py::str{ "" };
-                }
+					result.emplace_back(py::reinterpret_steal<py::str>(py_s));
+				}
+				return result;
             }
         )
         .def_property_readonly("parameters", [](const ValueContainer& self) {

@@ -8,11 +8,6 @@
     #include <regex>
     #include <variant>
 
-static const std::regex AML_REGEX{
-    R"""(((/\*.*?\*/)|(//.*?$))|(\"[^\"]*?\")|(/begin|/end)|(\b[a-zA-Z_][a-zA-Z_0-9.]*\b)|(\b([+\-]?(\d+([.]\d*)?([eE][+\-]?\d+)?|[.]\d+([eE][+\-]?\d+)?))\b)|(\b((0[xX][0-9a-fA-F]+)|([+\-]?[0-9]+))\b))""",
-    std::regex_constants::ECMAScript | std::regex_constants::icase
-};
-
 enum class IfDataTokenType : uint8_t {
     NONE    = 0,
     IDENT   = 1,
@@ -81,6 +76,10 @@ struct IfDataToken {
 };
 
 auto ifdata_lexer(const std::string& ifdata_section) -> std::vector<IfDataToken> {
+    static const std::regex AML_REGEX{
+    R"""(((/\*.*?\*/)|(//.*?$))|(\"[^\"]*?\")|(/begin|/end)|(\b[a-zA-Z_][a-zA-Z_0-9.]*\b)|(\b([+\-]?(\d+([.]\d*)?([eE][+\-]?\d+)?|[.]\d+([eE][+\-]?\d+)?))\b)|(\b((0[xX][0-9a-fA-F]+)|([+\-]?[0-9]+))\b))""",
+    std::regex_constants::ECMAScript | std::regex_constants::icase
+    };
     std::smatch match;
     std::string input{ ifdata_section };
 

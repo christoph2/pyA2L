@@ -54,8 +54,8 @@ class ValueContainer {
         return m_keywords.emplace_back(kw);
     }
 
-    void set_if_data(std::optional<std::string>&& if_data) noexcept {
-        m_if_data_section = std::move(if_data);
+    void add_if_data(const std::string& if_data) noexcept {
+        m_if_data_sections.emplace_back(if_data);
     }
 
     const auto& get_name() const noexcept {
@@ -75,7 +75,7 @@ class ValueContainer {
     }
 
     const auto& get_if_data() const noexcept {
-        return m_if_data_section;
+        return m_if_data_sections;
     }
 
     const std::string to_string() const {
@@ -110,7 +110,7 @@ class ValueContainer {
     key_value_list_t             m_parameters;
     container_list_type          m_keywords;
     std::vector<AsamVariantType> m_multiple_values;
-    std::optional<std::string>   m_if_data_section;
+    std::vector<std::string>     m_if_data_sections;
 
     static std::string s_encoding;
 };
