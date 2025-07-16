@@ -569,6 +569,8 @@ class Unmarshaller {
             return load_struct();
         } else if (disc == "EN") {
             return load_enum();
+        } else if (disc == "NA") {
+            return Node();
         } else {
             assert(true == false);
         }

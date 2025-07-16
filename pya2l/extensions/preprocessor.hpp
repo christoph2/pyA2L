@@ -24,7 +24,6 @@
 
 #if !defined(__PREPROCESSOR_HPP)
     #define __PREPROCESSOR_HPP
-    // #define __STDC_WANT_LIB_EXT1__ (1)
     #define _CRT_SECURE_NO_WARNINGS
     #include <algorithm>
     #include <cassert>
@@ -77,7 +76,7 @@ class Preprocessor {
     const std::string AML_TMP    = "AML.tmp";
     const std::string IFDATA_TMP = "IFDATA.tmp";
 
-    Preprocessor(spdlog::level::level_enum log_level) :
+    explicit Preprocessor(spdlog::level::level_enum log_level) :
         tmp_a2l(A2L_TMP, true),
         tmp_aml(AML_TMP),
         tmp_ifdata(IFDATA_TMP, true),
@@ -179,7 +178,7 @@ class Preprocessor {
    protected:
 
     template<typename Stream>
-    void skip_bom(Stream& fs) noexcept {
+    void skip_bom(Stream& fs) const noexcept {
         const unsigned char boms[]{ 0xef, 0xbb, 0xbf };
         bool                have_bom{ true };
         for (const auto& c : boms) {
@@ -231,7 +230,6 @@ class Preprocessor {
                     const auto lines      = split(token.m_payload, '\n');
                     auto       line_count = lines.size();
                     for (const auto& line : lines) {
-                        // tmp_a2l() << std::string(line.length(), ' ');
                         if (a2ml == true) {
                             if (suppress_comments) {
                                 tmp_aml() << std::string(line.length(), ' ');
@@ -240,7 +238,6 @@ class Preprocessor {
                             }
                         }
                         if (--line_count > 0) {
-                            // tmp_a2l() << std::endl;
                             if (a2ml == true) {
                                 tmp_aml() << std::endl;
                             }

@@ -6,7 +6,7 @@
     #include <optional>
     #include <set>
     #include <variant>
-	
+
 
 using string_opt_t = std::optional<std::string>;
 using numeric_t    = std::variant<std::monostate, int64_t, long double>;
@@ -38,6 +38,7 @@ enum class TypeType : uint8_t {
     StructType       = 2,
     TaggedStructType = 3,
     TaggedUnionType  = 4,
+    NullType         = 6,
 };
 
 const std::map<std::string, AMLPredefinedTypeEnum> PredefinedTypesMap {
@@ -46,7 +47,7 @@ const std::map<std::string, AMLPredefinedTypeEnum> PredefinedTypesMap {
     { "long",    AMLPredefinedTypeEnum::LONG    },
     { "uchar",   AMLPredefinedTypeEnum::UCHAR   },
     { "uint",    AMLPredefinedTypeEnum::UINT    },
-    { "ulong",   AMLPredefinedTypeEnum::ULONG   },	
+    { "ulong",   AMLPredefinedTypeEnum::ULONG   },
 	{ "int64",   AMLPredefinedTypeEnum::INT64   },
 	{ "uint64",  AMLPredefinedTypeEnum::UINT64  },
     { "double",  AMLPredefinedTypeEnum::DOUBLE  },
