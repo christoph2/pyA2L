@@ -102,6 +102,11 @@ class Block:
     type: Any
 
 
+@dataclass
+class NullObject:
+    pass
+
+
 EOF = -1
 
 
@@ -112,7 +117,7 @@ class EOFReached(Exception):
 def create_ref_dict(tree) -> defaultdict[ReferrerType, dict]:
     result: defaultdict[ReferrerType, dict] = defaultdict(dict)
     members = tree.members
-    non_blocks = [m for m in members if not isinstance(m, Block)]
+    non_blocks = [m for m in members if not isinstance(m, (Block, NullObject))]
     for member in non_blocks:
         if isinstance(member, Struct):
             tp = ReferrerType.StructType
@@ -129,7 +134,7 @@ def create_ref_dict(tree) -> defaultdict[ReferrerType, dict]:
 
 
 def toplevel_ifdata(tree) -> Any:
-    members = tree.members
+    members = [m for m in tree.members if m is not isinstance(m, NullObject)]
     blocks = [m for m in members if isinstance(m, Block)]
     if blocks:
         for member in blocks:
@@ -137,8 +142,7 @@ def toplevel_ifdata(tree) -> Any:
                 if member.tag == "IF_DATA":
                     return member.type
     else:
-        if len(tree.members) == 1:
-            # return Block(tag="IF_DATA", type=members[0])
+        if len(members) == 1:
             return members[0]
         else:
             raise ValueError("Dont know how to handle.")
@@ -320,9 +324,10 @@ class IfDataParser:
             result = self.tagged_struct_definition()
         elif isinstance(klass, PDT):
             result = self.pdt()
+        elif isinstance(klass, NullObject):
+            result = {}
         else:
-
-            print("AND now???")
+            print(f"Unsupported class {klass!r}")
         self.level += 1
         return result
 
@@ -437,6 +442,8 @@ class IfDataParser:
             result = Block(tag, tp)
         elif node.aml_type == AmlType.REFERRER:
             result = Referrer(ReferrerType(node.map.get("CATEGORY").value), node.map.get("IDENTIFIER").value)
+        elif node.aml_type == AmlType.NULL_NODE:
+            result = NullObject()
         elif node.aml_type == AmlType.NONE:
             result = None
         else:

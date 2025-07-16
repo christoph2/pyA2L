@@ -55,6 +55,7 @@ class Node {
 
     enum class AmlType : uint8_t {
         NONE,
+        NULL_NODE,
         TYPE,
         TERMINAL,
         BLOCK,
@@ -305,6 +306,16 @@ class Node {
     map_t      m_map{};
 };
 
+inline Node make_null_node() {
+    Node::list_t lst{};
+
+    Node::map_t map = {
+        { "NAME",    Node(Node::AmlType::TERMINAL, "N/A") },
+        { "MEMBERS", Node(Node::AmlType::MEMBERS,  lst)  },
+    };
+    return Node(Node::AmlType::NULL_NODE, std::move(map));
+}
+
 inline Node make_pdt(AMLPredefinedTypeEnum type, const std::vector<uint32_t>& array_spec) {
     Node::list_t lst{};
 
@@ -356,7 +367,7 @@ inline Node make_tagged_struct_definition(bool multiple, std::optional<Node> typ
     if (type) {
         type_node = *type;
     } else {
-        type_node = Node();
+        type_node = make_null_node();
     }
 
     Node::map_t map = {
@@ -570,7 +581,7 @@ class Unmarshaller {
         } else if (disc == "EN") {
             return load_enum();
         } else if (disc == "NA") {
-            return Node();
+            return make_null_node();
         } else {
             assert(true == false);
         }
@@ -580,7 +591,7 @@ class Unmarshaller {
     Node load_member() {
         auto avail = m_reader.from_binary<bool>();
         if (!avail) {
-            return Node();
+            return make_null_node();
         }
         const auto& disc = m_reader.from_binary_str();
         if (disc == "T") {
@@ -602,7 +613,7 @@ class Unmarshaller {
                 bool avail = m_reader.from_binary<bool>();
                 if (!avail) {
                     // members.emplace_back(make_struct_member(Node()));
-                    members.emplace_back(Node());
+                    members.emplace_back(make_null_node());
                 } else {
                     auto member = load_member();
                     members.emplace_back(std::move(make_struct_member(member)));

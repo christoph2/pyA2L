@@ -85,7 +85,7 @@ auto parse(const std::string& file_name, const std::string& encoding, const std:
 		converted_tables.emplace_back(tpt, namet, result);
 	}
 	auto aml_data = parse_aml(fns.aml);
-	
+
     return {counter, values, converted_tables, aml_data};
 }
 
@@ -142,8 +142,8 @@ PYBIND11_MODULE(a2lparser_ext, m) {
 				py::handle py_s;
                 std::string value;
 				std::vector<std::string> result;
-				
-                auto& if_data = self.get_if_data();					
+
+                auto& if_data = self.get_if_data();
 				for (auto& section: if_data) {
 					py_s = PyUnicode_Decode(section.data(), std::size(section), encoding, "strict");
 
@@ -225,6 +225,7 @@ PYBIND11_MODULE(a2lparser_ext, m) {
 
 	py::enum_<Node::AmlType>(m, "AmlType")
 		.value("NONE", Node::AmlType::NONE)
+		.value("NULL_NODE", Node::AmlType::NULL_NODE)
 		.value("TYPE", Node::AmlType::TYPE)
 		.value("TERMINAL", Node::AmlType::TERMINAL)
 		.value("BLOCK", Node::AmlType::BLOCK)
