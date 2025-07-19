@@ -435,7 +435,7 @@ class A2LParser:
             if name not in ("ReadOnly", "GuardRails", "Discrete"):
                 inst = table(**values)
                 if if_data:
-                    #    print(parent, table, params, if_data)
+                    # print(parent, table, params, if_data)
                     if parent.if_data is None:
                         parent.if_data = []
                     for section in if_data:
@@ -447,7 +447,7 @@ class A2LParser:
             if multiple:
                 if getattr(parent, attr) is None:
                     setattr(parent, attr, [inst])
-                else:
+                elif attr != "if_data":
                     getattr(parent, attr).append(inst)
             else:
                 setattr(parent, attr, inst)
