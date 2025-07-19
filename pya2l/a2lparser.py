@@ -16,6 +16,7 @@ from rich.progress import (
 
 import pya2l.a2lparser_ext as ext
 from pya2l import classes, model
+from pya2l.aml.ifdata_parser import IfDataParser
 from pya2l.logger import Logger
 from pya2l.utils import detect_encoding
 

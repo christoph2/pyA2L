@@ -162,7 +162,9 @@ class IfDataParser:
         else:
             self.root = None
 
-    def parse(self, data):
+    def parse(self, data) -> dict:
+        if self.root is None:
+            return {}
         self.tokens = ifdata_lexer(data)
         self.token_idx = 0
         self.level = 0
