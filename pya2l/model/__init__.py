@@ -37,6 +37,7 @@ from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import backref, relationship
 
+from pya2l.aml.ifdata_parser import IfDataParser
 from pya2l.model.mixins import AxisDescrMixIn, CompareByPositionMixIn
 from pya2l.utils import SingletonBase
 
@@ -5276,10 +5277,15 @@ class A2LDatabase:
         self.session.commit()
         self._closed = False
 
+    def init_ifdata_parser(self) -> None:
+        self._ifdata_parser = IfDataParser(self.session)
+
+    def parse_ifdata(self, section: str) -> dict:
+        return self._ifdata_parser(section)
+
     def __del__(self):
-        pass
-        # if not self._closed:
-        #    self.close()
+        if not self._closed:
+            self.close()
 
     def close(self):
         """"""

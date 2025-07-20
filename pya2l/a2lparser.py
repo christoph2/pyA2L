@@ -405,6 +405,7 @@ class A2LParser:
         self.db.session.commit()
         update_tables(self.db.session, tables)
         self.db.session.commit()
+        self.db.init_ifdata_parser()
         self.logger.info(f"Done. Elapsed time [{perf_counter() - start_time:.2f}s].")
         return self.db
 

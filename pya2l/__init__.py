@@ -178,6 +178,7 @@ def open_existing(file_name: str, loglevel: str = "INFO"):
         raise OSError(f"file {db_fn!r} does not exists.")
     else:
         db = model.A2LDatabase(str(db_fn))
+        db.init_ifdata_parser()
         session = db.session
         res = session.query(model.MetaData).first()
         if res:
