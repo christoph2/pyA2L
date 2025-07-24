@@ -19,7 +19,7 @@ Supported Versions: [1.6](https://www.asam.net/standards/detail/mcd-2-mc/older/)
 Installation
 ------------
 
-- Via `pip` (Currently only Windows and Linux):
+- Via `pip`:
     ```shell
     $ pip install pya2ldb
     ```
