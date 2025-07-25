@@ -76,7 +76,9 @@ static auto trim = [](std::string &str) {
     str = str.substr(1, str.length() - 2);
 };
 
-struct Token {
+class Token {
+   public:
+
     using enum TokenType;
 
     Token() = default;
@@ -90,10 +92,35 @@ struct Token {
     Token(const Token &)            = default;
     Token(Token &&)                 = default;
 
-    TokenClass    m_token_class;
-    uint16_t m_token_type{ std::bit_cast<uint16_t>(INVALID) };
-    LineNumbers   m_line_numbers;
-    std::string   m_payload;
+    std::string to_string() {
+        std::stringstream ss;
+
+        ss << "Token(payload='";
+        ss << m_payload << "' @";
+        ss << m_line_numbers.to_string() << "[" << std::to_string(m_token_type) << "]";
+        ss << ")";
+        return ss.str();
+    }
+
+    TokenClass token_class() const {
+        return m_token_class;
+    }
+
+    const std::string &payload() const {
+        return m_payload;
+    }
+
+    void set_payload(std::string_view payload) {
+        m_payload = payload;
+    }
+
+    const LineNumbers &line_numbers() const {
+        return m_line_numbers;
+    }
+
+    uint16_t token_type() const {
+        return m_token_type;
+    }
 
    private:
 
@@ -130,15 +157,10 @@ struct Token {
         }
     }
 
-    std::string to_string() {
-        std::stringstream ss;
-
-        ss << "Token(payload='";
-        ss << m_payload << "' @";
-        ss << m_line_numbers.to_string() << "[" << std::to_string(m_token_type) << "]";
-        ss << ")";
-        return ss.str();
-    }
+    TokenClass  m_token_class;
+    uint16_t    m_token_type{ std::bit_cast<uint16_t>(INVALID) };
+    LineNumbers m_line_numbers;
+    std::string m_payload;
 };
 
 using TokenizerReturnType = Token;
