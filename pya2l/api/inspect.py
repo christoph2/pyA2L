@@ -604,6 +604,11 @@ class CachedBase:
     _cache: weakref.WeakValueDictionary = weakref.WeakValueDictionary()
     _strong_ref: collections.deque = collections.deque(maxlen=DB_CACHE_SIZE)
 
+    def __new__(cls, *args, **kwargs):
+        print("Creating CachedBase instance...")
+        instance = super().__new__(cls)  # Call the parent class's __new__ method
+        return instance
+
     @classmethod
     def get(cls, session: Any, name: Optional[str] = None, module_name: Optional[str] = None, *args: Any) -> Any:
         """Get an instance of the class, using cache if available.

@@ -382,8 +382,9 @@ class A2LParser:
         except Exception as e:
             print(f"{e!r}")
         aml_section = model.AMLSection()
-        aml_section.text = aml_data.text
-        aml_section.parsed = aml_data.parsed
+        if aml_data:
+            aml_section.text = aml_data.text
+            aml_section.parsed = aml_data.parsed
         self.db.session.add(aml_section)
         self.counter = 0
         progress_columns = (
