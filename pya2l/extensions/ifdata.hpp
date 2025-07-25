@@ -98,6 +98,12 @@ class IfDataBuilder : public IfDataBase {
 
     void add_token(const Token& token) noexcept {
         m_length += token.m_payload.length();
+#if 0
+        if (token.m_token_class == TokenClass::STRING) {
+            std::string tmp {"\"" + token.m_payload + "\""};
+            token.m_payload = tmp;
+        }
+#endif
         m_tokens.emplace_back(token);
     }
 

@@ -1534,7 +1534,7 @@ class Module(Base, HasIfDatas):
 
     __tablename__ = "module"
 
-    name = StdIdent()
+    name = StdIdent(index=True)
 
     longIdentifier = StdString()
 

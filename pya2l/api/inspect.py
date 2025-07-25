@@ -626,7 +626,11 @@ class CachedBase:
         """
         entry = (cls.__name__, name, args)
         if entry not in cls._cache:
-            inst = cls(session, name, module_name, *args)
+            try:
+                inst = cls(session, name, module_name, *args)
+            except Exception as e:
+                print(f"CachedBase.get({name}): {e!r}")
+                return None
             cls._cache[entry] = inst
             cls._strong_ref.append(inst)
         return cls._cache[entry]
@@ -1395,6 +1399,23 @@ class ModCommon(CachedBase):
             return NoModCommon()
         else:
             return super(cls, ModCommon).get(session, name, module_name)
+
+
+@dataclass
+class Module(CachedBase):
+    """"""
+
+    module: model.Module = field(repr=False)
+    name: str
+    longIdentifier: str
+    characteristics: list = field(default_factory=list)
+
+    def __init__(self, session, name: Optional[str]):
+        self.module = session.query(model.Module).filter(model.Module.name == name).first()
+        self.name = self.module.name
+        self.longIdentifier = self.module.longIdentifier
+        self.characteristics = self.module.characteristic
+        # print("CHR:", self.characteristics)
 
 
 @dataclass
@@ -2590,12 +2611,12 @@ class Function(CachedBase):
     longIdentifier: Optional[str]
     annotations: List[Annotation]
     functionVersion: str
-    _inMeasurements: List[str]
-    _locMeasurements: List[str]
-    _outMeasurements: List[str]
-    _defCharacteristics: List[str]
-    _refCharacteristics: List[str]
-    _subFunctions: List[str]
+    inMeasurements: List[str]
+    locMeasurements: List[str]
+    outMeasurements: List[str]
+    defCharacteristics: List[str]
+    refCharacteristics: List[str]
+    subFunctions: List[str]
 
     def __init__(self, session, name=None, module_name: str = None):
         self.session = session
@@ -2743,10 +2764,10 @@ class Group(CachedBase):
     longIdentifier: Optional[str]
     annotations: List[Annotation]
     root: bool
-    _characteristics: List[Any]
-    _measurements: List[Any]
-    _functions: List[Any]
-    _subgroups: List[Any]
+    characteristics: List[Any]
+    measurements: List[Any]
+    functions: List[Any]
+    subgroups: List[Any]
 
     def __init__(self, session, name=None, module_name: str = None):
         self.session = session

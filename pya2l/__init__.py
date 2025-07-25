@@ -124,32 +124,7 @@ def import_a2l(
         loglevel=loglevel,
         progress_bar=progress_bar,
     )
-    # db.close()
     session = db.session
-
-    # self.logger.info("Parsing AML section ...")
-
-    def parse_aml(file_name: str) -> bytes:
-        from pya2l import amlparser_ext
-
-        text: bytes = open(file_name, "rb").read()
-        result: bytes = amlparser_ext.parse_aml(text)
-        return text, result
-
-    # aml_text, aml_parsed = parse_aml(filenames.aml)
-    # self.session.add(model.AMLSection(text=aml_text, parsed=aml_parsed))
-
-    """
-
-    self.session.add(model.AMLSection(text=aml_text, parsed=aml_parsed))
-    self.logger.info("Parsing IF_DATA sections ...")
-
-    ip = parsers.if_data(aml_result)
-    for item in self.session.query(model.IfData).all():
-        parsed_if_data = pickle.dumps(ip.parse(item.raw))
-        item.parsed = parsed_if_data
-        self.session.add(item)
-    """
     session.commit()
     return session
 

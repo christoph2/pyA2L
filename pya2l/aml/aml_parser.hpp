@@ -75,8 +75,8 @@ class AMLParser {
         if (std::holds_alternative<int64_t >(value)) {
             return std::get<int64_t>(value);
         } else if (std::holds_alternative<long double>(value)) {
-            // return static_cast<long double>(std::get<long double>(value));
-            return std::get<long double>(value);
+            return static_cast<int64_t>(std::get<long double>(value));
+            //return std::get<long double>(value);
         } else if (std::holds_alternative<std::string>(value)) {
             return std::strtoll(std::get<std::string>(value).c_str(), nullptr, 10);
         } else {

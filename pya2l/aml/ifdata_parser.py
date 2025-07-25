@@ -6,11 +6,27 @@ from typing import Any, Optional
 import pya2l.model as model
 from pya2l.a2lparser_ext import (
     AmlType,
-    IfDataToken,
-    IfDataTokenType,
-    ifdata_lexer,
     unmarshal,
 )
+from pya2l.aml.ifdata_lexer import IfDataLexer
+
+
+class IfDataTokenType(IntEnum):
+    NONE = 0
+    IDENT = 1
+    FLOAT = 2
+    INT = 3
+    COMMENT = 4
+    STRING = 6
+    BEGIN = 7
+    END = 8
+    WS = 9
+
+
+@dataclass
+class IfDataToken:
+    type: IfDataTokenType
+    value: Any
 
 
 class AMLPredefinedTypeEnum(IntEnum):
@@ -157,15 +173,19 @@ class IfDataParser:
         if aml_section:
             aml_root = unmarshal(aml_section.parsed)
             self.root = self.traverse(aml_root)
-            self.syntax_stack = [toplevel_ifdata(self.root)]
-            self.ref_dict: defaultdict[ReferrerType, dict] = create_ref_dict(self.root)
+            if self.root.members:
+                self.syntax_stack = [toplevel_ifdata(self.root)]
+                self.ref_dict: defaultdict[ReferrerType, dict] = create_ref_dict(self.root)
+            else:
+                self.root = None
         else:
             self.root = None
 
     def parse(self, data) -> dict:
         if self.root is None:
             return {}
-        self.tokens = ifdata_lexer(data)
+        lexer = IfDataLexer(data)
+        self.tokens = lexer.run()
         self.token_idx = 0
         self.level = 0
         self.num_tokens = len(self.tokens)
@@ -238,7 +258,12 @@ class IfDataParser:
         return return_value
 
     def tagged_union(self):
-        tk = self.current_token
+        if self.current_token.type == IfDataTokenType.BEGIN:
+            tk = self.lookahead(1)
+            self.consume()
+        else:
+            tk = self.current_token
+        # tk = self.current_token
         if tk.type != IfDataTokenType.IDENT:
             print(f"Invalid token {tk.type} for tagged union. Expected identifier.")
             return
@@ -247,11 +272,19 @@ class IfDataParser:
         mem_dict = self.syntax_tos.members
         if tk_value in mem_dict:
             member = mem_dict[tk_value]
-            if member.is_block:
-                raise TypeError("Block definition is not IMPLEMENTED yet.")
-            result = self.enter(member.node)
-            self.leave()
-            return {tk_value: result}
+            # if member.is_block:
+            #    raise TypeError("Block definition is not IMPLEMENTED yet.")
+            if isinstance(member, Block):
+                result = self.enter(member.type)
+                self.leave()
+                print("Block RESULT:", result)
+                self.match(IfDataTokenType.END)
+                self.match(IfDataTokenType.IDENT, tk_value)
+                return {tk_value: result}
+            else:
+                result = self.enter(member.node)
+                self.leave()
+                return {tk_value: result}
         else:
             raise ValueError(f"tag {tk_value} not found.")  # SyntaxError("Tag not found in struct")
 
