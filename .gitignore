@@ -147,3 +147,6 @@ media
 static
 /pya2l/preprocessor.cpp
 /pya2l/extensions/cmake-build-debug
+
+# PyCharm
+.idea/
