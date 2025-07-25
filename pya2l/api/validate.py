@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
@@ -26,14 +25,14 @@ __copyright__ = """
 """Validate A2L database according to ASAP2 rules (and more...).
 """
 
-from collections import Counter, namedtuple
 import enum
+from collections import Counter, namedtuple
 from itertools import combinations, filterfalse
 from logging import getLogger
 
-from pya2l import DB
-from pya2l.api.inspect import Characteristic, AxisDescr, ModPar, ModCommon, Measurement
 import pya2l.model as model
+from pya2l import DB
+from pya2l.api.inspect import AxisDescr, Characteristic, Measurement, ModCommon, ModPar
 
 
 # *** Validator generated no diagnostic messages ***
@@ -93,10 +92,12 @@ class Validator:
         self._identifier = {}
 
     def __call__(self):
-        """Run validation."""
+        """Run validation and return an iterable of diagnostics (Message)."""
+        # reset previous diagnostics for repeated runs
+        self._diagnostics = []
         self.check_top_level_structure()
         self._traverse_db()
-        print(self.diagnostics)
+        return tuple(self.diagnostics)
 
     def check_top_level_structure(self):
         self.modules = self.session.query(model.Module).all()
@@ -108,8 +109,8 @@ class Validator:
                 "A2l file requires at least one /MODULE.",
             )
         else:
-            for module in self.modules:
-                print(module)
+            # Keep modules for subsequent checks
+            pass
 
     @property
     def session(self):
@@ -135,7 +136,7 @@ class Validator:
                 Level.WARNING,
                 Category.MISSING,
                 Diagnostics.MISSING_BYTE_ORDER,
-                "{}::ModCommon: Missing BYTE_ORDER.".format(module.name),
+                f"{module.name}::ModCommon: Missing BYTE_ORDER.",
             )
         missing_alignments = [e for e in mod_common.alignment.items() if e[1] is None]
         if missing_alignments:
@@ -143,34 +144,33 @@ class Validator:
                 Level.WARNING,
                 Category.MISSING,
                 Diagnostics.MISSING_ALIGNMENT,
-                "{}::ModCommon: Missing ALIGNMENT(s): {}.".format(module.name, [e[0] for e in missing_alignments]),
+                f"{module.name}::ModCommon: Missing ALIGNMENT(s): {[e[0] for e in missing_alignments]}.",
             )
 
     def _validate_mod_par(self, module):
         if not ModPar.exists(self.session, module.name):
             return
         mod_par = ModPar(self.session, module.name)
-        print(mod_par, end="\n\n")
         if mod_par.epk is None:
             self.emit_diagnostic(
                 Level.WARNING,
                 Category.MISSING,
                 Diagnostics.MISSING_EPK,
-                "{}::ModPar: Missing EPK.".format(module.name),
+                f"{module.name}::ModPar: Missing EPK.",
             )
         elif not mod_par.adrEpk:
             self.emit_diagnostic(
                 Level.WARNING,
                 Category.MISSING,
                 Diagnostics.MISSING_ADDR_EPK,
-                "{}::ModPar: Missing ADDR_EPK.".format(module.name),
+                f"{module.name}::ModPar: Missing ADDR_EPK.",
             )
         if mod_par.memoryLayouts:
             self.emit_diagnostic(
                 Level.WARNING,
                 Category.MISSING,
                 Diagnostics.DEPRECATED,
-                "{}::ModPar: MEMORY_LAYOUTs are deprecated, use MEMORY_SEGMENTs instead.".format(module.name),
+                f"{module.name}::ModPar: MEMORY_LAYOUTs are deprecated, use MEMORY_SEGMENTs instead.",
             )
         # memorySegments
 
@@ -212,7 +212,11 @@ class Validator:
     '''
 
     def emit_diagnostic(self, level: Level, category: Category, diag: Diagnostics, message: str = None):
-        self.logger.warn("{} - {}".format(level.name, message))
+        try:
+            self.logger.warning("%s - %s", level.name, message)
+        except Exception:
+            # Be robust even if logging formatting fails for any reason
+            pass
         self._diagnostics.append(Message(level, category, diag, message))
 
     @property

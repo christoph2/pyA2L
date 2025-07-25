@@ -156,7 +156,9 @@ def build_extension(debug: bool = False, use_temp_dir: bool = False) -> None:
         build_temp.mkdir(parents=True)
 
     banner("Step #1: Configure")
+
     # cmake_args += ["--debug-output"]
+
     subprocess.run(["cmake", "-S", str(TOP_DIR), *cmake_args], cwd=build_temp, check=True)  # nosec
 
     cmake_args += [f"--parallel {mp.cpu_count()}"]

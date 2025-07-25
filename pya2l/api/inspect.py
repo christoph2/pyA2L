@@ -1,5 +1,15 @@
 #!/usr/bin/env python
-"""Classes for easy, convenient, read-only access to A2L databases."""
+"""Classes for easy, convenient, read-only access to A2L databases.
+
+This module provides a comprehensive API for accessing and inspecting A2L database
+entities such as measurements, characteristics, axis points, and computation methods.
+It is designed to be used with SQLAlchemy sessions to query the database and
+present the results in a more user-friendly format.
+
+The module includes classes for all major A2L entities, with methods to access
+their properties and relationships. It also provides utility functions for
+converting between different data formats and representations.
+"""
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
@@ -28,8 +38,19 @@ import weakref
 from dataclasses import asdict, dataclass, field
 from enum import IntEnum
 from functools import cached_property, reduce
-from operator import mul
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from operator import attrgetter, mul
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generator,
+    Generic,
+    List,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 from sqlalchemy import exists, not_
 
@@ -49,6 +70,8 @@ from pya2l.functions import (
 )
 from pya2l.utils import SingletonBase, align_as, enum_from_str, ffs
 
+
+T = TypeVar("T")
 
 DB_CACHE_SIZE = 4096  # Completly arbitrary, could be configurable.
 
@@ -119,12 +142,52 @@ ASAM_TYPE_RANGES = {
 
 
 class PrgTypeLayout(IntEnum):
+    """Enumeration for program memory layout types.
+
+    This enum defines the different types of program memory layouts
+    that can be specified in an A2L file.
+
+    Attributes
+    ----------
+    PRG_CODE : int
+        Program code memory layout
+    PRG_DATA : int
+        Program data memory layout
+    PRG_RESERVED : int
+        Reserved program memory layout
+    """
+
     PRG_CODE = 0
     PRG_DATA = 1
     PRG_RESERVED = 2
 
 
 class PrgTypeSegment(IntEnum):
+    """Enumeration for program memory segment types.
+
+    This enum defines the different types of program memory segments
+    that can be specified in an A2L file.
+
+    Attributes
+    ----------
+    CALIBRATION_VARIABLES : int
+        Segment containing calibration variables
+    CODE : int
+        Segment containing program code
+    DATA : int
+        Segment containing data
+    EXCLUDE_FROM_FLASH : int
+        Segment that should be excluded from flash programming
+    OFFLINE_DATA : int
+        Segment containing offline data
+    RESERVED : int
+        Reserved segment type
+    SERAM : int
+        Segment in Serial RAM
+    VARIABLES : int
+        Segment containing variables
+    """
+
     CALIBRATION_VARIABLES = 0
     CODE = 1
     DATA = 2
@@ -136,6 +199,27 @@ class PrgTypeSegment(IntEnum):
 
 
 class MemoryType(IntEnum):
+    """Enumeration for memory types.
+
+    This enum defines the different types of memory that can be
+    specified in an A2L file.
+
+    Attributes
+    ----------
+    EEPROM : int
+        Electrically Erasable Programmable Read-Only Memory
+    EPROM : int
+        Erasable Programmable Read-Only Memory
+    FLASH : int
+        Flash memory
+    RAM : int
+        Random Access Memory
+    ROM : int
+        Read-Only Memory
+    NOT_IN_ECU : int
+        Memory not physically present in the ECU
+    """
+
     EEPROM = 0
     EPROM = 1
     FLASH = 2
@@ -145,6 +229,19 @@ class MemoryType(IntEnum):
 
 
 class SegmentAttributeType(IntEnum):
+    """Enumeration for segment attribute types.
+
+    This enum defines the different types of segment attributes
+    that can be specified in an A2L file.
+
+    Attributes
+    ----------
+    INTERN : int
+        Internal segment (within the ECU)
+    EXTERN : int
+        External segment (outside the ECU)
+    """
+
     INTERN = 0
     EXTERN = 1
 
@@ -156,6 +253,30 @@ class SegmentAttributeType(IntEnum):
 
 @dataclass
 class Alignment:
+    """Class representing memory alignment requirements for different data types.
+
+    This class defines the alignment requirements for various data types
+    and provides methods to get the alignment for a specific data type
+    and to align an offset according to the requirements.
+
+    Attributes
+    ----------
+    byte : int
+        Alignment requirement for byte-sized data types (8 bits)
+    dword : int
+        Alignment requirement for double word-sized data types (32 bits)
+    float16 : int
+        Alignment requirement for 16-bit floating point data types
+    float32 : int
+        Alignment requirement for 32-bit floating point data types
+    float64 : int
+        Alignment requirement for 64-bit floating point data types
+    qword : int
+        Alignment requirement for quad word-sized data types (64 bits)
+    word : int
+        Alignment requirement for word-sized data types (16 bits)
+    """
+
     byte: int
     dword: int
     float16: int
@@ -164,6 +285,7 @@ class Alignment:
     qword: int
     word: int
 
+    # Mapping from ASAM data types to alignment type attributes
     TYPE_MAP = {
         "BYTE": "byte",
         "UBYTE": "byte",
@@ -182,12 +304,48 @@ class Alignment:
     }
 
     def get(self, data_type: str) -> int:
+        """Get the alignment requirement for a specific data type.
+
+        Parameters
+        ----------
+        data_type : str
+            The ASAM data type name (e.g., 'UBYTE', 'SWORD', 'FLOAT32_IEEE')
+
+        Returns
+        -------
+        int
+            The alignment requirement in bytes
+
+        Raises
+        ------
+        ValueError
+            If the data type is not recognized
+        """
         if data_type not in self.TYPE_MAP:
             raise ValueError(f"Invalid data type {data_type!r}.")
         attr = self.TYPE_MAP.get(data_type)
         return getattr(self, attr)
 
     def align(self, data_type: str, offset: int) -> int:
+        """Align an offset according to the requirements of a data type.
+
+        Parameters
+        ----------
+        data_type : str
+            The ASAM data type name (e.g., 'UBYTE', 'SWORD', 'FLOAT32_IEEE')
+        offset : int
+            The offset to align
+
+        Returns
+        -------
+        int
+            The aligned offset
+
+        Raises
+        ------
+        ValueError
+            If the data type is not recognized
+        """
         return align_as(offset, self.get(data_type))
 
 
@@ -196,27 +354,89 @@ NATURAL_ALIGNMENTS = Alignment(byte=1, dword=4, float16=2, float32=4, float64=8,
 
 @dataclass
 class RecordLayoutBase:
+    """Base class for record layout components.
+
+    This class serves as a base for various record layout components
+    such as axis points, function values, etc. It provides common
+    attributes and methods used by all record layout components.
+
+    Attributes
+    ----------
+    position : Optional[int]
+        Position of the component in the record layout
+    data_type : Optional[str]
+        ASAM data type of the component
+    axis : str
+        Axis identifier (e.g., 'x', 'y', 'z')
+    address : int
+        Memory address of the component
+    """
+
     position: Optional[int] = field(default=None)
     data_type: Optional[str] = field(default=None)
     axis: str = field(default="-")
     address: int = field(default=-1)
 
     def valid(self) -> bool:
+        """Check if the record layout component is valid.
+
+        A valid component must have both position and data_type defined.
+
+        Returns
+        -------
+        bool
+            True if the component is valid, False otherwise
+        """
         return self.position is not None and self.data_type is not None
 
     @cached_property
     def byte_size(self) -> int:
+        """Get the size of the component in bytes.
+
+        Returns
+        -------
+        int
+            Size of the component in bytes based on its data type
+        """
         return ASAM_TYPE_SIZES.get(self.data_type)
 
 
 @dataclass
 class RecordLayoutAxisPts(RecordLayoutBase):
+    """Record layout component for axis points.
+
+    This class represents the axis points component in a record layout,
+    which defines how axis points are stored in memory.
+
+    Attributes
+    ----------
+    indexIncr : Optional[str]
+        Increment type for indices
+    addressing : Optional[str]
+        Addressing mode for the axis points
+    """
+
     indexIncr: Optional[str] = field(default=None)
     addressing: Optional[str] = field(default=None)
 
 
 @dataclass
 class RecordLayoutAxisRescale(RecordLayoutBase):
+    """Record layout component for axis rescale points.
+
+    This class represents the axis rescale component in a record layout,
+    which defines how axis rescale points are stored in memory.
+
+    Attributes
+    ----------
+    indexIncr : Optional[str]
+        Increment type for indices
+    maxNumberOfRescalePairs : Optional[int]
+        Maximum number of rescale pairs
+    addressing : Optional[str]
+        Addressing mode for the rescale points
+    """
+
     indexIncr: Optional[str] = field(default=None)
     maxNumberOfRescalePairs: Optional[int] = field(default=None)
     addressing: Optional[str] = field(default=None)
@@ -224,57 +444,140 @@ class RecordLayoutAxisRescale(RecordLayoutBase):
 
 @dataclass
 class RecordLayoutFncValues(RecordLayoutBase):
+    """Record layout component for function values.
+
+    This class represents the function values component in a record layout,
+    which defines how function values are stored in memory.
+
+    Attributes
+    ----------
+    indexMode : Optional[str]
+        Mode for indexing the function values
+    addresstype : Optional[str]
+        Type of addressing for the function values
+    """
+
     indexMode: Optional[str] = field(default=None)
     addresstype: Optional[str] = field(default=None)
 
 
 @dataclass
 class RecordLayoutDistOp(RecordLayoutBase):
+    """Record layout component for distance operation.
+
+    This class represents the distance operation component in a record layout,
+    which defines how distance operations are stored in memory.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutIdentification(RecordLayoutBase):
+    """Record layout component for identification.
+
+    This class represents the identification component in a record layout,
+    which defines how identification data is stored in memory.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutNoAxisPts(RecordLayoutBase):
+    """Record layout component for number of axis points.
+
+    This class represents the number of axis points component in a record layout,
+    which defines how the count of axis points is stored in memory.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutNoRescale(RecordLayoutBase):
+    """Record layout component for number of rescale points.
+
+    This class represents the number of rescale points component in a record layout,
+    which defines how the count of rescale points is stored in memory.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutOffset(RecordLayoutBase):
+    """Record layout component for offset.
+
+    This class represents the offset component in a record layout,
+    which defines how offset values are stored in memory.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutReserved(RecordLayoutBase):
+    """Record layout component for reserved space.
+
+    This class represents the reserved space component in a record layout,
+    which defines areas of memory that are reserved for future use.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutRipAddr(RecordLayoutBase):
+    """Record layout component for RIP address.
+
+    This class represents the RIP (Relative Instruction Pointer) address component
+    in a record layout, which defines how RIP addresses are stored in memory.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutSrcAddr(RecordLayoutBase):
+    """Record layout component for source address.
+
+    This class represents the source address component in a record layout,
+    which defines how source addresses are stored in memory.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutShiftOp(RecordLayoutBase):
+    """Record layout component for shift operation.
+
+    This class represents the shift operation component in a record layout,
+    which defines how shift operations are stored in memory.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutFixNoAxisPts:
+    """Record layout component for fixed number of axis points.
+
+    This class represents a fixed number of axis points in a record layout,
+    which defines a constant number of axis points rather than reading
+    the count from memory.
+
+    Attributes
+    ----------
+    number : Optional[int]
+        The fixed number of axis points
+    position : int
+        Position in the record layout
+    axis : str
+        Axis identifier (e.g., 'x', 'y', 'z')
+    """
+
     number: Optional[int] = field(default=None)
     position: int = field(default=0)
     axis: str = field(default="-")
@@ -299,148 +602,298 @@ RL_COMPONENT_NAMES = {
 
 @dataclass
 class FixAxisPar:
+    """Fixed axis parameters for axis descriptions.
+
+    This class represents fixed axis parameters that define how axis points
+    are distributed in memory using a shift-based approach.
+
+    Attributes
+    ----------
+    offset : Optional[int]
+        Offset of the first axis point
+    shift : Optional[int]
+        Shift value for calculating axis point positions
+    numberapo : Optional[int]
+        Number of axis points
+    """
+
     offset: Optional[int] = field(default=None)
     shift: Optional[int] = field(default=None)
     numberapo: Optional[int] = field(default=None)
 
     def valid(self) -> bool:
+        """Check if the fixed axis parameters are valid.
+
+        Valid parameters must have offset, shift, and numberapo defined.
+
+        Returns
+        -------
+        bool
+            True if the parameters are valid, False otherwise
+        """
         return self.offset is not None and self.shift is not None and self.numberapo is not None
 
 
 @dataclass
 class FixAxisParDist:
+    """Fixed axis parameters with distance for axis descriptions.
+
+    This class represents fixed axis parameters that define how axis points
+    are distributed in memory using a distance-based approach.
+
+    Attributes
+    ----------
+    offset : Optional[int]
+        Offset of the first axis point
+    distance : Optional[int]
+        Distance between consecutive axis points
+    numberapo : Optional[int]
+        Number of axis points
+    """
+
     offset: Optional[int] = field(default=None)
     distance: Optional[int] = field(default=None)
     numberapo: Optional[int] = field(default=None)
 
     def valid(self) -> bool:
+        """Check if the fixed axis parameters are valid.
+
+        Valid parameters must have offset, distance, and numberapo defined.
+
+        Returns
+        -------
+        bool
+            True if the parameters are valid, False otherwise
+        """
         return self.offset is not None and self.distance is not None and self.numberapo is not None
 
 
 @dataclass
 class ExtendedLimits:
+    """Extended limits for axis descriptions and characteristics.
+
+    This class represents extended limits that define the valid range
+    of values for an axis or characteristic beyond the standard limits.
+
+    Attributes
+    ----------
+    lowerLimit : Optional[float]
+        Lower limit of the valid range
+    upperLimit : Optional[float]
+        Upper limit of the valid range
+    """
+
     lowerLimit: Optional[float] = field(default=None)
     upperLimit: Optional[float] = field(default=None)
 
     def valid(self) -> bool:
+        """Check if the extended limits are valid.
+
+        Valid limits must have both lowerLimit and upperLimit defined.
+
+        Returns
+        -------
+        bool
+            True if the limits are valid, False otherwise
+        """
         return self.lowerLimit is not None and self.upperLimit is not None
 
 
 @dataclass
 class MatrixDim:
+    """Matrix dimensions for multi-dimensional data.
+
+    This class represents the dimensions of a matrix (1D, 2D, or 3D)
+    used for multi-dimensional data in characteristics and measurements.
+
+    Attributes
+    ----------
+    x : Optional[int]
+        Size of the first dimension (X)
+    y : Optional[int]
+        Size of the second dimension (Y)
+    z : Optional[int]
+        Size of the third dimension (Z)
+    numbers : tuple
+        Tuple of dimension sizes
+    """
+
     x: Optional[int] = field(default=None)
     y: Optional[int] = field(default=None)
     z: Optional[int] = field(default=None)
 
     def __init__(self, matrix_dim):
+        """Initialize a MatrixDim instance.
+
+        Parameters
+        ----------
+        matrix_dim : Any
+            Object containing matrix dimension information
+
+        Notes
+        -----
+        The matrix_dim object should have a 'numbers' attribute that is
+        a sequence of dimension sizes.
+        """
         self.numbers = ()
         if matrix_dim is not None:
-            numbers = matrix_dim.numbers
-            self.numbers = numbers
-            length = len(numbers)
-            if length >= 3:
-                self.z = numbers[2]
-                self.y = numbers[1]
-                self.x = numbers[0]
-            elif length == 2:
-                self.y = numbers[1]
-                self.x = numbers[0]
-            elif length == 1:
-                self.x = numbers[0]
+            try:
+                numbers = matrix_dim.numbers
+                self.numbers = numbers
+                length = len(numbers)
+                if length >= 3:
+                    self.z = numbers[2]
+                    self.y = numbers[1]
+                    self.x = numbers[0]
+                elif length == 2:
+                    self.y = numbers[1]
+                    self.x = numbers[0]
+                elif length == 1:
+                    self.x = numbers[0]
+            except (AttributeError, IndexError) as e:
+                # Handle case where matrix_dim doesn't have expected structure
+                print(f"Error initializing MatrixDim: {e}")
 
     def valid(self) -> bool:
+        """Check if the matrix dimensions are valid.
+
+        Valid dimensions must have x, y, and z defined.
+
+        Returns
+        -------
+        bool
+            True if the dimensions are valid, False otherwise
+        """
         return self.x is not None and self.y is not None and self.z is not None
 
 
 @dataclass
 class Annotation:
+    """Annotation for A2L objects.
+
+    This class represents an annotation that can be attached to various
+    A2L objects to provide additional information.
+
+    Attributes
+    ----------
+    label : Optional[str]
+        Label or title of the annotation
+    origin : Optional[str]
+        Origin or source of the annotation
+    text : List[str]
+        List of text lines in the annotation
+    """
+
     label: Optional[str]
     origin: Optional[str]
     text: List[str]
 
 
 @dataclass
-class MemoryLayout:
-    prgType: PrgTypeLayout
-    address: int
-    size: int
-    offset_0: int
-    offset_1: int
-    offset_2: int
-    offset_3: int
-    offset_4: int
-
-
-@dataclass
-class MemorySegment:
-    name: str
-    longIdentifier: str
-    prgType: PrgTypeSegment
-    memoryType: MemoryType
-    attribute: SegmentAttributeType
-    address: int
-    size: int
-    offset_0: int
-    offset_1: int
-    offset_2: int
-    offset_3: int
-    offset_4: int
-
-
-@dataclass
 class DependentCharacteristic:
+    """Dependent characteristic definition.
+
+    This class represents a dependent characteristic, which is a characteristic
+    whose value depends on other characteristics through a formula.
+
+    Attributes
+    ----------
+    formula : str
+        Formula that defines how the dependent characteristic is calculated
+    characteristics : List[str]
+        List of characteristic names that the formula depends on
+    """
+
     formula: str
     characteristics: List[str]
 
 
 @dataclass
 class VirtualCharacteristic:
+    """Virtual characteristic definition.
+
+    This class represents a virtual characteristic, which is a characteristic
+    that doesn't have a physical representation in memory but is calculated
+    from other characteristics.
+
+    Attributes
+    ----------
+    formula : str
+        Formula that defines how the virtual characteristic is calculated
+    characteristics : List[str]
+        List of characteristic names that the formula depends on
+    """
+
     formula: str
     characteristics: List[str]
 
 
 @dataclass
 class MaxRefresh:
+    """Maximum refresh rate information.
+
+    This class represents the maximum refresh rate for a measurement,
+    defining how frequently the measurement can be updated.
+
+    Attributes
+    ----------
+    scalingUnit : Optional[int]
+        Scaling unit for the refresh rate (e.g., 1=seconds, 1000=milliseconds)
+    rate : Optional[int]
+        Maximum refresh rate value
+    """
+
     scalingUnit: Optional[int] = field(default=None)
     rate: Optional[int] = field(default=None)
 
 
 @dataclass
 class SymbolLink:
+    """Symbol link information.
+
+    This class represents a link to a symbol in the ECU code,
+    which can be used to reference variables or functions.
+
+    Attributes
+    ----------
+    symbolLink : Optional[str]
+        Name of the symbol to link to
+    offset : Optional[int]
+        Offset to add to the symbol's address
+    """
+
     symbolLink: Optional[str] = field(default=None)
     offset: Optional[int] = field(default=None)
 
 
 @dataclass
-class CompuTable:
-    num_values: Optional[int] = field(default=None)
-    interpolation: Optional[bool] = field(default=None)
-    default_value: Optional[float] = field(default=None)
-    in_values: List[float] = field(default_factory=list)
-    out_values: List[float] = field(default_factory=list)
-
-
-@dataclass
-class CompuTableVerb:
-    num_values: Optional[int] = field(default=None)
-    ranges: Optional[bool] = field(default=None)
-    default_value: Optional[str] = field(default=None)
-    in_values: List[float] = field(default_factory=list)
-    text_values: List[str] = field(default_factory=list)
-
-
-@dataclass
-class CompuTableVerbRanges:
-    num_values: Optional[int] = field(default=None)
-    ranges: Optional[bool] = field(default=None)
-    default_value: Optional[str] = field(default=None)
-    lower_values: List[float] = field(default_factory=list)
-    upper_values: List[float] = field(default_factory=list)
-    text_values: List[str] = field(default_factory=list)
-
-
-@dataclass
 class AxisInfo:
+    """Axis information for characteristics and measurements.
+
+    This class provides detailed information about an axis in a
+    characteristic or measurement, including its data type, storage
+    format, and element count.
+
+    Attributes
+    ----------
+    data_type : str
+        ASAM data type of the axis elements
+    category : str
+        Category of the axis (e.g., 'CURVE_AXIS', 'MAP_AXIS')
+    maximum_element_count : int
+        Maximum number of elements in the axis
+    reversed_storage : bool
+        Whether the axis elements are stored in reversed order
+    addressing : str
+        Addressing mode for the axis elements
+    elements : Dict
+        Dictionary of axis elements
+    adjustable : bool
+        Whether the axis is adjustable
+    actual_element_count : Optional[int]
+        Actual number of elements in the axis (may be less than maximum)
+    """
+
     data_type: str
     category: str
     maximum_element_count: int
@@ -584,11 +1037,93 @@ def fnc_np_order(order: Optional[str]) -> Optional[str]:
         return None
 
 
+class FilteredList(Generic[T]):
+    """A filtered list of objects from a database association.
+
+    This class provides a way to filter and query objects from a database
+    association, returning instances of a specified class.
+
+    Attributes
+    ----------
+    session : Any
+        SQLAlchemy session object
+    association : Any
+        Database association to query
+    klass : Type[T]
+        Class to instantiate for each row
+    attribute : Callable
+        Function to extract the attribute used for instantiation
+    """
+
+    def __init__(self, session, association, klass: T, attr_name: str = "name") -> None:
+        """Initialize a FilteredList instance.
+
+        Parameters
+        ----------
+        session : Any
+            SQLAlchemy session object
+        association : Any
+            Database association to query
+        klass : Type[T]
+            Class to instantiate for each row
+        attr_name : str, optional
+            Name of the attribute to use for instantiation, by default "name"
+        """
+        self.session = session
+        self.association = association
+        self.klass = klass
+        self.attribute = attrgetter(attr_name)
+
+    def query(self, criterion: Optional[Callable] = None) -> Generator:
+        """Query the association with an optional filter criterion.
+
+        Parameters
+        ----------
+        criterion : Optional[Callable], optional
+            Function to filter rows, by default None
+
+        Returns
+        -------
+        Generator
+            Generator yielding instances of the specified class
+
+        Notes
+        -----
+        If criterion is None, all rows are returned.
+        The criterion function should take a row and return True if the row
+        should be included in the results.
+        """
+        if criterion is None:
+            criterion = lambda x: x
+
+        if self.association is None:
+            return
+
+        try:
+            for row in self.association:
+                if criterion(row):
+                    try:
+                        xn = self.klass.get(self.session, self.attribute(row))
+                        if xn is not None:
+                            yield xn
+                    except (AttributeError, ValueError) as e:
+                        print(f"Error getting {self.klass.__name__} instance: {e}")
+        except Exception as e:
+            print(f"Error querying association: {e}")
+
+
 class CachedBase:
     """Base class for all user classes in this module, implementing a cache manager.
 
     This class provides a caching mechanism to avoid creating duplicate instances
     of the same object, which can improve performance and memory usage.
+
+    Attributes
+    ----------
+    _cache : weakref.WeakValueDictionary
+        Dictionary mapping (class_name, object_name, args) tuples to instances
+    _strong_ref : collections.deque
+        Deque of strong references to instances to prevent garbage collection
 
     Note
     ----
@@ -603,6 +1138,27 @@ class CachedBase:
 
     _cache: weakref.WeakValueDictionary = weakref.WeakValueDictionary()
     _strong_ref: collections.deque = collections.deque(maxlen=DB_CACHE_SIZE)
+
+    def __new__(cls, *args, **kwargs):
+        """Create a new instance of the class.
+
+        This method is called when a new instance is created directly
+        (not through the `get` method).
+
+        Parameters
+        ----------
+        *args : Any
+            Positional arguments to pass to the constructor
+        **kwargs : Any
+            Keyword arguments to pass to the constructor
+
+        Returns
+        -------
+        Any
+            A new instance of the class
+        """
+        instance = super().__new__(cls)  # Call the parent class's __new__ method
+        return instance
 
     @classmethod
     def get(cls, session: Any, name: Optional[str] = None, module_name: Optional[str] = None, *args: Any) -> Any:
@@ -622,14 +1178,36 @@ class CachedBase:
         Returns
         -------
         Any
-            An instance of the class
+            An instance of the class, or None if an error occurs
+
+        Notes
+        -----
+        This method first checks if an instance with the given parameters
+        already exists in the cache. If it does, that instance is returned.
+        Otherwise, a new instance is created, added to the cache, and returned.
         """
+        if session is None:
+            print(f"{cls.__name__}.get(): session cannot be None")
+            return None
+
         entry = (cls.__name__, name, args)
         if entry not in cls._cache:
-            inst = cls(session, name, module_name, *args)
-            cls._cache[entry] = inst
-            cls._strong_ref.append(inst)
+            try:
+                inst = cls(session, name, module_name, *args)
+                cls._cache[entry] = inst
+                cls._strong_ref.append(inst)
+            except Exception as e:
+                print(f"{cls.__name__}.get({name!r}): {e!r}")
+                return None
         return cls._cache[entry]
+
+    @classmethod
+    def inny(cls):
+        """Debug method to print the class name.
+
+        This method is used for debugging purposes.
+        """
+        print("INNY: ", cls.__name__)
 
 
 class NoCompuMethod(SingletonBase):
@@ -828,6 +1406,89 @@ class NoCompuMethod(SingletonBase):
 
 
 @dataclass
+class CompuTab(CachedBase):
+    session: Any = field(repr=False)
+    compu_tab: model.CompuTab = field(repr=False)
+    name: str
+    longIdentifier: str
+    interpolation: bool
+    default_value: Optional[float] = field(default=None)
+    in_values: List[float] = field(default_factory=list)
+    out_values: List[float] = field(default_factory=list)
+
+    def __init__(self, session, name: str, module_name: Optional[str] = None):
+        self.session = session
+        compu_tab = session.query(model.CompuTab).filter(model.CompuTab.name == name)
+        if module_name is not None:
+            compu_tab.join(model.Module).filter(model.Module.name == module_name)
+        self.compu_tab = compu_tab.first()
+        if self.compu_tab is None:
+            raise ValueError(f"COMPU_TAB {name!r} does not exist.")
+        self.name = self.compu_tab.name
+        self.longIdentifier = self.compu_tab.longIdentifier
+        self.interpolation = True if self.compu_tab.conversionType == "TAB_INTP" else False
+        self.default_value = self.compu_tab.default_value_numeric.display_value if self.compu_tab.default_value_numeric else None
+        self.in_values = [x.inVal for x in self.compu_tab.pairs]
+        self.out_values = [x.outVal for x in self.compu_tab.pairs]
+
+
+@dataclass
+class CompuTabVerb(CachedBase):
+    session: Any = field(repr=False)
+    compu_tab_verb: model.CompuTab = field(repr=False)
+    name: str
+    longIdentifier: str
+    interpolation: bool
+    default_value: Optional[float] = field(default=None)
+    in_values: List[float] = field(default_factory=list)
+    text_values: List[str] = field(default_factory=list)
+
+    def __init__(self, session, name: str, module_name: Optional[str] = None):
+        self.session = session
+        compu_tab_verb = session.query(model.CompuVtab).filter(model.CompuVtab.name == name)
+        if module_name is not None:
+            compu_tab_verb.join(model.Module).filter(model.Module.name == module_name)
+        self.compu_tab_verb = compu_tab_verb.first()
+        if self.compu_tab_verb is None:
+            raise ValueError(f"COMPU_VTAB {name!r} does not exist.")
+        self.name = self.compu_tab_verb.name
+        self.longIdentifier = self.compu_tab_verb.longIdentifier
+        self.interpolation = True if self.compu_tab_verb.conversionType == "TAB_INTP" else False
+        self.default_value = self.compu_tab_verb.default_value.display_string if self.compu_tab_verb.default_value else None
+        self.in_values = [x.inVal for x in self.compu_tab_verb.pairs]
+        self.text_values = [x.outVal for x in self.compu_tab_verb.pairs]
+
+
+@dataclass
+class CompuTabVerbRanges(CachedBase):
+    session: Any = field(repr=False)
+    compu_tab_verb_ranges: model.CompuTab = field(repr=False)
+    name: str
+    longIdentifier: str
+    default_value: Optional[float] = field(default=None)
+    lower_values: List[float] = field(default_factory=list)
+    upper_values: List[float] = field(default_factory=list)
+    text_values: List[str] = field(default_factory=list)
+
+    def __init__(self, session, name: str, module_name: Optional[str] = None):
+        self.session = session
+        compu_tab_verb_ranges = session.query(model.CompuVtabRange).filter(model.CompuVtabRange.name == name)
+        if module_name is not None:
+            compu_tab_verb_ranges.join(model.Module).filter(model.Module.name == module_name)
+        self.compu_tab_verb_ranges = compu_tab_verb_ranges.first()
+        if self.compu_tab_verb_ranges is None:
+            raise ValueError(f"COMPU_VTAB_RANGE {name!r} does not exist.")
+        self.name = self.compu_tab_verb_ranges.name
+        self.longIdentifier = self.compu_tab_verb_ranges.longIdentifier
+        self.default_value = (
+            self.compu_tab_verb_ranges.default_value.display_string if self.compu_tab_verb_ranges.default_value else None
+        )
+        self.lower_values = [x.inValMin for x in self.compu_tab_verb_ranges.triples]
+        self.upper_values = [x.inValMax for x in self.compu_tab_verb_ranges.triples]
+        self.text_values = [x.outVal for x in self.compu_tab_verb_ranges.triples]
+
+
+@dataclass
 class CompuMethod(CachedBase):
     """Computation method for converting between internal and physical values.
 
@@ -857,7 +1518,7 @@ class CompuMethod(CachedBase):
         Formula for conversion
     tab : CompuTable
         Table for numeric conversion
-    tab_verb : Union[CompuTableVerb, CompuTableVerbRanges]
+    tab_verb : Union[CompuTableVerb, CompuTabVerbRanges]
         Table for verbal conversion
     statusStringRef : Optional[str]
         Reference to status strings
@@ -868,6 +1529,7 @@ class CompuMethod(CachedBase):
     """
 
     compu_method: model.CompuMethod = field(repr=False)
+    session: Any = field(repr=False)
     name: str
     longIdentifier: str
     conversionType: str
@@ -876,8 +1538,9 @@ class CompuMethod(CachedBase):
     coeffs: Optional[Coeffs]
     coeffs_linear: Optional[CoeffsLinear]
     formula: Dict[str, Any]
-    tab: CompuTable
-    tab_verb: Union[CompuTableVerb, CompuTableVerbRanges]
+    tab: Optional[CompuTab]
+    tab_verb: Optional[CompuTabVerb]
+    tab_verb_ranges: Optional[CompuTabVerbRanges]
     statusStringRef: Optional[str]
     refUnit: Optional[str]
     evaluator: Callable = field(repr=False, default=Identical())
@@ -894,24 +1557,28 @@ class CompuMethod(CachedBase):
         module_name : Optional[str], optional
             Name of the module, by default None
         """
-        self.compu_method = session.query(model.CompuMethod).filter(model.CompuMethod.name == name).first()
-        if not self.compu_method:
-            return
+        compu_method = session.query(model.CompuMethod).filter(model.CompuMethod.name == name)
+        self.session = session
+        if module_name is not None:
+            compu_method.join(model.Module).filter(model.Module.name == module_name)
+        self.compu_method = compu_method.first()
+        if self.compu_method is None:
+            raise ValueError(f"COMPU_METHOD {name!r} does not exist.")
         self.name = name
         self.longIdentifier = self.compu_method.longIdentifier
         self.conversionType = self.compu_method.conversionType
         self.format = self.compu_method.format
         self.unit = self.compu_method.unit
         self.formula = {}
-        self.tab = {}
-        self.tab_verb = {}
+        self.tab = None
+        self.tab_verb = None
+        self.tab_verb_ranges = None
         self.statusStringRef = self.compu_method.status_string_ref.conversionTable if self.compu_method.status_string_ref else None
         self.refUnit = self.compu_method.ref_unit.unit if self.compu_method.ref_unit else None
         cm_type = self.conversionType
         self.coeffs_linear = None
         self.coeffs = None
-        self.tab = CompuTable()
-        self.tab_verb = CompuTableVerb()
+
         if cm_type == "IDENTICAL":
             pass
         elif cm_type == "FORM":
@@ -931,86 +1598,58 @@ class CompuMethod(CachedBase):
                 f=self.compu_method.coeffs.f,
             )
         elif cm_type in ("TAB_INTP", "TAB_NOINTP"):
-            cvt = (
-                session.query(model.CompuTab).filter(model.CompuTab.name == self.compu_method.compu_tab_ref.conversionTable).first()
-            )
-            pairs = cvt.pairs
-            self.tab = CompuTable(
-                num_values=len(pairs),
-                interpolation=True if cm_type == "TAB_INTP" else False,
-                default_value=cvt.default_value_numeric.display_value if cvt.default_value_numeric else None,
-                in_values=[x.inVal for x in pairs],
-                out_values=[x.outVal for x in pairs],
-            )
+            self.tab = CompuTab.get(self.session, name=self.compu_method.compu_tab_ref.conversionTable, module_name=module_name)
         elif cm_type == "TAB_VERB":
-            cvt = (
-                session.query(model.CompuVtab)
+            has_compu_vtab = self.session.query(
+                self.session.query(model.CompuVtab)
                 .filter(model.CompuVtab.name == self.compu_method.compu_tab_ref.conversionTable)
-                .first()
-            )
-            if cvt:
-                pairs = cvt.pairs
-                self.tab_verb = CompuTableVerb(
-                    ranges=False,
-                    num_values=len(pairs),
-                    default_value=cvt.default_value.display_string if cvt.default_value else None,
-                    in_values=[x.inVal for x in pairs],
-                    text_values=[x.outVal for x in pairs],
+                .exists()
+            ).scalar()
+            if has_compu_vtab:
+                self.tab_verb = CompuTabVerb.get(
+                    self.session, name=self.compu_method.compu_tab_ref.conversionTable, module_name=module_name
                 )
             else:
-                cvt = (
-                    session.query(model.CompuVtabRange)
-                    .filter(model.CompuVtabRange.name == self.compu_method.compu_tab_ref.conversionTable)
-                    .first()
+                self.tab_verb_ranges = CompuTabVerbRanges.get(
+                    self.session, name=self.compu_method.compu_tab_ref.conversionTable, module_name=module_name
                 )
-                if cvt:
-                    triples = cvt.triples
-                    self.tab_verb = CompuTableVerbRanges(
-                        ranges=True,
-                        num_values=len(triples),
-                        lower_values=[x.inValMin for x in triples],
-                        upper_values=[x.inValMax for x in triples],
-                        text_values=[x.outVal for x in triples],
-                        default_value=cvt.default_value.display_string if cvt.default_value else None,
-                    )
-        conversionType = cm_type
-        if conversionType in ("IDENTICAL", "NO_COMPU_METHOD"):
+        # Set evaluator.
+        if cm_type in ("IDENTICAL", "NO_COMPU_METHOD"):
             self.evaluator = Identical()
-        elif conversionType == "FORM":
+        elif cm_type == "FORM":
             formula = self.formula["formula"]
             formula_inv = self.formula["formula_inv"]
             mod_par = ModPar.get(session)
             system_constants = mod_par.systemConstants
             self.evaluator = Formula(formula, formula_inv, system_constants)
-        elif conversionType == "LINEAR":
+        elif cm_type == "LINEAR":
             coeffs = self.coeffs_linear
             if coeffs is None:
                 raise exceptions.StructuralError("'LINEAR' requires coefficients (COEFFS_LINEAR).")
             self.evaluator = Linear(coeffs)
-        elif conversionType == "RAT_FUNC":
+        elif cm_type == "RAT_FUNC":
             coeffs = self.coeffs
             if coeffs is None:
                 raise exceptions.StructuralError("'RAT_FUNC' requires coefficients (COEFFS).")
             self.evaluator = RatFunc(coeffs)
-        elif conversionType in ("TAB_INTP", "TAB_NOINTP"):
+        elif cm_type in ("TAB_INTP", "TAB_NOINTP"):
             klass = InterpolatedTable if self.tab.interpolation else LookupTable
             pairs = zip(self.tab.in_values, self.tab.out_values)
             default = self.tab.default_value
             self.evaluator = klass(pairs, default)
-        elif conversionType == "TAB_VERB":
-            default = self.tab_verb.default_value
-            if self.tab_verb.ranges:
-                triples = zip(
-                    self.tab_verb.lower_values,
-                    self.tab_verb.upper_values,
-                    self.tab_verb.text_values,
-                )
-                self.evaluator = LookupTableWithRanges(triples, default)
-            else:
+        elif cm_type == "TAB_VERB":
+            if self.tab_verb is not None:
                 pairs = zip(self.tab_verb.in_values, self.tab_verb.text_values)
-                self.evaluator = LookupTable(pairs, default)
+                self.evaluator = LookupTable(pairs, self.tab_verb.default_value)
+            else:
+                triples = zip(
+                    self.tab_verb_ranges.lower_values,
+                    self.tab_verb_ranges.upper_values,
+                    self.tab_verb_ranges.text_values,
+                )
+                self.evaluator = LookupTableWithRanges(triples, self.tab_verb_ranges.default_value)
         else:
-            raise ValueError(f"Unknown conversation type '{conversionType}'.")
+            raise ValueError(f"Unknown conversation type '{cm_type}'.")
 
     def int_to_physical(self, i: Union[int, float, Any]) -> Any:
         """Convert internal value to physical value.
@@ -1069,6 +1708,89 @@ class CompuMethod(CachedBase):
 
 
 @dataclass
+class MemoryLayout:
+    """
+    - address: int
+        Initial address of the program segment to be described.
+
+    - offset_0': int
+
+    - offset_1': int
+
+    - offset_2': int
+
+    - offset_3': int
+
+    - offset_4': int
+        Offsets for mirrored segments 0..4
+
+    - prgType': ['PRG_CODE' | 'PRG_DATA' | 'PRG_RESERVED']
+
+    - size': int
+        Length of the program segment to be described.
+    """
+
+    prgType: PrgTypeLayout
+    address: int
+    size: int
+    offset_0: int
+    offset_1: int
+    offset_2: int
+    offset_3: int
+    offset_4: int
+    if_data: List[Dict]
+
+
+@dataclass
+class MemorySegment:
+    """
+    Layout of memory segments
+
+    - address: int
+
+    - attribute: ['INTERN' | 'EXTERN']
+
+    - longIdentifier: 'external RAM',
+        comment, description
+
+    - memoryType: ['EEPROM' | 'EPROM' | 'FLASH' | 'RAM' | 'ROM' | 'REGISTER']
+
+    - name: str
+        Identifier, reference to IF_DATA Blob is based on this 'name'.
+
+    - offset_0: int
+
+    - offset_1: int
+
+    - offset_2: int
+
+    - offset_3: int
+
+    - offset_4: int
+        Offsets for mirrored segments 0..4
+
+    - prgType: ['CALIBRATION_VARIABLES' | 'CODE' | 'DATA' | 'EXCLUDE_FROM_FLASH' | 'OFFLINE_DATA' |
+                'RESERVED' | 'SERAM' | 'VARIABLES']
+    - size: int
+        Length of the segment.
+    """
+
+    name: str
+    longIdentifier: str
+    prgType: PrgTypeSegment
+    memoryType: MemoryType
+    attribute: SegmentAttributeType
+    address: int
+    size: int
+    offset_0: int
+    offset_1: int
+    offset_2: int
+    offset_3: int
+    offset_4: int
+    if_data: List[Dict]
+
+
+@dataclass
 class ModPar(CachedBase):
     """
 
@@ -1104,59 +1826,6 @@ class ModPar(CachedBase):
 
     epk: str
         EPROM identifier.
-
-    memoryLayouts: list of dicts
-        Layout of memory segments (deprecated, `memorySegments` should be used instead.
-
-        - address: int
-            Initial address of the program segment to be described.
-
-        - offset_0': int
-
-        - offset_1': int
-
-        - offset_2': int
-
-        - offset_3': int
-
-        - offset_4': int
-            Offsets for mirrored segments 0..4
-
-        - prgType': ['PRG_CODE' | 'PRG_DATA' | 'PRG_RESERVED']
-
-        - size': int
-            Length of the program segment to be described.
-
-    memorySegments: list of dicts
-        Layout of memory segments
-
-        - address: int
-
-        - attribute: ['INTERN' | 'EXTERN']
-
-        - longIdentifier: 'external RAM',
-            comment, description
-
-        - memoryType: ['EEPROM' | 'EPROM' | 'FLASH' | 'RAM' | 'ROM' | 'REGISTER']
-
-        - name: str
-            Identifier, reference to IF_DATA Blob is based on this 'name'.
-
-        - offset_0: int
-
-        - offset_1: int
-
-        - offset_2: int
-
-        - offset_3: int
-
-        - offset_4: int
-            Offsets for mirrored segments 0..4
-
-        - prgType: ['CALIBRATION_VARIABLES' | 'CODE' | 'DATA' | 'EXCLUDE_FROM_FLASH' | 'OFFLINE_DATA' |
-                    'RESERVED' | 'SERAM' | 'VARIABLES']
-        - size: int
-            Length of the segment.
 
     noOfInterfaces: int
         Number of interfaces.
@@ -1209,8 +1878,8 @@ class ModPar(CachedBase):
         self.ecu = self.modpar.ecu.controlUnit if self.modpar.ecu else None
         self.ecuCalibrationOffset = self.modpar.ecu_calibration_offset.offset if self.modpar.ecu_calibration_offset else None
         self.epk = self.modpar.epk.identifier if self.modpar.epk else None
-        self.memoryLayouts = self._create_memory_layout(self.modpar.memory_layout)
-        self.memorySegments = self._create_memory_segments(self.modpar.memory_segment)
+        self.memoryLayouts = self._create_memory_layout(session, self.modpar.memory_layout)
+        self.memorySegments = self._create_memory_segments(session, self.modpar.memory_segment)
         self.noOfInterfaces = self.modpar.no_of_interfaces.num if self.modpar.no_of_interfaces else None
         self.phoneNo = self.modpar.phone_no.telnum if self.modpar.phone_no else None
         self.supplier = self.modpar.supplier.manufacturer if self.modpar.supplier else None
@@ -1238,7 +1907,7 @@ class ModPar(CachedBase):
         return []
 
     @staticmethod
-    def _create_memory_layout(layouts) -> List[MemoryLayout]:
+    def _create_memory_layout(session, layouts) -> List[MemoryLayout]:
         result = []
         if layouts is not None:
             for layout in layouts:
@@ -1251,12 +1920,13 @@ class ModPar(CachedBase):
                     layout.offset_2,
                     layout.offset_3,
                     layout.offset_4,
+                    session.parse_ifdata(layout.if_data),
                 )
                 result.append(entry)
         return result
 
     @staticmethod
-    def _create_memory_segments(segments) -> List[MemorySegment]:
+    def _create_memory_segments(session, segments) -> List[MemorySegment]:
         result = []
         if segments is not None:
             for segment in segments:
@@ -1273,6 +1943,7 @@ class ModPar(CachedBase):
                     segment.offset_2,
                     segment.offset_3,
                     segment.offset_4,
+                    session.parse_ifdata(segment.if_data),
                 )
                 result.append(entry)
         return result
@@ -1412,9 +2083,12 @@ class RecordLayout(CachedBase):
     reserved: List[RecordLayoutReserved]
 
     def __init__(self, session, name: str, module_name: str = None):
-        self.layout = session.query(model.RecordLayout).filter(model.RecordLayout.name == name).first()
+        layout = session.query(model.RecordLayout).filter(model.RecordLayout.name == name)
+        if module_name is not None:
+            layout.join(model.Module).filter(model.Module.name == module_name)
+        self.layout = layout.first()
         if self.layout is None:
-            raise RuntimeError(f"RECORD_LAYOUT '{name}' not found")
+            raise ValueError(f"RECORD_LAYOUT {name!r} does not exist.")
         self._mod_common = ModCommon.get(session)
         self.name = name
         self.alignment = Alignment(
@@ -1642,7 +2316,8 @@ def create_record_layout_components(parent) -> Dict:
             axis_info = AxisInfo(
                 data_type=axis_rescale.data_type,
                 category="RES_AXIS",
-                maximum_element_count=axis_rescale.maxNumberOfRescalePairs,  # NOTE: Element count here is number of *PAIRS*
+                maximum_element_count=axis_rescale.maxNumberOfRescalePairs,
+                # NOTE: Element count here is number of *PAIRS*
                 reversed_storage=reversed_storage,
                 addressing=axis_rescale.addressing,
                 adjustable=adjustable,
@@ -1750,6 +2425,7 @@ class AxisPts(CachedBase):
     ecuAddressExtension: int
     extendedLimits: ExtendedLimits
     format: Optional[str]
+    if_data: List[Dict]
     functionList: List[str]
     guardRails: bool
     monotony: Optional[str]
@@ -1762,12 +2438,17 @@ class AxisPts(CachedBase):
     record_layout_components: Dict
 
     def __init__(self, session, name: str, module_name: str = None):
-        self.axis = session.query(model.AxisPts).filter(model.AxisPts.name == name).first()
+        axis = session.query(model.AxisPts).filter(model.AxisPts.name == name)
+        if module_name is not None:
+            axis.join(model.Module).filter(model.Module.name == module_name)
+        self.axis = axis.first()
+        if self.axis is None:
+            raise ValueError(f"AXIS {name!r} does not exist.")
         self.name = name
         self.longIdentifier = self.axis.longIdentifier
         self.address = self.axis.address
         self.inputQuantity = self.axis.inputQuantity  # REF: Measurement
-        self.depositAttr = RecordLayout(session, self.axis.depositAttr)
+        self.depositAttr = RecordLayout.get(session, self.axis.depositAttr)
         self.deposit = self.axis.deposit.mode if self.axis.deposit else None
         self.maxDiff = self.axis.maxDiff
         self._conversionRef = self.axis.conversion
@@ -1790,7 +2471,8 @@ class AxisPts(CachedBase):
         self.refMemorySegment = self.axis.ref_memory_segment.name if self.axis.ref_memory_segment else None
         self.stepSize = self.axis.step_size
         self.symbolLink = self._dissect_symbol_link(self.axis.symbol_link)
-        self.record_layout_components = create_record_layout_components(self)
+        self.record_layout_components = create_record_layout_components(self) if self.depositAttr else None
+        self.if_data = session.parse_ifdata(self.axis.if_data)
 
     @property
     def record_layout(self) -> RecordLayout:
@@ -1990,16 +2672,20 @@ class Characteristic(CachedBase):
     virtual_characteristic: VirtualCharacteristic
     fnc_np_shape: tuple
     record_layout_components: Dict
+    if_data: List[Dict]
 
     def __init__(self, session, name: str, module_name: str = None):
-        self.characteristic = session.query(model.Characteristic).filter(model.Characteristic.name == name).first()
+        characteristic = session.query(model.Characteristic).filter(model.Characteristic.name == name)
+        if module_name is not None:
+            characteristic.join(model.Module).filter(model.Module.name == module_name)
+        self.characteristic = characteristic.first()
         if self.characteristic is None:
-            raise ValueError(f"'{name}' object does not exist.")
+            raise ValueError(f"CHARACTERISTIC {name!r} does not exist.")
         self.name = name
         self.longIdentifier = self.characteristic.longIdentifier
         self.type = self.characteristic.type
         self.address = self.characteristic.address
-        self.deposit = RecordLayout(session, self.characteristic.deposit, module_name)
+        self.deposit = RecordLayout.get(session, self.characteristic.deposit, module_name)
         self.maxDiff = self.characteristic.maxDiff
         self._conversionRef = self.characteristic.conversion
         self.compuMethod = (
@@ -2048,7 +2734,7 @@ class Characteristic(CachedBase):
             )
         else:
             self.virtual_characteristic = None
-        self.record_layout_components = create_record_layout_components(self)
+        self.record_layout_components = create_record_layout_components(self) if self.deposit else None
         self.fnc_np_shape: tuple = ()
         if self.matrixDim.valid():
             self.fnc_np_shape = fnc_np_shape(self.matrixDim)
@@ -2056,6 +2742,7 @@ class Characteristic(CachedBase):
             self.fnc_np_shape = (self.number,)
         elif self.axisDescriptions:
             self.fnc_np_shape = tuple([ax.maxAxisPoints for ax in self.axisDescriptions])
+        self.if_data = session.parse_ifdata(self.characteristic.if_data)
 
     def axisDescription(self, axis) -> AxisDescr:
         MAP = {
@@ -2478,9 +3165,15 @@ class Measurement(CachedBase):
     virtual: List[str]
     compuMethod: CompuMethod
     fnc_np_shape: tuple
+    if_data: List[Dict]
 
     def __init__(self, session, name: str, module_name: str = None):
-        self.measurement = session.query(model.Measurement).filter(model.Measurement.name == name).first()
+        measurement = session.query(model.Measurement).filter(model.Measurement.name == name)
+        if module_name is not None:
+            measurement.join(model.Module).filter(model.Module.name == module_name)
+        self.measurement = measurement.first()
+        if self.measurement is None:
+            raise ValueError(f"MEASUREMENT {name!r} does not exist.")
         self.name = name
         self.longIdentifier = self.measurement.longIdentifier
         self.datatype = self.measurement.datatype
@@ -2511,6 +3204,7 @@ class Measurement(CachedBase):
         self.virtual = self.measurement.virtual.measuringChannel if self.measurement.virtual else []
         self.compuMethod = CompuMethod.get(session, self._conversionRef)
         self.fnc_np_shape = fnc_np_shape(self.matrixDim)
+        self.if_data = session.parse_ifdata(self.measurement.if_data)
 
     @property
     def is_virtual(self):
@@ -2590,20 +3284,27 @@ class Function(CachedBase):
     longIdentifier: Optional[str]
     annotations: List[Annotation]
     functionVersion: str
-    _inMeasurements: List[str]
-    _locMeasurements: List[str]
-    _outMeasurements: List[str]
-    _defCharacteristics: List[str]
-    _refCharacteristics: List[str]
-    _subFunctions: List[str]
+    if_data: List[Dict]
+    inMeasurements: List[str]
+    locMeasurements: List[str]
+    outMeasurements: List[str]
+    defCharacteristics: List[str]
+    refCharacteristics: List[str]
+    subFunctions: List[str]
 
     def __init__(self, session, name=None, module_name: str = None):
         self.session = session
-        self.function = session.query(model.Function).filter(model.Function.name == name).first()
+        function = session.query(model.Function).filter(model.Function.name == name)
+        if module_name is not None:
+            function.join(model.Module).filter(model.Module.name == module_name)
+        self.function = function.first()
+        if self.function is None:
+            raise ValueError(f"FUNCTION {name!r} does not exist.")
         self.name = self.function.name
         self.longIdentifier = self.function.longIdentifier
         self.annotations = _annotations(session, self.function.annotation)
         self.functionVersion = self.function.function_version.versionIdentifier if self.function.function_version else None
+        self.if_data = session.parse_ifdata(self.function.if_data)
         self._inMeasurements = None
         self._locMeasurements = None
         self._outMeasurements = None
@@ -2743,18 +3444,25 @@ class Group(CachedBase):
     longIdentifier: Optional[str]
     annotations: List[Annotation]
     root: bool
-    _characteristics: List[Any]
-    _measurements: List[Any]
-    _functions: List[Any]
-    _subgroups: List[Any]
+    if_data: List[Dict]
+    characteristics: List[Any]
+    measurements: List[Any]
+    functions: List[Any]
+    subgroups: List[Any]
 
     def __init__(self, session, name=None, module_name: str = None):
         self.session = session
-        self.group = session.query(model.Group).filter(model.Group.groupName == name).first()
+        group = session.query(model.Group).filter(model.Group.groupName == name)
+        if module_name is not None:
+            group.join(model.Module).filter(model.Module.name == module_name)
+        self.group = group.first()
+        if self.group is None:
+            raise ValueError(f"GROUP {name!r} does not exist.")
         self.name = self.group.groupName
         self.longIdentifier = self.group.groupLongIdentifier
         self.annotations = _annotations(session, self.group.annotation)
         self.root = False if self.group.root is None else True
+        self.if_data = session.parse_ifdata(self.group.if_data)
         self._characteristics = None
         self._measurements = None
         self._functions = None
@@ -2816,6 +3524,48 @@ class Group(CachedBase):
 
 
 @dataclass
+class StructureComponent(CachedBase):
+    """
+
+    Parameters
+    ----------
+    session: Sqlite3 session object
+
+
+    Attributes
+    ----------
+    session:
+        Raw Sqlite3 database object.
+
+    name: str
+
+    type_ref: Any
+
+    offset: int
+    """
+
+    session: Any = field(repr=False)
+    component: model.StructureComponent = field(repr=False)
+    name: str
+    type_ref: Any
+    offset: int
+
+    def __init__(self, session, name=None, module_name: str = None, parent=None, *args):
+        self.session = session
+        component = session.query(model.StructureComponent).filter(model.StructureComponent.name == name)
+        if module_name is not None:
+            component.join(model.Module).filter(model.Module.name == module_name)
+        self.component = component.first()
+        if self.component is None:
+            raise ValueError(f"STRUCTURE_COMPONENT {name!r} does not exist.")
+        self.name = self.component.name
+        self.type_ref = self.component.type_ref
+        self.offset = self.component.offset
+        self.component.matrix_dim
+        # self.component.symbol_type_link
+
+
+@dataclass
 class TypedefStructure(CachedBase):
     """
 
@@ -2835,10 +3585,6 @@ class TypedefStructure(CachedBase):
         comment, description.
 
     size: int
-
-    link: str
-
-    symbol: str
     """
 
     session: Any = field(repr=False)
@@ -2846,17 +3592,21 @@ class TypedefStructure(CachedBase):
     name: str
     longIdentifier: Optional[str]
     size: int
-    link: str
-    symbol: str
+    components: List[StructureComponent]
 
     def __init__(self, session, name=None, module_name: str = None):
         self.session = session
-        self.typedef = session.query(model.TypedefStructure).filter(model.TypedefStructure.name == name).first()
+        typedef = session.query(model.TypedefStructure).filter(model.TypedefStructure.name == name)
+        if module_name is not None:
+            typedef.join(model.Module).filter(model.Module.name == module_name)
+        self.typedef = typedef.first()
+        if self.typedef is None:
+            raise ValueError(f"TYPEDEF_STRUCTURE {name!r} does not exist.")
+        print("TS", self.typedef, self.typedef.symbol_type_link_id, dir(self.typedef))
         self.name = self.typedef.name
         self.longIdentifier = self.typedef.longIdentifier
         self.size = self.typedef.size
-        self.link = self.typedef.link
-        self.symbol = self.typedef.symbol
+        # symbol_type_link
         instance_names = session.query(model.Instance.name).filter(model.Instance.typeName == self.name).all()
         self._instances = [Instance.get(session, name[0]) for name in instance_names]
         self._components = [
@@ -2870,56 +3620,6 @@ class TypedefStructure(CachedBase):
     @property
     def components(self):
         return self._components
-
-
-@dataclass
-class StructureComponent(CachedBase):
-    """
-
-    Parameters
-    ----------
-    session: Sqlite3 session object
-
-
-    Attributes
-    ----------
-    session:
-        Raw Sqlite3 database object.
-
-    name: str
-
-    deposit: str
-
-    offset: int
-
-    link: str
-
-    symbol: str
-    """
-
-    session: Any = field(repr=False)
-    component: model.StructureComponent = field(repr=False)
-    name: str
-    deposit: RecordLayout
-    link: str
-    symbol: str
-
-    def __init__(self, session, name=None, module_name: str = None, parent=None, *args):
-        self.session = session
-        self.component = (
-            session.query(model.StructureComponent)
-            .filter(
-                # filter(and_(model.StructureComponent.name == name, model.StructureComponent.typedef_structure.rid == parent.rid)).first()
-                model.StructureComponent.name
-                == name
-            )
-            .first()
-        )
-        self.name = self.component.name
-        self.deposit = RecordLayout(session, self.component.deposit, module_name)
-        self.offset = self.component.offset
-        self.link = self.component.link
-        self.symbol = self.component.symbol
 
 
 @dataclass
@@ -2959,7 +3659,12 @@ class Instance(CachedBase):
 
     def __init__(self, session, name=None, module_name: str = None):
         self.session = session
-        self.instance = session.query(model.Instance).filter(model.Instance.name == name).first()
+        instance = session.query(model.Instance).filter(model.Instance.name == name)
+        if module_name is not None:
+            instance.join(model.Module).filter(model.Module.name == module_name)
+        self.instance = instance.first()
+        if self.instance is None:
+            raise ValueError(f"INSTANCE {name!r} does not exist.")
         self.name = self.instance.name
         self.longIdentifier = self.instance.longIdentifier
         self.typeName = self.instance.typeName
@@ -3023,7 +3728,12 @@ class TypedefMeasurement(CachedBase):
     compuMethod: CompuMethod
 
     def __init__(self, session, name: str, module_name: str = None):
-        self.typedef = session.query(model.TypedefMeasurement).filter(model.TypedefMeasurement.name == name).first()
+        typedef = session.query(model.TypedefMeasurement).filter(model.TypedefMeasurement.name == name)
+        if module_name is not None:
+            typedef.join(model.Module).filter(model.Module.name == module_name)
+        self.typedef = typedef.first()
+        if self.typedef is None:
+            raise ValueError(f"TYPEDEF_MEASUREMENT {name!r} does not exist.")
         self.name = name
         self.longIdentifier = self.typedef.longIdentifier
         self.datatype = self.typedef.datatype
@@ -3086,18 +3796,51 @@ class TypedefCharacteristic(CachedBase):
     compuMethod: CompuMethod
 
     def __init__(self, session, name: str, module_name: str = None):
-        self.typedef = session.query(model.TypedefCharacteristic).filter(model.TypedefCharacteristic.name == name).first()
+        typedef = session.query(model.TypedefCharacteristic).filter(model.TypedefCharacteristic.name == name)
+        if module_name is not None:
+            typedef.join(model.Module).filter(model.Module.name == module_name)
+        self.typedef = typedef.first()
+        if self.typedef is None:
+            raise ValueError(f"TYPEDEF_CHARACTERISTIC {name!r} does not exist.")
         self.name = name
         self.longIdentifier = self.typedef.longIdentifier
         self.type = self.typedef.type
         self._conversionRef = self.typedef.conversion
-        self.deposit = RecordLayout(session, self.typedef.deposit, module_name)
+        self.deposit = RecordLayout.get(session, self.typedef.deposit, module_name)
         self.maxDiff = self.typedef.maxDiff
         self.lowerLimit = self.typedef.lowerLimit
         self.upperLimit = self.typedef.upperLimit
         self.compuMethod = (
             CompuMethod.get(session, self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
         )
+
+
+@dataclass
+class Frame(CachedBase):
+    """"""
+
+    session: Any = field(repr=False)
+    frame: model.Frame = field(repr=False)
+    name: str
+    longIdentifier: Optional[str]
+    scalingUnit: int
+    rate: int
+    frame_measurement: List[str]
+    if_data: List[Dict]
+
+    def __init__(self, session, name: str, module_name: str = None):
+        frame = session.query(model.Frame).filter(model.Frame.name == name)
+        if module_name is not None:
+            frame.join(model.Module).filter(model.Module.name == module_name)
+        self.frame = frame.first()
+        if self.frame is None:
+            raise ValueError(f"TYPEDEF_CHARACTERISTIC {name!r} does not exist.")
+        self.name = name
+        self.longIdentifier = self.frame.longIdentifier
+        self.scalingUnit = self.frame.scalingUnit
+        self.rate = self.frame.rate
+        self.frame_measurement = [f.identifier for f in self.frame.frame_measurement]
+        self.if_data = session.parse_ifdata(self.frame.if_data)
 
 
 @dataclass
@@ -3150,9 +3893,14 @@ class VariantCoding(CachedBase):
     def __init__(self, session, name: str = None, module_name: str = None):
         variant_coding = session.query(model.VariantCoding)
         if module_name is not None:
-            variant_coding.filter(model.Module.name == module_name)
+            variant_coding.join(model.Module).filter(model.Module.name == module_name)
         variant_coding = variant_coding.first()
         self.session = session
+        self.naming = None
+        self.separator = None
+        self.criterions = []
+        self.characteristics = []
+        self.forbidden_combs = []
         if variant_coding:
             self.variant_coded = True
             self.naming = variant_coding.var_naming.tag if variant_coding.var_naming else "NUMERIC"
@@ -3229,3 +3977,287 @@ class AMLSection(CachedBase):
         self.aml_section = session.query(model.AMLSection).first()
         self.text = self.aml_section.text
         self.parsed = self.aml_section.parsed
+
+
+@dataclass
+class SiExponents:
+    length: int
+    mass: int
+    time: int
+    electricCurrent: int
+    temperature: int
+    amountOfSubstance: int
+    luminousIntensity: int
+
+
+@dataclass
+class UnitConversion:
+    gradient: float
+    offset: float
+
+
+@dataclass
+class Unit(CachedBase):
+    """"""
+
+    session: Any = field(repr=False)
+    unit: model.Unit = field(repr=False)
+    name: str
+    longIdentifier: str
+    display: str
+    type: str
+    si_exponents: Optional[SiExponents]
+    unit_conversion: Optional[UnitConversion]
+    ref_unit: Optional[str]
+
+    def __init__(self, session, name: str, module_name: Optional[str] = None):
+        self.session = session
+        unit = session.query(model.Unit).filter(model.Unit.name == name)
+        if module_name is not None:
+            unit.join(model.Module).filter(model.Module.name == module_name)
+        self.unit = unit.first()
+        if self.unit is None:
+            raise ValueError(f"UNIT {name!r} does not exist.")
+        self.name = self.unit.name
+        self.longIdentifier = self.unit.longIdentifier
+        self.display = self.unit.display
+        self.type = self.unit.type
+        self.si_exponents = self._create_si_exponents(self.unit.si_exponents)
+        self.unit_conversion = self._create_unit_conversion(self.unit.unit_conversion)
+        self.ref_unit = self.unit.ref_unit.unit if self.unit.ref_unit else None
+
+    @staticmethod
+    def _create_si_exponents(si_exponents: model.SiExponents) -> Optional[SiExponents]:
+        if si_exponents is not None:
+            return SiExponents(
+                si_exponents.length,
+                si_exponents.mass,
+                si_exponents.time,
+                si_exponents.electricCurrent,
+                si_exponents.temperature,
+                si_exponents.amountOfSubstance,
+                si_exponents.luminousIntensity,
+            )
+        else:
+            return None
+
+    @staticmethod
+    def _create_unit_conversion(unit_conversion: model.UnitConversion) -> Optional[UnitConversion]:
+        if unit_conversion is not None:
+            return UnitConversion(unit_conversion.gradient, unit_conversion.offset)
+        else:
+            return None
+
+
+@dataclass
+class Blob(CachedBase):
+    session: Any = field(repr=False)
+    blob: model.Blob = field(repr=False)
+    name: str
+    longIdentifier: str
+    address: int
+    length: int
+    calibration_access: Optional[str]
+
+    def __init__(self, session, name: str, module_name: Optional[str] = None):
+        self.session = session
+        blob = session.query(model.Blob).filter(model.Blob.name == name)
+        if module_name is not None:
+            blob.join(model.Module).filter(model.Module.name == module_name)
+        self.blob = blob.first()
+        if self.blob is None:
+            raise ValueError(f"BLOB {name!r} does not exist.")
+        self.name = self.blob.name
+        self.longIdentifier = self.blob.longIdentifier
+        self.address = self.blob.address
+        self.length = self.blob.length
+        if self.blob.calibration_access is not None:
+            self.calibration_access = self.blob.calibration_access.type
+        else:
+            self.calibration_access = None
+
+
+@dataclass
+class Transformer(CachedBase):
+    session: Any = field(repr=False)
+    transformer: model.Transformer = field(repr=False)
+    name: str
+    version: str
+    dllname32: str
+    dllname64: str
+    timeout: int
+    trigger: str
+    reverse: str
+    transformer_in_objects: List[str]
+    transformer_out_objects: List[str]
+
+    def __init__(self, session, name: str, module_name: Optional[str] = None):
+        self.session = session
+        transformer = session.query(model.Transformer).filter(model.Transformer.name == name)
+        if module_name is not None:
+            transformer.join(model.Module).filter(model.Module.name == module_name)
+        self.transformer = transformer.first()
+        if self.transformer is None:
+            raise ValueError(f"TRANSFORMER {name!r} does not exist.")
+        self.name = self.transformer.name
+        self.version = self.transformer.version
+        self.dllname32 = self.transformer.dllname32
+        self.dllname64 = self.transformer.dllname64
+        self.timeout = self.transformer.timeout
+        self.trigger = self.transformer.trigger
+        self.reverse = self.transformer.reverse
+        self.transformer_in_objects = self.transformer.transformer_in_objects.identifier
+        self.transformer_out_objects = self.transformer.transformer_out_objects.identifier
+
+
+@dataclass
+class UserRights(CachedBase):
+    """"""
+
+    session: Any = field(repr=False)
+    user_rights: model.UserRights = field(repr=False)
+    userLevelId: str
+    readOnly: bool
+    ref_group: List[str]
+
+    def __init__(self, session, userLevelId: str, module_name: Optional[str] = None):
+        self.session = session
+        user_rights = session.query(model.UserRights).filter(model.UserRights.userLevelId == userLevelId)
+        if module_name is not None:
+            user_rights.filter(model.UserRights.module.name == module_name)
+        self.user_rights = user_rights.first()
+        if self.user_rights is None:
+            raise ValueError(f"USER_RIGHTS {userLevelId!r} does not exist.")
+        self.userLevelId = self.user_rights.userLevelId
+        self.readOnly = self.user_rights.readOnly
+        self.ref_group = self.user_rights.ref_group.identifier
+
+
+@dataclass
+class Module(CachedBase):
+    """
+    *** Element("A2ml", "A2ML", False),
+            Element("AxisPts", "AXIS_PTS", True),
+            Element("Blob", "BLOB", True),
+            Element("Characteristic", "CHARACTERISTIC", True),
+            Element("CompuMethod", "COMPU_METHOD", True),
+            Element("CompuTab", "COMPU_TAB", True),
+            Element("CompuVtab", "COMPU_VTAB", True),
+            Element("CompuVtabRange", "COMPU_VTAB_RANGE", True),
+            *** Element("Frame", "FRAME", False),
+            Element("Function", "FUNCTION", True),
+            Element("Group", "GROUP", True),
+            Element("IfData", "IF_DATA", True),
+    Element("Instance", "INSTANCE", True),
+            Element("Measurement", "MEASUREMENT", True),
+            *** Element("ModCommon", "MOD_COMMON", False),
+            *** Element("ModPar", "MOD_PAR", False),
+            Element("RecordLayout", "RECORD_LAYOUT", True),
+            Element("Transformer", "TRANSFORMER", True),
+    Element("TypedefAxis", "TYPEDEF_AXIS", True),
+    Element("TypedefCharacteristic", "TYPEDEF_CHARACTERISTIC", True),
+    Element("TypedefMeasurement", "TYPEDEF_MEASUREMENT", True),
+    Element("TypedefStructure", "TYPEDEF_STRUCTURE", True),
+            Element("Unit", "UNIT", True),
+            Element("UserRights", "USER_RIGHTS", True),
+            *** Element("VariantCoding", "VARIANT_CODING", False),
+    """
+
+    session: Any = field(repr=False)
+    module: model.Module = field(repr=False)
+    name: str
+    longIdentifier: str
+    axis_pts: FilteredList[AxisPts]
+    blob: FilteredList[Blob]
+    characteristic: FilteredList[Characteristic]
+    compu_method: FilteredList[CompuMethod]
+    compu_tab: FilteredList[CompuTab]
+    compu_tab_verb: FilteredList[CompuTabVerb]
+    compu_tab_verb_ranges: FilteredList[CompuTabVerbRanges]
+    frame: FilteredList[Frame]
+    function: FilteredList[Function]
+    group: FilteredList[Group]
+    if_data: List[Dict[str, Any]]
+    measurement: FilteredList[Measurement]
+    mod_common: Optional[ModCommon]
+    mod_par: Optional[ModPar]
+    record_layout: FilteredList[RecordLayout]
+    transformer: FilteredList[Transformer]
+    unit: FilteredList[Unit]
+    user_rights: FilteredList[UserRights]
+    variant_coding: Optional[VariantCoding]
+
+    def __init__(self, session, name: Optional[str] = None):
+        self.session = session
+        if name is not None:
+            self.module = self.session.query(model.Module).filter(model.Module.name == name).first()
+        else:
+            self.module = self.session.query(model.Module).first()
+        self.name = self.module.name
+        self.longIdentifier = self.module.longIdentifier
+
+        self.axis_pts = FilteredList(self.session, self.module.axis_pts, AxisPts)
+        self.blob = FilteredList(self.session, self.module.blob, Blob)
+
+        self.characteristic = FilteredList(self.session, self.module.characteristic, Characteristic)
+        self.compu_method = FilteredList(self.session, self.module.compu_method, CompuMethod)
+        self.compu_tab = FilteredList(self.session, self.module.compu_tab, CompuTab)
+        self.compu_tab_verb = FilteredList(self.session, self.module.compu_vtab, CompuTabVerb)
+        self.compu_tab_verb_ranges = FilteredList(self.session, self.module.compu_vtab_range, CompuTabVerbRanges)
+
+        self.frame = FilteredList(self.session, self.module.frame, Frame)
+        self.function = FilteredList(self.session, self.module.function, Function)
+        self.group = FilteredList(self.session, self.module.group, Group, "groupName")
+        self.if_data = self.session.parse_ifdata(self.module.if_data)
+
+        self.measurement = FilteredList(self.session, self.module.measurement, Measurement)
+        self.mod_common = ModCommon.get(self.session, self.name, module_name=self.module.name)
+        self.mod_par = ModPar.get(self.session, self.name, module_name=self.module.name)
+
+        self.record_layout = FilteredList(self.session, self.module.record_layout, RecordLayout)
+        self.transformer = FilteredList(self.session, self.module.transformer, Transformer)
+
+        self.typedef_structure = FilteredList(self.session, self.module.typedef_structure, TypedefStructure)
+
+        self.unit = FilteredList(self.session, self.module.unit, Unit)
+        self.user_rights = FilteredList(self.session, self.module.user_rights, UserRights, "userLevelId")
+
+        self.variant_coding = VariantCoding.get(self.session, module_name=self.module.name)
+
+
+@dataclass
+class Project:
+    """"""
+
+    session: Any = field(repr=False)
+    project: model.Project = field(repr=False)
+    name: str
+    longIdentifier: str
+    comment: Optional[str]
+    projectNumber: Optional[str]
+    version: Optional[str]
+    module: List[Module]
+
+    def __init__(self, session, file_name: str = ""):
+        self.session = session
+        project = session.query(model.Project).first()
+        self.project = project
+        self.name = project.name
+        self.longIdentifier = project.longIdentifier
+        if project.header:
+            self.comment = project.header.comment
+            if project.header.project_no:
+                self.projectNumber = project.header.project_no.projectNumber
+            else:
+                self.projectNumber = None
+            if project.header.version:
+                self.version = project.header.version.versionIdentifier
+            else:
+                self.version = None
+        else:
+            self.comment = None
+            self.projectNumber = None
+            self.version = None
+        self.module = []
+        for mod in project.module:
+            self.module.append(Module(self.session, mod.name))

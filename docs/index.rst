@@ -1,27 +1,24 @@
-.. pyA2L documentation master file, created by
-   sphinx-quickstart on Sun Mar 18 08:53:54 2018.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Welcome to pyA2L's documentation
+================================
 
-Welcome to pyA2L's documentation!
-=================================
+pyA2L is a Python toolkit for working with ASAM MCD-2 MC (ASAP2) A2L files. The library parses A2L into a SQLite-backed model, provides inspection and validation utilities, and enables automation around ECU measurement and calibration metadata.
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+For background on the ASAP2 standard, see: https://www.asam.net/standards/detail/mcd-2-mc/wiki/
 
-   installation
-   building
-   getting_started
-   tutorial
-   configuration
-   howto
-   modules
+Contents
+--------
 
+The detailed user documentation is currently authored in Markdown for easier browsing on GitHub. You can read those pages here:
 
-Indices and tables
-==================
+- Installation: https://github.com/christoph2/pyA2L/tree/main/docs/installation.md
+- Building from source: https://github.com/christoph2/pyA2L/tree/main/docs/building.md
+- Getting started: https://github.com/christoph2/pyA2L/tree/main/docs/getting_started.md
+- Tutorial: https://github.com/christoph2/pyA2L/tree/main/docs/tutorial.md
+- Configuration: https://github.com/christoph2/pyA2L/tree/main/docs/configuration.md
+- How‑to guides: https://github.com/christoph2/pyA2L/tree/main/docs/howto.md
+- Modules / API overview: https://github.com/christoph2/pyA2L/tree/main/docs/modules.md
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+Note
+----
+
+The legacy Sphinx `.rst` sources were converted to GitHub‑flavoured Markdown for easier browsing on GitHub. Some Sphinx‑only features (like ``automodule``) are summarized rather than rendered verbatim. For full API docs, use Sphinx locally or see inline docstrings in the code.

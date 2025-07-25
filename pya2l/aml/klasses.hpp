@@ -20,6 +20,7 @@ template<typename... Ts>
 struct Overload : Ts... {
     using Ts::operator()...;
 };
+#endif
 
 template<typename T>
 inline std::string to_binary(const T& value) {
@@ -505,10 +506,15 @@ class TaggedUnion {
     std::map<std::string, TaggedUnionMember> m_tags;
 };
 
+struct NullObject {
+
+};
+
 using TaggedUnionOrReferrer = std::variant<std::monostate, TaggedUnion, Referrer>;
 
 using TypeVariant = std::variant<
-    std::monostate, AMLPredefinedType, EnumerationOrReferrer, StructOrReferrer, TaggedStructOrReferrer, TaggedUnionOrReferrer>;
+    std::monostate, NullObject, AMLPredefinedType, EnumerationOrReferrer, StructOrReferrer, TaggedStructOrReferrer,
+    TaggedUnionOrReferrer>;
 
 class Type {
    public:
@@ -528,6 +534,8 @@ class Type {
 
     Type(const TaggedUnionOrReferrer& tu) : m_type(tu), m_disc(TypeType::TaggedUnionType) {
     }
+
+    Type(const NullObject& nnn) : m_type(nnn), m_disc(TypeType::NullType) {}
 
     const TypeVariant& get_type() const noexcept {
         return m_type;

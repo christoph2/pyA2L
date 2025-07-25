@@ -29,14 +29,15 @@ import mmap
 import pickle
 import re
 import sqlite3
+from typing import Any, List, Optional
 
 from sqlalchemy import Column, ForeignKey, Index, create_engine, event, orm, types
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.ext.orderinglist import ordering_list
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import as_declarative, backref, declared_attr, relationship
 
+from pya2l.aml.ifdata_parser import IfDataParser
 from pya2l.model.mixins import AxisDescrMixIn, CompareByPositionMixIn
 from pya2l.utils import SingletonBase
 
@@ -1533,7 +1534,7 @@ class Module(Base, HasIfDatas):
 
     __tablename__ = "module"
 
-    name = StdIdent()
+    name = StdIdent(index=True)
 
     longIdentifier = StdString()
 
@@ -1577,7 +1578,7 @@ class Module(Base, HasIfDatas):
     compu_tab = relationship("CompuTab", back_populates="module", uselist=True)
     compu_vtab = relationship("CompuVtab", back_populates="module", uselist=True)
     compu_vtab_range = relationship("CompuVtabRange", back_populates="module", uselist=True)
-    frame = relationship("Frame", back_populates="module", uselist=False)
+    frame = relationship("Frame", back_populates="module", uselist=True)
     function = relationship("Function", back_populates="module", uselist=True)
     group = relationship("Group", back_populates="module", uselist=True)
     instance = relationship("Instance", back_populates="module", uselist=True)
@@ -1686,7 +1687,7 @@ class AxisPts(
         Element("SymbolLink", "SYMBOL_LINK", False),
     )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="axis_pts", uselist=True)
+    module = relationship("Module", back_populates="axis_pts", uselist=False)
 
 
 class Characteristic(
@@ -1781,7 +1782,7 @@ class Characteristic(
     model_link = relationship("ModelLink", back_populates="characteristic", uselist=False)
     virtual_characteristic = relationship("VirtualCharacteristic", back_populates="characteristic", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="characteristic", uselist=True)
+    module = relationship("Module", back_populates="characteristic", uselist=False)
 
 
 class AxisDescr(
@@ -2115,7 +2116,7 @@ class CompuMethod(Base, HasRefUnits):
     formula = relationship("Formula", back_populates="compu_method", uselist=False)
     status_string_ref = relationship("StatusStringRef", back_populates="compu_method", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="compu_method", uselist=True)
+    module = relationship("Module", back_populates="compu_method", uselist=False)
 
 
 class Coeffs(Base):
@@ -2252,7 +2253,7 @@ class CompuTab(Base, HasDefaultValues):
     )
     default_value_numeric = relationship("DefaultValueNumeric", back_populates="compu_tab", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="compu_tab", uselist=True)
+    module = relationship("Module", back_populates="compu_tab", uselist=False)
 
 
 class DefaultValueNumeric(Base):
@@ -2292,7 +2293,7 @@ class CompuVtab(Base, HasDefaultValues):
 
     __optional_elements__ = (Element("DefaultValue", "DEFAULT_VALUE", False),)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="compu_vtab", uselist=True)
+    module = relationship("Module", back_populates="compu_vtab", uselist=False)
 
 
 class CompuVtabRange(Base, HasDefaultValues):
@@ -2315,7 +2316,7 @@ class CompuVtabRange(Base, HasDefaultValues):
 
     __optional_elements__ = (Element("DefaultValue", "DEFAULT_VALUE", False),)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="compu_vtab_range", uselist=True)
+    module = relationship("Module", back_populates="compu_vtab_range", uselist=False)
 
 
 class Frame(Base, HasIfDatas):
@@ -2394,7 +2395,7 @@ class Function(Base, HasAnnotations, HasIfDatas, HasRefCharacteristics):
     out_measurement = relationship("OutMeasurement", back_populates="function", uselist=False)
     sub_function = relationship("SubFunction", back_populates="function", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="function", uselist=True)
+    module = relationship("Module", back_populates="function", uselist=False)
 
 
 class DefCharacteristic(Base):
@@ -2513,7 +2514,7 @@ class Group(Base, HasAnnotations, HasFunctionLists, HasIfDatas, HasRefCharacteri
     root = relationship("Root", back_populates="group", uselist=False)
     sub_group = relationship("SubGroup", back_populates="group", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="group", uselist=True)
+    module = relationship("Module", back_populates="group", uselist=False)
 
 
 class RefMeasurement(Base):
@@ -2589,7 +2590,7 @@ class Instance(Base, HasIfDatas, HasEcuAddressExtensions, HasDisplayIdentifiers,
         Element("SymbolLink", "SYMBOL_LINK", False),
     )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="instance", uselist=True)
+    module = relationship("Module", back_populates="instance", uselist=False)
 
 
 class Measurement(
@@ -2671,7 +2672,7 @@ class Measurement(
     read_write = relationship("ReadWrite", back_populates="measurement", uselist=False)
     virtual = relationship("Virtual", back_populates="measurement", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="measurement", uselist=True)
+    module = relationship("Module", back_populates="measurement", uselist=False)
 
 
 class ArraySize(Base):
@@ -3395,7 +3396,7 @@ class RecordLayout(
     src_addr_4 = relationship("SrcAddr4", back_populates="record_layout", uselist=False)
     src_addr_5 = relationship("SrcAddr5", back_populates="record_layout", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="record_layout", uselist=True)
+    module = relationship("Module", back_populates="record_layout", uselist=False)
 
 
 class AxisPtsX(Base):
@@ -4505,9 +4506,9 @@ class Transformer(Base, HasTransformerInObjects, HasTransformerOutObjects):
 
     timeout = StdULong()
 
-    trigger = Ident()
+    trigger = StdIdent()
 
-    reverse = Ident()
+    reverse = StdIdent()
 
     __required_parameters__ = (
         Parameter("name", Ident, False),
@@ -4525,7 +4526,7 @@ class Transformer(Base, HasTransformerInObjects, HasTransformerOutObjects):
     )
 
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="transformer", uselist=True)
+    module = relationship("Module", back_populates="transformer", uselist=False)
 
 
 class TypedefAxis(
@@ -4592,7 +4593,7 @@ class TypedefAxis(
         Element("StepSize", "STEP_SIZE", False),
     )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="typedef_axis", uselist=True)
+    module = relationship("Module", back_populates="typedef_axis", uselist=False)
 
 
 class TypedefCharacteristic(
@@ -4662,7 +4663,7 @@ class TypedefCharacteristic(
     )
     axis_descr = relationship("AxisDescr", back_populates="typedef_characteristic", uselist=True)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="typedef_characteristic", uselist=True)
+    module = relationship("Module", back_populates="typedef_characteristic", uselist=False)
 
 
 class TypedefMeasurement(Base):
@@ -4699,7 +4700,7 @@ class TypedefMeasurement(Base):
 
     __optional_elements__ = ()
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="typedef_measurement", uselist=True)
+    module = relationship("Module", back_populates="typedef_measurement", uselist=False)
 
 
 class TypedefStructure(Base, HasSymbolTypeLink):
@@ -4725,7 +4726,8 @@ class TypedefStructure(Base, HasSymbolTypeLink):
     )
     structure_component = relationship("StructureComponent", back_populates="typedef_structure", uselist=True)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="typedef_structure", uselist=True)
+    module = relationship("Module", back_populates="typedef_structure", uselist=False)
+    # symbol_type_link = relationship("SymbolTypeLink", back_populates="structure_component", uselist=False)
 
 
 class StructureComponent(Base, HasMatrixDims, HasSymbolTypeLink):
@@ -4783,7 +4785,7 @@ class Unit(Base, HasRefUnits):
     si_exponents = relationship("SiExponents", back_populates="unit", uselist=False)
     unit_conversion = relationship("UnitConversion", back_populates="unit", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="unit", uselist=True)
+    module = relationship("Module", back_populates="unit", uselist=False)
 
 
 class SiExponents(Base):
@@ -4854,7 +4856,7 @@ class UserRights(Base, HasReadOnlys):
     )
     ref_group = relationship("RefGroup", back_populates="user_rights", uselist=True)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="user_rights", uselist=True)
+    module = relationship("Module", back_populates="user_rights", uselist=False)
 
 
 class RefGroup(Base):
@@ -4892,7 +4894,7 @@ class VariantCoding(Base):
     var_naming = relationship("VarNaming", back_populates="variant_coding", uselist=False)
     var_separator = relationship("VarSeparator", back_populates="variant_coding", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="variant_coding", uselist=False)
+    module = relationship("Module", back_populates="variant_coding")  # uselist=False, , single_parent=True
 
 
 class VarCharacteristic(Base):
@@ -5238,6 +5240,8 @@ class AMLTypeDefinition(Base):
 class AMLSection(Base):
     """ """
 
+    __tablename__ = "amlsection"
+
     text = Column(
         types.TEXT,
         default=None,
@@ -5248,6 +5252,33 @@ class AMLSection(Base):
         default=None,
         nullable=True,
     )
+
+
+class SessionProxy:
+
+    def __init__(self, session):
+        self._session = session
+        self._ifdata_parser = None
+
+    def setup_ifdata_parser(self, loglevel: str = "INFO"):
+        self._ifdata_parser = IfDataParser(self._session, loglevel)
+
+    def __getattr__(self, name: str):
+        return getattr(self._session, name)
+
+    def parse_ifdata(self, sections: List[str]):
+        if self._ifdata_parser is None or not self._ifdata_parser.root or not sections:
+            return []
+        else:
+            result = []
+            for section in sections:
+                try:
+                    res = self._ifdata_parser.parse(section.raw)
+                except Exception as e:
+                    print(f"Error parsing IF_DATA section: {section.raw!r}: {e!r}")
+                else:
+                    result.append(res)
+            return result
 
 
 class A2LDatabase:
@@ -5266,9 +5297,8 @@ class A2LDatabase:
             native_datetime=True,
         )
 
-        self._session = orm.Session(self._engine, autoflush=False, autocommit=False)
+        self._session = SessionProxy(orm.Session(self._engine, autoflush=False, autocommit=False))
         self._metadata = Base.metadata
-        # loadInitialData(Node)
         Base.metadata.create_all(self.engine)
         meta = MetaData(schema_version=CURRENT_SCHEMA_VERSION)
         self.session.add(meta)
@@ -5277,9 +5307,8 @@ class A2LDatabase:
         self._closed = False
 
     def __del__(self):
-        pass
-        # if not self._closed:
-        #    self.close()
+        if hasattr(self, "_closed") and not self._closed:
+            self.close()
 
     def close(self):
         """"""

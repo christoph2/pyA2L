@@ -212,6 +212,10 @@ inline void dumps(std::stringstream& ss, const EnumerationOrReferrer& er) {
     }
 }
 
+inline void dumps(std::stringstream& ss, const NullObject&) {
+    ss << to_binary<std::string>("NA");
+}
+
 // Type.
 inline void dumps(std::stringstream& ss, std::shared_ptr<Type> tp_) {
     auto tp = tp_->get_type();
@@ -234,6 +238,8 @@ inline void dumps(std::stringstream& ss, std::shared_ptr<Type> tp_) {
             } else if constexpr (std::is_same_v<T, TaggedStructOrReferrer>) {
                 dumps(ss, arg);
             } else if constexpr (std::is_same_v<T, TaggedUnionOrReferrer>) {
+                dumps(ss, arg);
+            } else if constexpr (std::is_same_v<T, NullObject>) {
                 dumps(ss, arg);
             }
         },

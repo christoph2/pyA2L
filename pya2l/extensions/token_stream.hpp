@@ -18,14 +18,14 @@
         #pragma warning(disable: 4251 4273)
     #endif
 
-#if defined(_WIN64)
+    #if defined(_WIN64)
 typedef __int64 ssize_t;
-#elif defined(_WIN32) && !defined(_SSIZE_T_DEFINED)
+    #elif defined(_WIN32) && !defined(_SSIZE_T_DEFINED)
 typedef __int32 ssize_t;
-#define _SSIZE_T_DEFINED
-#else
-#include <unistd.h>  // On POSIX systems, ssize_t is already defined here
-#endif
+        #define _SSIZE_T_DEFINED
+    #else
+        #include <unistd.h>  // On POSIX systems, ssize_t is already defined here
+    #endif
 
 template<typename Ty_>
 class FixedSizeStack {
@@ -71,37 +71,46 @@ class TokenWriter {
     }
 
     // Copy constructor - both objects will reference the same stream
-    TokenWriter(const TokenWriter& other) : m_outf(other.m_outf) {
+    TokenWriter(const TokenWriter &other) : m_outf(other.m_outf) {
     }
 
     // Delete copy assignment operator - references can't be reseated
-    TokenWriter& operator=(const TokenWriter&) = delete;
+    TokenWriter &operator=(const TokenWriter &) = delete;
 
-#if 0
+    #if 0
     // Move constructor - references can't be reseated, so we just keep our reference
     TokenWriter(TokenWriter&& other) noexcept {
         // Note: m_outf is a reference, so we can't actually move it
         // We keep our original reference
     }
-#endif
+    #endif
 
     // Move assignment operator - references can't be reseated, so we just keep our reference
-    TokenWriter& operator=(TokenWriter&& other) noexcept {
+    TokenWriter &operator=(TokenWriter &&other) noexcept {
         // Note: m_outf is a reference, so we can't actually move it
         // We keep our original reference
         return *this;
     }
 
     void operator<<(const Token &token) const {
-        if ((token.m_token_class == TokenClass::REGULAR) || (token.m_token_class == TokenClass::STRING)) {
-            write_int(std::size(token.m_payload));
-            write_int(token.m_token_type);
-            write_int(token.m_line_numbers.start_line);
-            write_int(token.m_line_numbers.start_col);
-            write_int(token.m_line_numbers.end_line);
-            write_int(token.m_line_numbers.end_col);
+		// Note: strings are framed with " characters.
+        if ((token.token_class() == TokenClass::REGULAR) || (token.token_class() == TokenClass::STRING)) {
+            if (token.token_class() == TokenClass::STRING) {
+				write_int(std::size(token.payload()) - 2);
+			} else {
+				write_int(std::size(token.payload()));
+			}
+            write_int(token.token_type());
+            write_int(token.line_numbers().start_line);
+            write_int(token.line_numbers().start_col);
+            write_int(token.line_numbers().end_line);
+            write_int(token.line_numbers().end_col);
 
-            write_string(token.m_payload);
+			if (token.token_class() == TokenClass::STRING) {
+				write_string(token.stripped_payload());
+			} else {
+				write_string(token.payload());
+			}
         }
     }
 
@@ -280,10 +289,10 @@ class TokenFactory /*: public antlr4::TokenFactory<ANTLRToken>*/ {
         std::string source, std::size_t type, const std::string &text, std::size_t channel, std::size_t start, std::size_t stop,
         std::size_t line, std::size_t column
     ) noexcept {
-		PP_UNREFERENCED_PARAMETER(source);
-		PP_UNREFERENCED_PARAMETER(channel);
-		PP_UNREFERENCED_PARAMETER(start);
-		PP_UNREFERENCED_PARAMETER(stop);
+        PP_UNREFERENCED_PARAMETER(source);
+        PP_UNREFERENCED_PARAMETER(channel);
+        PP_UNREFERENCED_PARAMETER(start);
+        PP_UNREFERENCED_PARAMETER(stop);
         return std::make_unique<ANTLRToken>(ANTLRToken(0, type, line, column, line, column, text));
     }
 
@@ -292,29 +301,23 @@ class TokenFactory /*: public antlr4::TokenFactory<ANTLRToken>*/ {
     }
 };
 
-
 class TokenReader {
    public:
 
     // Constructor
-    TokenReader(std::string_view fname) :
-        m_file_name(fname),
-        _p(0),
-        m_numMarkers{},
-        m_currentTokenIndex{ 0 },
-        m_file(nullptr) {
+    TokenReader(std::string_view fname) : m_file_name(fname), _p(0), m_numMarkers{}, m_currentTokenIndex{ 0 }, m_file(nullptr) {
         open();
         fill(1);
     }
 
     // Delete copy constructor
-    TokenReader(const TokenReader&) = delete;
+    TokenReader(const TokenReader &) = delete;
 
     // Delete copy assignment operator
-    TokenReader& operator=(const TokenReader&) = delete;
+    TokenReader &operator=(const TokenReader &) = delete;
 
     // Move constructor
-    TokenReader(TokenReader&& other) noexcept :
+    TokenReader(TokenReader &&other) noexcept :
         m_file_name(std::move(other.m_file_name)),
         _tokens(std::move(other._tokens)),
         _p(other._p),
@@ -328,20 +331,20 @@ class TokenReader {
     }
 
     // Move assignment operator
-    TokenReader& operator=(TokenReader&& other) noexcept {
+    TokenReader &operator=(TokenReader &&other) noexcept {
         if (this != &other) {
             // Close current resources
             close();
 
             // Move resources from other
-            m_file_name = std::move(other.m_file_name);
-            _tokens = std::move(other._tokens);
-            _p = other._p;
-            m_numMarkers = other.m_numMarkers;
-            m_lastToken = std::move(other.m_lastToken);
+            m_file_name            = std::move(other.m_file_name);
+            _tokens                = std::move(other._tokens);
+            _p                     = other._p;
+            m_numMarkers           = other.m_numMarkers;
+            m_lastToken            = std::move(other.m_lastToken);
             m_lastTokenBufferStart = std::move(other.m_lastTokenBufferStart);
-            m_currentTokenIndex = other.m_currentTokenIndex;
-            m_file = other.m_file;
+            m_currentTokenIndex    = other.m_currentTokenIndex;
+            m_file                 = other.m_file;
 
             // Prevent double-close
             other.m_file = nullptr;
@@ -397,7 +400,7 @@ class TokenReader {
         // if we're at last token and no markers, opportunity to flush buffer
         if (_p == _tokens.size() - 1 && m_numMarkers == 0) {
             _tokens.clear();
-            _p                    = 0;
+            _p                     = 0;
             m_lastTokenBufferStart = m_lastToken;
         } else {
             ++_p;
@@ -447,7 +450,7 @@ class TokenReader {
     }
 
     ANTLRToken *get(size_t index) const {
-		PP_UNREFERENCED_PARAMETER(index);
+        PP_UNREFERENCED_PARAMETER(index);
         throw UnsupportedOperationException("get() operation not supported.");
     }
 
@@ -474,7 +477,7 @@ class TokenReader {
             );
         }
 
-        _p                 = i;
+        _p                  = i;
         m_currentTokenIndex = index;
         if (_p == 0) {
             m_lastToken = m_lastTokenBufferStart;

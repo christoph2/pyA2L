@@ -55,6 +55,7 @@ class Node {
 
     enum class AmlType : uint8_t {
         NONE,
+        NULL_NODE,
         TYPE,
         TERMINAL,
         BLOCK,
@@ -275,117 +276,6 @@ class Node {
         return std::get<std::string>(value());
     }
 
-    ///////////////////////////////////////////////////////////////
-	std::string repr(const NodeType tp) const noexcept {
-		std::stringstream ss;
-
-		switch (tp) {
-			case NodeType::TERMINAL:
-				ss << "TERMINAL";
-				break;
-			case NodeType::MAP:
-				ss << "MAP";
-				break;
-			case NodeType::AGGR:
-				ss << "AGGR";
-				break;
-			case NodeType::NONE:
-				ss << "NONE";
-				break;
-		}
-		return ss.str();
-	}
-
-	std::string repr(const AmlType tp) const noexcept {
-		std::stringstream ss;
-
-		switch (tp) {
-			case AmlType::NONE:
-				ss << "NONE";
-				break;
-			case AmlType::TYPE:
-				ss << "TYPE";
-				break;
-			case AmlType::TERMINAL:
-				ss << "TERMINAL";
-				break;
-			case AmlType::BLOCK:
-				ss << "BLOCK";
-				break;
-			case AmlType::BLOCK_INTERN:
-				ss << "BLOCK_INTERN";
-				break;
-			case AmlType::ENUMERATION:
-				ss << "ENUMERATION";
-				break;
-			case AmlType::ENUMERATOR:
-				ss << "ENUMERATOR";
-				break;
-			case AmlType::ENUMERATORS:
-				ss << "ENUMERATORS";
-				break;
-			case AmlType::MEMBER:
-				ss << "MEMBER";
-				break;
-			case AmlType::MEMBERS:
-				ss << "MEMBERS";
-				break;
-			case AmlType::PDT:
-				ss << "PDT";
-				break;
-			case AmlType::REFERRER:
-				ss << "REFERRER";
-				break;
-			case AmlType::ROOT:
-				ss << "ROOT";
-				break;
-			case AmlType::STRUCT:
-				ss << "STRUCT";
-				break;
-			case AmlType::STRUCT_MEMBER:
-				ss << "STRUCT_MEMBER";
-				break;
-			case AmlType::TAGGED_STRUCT:
-				ss << "TAGGED_STRUCT";
-				break;
-			case AmlType::TAGGED_STRUCT_DEFINITION:
-				ss << "TAGGED_STRUCT_DEFINITION";
-				break;
-			case AmlType::TAGGED_STRUCT_MEMBER:
-				ss << "TAGGED_STRUCT_MEMBER";
-				break;
-			case AmlType::TAGGED_UNION:
-				ss << "TAGGED_UNION";
-				break;
-			case AmlType::TAGGED_UNION_MEMBER:
-				ss << "TAGGED_UNION_MEMBER";
-				break;
-		}
-		return ss.str();
-	}
-
-	std::string to_string() const noexcept {
-		std::stringstream ss;
-
-        ss << "Node(";
-		ss << "node_type=" << repr(node_type()) << ", ";
-		ss << "aml_type=" << repr(aml_type());	//  << ", ";
-		ss << "\n";
-		//if (m_node_type == NodeType::MAP) {
-			const auto& tag = get_tag();
-			const auto& mmap = map();
-			for (const auto& [name, nd]: mmap) {
-			ss << "node-name: " << name << "\n";
-			}
-		//}
-
-
-		ss << ")\n";
-        return ss.str();
-	}
-
-
-	///////////////////////////////////////////////////////////////
 
     AmlType aml_type() const noexcept {
         return m_aml_type;
@@ -415,6 +305,16 @@ class Node {
     list_t     m_list{};
     map_t      m_map{};
 };
+
+inline Node make_null_node() {
+    Node::list_t lst{};
+
+    Node::map_t map = {
+        { "NAME",    Node(Node::AmlType::TERMINAL, "N/A") },
+        { "MEMBERS", Node(Node::AmlType::MEMBERS,  lst)  },
+    };
+    return Node(Node::AmlType::NULL_NODE, std::move(map));
+}
 
 inline Node make_pdt(AMLPredefinedTypeEnum type, const std::vector<uint32_t>& array_spec) {
     Node::list_t lst{};
@@ -467,7 +367,7 @@ inline Node make_tagged_struct_definition(bool multiple, std::optional<Node> typ
     if (type) {
         type_node = *type;
     } else {
-        type_node = Node();
+        type_node = make_null_node();
     }
 
     Node::map_t map = {
@@ -680,6 +580,8 @@ class Unmarshaller {
             return load_struct();
         } else if (disc == "EN") {
             return load_enum();
+        } else if (disc == "NA") {
+            return make_null_node();
         } else {
             assert(true == false);
         }
@@ -689,7 +591,7 @@ class Unmarshaller {
     Node load_member() {
         auto avail = m_reader.from_binary<bool>();
         if (!avail) {
-            return Node();
+            return make_null_node();
         }
         const auto& disc = m_reader.from_binary_str();
         if (disc == "T") {
@@ -711,7 +613,7 @@ class Unmarshaller {
                 bool avail = m_reader.from_binary<bool>();
                 if (!avail) {
                     // members.emplace_back(make_struct_member(Node()));
-                    members.emplace_back(Node());
+                    members.emplace_back(make_null_node());
                 } else {
                     auto member = load_member();
                     members.emplace_back(std::move(make_struct_member(member)));

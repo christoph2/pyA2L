@@ -15,7 +15,7 @@
 #include "types.hpp"
 
 
-static const std::regex AML_REGEX{ R"""(((/\*.*?\*/)|(//.*?$))|(\"[^\"]*?\")|(/begin|/end|block|enum|taggedstruct|taggedunion|struct)|([;,=\*\{\}\[\]\(\)])|(char|long|uchar|ulong|int64|uint64|int|uint|double|float|float16)|(\b[a-zA-Z_][a-zA-Z_0-9.]*\b)|(\b([+\-]?(\d+([.]\d*)?([eE][+\-]?\d+)?|[.]\d+([eE][+\-]?\d+)?))\b)|(\b((0[xX][0-9a-fA-F]+)|([+\-]?[0-9]+))\b))""", std::regex_constants::ECMAScript };    // std::regex_constants::ECMAScript, std::regex::extended
+static const std::regex AML_REGEX{ R"""(((/\*.*?\*/)|(//.*?$))|(\"[^\"]*?\")|(/begin|/end|block|enum|taggedstruct|taggedunion|struct|/include)|([;,=\*\{\}\[\]\(\)])|(char|long|uchar|ulong|int64|uint64|int|uint|double|float|float16)|(\b[a-zA-Z_][a-zA-Z_0-9.]*\b)|(\b([+\-]?(\d+([.]\d*)?([eE][+\-]?\d+)?|[.]\d+([eE][+\-]?\d+)?))\b)|(\b((0[xX][0-9a-fA-F]+)|([+\-]?[0-9]+))\b))""", std::regex_constants::ECMAScript };    // std::regex_constants::ECMAScript, std::regex::extended
 
 enum class AmlTokenType : uint8_t {
     NONE = 0,
@@ -42,6 +42,7 @@ enum class AmlTokenType : uint8_t {
     COLON = 22,
     STAR = 23,
     BLOCK = 24,
+    INCLUDE = 25,
 };
 
 using TokenDataType = std::optional<std::variant<int64_t, long double, std::string, AMLPredefinedTypeEnum>>;
@@ -52,13 +53,12 @@ struct AmlToken {
 };
 
 
-inline auto aml_lexer(const std::string& ifdata_section) -> std::vector<AmlToken>
-{
-
+inline auto aml_lexer(const std::string& ifdata_section) -> std::vector<AmlToken> {
     std::vector<AmlToken> result;
 
     std::smatch match;
     std::string input{ ifdata_section };
+    size_t      skip {0};
 
     while (std::regex_search(input, match, AML_REGEX)) {
         auto idx = 0;
@@ -97,11 +97,13 @@ inline auto aml_lexer(const std::string& ifdata_section) -> std::vector<AmlToken
                     }
                     else if (tstr == "struct") {
                         tok.type = AmlTokenType::STRUCT;
+                    } else if (tstr == "/include") {
+                        tok.type = AmlTokenType::INCLUDE;
+                        skip     = 2;
                     }
                     else {
                         std::cout << "???\n";
                     }
-
                     break;
                 case 6: // PARAN, OP
                     if (tstr == "{") {
@@ -196,10 +198,12 @@ inline auto aml_lexer(const std::string& ifdata_section) -> std::vector<AmlToken
                     break;
 
                 }
-                // std::cout << idx << ": " << tstr << std::endl;
-                result.push_back(tok);
+                if (skip == 0) {
+                    result.push_back(tok);
+                } else {
+                    --skip;
+                }
                 break;
-
             }
             idx++;
         }

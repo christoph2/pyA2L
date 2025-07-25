@@ -338,6 +338,19 @@ def update_tables(session, tables):
             session.add(inst)
 
 
+"""
+    def parse_aml(file_name: str) -> bytes:
+        from pya2l import amlparser_ext
+
+        text: bytes = open(file_name, "rb").read()
+        result: bytes = amlparser_ext.parse_aml(text)
+        return text, result
+
+    aml_text, aml_parsed = parse_aml(filenames.aml)
+    self.session.add(model.AMLSection(text=aml_text, parsed=aml_parsed))
+"""
+
+
 class A2LParser:
     def __init__(self):
         self.debug = False
@@ -376,10 +389,16 @@ class A2LParser:
         self.db = model.A2LDatabase(str(db_fn), debug=self.debug)
         # self.db.session.commit()
         self.logger.info(f"Importing {a2l_fn!r} [{encoding}] ==> DB {db_fn!r}.")
-        keyword_counter, values, tables, aml_data = ext.parse(str(a2l_fn), encoding, loglevel.upper())
+        try:
+            keyword_counter, values, tables, aml_data = ext.parse(str(a2l_fn), encoding, loglevel.upper())
+        except Exception as e:
+            print(f"{e!r}")
+            unlink(str(db_fn))
+            raise
         aml_section = model.AMLSection()
-        aml_section.text = aml_data.text
-        aml_section.parsed = aml_data.parsed
+        if aml_data:
+            aml_section.text = aml_data.text
+            aml_section.parsed = aml_data.parsed
         self.db.session.add(aml_section)
         self.counter = 0
         progress_columns = (
@@ -431,23 +450,20 @@ class A2LParser:
             values = zipper(params, mult)
             if name not in ("ReadOnly", "GuardRails", "Discrete"):
                 inst = table(**values)
-
                 if if_data:
-                    #    print(parent, table, params, if_data)
+                    # print(parent, table, params, if_data)
                     if parent.if_data is None:
                         parent.if_data = []
-                    # ma = IFD_HEADER.search(if_data)
-                    ifd = model.IfData(raw=if_data)
-                    parent.if_data.append(ifd)
+                    for section in if_data:
+                        ifd_section = model.IfData(raw=section)
+                        parent.if_data.append(ifd_section)
                 # db.session.add(inst)
             else:
                 inst = True
-            # if name == "DependentCharacteristic":
-            #     print(values, inst)
             if multiple:
                 if getattr(parent, attr) is None:
                     setattr(parent, attr, [inst])
-                else:
+                elif attr != "if_data":
                     getattr(parent, attr).append(inst)
             else:
                 setattr(parent, attr, inst)
@@ -460,7 +476,7 @@ class A2LParser:
                 attr = "fake"
                 mult = False
             self.traverse(kw, inst, attr, mult, level + 1)
-        if name != "root" and not isinstance(inst, bool):
+        if name not in ("root", "IfData") and not isinstance(inst, bool):
             self.db.session.add(inst)
 
 

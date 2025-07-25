@@ -84,6 +84,7 @@ auto parse(const std::string& file_name, const std::string& encoding, const std:
 		converted_tables.emplace_back(tpt, namet, result);
 	}
 	auto aml_data = parse_aml(fns.aml);
+
     return {counter, values, converted_tables, aml_data};
 }
 
@@ -105,7 +106,7 @@ PYBIND11_MODULE(a2lparser_ext, m) {
     m.def("parse", &parse, py::return_value_policy::move);
     m.def("process_sys_consts", &process_sys_consts, py::return_value_policy::move);
 	m.def("unmarshal", &unmarshal, py::return_value_policy::move);
-	//m.def("ifdata_lexer", &ifdata_lexer, py::return_value_policy::move);
+	// m.def("ifdata_lexer", &ifdata_lexer, py::return_value_policy::move);
 
     py::class_<AmlData>(m, "AmlData")
         .def(py::init<const std::string&, const std::string&>())
@@ -120,37 +121,38 @@ PYBIND11_MODULE(a2lparser_ext, m) {
         .def("get_name", &ValueContainer::get_name)
         .def("get_keywords", &ValueContainer::get_keywords)
         .def("get_parameters", &ValueContainer::get_parameters)
-	.def_property_readonly("multiple_values", [](const ValueContainer& self) {
-	    std::vector<AsamVariantType> result{};
-	    auto        encoding = ValueContainer::get_encoding().c_str();
+		.def_property_readonly("multiple_values", [](const ValueContainer& self) {
+			std::vector<AsamVariantType> result{};
+			auto        encoding = ValueContainer::get_encoding().c_str();
 
-	    for (const auto& elem: self.get_multiple_values()) {
-		if (std::holds_alternative<std::string>(elem)) {
-		    result.emplace_back(unicode_decode(std::get<std::string>(elem), encoding));
-		} else {
-		    result.emplace_back(elem);
-		}
-	    }
-	    return result;
-	})
+			for (const auto& elem: self.get_multiple_values()) {
+			if (std::holds_alternative<std::string>(elem)) {
+				result.emplace_back(unicode_decode(std::get<std::string>(elem), encoding));
+			} else {
+				result.emplace_back(elem);
+			}
+			}
+			return result;
+		})
         .def_property_readonly(
             "if_data",
             [](const ValueContainer& self) {
                 auto        encoding = ValueContainer::get_encoding().c_str();
+				py::handle py_s;
                 std::string value;
-                auto        if_data = self.get_if_data();
+				std::vector<std::string> result;
 
-                if (if_data) {
-                    py::handle py_s = PyUnicode_Decode((*if_data).data(), (*if_data).length(), encoding, "strict");
+                auto& if_data = self.get_if_data();
+				for (auto& section: if_data) {
+					py_s = PyUnicode_Decode(section.data(), std::size(section), encoding, "strict");
 
-                    if (!py_s) {
-                        throw py::error_already_set();
-                    }
+					if (!py_s) {
+						throw py::error_already_set();
+					}
 
-                    return py::reinterpret_steal<py::str>(py_s);
-                } else {
-                    return py::str{ "" };
-                }
+					result.emplace_back(py::reinterpret_steal<py::str>(py_s));
+				}
+				return result;
             }
         )
         .def_property_readonly("parameters", [](const ValueContainer& self) {
@@ -210,7 +212,6 @@ PYBIND11_MODULE(a2lparser_ext, m) {
 		.def_property_readonly("type", &Node::get_type)
 		.def_property_readonly("members", &Node::get_members)
 		.def_property_readonly("tagged_struct_members", &Node::get_tagged_struct_members)
-		.def("__repr__", [](const Node& self) { return self.to_string(); })
 	;
 
 	py::enum_<Node::NodeType>(m, "NodeType")
@@ -222,6 +223,7 @@ PYBIND11_MODULE(a2lparser_ext, m) {
 
 	py::enum_<Node::AmlType>(m, "AmlType")
 		.value("NONE", Node::AmlType::NONE)
+		.value("NULL_NODE", Node::AmlType::NULL_NODE)
 		.value("TYPE", Node::AmlType::TYPE)
 		.value("TERMINAL", Node::AmlType::TERMINAL)
 		.value("BLOCK", Node::AmlType::BLOCK)
@@ -241,5 +243,19 @@ PYBIND11_MODULE(a2lparser_ext, m) {
 		.value("TAGGED_STRUCT_MEMBER", Node::AmlType::TAGGED_STRUCT_MEMBER)
 		.value("TAGGED_UNION", Node::AmlType::TAGGED_UNION)
 		.value("TAGGED_UNION_MEMBER", Node::AmlType::TAGGED_UNION_MEMBER)
+	;
+
+	py::enum_<AMLPredefinedTypeEnum>(m, "AMLPredefinedTypeEnum")
+		.value("CHAR", AMLPredefinedTypeEnum::CHAR)
+		.value("INT", AMLPredefinedTypeEnum::INT)
+		.value("LONG", AMLPredefinedTypeEnum::LONG)
+		.value("UCHAR", AMLPredefinedTypeEnum::UCHAR)
+		.value("UINT", AMLPredefinedTypeEnum::UINT)
+		.value("ULONG", AMLPredefinedTypeEnum::ULONG)
+		.value("INT64", AMLPredefinedTypeEnum::INT64)
+		.value("UINT64", AMLPredefinedTypeEnum::UINT64)
+		.value("DOUBLE", AMLPredefinedTypeEnum::DOUBLE)
+		.value("FLOAT", AMLPredefinedTypeEnum::FLOAT)
+		.value("FLOAT16", AMLPredefinedTypeEnum::FLOAT16)
 	;
 }

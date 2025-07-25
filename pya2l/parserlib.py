@@ -30,20 +30,25 @@ import importlib
 import sys
 from collections import namedtuple
 
+import antlr4
+from antlr4.error.ErrorListener import ErrorListener
+
 from pya2l import model
 
 
-# import antlr4
-# from antlr4.error.ErrorListener import ErrorListener
 # from antlr4.atn.ParserATNSimulator import ParserATNSimulator
 
 
 ResultType = namedtuple("ResultType", "db listener_result")
 
 
-'''
 class MyErrorListener(ErrorListener):
-    """ """
+    """Minimal ANTLR error listener that prints syntax errors to stderr.
+
+    If a line_map is provided (from the preprocessor), it will map the
+    original file and line number for better diagnostics. This keeps
+    behavior compatible with previous versions used by the tests.
+    """
 
     def __init__(self, line_map=None):
         super().__init__()
@@ -52,14 +57,16 @@ class MyErrorListener(ErrorListener):
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         # column = column + 1
         if self.line_map:
-            file_name, line = self.line_map.lookup(line)
-            print(
-                file_name + "::" + "line " + str(line) + ":" + str(column) + " " + msg,
-                file=sys.stderr,
-            )
+            try:
+                file_name, mapped_line = self.line_map.lookup(line)
+                print(
+                    f"{file_name}::line {mapped_line}:{column} {msg}",
+                    file=sys.stderr,
+                )
+            except Exception:
+                print(f"line {line}:{column} {msg}", file=sys.stderr)
         else:
-            print("line " + str(line) + ":" + str(column) + " " + msg, file=sys.stderr)
-'''
+            print(f"line {line}:{column} {msg}", file=sys.stderr)
 
 
 class ParserWrapper:
@@ -76,9 +83,13 @@ class ParserWrapper:
         self.debug = debug
         self.grammarName = grammarName
         self.startSymbol = startSymbol
-        filenames, line_map, ifdata_reader = prepro_result
+        if prepro_result is None:
+            filenames, line_map, ifdata_reader = [], None, None
+            self.prepro_result = (filenames, line_map, ifdata_reader)
+        else:
+            filenames, line_map, ifdata_reader = prepro_result
+            self.prepro_result = prepro_result
         self.line_map = line_map
-        self.prepro_result = prepro_result
         self.lexerModule, self.lexerClass = self._load("Lexer")
         self.parserModule, self.parserClass = self._load("Parser")
         self.listener = listener
@@ -141,9 +152,13 @@ class CustomA2lParser:
     def __init__(self, listener=None, debug=False, prepro_result=None):
         self.debug = debug
         self.startSymbol = "a2lFile"
-        filenames, line_map, ifdata_reader = prepro_result
+        if prepro_result is None:
+            filenames, line_map, ifdata_reader = [], None, None
+            self.prepro_result = (filenames, line_map, ifdata_reader)
+        else:
+            filenames, line_map, ifdata_reader = prepro_result
+            self.prepro_result = prepro_result
         self.line_map = line_map
-        self.prepro_result = prepro_result
         self.listener = listener
 
     def parse(self, filename, encoding="latin-1"):

@@ -76,12 +76,14 @@ static auto trim = [](std::string &str) {
     str = str.substr(1, str.length() - 2);
 };
 
-struct Token {
+class Token {
+   public:
+
     using enum TokenType;
 
     Token() = default;
 
-    Token(TokenClass token_type, const LineNumbers &line_numbers, std::string_view payload) :
+    Token(TokenClass token_type, const LineNumbers &line_numbers, const std::string_view &payload) :
         m_token_class{ token_type }, m_line_numbers{ line_numbers }, m_payload{ payload } {
         set_token_type();
     }
@@ -90,10 +92,37 @@ struct Token {
     Token(const Token &)            = default;
     Token(Token &&)                 = default;
 
-    TokenClass    m_token_class;
-    uint16_t m_token_type{ std::bit_cast<uint16_t>(INVALID) };
-    LineNumbers   m_line_numbers;
-    std::string   m_payload;
+    std::string to_string() noexcept {
+        std::stringstream ss;
+
+        ss << "Token(payload='";
+        ss << m_payload << "' @";
+        ss << m_line_numbers.to_string() << "[" << std::to_string(m_token_type) << "]";
+        ss << ")";
+        return ss.str();
+    }
+
+    TokenClass token_class() const noexcept {
+        return m_token_class;
+    }
+
+    const std::string &payload() const noexcept {
+        return m_payload;
+    }
+
+	// Strip leading an tailing characters (usually ").
+	std::string stripped_payload() const noexcept {
+		return m_payload.substr(1, m_payload.length() - 2);
+    }
+
+
+    const LineNumbers &line_numbers() const noexcept {
+        return m_line_numbers;
+    }
+
+    uint16_t token_type() const noexcept {
+        return m_token_type;
+    }
 
    private:
 
@@ -102,14 +131,14 @@ struct Token {
     static constexpr auto PAT_INT = ctll::fixed_string{ "^(?:[+\\-])?[0-9]+$" };
     static constexpr auto PAT_HEX = ctll::fixed_string{ "^0x[0-9a-fA-F]+$" };
 
-    void set_token_type() {
+    void set_token_type() noexcept {
         if (m_token_class == TokenClass::WHITESPACE) {
             m_token_type = static_cast<uint16_t>(WS);
         } else if (m_token_class == TokenClass::COMMENT) {
             m_token_type = static_cast<uint16_t>(COMMENT);
         } else if (m_token_class == TokenClass::STRING) {
             m_token_type = static_cast<uint16_t>(STRING);
-            trim(m_payload);
+            // trim(m_payload);
         } else {
             const auto entry = A2L_KEYWORDS.find(m_payload);
 
@@ -130,15 +159,10 @@ struct Token {
         }
     }
 
-    std::string to_string() {
-        std::stringstream ss;
-
-        ss << "Token(payload='";
-        ss << m_payload << "' @";
-        ss << m_line_numbers.to_string() << "[" << std::to_string(m_token_type) << "]";
-        ss << ")";
-        return ss.str();
-    }
+    TokenClass  m_token_class;
+    uint16_t    m_token_type{ std::bit_cast<uint16_t>(INVALID) };
+    LineNumbers m_line_numbers;
+    std::string m_payload;
 };
 
 using TokenizerReturnType = Token;
