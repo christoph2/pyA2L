@@ -277,7 +277,8 @@ class Preprocessor {
                     }
                     if (a2ml == true) {
                         if (token.token_class() == TokenClass::STRING) {
-                            tmp_aml() << "\"" << token.payload() << "\"";
+                            // tmp_aml() << "\"" << token.payload() << "\"";
+                            tmp_aml() << token.payload();
                         } else {
                             tmp_aml() << token.payload();
                         }
