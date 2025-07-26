@@ -110,10 +110,6 @@ class Token {
         return m_payload;
     }
 
-    void set_payload(std::string_view payload) {
-        m_payload = payload;
-    }
-
     const LineNumbers &line_numbers() const {
         return m_line_numbers;
     }

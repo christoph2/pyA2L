@@ -99,13 +99,14 @@ class IfDataBuilder : public IfDataBase {
 
     void add_token(Token& token) noexcept {
         m_length += token.payload().length();
-        // #if 0
         if (token.token_class() == TokenClass::STRING) {
-            std::string tmp{ "\"" + token.payload() + "\"" };
-            token.set_payload(tmp);
+            //std::string tmp{ "\"" + token.payload() + "\"" };
+            //token.set_payload(tmp);
+            m_tokens.emplace_back(Token(token.token_class(), token.line_numbers(), "\"" + token.payload() + "\""));
+        } else {
+            m_tokens.emplace_back(token);
         }
-        // #endif
-        m_tokens.emplace_back(token);
+
     }
 
     void finalize() noexcept {
