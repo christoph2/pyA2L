@@ -83,10 +83,17 @@ class Token {
 
     Token() = default;
 
-    Token(TokenClass token_type, const LineNumbers &line_numbers, std::string_view payload) :
+    Token(TokenClass token_type, const LineNumbers &line_numbers, const std::string_view &payload) :
         m_token_class{ token_type }, m_line_numbers{ line_numbers }, m_payload{ payload } {
         set_token_type();
     }
+
+    #if 0
+    Token(TokenClass token_type, const LineNumbers &line_numbers, std::string &&payload) :
+        m_token_class{ token_type }, m_line_numbers{ line_numbers }, m_payload{ std::move(payload) } {
+        set_token_type();
+    }
+    #endif
 
     Token &operator=(const Token &) = default;
     Token(const Token &)            = default;
@@ -132,7 +139,7 @@ class Token {
             m_token_type = static_cast<uint16_t>(COMMENT);
         } else if (m_token_class == TokenClass::STRING) {
             m_token_type = static_cast<uint16_t>(STRING);
-            trim(m_payload);
+            // trim(m_payload);
         } else {
             const auto entry = A2L_KEYWORDS.find(m_payload);
 

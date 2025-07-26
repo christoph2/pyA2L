@@ -100,13 +100,15 @@ class IfDataBuilder : public IfDataBase {
     void add_token(Token& token) noexcept {
         m_length += token.payload().length();
         if (token.token_class() == TokenClass::STRING) {
-            //std::string tmp{ "\"" + token.payload() + "\"" };
-            //token.set_payload(tmp);
-            m_tokens.emplace_back(Token(token.token_class(), token.line_numbers(), "\"" + token.payload() + "\""));
+            // std::string tmp{ "\"" + token.payload() + "\"" };
+            // token.set_payload(tmp);
+            // const std::string tmp_payload{ "\"" + token.payload() + "\"" };
+            std::string tmp_payload = std::string("\"") + token.payload() + std::string("\"");
+            // std::string tmp_payload = "\"XxX\"";
+            m_tokens.emplace_back(Token(token.token_class(), token.line_numbers(), tmp_payload));
         } else {
             m_tokens.emplace_back(token);
         }
-
     }
 
     void finalize() noexcept {
