@@ -28,14 +28,15 @@ import weakref
 from dataclasses import asdict, dataclass, field
 from enum import IntEnum
 from functools import cached_property, reduce
-from operator import mul
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from operator import attrgetter, mul
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
 
 from sqlalchemy import exists, not_
 
 import pya2l.model as model
 from pya2l import exceptions
 from pya2l.a2lparser_ext import process_sys_consts
+from pya2l.aml.ifdata_parser import IfDataParser
 from pya2l.functions import (
     Coeffs,
     CoeffsLinear,
@@ -192,6 +193,14 @@ class Alignment:
 
 
 NATURAL_ALIGNMENTS = Alignment(byte=1, dword=4, float16=2, float32=4, float64=8, qword=8, word=2)
+
+
+def parse_if_data(parser, if_data: list):
+    result = []
+    for section in if_data:
+        res = parser.parse(section.raw)
+        result.append(res)
+    return result
 
 
 @dataclass
@@ -1404,23 +1413,6 @@ class ModCommon(CachedBase):
             return NoModCommon()
         else:
             return super(cls, ModCommon).get(session, name, module_name)
-
-
-@dataclass
-class Module(CachedBase):
-    """"""
-
-    module: model.Module = field(repr=False)
-    name: str
-    longIdentifier: str
-    characteristics: list = field(default_factory=list)
-
-    def __init__(self, session, name: Optional[str]):
-        self.module = session.query(model.Module).filter(model.Module.name == name).first()
-        self.name = self.module.name
-        self.longIdentifier = self.module.longIdentifier
-        self.characteristics = self.module.characteristic
-        # print("CHR:", self.characteristics)
 
 
 @dataclass
@@ -3255,3 +3247,119 @@ class AMLSection(CachedBase):
         self.aml_section = session.query(model.AMLSection).first()
         self.text = self.aml_section.text
         self.parsed = self.aml_section.parsed
+
+
+@dataclass
+class Unit(CachedBase):
+    """"""
+
+    session: Any = field(repr=False)
+    unit: model.Unit = field(repr=False)
+
+    __tablename__ = "unit"
+
+    name: str
+    longIdentifier: str
+    display: str
+    type: str
+
+    def __init__(self, session, name: str, module_name: Optional[str] = None):
+        self.session = session
+        unit = session.query(model.Unit).filter(model.Unit.name == name)
+        if module_name is not None:
+            unit.filter(model.Module.name == module_name)
+        self.unit = unit.first()
+        self.name = self.unit.name
+        self.longIdentifier = self.unit.longIdentifier
+        self.display = self.unit.display
+        self.type = self.unit.type
+
+    # __optional_elements__ = (
+    #     Element("SiExponents", "SI_EXPONENTS", False),
+    #     Element("RefUnit", "REF_UNIT", False),
+    #     Element("UnitConversion", "UNIT_CONVERSION", False),
+    # )
+
+
+class FilteredList:
+
+    def __init__(self, session, association, klass, attr_name: str = "name"):
+        self.session = session
+        self.association = association
+        self.klass = klass
+        self.attribute = attrgetter(attr_name)
+
+    def query(self, criterion: Optional[Callable] = None) -> Generator:
+        if criterion is None:
+            criterion = lambda x: x
+        for row in self.association:
+            if criterion(row):
+                xn = self.klass.get(self.session, self.attribute(row))
+                yield xn
+
+
+@dataclass
+class Module(CachedBase):
+    """
+    *** Element("A2ml", "A2ML", False),
+            Element("AxisPts", "AXIS_PTS", True),
+    Element("Blob", "BLOB", True),
+            Element("Characteristic", "CHARACTERISTIC", True),
+            Element("CompuMethod", "COMPU_METHOD", True),
+    Element("CompuTab", "COMPU_TAB", True),
+    Element("CompuVtab", "COMPU_VTAB", True),
+    Element("CompuVtabRange", "COMPU_VTAB_RANGE", True),
+    *** Element("Frame", "FRAME", False),
+            Element("Function", "FUNCTION", True),
+            Element("Group", "GROUP", True),
+            Element("IfData", "IF_DATA", True),
+    Element("Instance", "INSTANCE", True),
+            Element("Measurement", "MEASUREMENT", True),
+    *** Element("ModCommon", "MOD_COMMON", False),
+    *** Element("ModPar", "MOD_PAR", False),
+        Element("RecordLayout", "RECORD_LAYOUT", True),
+    Element("Transformer", "TRANSFORMER", True),
+    Element("TypedefAxis", "TYPEDEF_AXIS", True),
+    Element("TypedefCharacteristic", "TYPEDEF_CHARACTERISTIC", True),
+    Element("TypedefMeasurement", "TYPEDEF_MEASUREMENT", True),
+    Element("TypedefStructure", "TYPEDEF_STRUCTURE", True),
+    Element("Unit", "UNIT", True),
+    Element("UserRights", "USER_RIGHTS", True),
+            *** Element("VariantCoding", "VARIANT_CODING", False),
+    """
+
+    session: Any = field(repr=False)
+    module: model.Module = field(repr=False)
+    name: str
+    longIdentifier: str
+    characteristic: list = field(default_factory=list)
+
+    def __init__(self, session, name: Optional[str] = None):
+        self.session = session
+        if name is not None:
+            self.module = self.session.query(model.Module).filter(model.Module.name == name).first()
+        else:
+            self.module = self.session.query(model.Module).first()
+        self.name = self.module.name
+        self.longIdentifier = self.module.longIdentifier
+
+        self.ifdata_parser = IfDataParser(self.session)
+
+        self.axis_pts = FilteredList(self.session, self.module.axis_pts, AxisPts)
+
+        self.characteristic = FilteredList(self.session, self.module.characteristic, Characteristic)
+        self.compu_method = FilteredList(self.session, self.module.compu_method, CompuMethod)
+
+        self.function = FilteredList(self.session, self.module.function, Function)
+        self.group = FilteredList(self.session, self.module.group, Group, "groupName")
+        self.if_data = parse_if_data(self.ifdata_parser, self.module.if_data)
+
+        self.measurement = FilteredList(self.session, self.module.measurement, Measurement)
+        self.mod_common = ModCommon.get(self.session, self.name)
+        self.mod_par = ModPar.get(self.session, self.name)
+
+        self.record_layout = FilteredList(self.session, self.module.record_layout, RecordLayout)
+
+        self.unit = FilteredList(self.session, self.module.unit, Unit)
+
+        self.variant_coding = VariantCoding.get(self.session, module_name=self.module.name)

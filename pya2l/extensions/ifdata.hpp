@@ -97,17 +97,8 @@ class IfDataBuilder : public IfDataBase {
     ~IfDataBuilder() {
     }
 
-    void add_token(Token& token) noexcept {
-        m_length += token.payload().length();
+    void add_token(Token& token) noexcept {m_length += token.payload().length();
         m_tokens.emplace_back(token);
-    #if 0
-        if (token.token_class() == TokenClass::STRING) {
-            std::string tmp_payload = std::string("\"") + token.payload() + std::string("\"");
-            m_tokens.emplace_back(Token(token.token_class(), token.line_numbers(), tmp_payload));
-        } else {
-            m_tokens.emplace_back(token);
-        }
-    #endif
     }
 
     void finalize() noexcept {
