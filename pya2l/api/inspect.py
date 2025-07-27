@@ -3250,18 +3250,35 @@ class AMLSection(CachedBase):
 
 
 @dataclass
+class SiExponents:
+    length: int
+    mass: int
+    time: int
+    electricCurrent: int
+    temperature: int
+    amountOfSubstance: int
+    luminousIntensity: int
+
+
+@dataclass
+class UnitConversion:
+    gradient: float
+    offset: float
+
+
+@dataclass
 class Unit(CachedBase):
     """"""
 
     session: Any = field(repr=False)
     unit: model.Unit = field(repr=False)
-
-    __tablename__ = "unit"
-
     name: str
     longIdentifier: str
     display: str
     type: str
+    si_exponents: Optional[SiExponents]
+    unit_conversion: Optional[UnitConversion]
+    ref_unit: Optional[str]
 
     def __init__(self, session, name: str, module_name: Optional[str] = None):
         self.session = session
@@ -3273,12 +3290,31 @@ class Unit(CachedBase):
         self.longIdentifier = self.unit.longIdentifier
         self.display = self.unit.display
         self.type = self.unit.type
+        self.si_exponents = self._create_si_exponents(self.unit.si_exponents)
+        self.unit_conversion = self._create_unit_conversion(self.unit.unit_conversion)
+        self.ref_unit = self.unit.ref_unit.unit if self.unit.ref_unit else None
 
-    # __optional_elements__ = (
-    #     Element("SiExponents", "SI_EXPONENTS", False),
-    #     Element("RefUnit", "REF_UNIT", False),
-    #     Element("UnitConversion", "UNIT_CONVERSION", False),
-    # )
+    @staticmethod
+    def _create_si_exponents(si_exponents: model.SiExponents) -> Optional[SiExponents]:
+        if si_exponents is not None:
+            return SiExponents(
+                si_exponents.length,
+                si_exponents.mass,
+                si_exponents.time,
+                si_exponents.electricCurrent,
+                si_exponents.temperature,
+                si_exponents.amountOfSubstance,
+                si_exponents.luminousIntensity,
+            )
+        else:
+            return None
+
+    @staticmethod
+    def _create_unit_conversion(unit_conversion: model.UnitConversion) -> Optional[UnitConversion]:
+        if unit_conversion is not None:
+            return UnitConversion(unit_conversion.gradient, unit_conversion.offset)
+        else:
+            return None
 
 
 class FilteredList:
