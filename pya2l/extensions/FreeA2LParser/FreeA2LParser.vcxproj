@@ -135,7 +135,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\a2lparser_orig.cpp" />
     <ClCompile Include="..\exceptions.cpp" />
     <ClCompile Include="..\token_stream.cpp" />
   </ItemGroup>

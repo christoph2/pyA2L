@@ -21,9 +21,6 @@
     <ClCompile Include="..\token_stream.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="..\a2lparser_orig.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\exceptions.hpp">

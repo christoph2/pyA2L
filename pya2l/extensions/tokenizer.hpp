@@ -88,18 +88,11 @@ class Token {
         set_token_type();
     }
 
-    #if 0
-    Token(TokenClass token_type, const LineNumbers &line_numbers, std::string &&payload) :
-        m_token_class{ token_type }, m_line_numbers{ line_numbers }, m_payload{ std::move(payload) } {
-        set_token_type();
-    }
-    #endif
-
     Token &operator=(const Token &) = default;
     Token(const Token &)            = default;
     Token(Token &&)                 = default;
 
-    std::string to_string() {
+    std::string to_string() noexcept {
         std::stringstream ss;
 
         ss << "Token(payload='";
@@ -109,19 +102,25 @@ class Token {
         return ss.str();
     }
 
-    TokenClass token_class() const {
+    TokenClass token_class() const noexcept {
         return m_token_class;
     }
 
-    const std::string &payload() const {
+    const std::string &payload() const noexcept {
         return m_payload;
     }
 
-    const LineNumbers &line_numbers() const {
+	// Strip leading an tailing characters (usually ").
+	std::string stripped_payload() const noexcept {
+		return m_payload.substr(1, m_payload.length() - 2);
+    }
+
+
+    const LineNumbers &line_numbers() const noexcept {
         return m_line_numbers;
     }
 
-    uint16_t token_type() const {
+    uint16_t token_type() const noexcept {
         return m_token_type;
     }
 
@@ -132,7 +131,7 @@ class Token {
     static constexpr auto PAT_INT = ctll::fixed_string{ "^(?:[+\\-])?[0-9]+$" };
     static constexpr auto PAT_HEX = ctll::fixed_string{ "^0x[0-9a-fA-F]+$" };
 
-    void set_token_type() {
+    void set_token_type() noexcept {
         if (m_token_class == TokenClass::WHITESPACE) {
             m_token_type = static_cast<uint16_t>(WS);
         } else if (m_token_class == TokenClass::COMMENT) {

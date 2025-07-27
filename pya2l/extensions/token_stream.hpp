@@ -93,15 +93,24 @@ class TokenWriter {
     }
 
     void operator<<(const Token &token) const {
+		// Note: strings are framed with " characters.
         if ((token.token_class() == TokenClass::REGULAR) || (token.token_class() == TokenClass::STRING)) {
-            write_int(std::size(token.payload()));
+            if (token.token_class() == TokenClass::STRING) {
+				write_int(std::size(token.payload()) - 2);
+			} else {
+				write_int(std::size(token.payload()));
+			}
             write_int(token.token_type());
             write_int(token.line_numbers().start_line);
             write_int(token.line_numbers().start_col);
             write_int(token.line_numbers().end_line);
             write_int(token.line_numbers().end_col);
 
-            write_string(token.payload());
+			if (token.token_class() == TokenClass::STRING) {
+				write_string(token.stripped_payload());
+			} else {
+				write_string(token.payload());
+			}
         }
     }
 
