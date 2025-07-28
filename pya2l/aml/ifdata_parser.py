@@ -277,7 +277,6 @@ class IfDataParser:
             if isinstance(member, Block):
                 result = self.enter(member.type)
                 self.leave()
-                print("Block RESULT:", result)
                 self.match(IfDataTokenType.END)
                 self.match(IfDataTokenType.IDENT, tk_value)
                 return {tk_value: result}

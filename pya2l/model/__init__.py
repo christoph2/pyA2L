@@ -1687,7 +1687,7 @@ class AxisPts(
         Element("SymbolLink", "SYMBOL_LINK", False),
     )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="axis_pts", uselist=True)
+    module = relationship("Module", back_populates="axis_pts", uselist=False)
 
 
 class Characteristic(
@@ -1782,7 +1782,7 @@ class Characteristic(
     model_link = relationship("ModelLink", back_populates="characteristic", uselist=False)
     virtual_characteristic = relationship("VirtualCharacteristic", back_populates="characteristic", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="characteristic", uselist=True)
+    module = relationship("Module", back_populates="characteristic", uselist=False)
 
 
 class AxisDescr(
@@ -2116,7 +2116,7 @@ class CompuMethod(Base, HasRefUnits):
     formula = relationship("Formula", back_populates="compu_method", uselist=False)
     status_string_ref = relationship("StatusStringRef", back_populates="compu_method", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="compu_method", uselist=True)
+    module = relationship("Module", back_populates="compu_method", uselist=False)
 
 
 class Coeffs(Base):
@@ -2253,7 +2253,7 @@ class CompuTab(Base, HasDefaultValues):
     )
     default_value_numeric = relationship("DefaultValueNumeric", back_populates="compu_tab", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="compu_tab", uselist=True)
+    module = relationship("Module", back_populates="compu_tab", uselist=False)
 
 
 class DefaultValueNumeric(Base):
@@ -2293,7 +2293,7 @@ class CompuVtab(Base, HasDefaultValues):
 
     __optional_elements__ = (Element("DefaultValue", "DEFAULT_VALUE", False),)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="compu_vtab", uselist=True)
+    module = relationship("Module", back_populates="compu_vtab", uselist=False)
 
 
 class CompuVtabRange(Base, HasDefaultValues):
@@ -2316,7 +2316,7 @@ class CompuVtabRange(Base, HasDefaultValues):
 
     __optional_elements__ = (Element("DefaultValue", "DEFAULT_VALUE", False),)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="compu_vtab_range", uselist=True)
+    module = relationship("Module", back_populates="compu_vtab_range", uselist=False)
 
 
 class Frame(Base, HasIfDatas):
@@ -2395,7 +2395,7 @@ class Function(Base, HasAnnotations, HasIfDatas, HasRefCharacteristics):
     out_measurement = relationship("OutMeasurement", back_populates="function", uselist=False)
     sub_function = relationship("SubFunction", back_populates="function", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="function", uselist=True)
+    module = relationship("Module", back_populates="function", uselist=False)
 
 
 class DefCharacteristic(Base):
@@ -2514,7 +2514,7 @@ class Group(Base, HasAnnotations, HasFunctionLists, HasIfDatas, HasRefCharacteri
     root = relationship("Root", back_populates="group", uselist=False)
     sub_group = relationship("SubGroup", back_populates="group", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="group", uselist=True)
+    module = relationship("Module", back_populates="group", uselist=False)
 
 
 class RefMeasurement(Base):
@@ -2590,7 +2590,7 @@ class Instance(Base, HasIfDatas, HasEcuAddressExtensions, HasDisplayIdentifiers,
         Element("SymbolLink", "SYMBOL_LINK", False),
     )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="instance", uselist=True)
+    module = relationship("Module", back_populates="instance", uselist=False)
 
 
 class Measurement(
@@ -2672,7 +2672,7 @@ class Measurement(
     read_write = relationship("ReadWrite", back_populates="measurement", uselist=False)
     virtual = relationship("Virtual", back_populates="measurement", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="measurement", uselist=True)
+    module = relationship("Module", back_populates="measurement", uselist=False)
 
 
 class ArraySize(Base):
@@ -3396,7 +3396,7 @@ class RecordLayout(
     src_addr_4 = relationship("SrcAddr4", back_populates="record_layout", uselist=False)
     src_addr_5 = relationship("SrcAddr5", back_populates="record_layout", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="record_layout", uselist=True)
+    module = relationship("Module", back_populates="record_layout", uselist=False)
 
 
 class AxisPtsX(Base):
@@ -4526,7 +4526,7 @@ class Transformer(Base, HasTransformerInObjects, HasTransformerOutObjects):
     )
 
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="transformer", uselist=True)
+    module = relationship("Module", back_populates="transformer", uselist=False)
 
 
 class TypedefAxis(
@@ -4593,7 +4593,7 @@ class TypedefAxis(
         Element("StepSize", "STEP_SIZE", False),
     )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="typedef_axis", uselist=True)
+    module = relationship("Module", back_populates="typedef_axis", uselist=False)
 
 
 class TypedefCharacteristic(
@@ -4663,7 +4663,7 @@ class TypedefCharacteristic(
     )
     axis_descr = relationship("AxisDescr", back_populates="typedef_characteristic", uselist=True)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="typedef_characteristic", uselist=True)
+    module = relationship("Module", back_populates="typedef_characteristic", uselist=False)
 
 
 class TypedefMeasurement(Base):
@@ -4700,7 +4700,7 @@ class TypedefMeasurement(Base):
 
     __optional_elements__ = ()
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="typedef_measurement", uselist=True)
+    module = relationship("Module", back_populates="typedef_measurement", uselist=False)
 
 
 class TypedefStructure(Base, HasSymbolTypeLink):
@@ -4726,7 +4726,7 @@ class TypedefStructure(Base, HasSymbolTypeLink):
     )
     structure_component = relationship("StructureComponent", back_populates="typedef_structure", uselist=True)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="typedef_structure", uselist=True)
+    module = relationship("Module", back_populates="typedef_structure", uselist=False)
 
 
 class StructureComponent(Base, HasMatrixDims, HasSymbolTypeLink):
@@ -4784,7 +4784,7 @@ class Unit(Base, HasRefUnits):
     si_exponents = relationship("SiExponents", back_populates="unit", uselist=False)
     unit_conversion = relationship("UnitConversion", back_populates="unit", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="unit", uselist=True)
+    module = relationship("Module", back_populates="unit", uselist=False)
 
 
 class SiExponents(Base):
@@ -4855,7 +4855,7 @@ class UserRights(Base, HasReadOnlys):
     )
     ref_group = relationship("RefGroup", back_populates="user_rights", uselist=True)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="user_rights", uselist=True)
+    module = relationship("Module", back_populates="user_rights", uselist=False)
 
 
 class RefGroup(Base):
