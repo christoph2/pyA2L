@@ -4,10 +4,7 @@ from enum import IntEnum
 from typing import Any, Optional
 
 import pya2l.model as model
-from pya2l.a2lparser_ext import (
-    AmlType,
-    unmarshal,
-)
+from pya2l.a2lparser_ext import AmlType, unmarshal
 from pya2l.aml.ifdata_lexer import IfDataLexer
 
 
@@ -237,22 +234,31 @@ class IfDataParser:
                     result[tk_value].append(True)  # Just a flag value with no further definition.
                     self.consume()
                 else:
-                    if isinstance(elem, Block):
-                        pass
-                    # multiple = elem.multiple
-                    tmp_value = self.enter(elem.definition)
-                    if tmp_value:
-                        result[tk_value].append(tmp_value)
-                    self.leave()
-                if self.current_token.type == IfDataTokenType.END:
-                    break
+                    multiple = elem.multiple
+                    while True:
+                        tmp_value = self.enter(elem.definition)
+                        if tmp_value:
+                            result[tk_value].append(tmp_value)
+                        self.leave()
+                        if not multiple:
+                            break
+                        if self.current_token.value != tk_value:
+                            break
+                        if self.current_token.type == IfDataTokenType.END:
+                            break
             else:
                 print(f"Invalid token {tk.type} for tagged struct. Expected identifier.")
         return_value = {}
         for k, v in result.items():
-            member = self.syntax_tos.members.get(k)
-            if not member.multiple:
-                return_value[k] = v[0]
+            if isinstance(self.syntax_tos.members, dict):
+                member = self.syntax_tos.members.get(k)
+                if member is None:
+                    return_value[k] = v
+                else:
+                    if not member.multiple:
+                        return_value[k] = v[0]
+                    else:
+                        return_value[k] = v
             else:
                 return_value[k] = v
         return return_value
@@ -263,7 +269,6 @@ class IfDataParser:
             self.consume()
         else:
             tk = self.current_token
-        # tk = self.current_token
         if tk.type != IfDataTokenType.IDENT:
             print(f"Invalid token {tk.type} for tagged union. Expected identifier.")
             return
@@ -272,8 +277,6 @@ class IfDataParser:
         mem_dict = self.syntax_tos.members
         if tk_value in mem_dict:
             member = mem_dict[tk_value]
-            # if member.is_block:
-            #    raise TypeError("Block definition is not IMPLEMENTED yet.")
             if isinstance(member, Block):
                 result = self.enter(member.type)
                 self.leave()
@@ -281,7 +284,11 @@ class IfDataParser:
                 self.match(IfDataTokenType.IDENT, tk_value)
                 return {tk_value: result}
             else:
-                result = self.enter(member.node)
+                if isinstance(member, NullObject):
+                    result = True  # Just a flag value with no further definition.
+                    # self.consume()
+                else:
+                    result = self.enter(member.node)
                 self.leave()
                 return {tk_value: result}
         else:
@@ -337,10 +344,8 @@ class IfDataParser:
 
     def enter(self, klass) -> Any:
         result: Any = None
-
         if isinstance(klass, Referrer):
             klass = self.ref_dict[klass.category][klass.identifier]
-
         self.syntax_stack.append(klass)
         if isinstance(klass, Block):
             result = self.block()

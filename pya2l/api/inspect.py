@@ -199,6 +199,7 @@ def parse_if_data(parser, if_data: list):
     result = []
     for section in if_data:
         res = parser.parse(section.raw)
+        print(f"Parsed: {res}")
         result.append(res)
     return result
 
@@ -614,7 +615,6 @@ class CachedBase:
     _strong_ref: collections.deque = collections.deque(maxlen=DB_CACHE_SIZE)
 
     def __new__(cls, *args, **kwargs):
-        print("Creating CachedBase instance...")
         instance = super().__new__(cls)  # Call the parent class's __new__ method
         return instance
 
@@ -2958,7 +2958,7 @@ class StructureComponent(CachedBase):
 
     def __init__(self, session, name=None, module_name: str = None, parent=None, *args):
         self.session = session
-        self.component = session.query(model.StructureComponent).filter(model.StructureComponent.name == name)
+        component = session.query(model.StructureComponent).filter(model.StructureComponent.name == name)
         if module_name is not None:
             component.filter(model.StructureComponent.module.name == module_name)
         self.component = component.first()
@@ -3146,7 +3146,7 @@ class TypedefCharacteristic(CachedBase):
     compuMethod: CompuMethod
 
     def __init__(self, session, name: str, module_name: str = None):
-        self.typedef = session.query(model.TypedefCharacteristic).filter(model.TypedefCharacteristic.name == name)
+        typedef = session.query(model.TypedefCharacteristic).filter(model.TypedefCharacteristic.name == name)
         if module_name is not None:
             typedef.filter(model.TypedefMeasurement.module.name == module_name)
         self.typedef = typedef.first()
