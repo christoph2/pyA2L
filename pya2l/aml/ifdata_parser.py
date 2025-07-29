@@ -267,11 +267,15 @@ class IfDataParser:
         if self.current_token.type == IfDataTokenType.BEGIN:
             tk = self.lookahead(1)
             self.consume()
+            block = True
         else:
             tk = self.current_token
+            block = False
         if tk.type != IfDataTokenType.IDENT:
             print(f"Invalid token {tk.type} for tagged union. Expected identifier.")
-            return
+            if block:
+                self.rewind()
+            return {}
         tk_value = tk.value
         self.consume()
         mem_dict = self.syntax_tos.members
@@ -289,10 +293,12 @@ class IfDataParser:
                     # self.consume()
                 else:
                     result = self.enter(member.node)
-                self.leave()
+                    self.leave()
                 return {tk_value: result}
         else:
-            raise ValueError(f"tag {tk_value} not found.")  # SyntaxError("Tag not found in struct")
+            amount = 2 if block else 1
+            self.rewind(amount)
+            return {}
 
     def struct(self):
         result: list = []
@@ -394,6 +400,10 @@ class IfDataParser:
     def consume(self) -> None:
         """Increment token stream position by one."""
         self.token_idx += 1
+
+    def rewind(self, n: int = 1) -> None:
+        """Back up token stream position by `n` elements."""
+        self.token_idx -= n
 
     def match(self, token_type: IfDataTokenType, value: Optional[Any] = None) -> bool:
         ok = self.current_token.type == token_type
