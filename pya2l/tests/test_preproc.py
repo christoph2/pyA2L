@@ -5,11 +5,15 @@ import sys
 
 import pytest
 
-from pya2l.preprocessor import Preprocessor
+try:
+    from pya2l.preprocessor import Preprocessor
+except ModuleNotFoundError:
+    Preprocessor = None
 
 BASE_DIR = pathlib.Path(__file__).absolute().parent
 
 
+@pytest.mark.skipif(Preprocessor is None, reason="Preprocessor not available")
 def test_singleline_ifdata():
     pre = Preprocessor()
     res = pre.process(BASE_DIR / "singleline_ifdata.a2l")
@@ -24,6 +28,7 @@ def test_singleline_ifdata():
     )
 
 
+@pytest.mark.skipif(Preprocessor is None, reason="Preprocessor not available")
 def test_multiple_ifdatas_per_line():
     pre = Preprocessor()
     res = pre.process(BASE_DIR / "multiple_ifdatas_per_line.a2l")
@@ -48,6 +53,7 @@ def test_multiple_ifdatas_per_line():
     assert data == '/begin IF_DATA CANAPE_EXT 100 LINK_MAP "wordCounter2" 0x12543c 0x0 0 0x0 1 0x8F 0x0 DISPLAY 0 0 31 /end IF_DATA'
 
 
+@pytest.mark.skipif(Preprocessor is None, reason="Preprocessor not available")
 def test_clean_ifdata():
     pre = Preprocessor()
     res = pre.process(BASE_DIR / "clean_ifdata.a2l")
@@ -77,6 +83,7 @@ def test_clean_ifdata():
     )
 
 
+@pytest.mark.skipif(Preprocessor is None, reason="Preprocessor not available")
 def test_notso_clean_ifdata1():
     pre = Preprocessor()
     res = pre.process(BASE_DIR / "notso_clean_ifdata.a2l")
@@ -90,6 +97,7 @@ def test_notso_clean_ifdata1():
     )
 
 
+@pytest.mark.skipif(Preprocessor is None, reason="Preprocessor not available")
 def test_notso_clean_ifdata2():
     pre = Preprocessor()
     res = pre.process(BASE_DIR / "notso_clean_ifdata2.a2l")
