@@ -5239,6 +5239,8 @@ class AMLTypeDefinition(Base):
 class AMLSection(Base):
     """ """
 
+    __tablename__ = "amlsection"
+
     text = Column(
         types.TEXT,
         default=None,

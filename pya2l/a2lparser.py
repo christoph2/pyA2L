@@ -16,7 +16,6 @@ from rich.progress import (
 
 import pya2l.a2lparser_ext as ext
 from pya2l import classes, model
-from pya2l.aml.ifdata_parser import IfDataParser
 from pya2l.logger import Logger
 from pya2l.utils import detect_encoding
 
@@ -463,7 +462,7 @@ class A2LParser:
                 attr = "fake"
                 mult = False
             self.traverse(kw, inst, attr, mult, level + 1)
-        if name != "root" and not isinstance(inst, bool):
+        if name not in ("root", "IfData") and not isinstance(inst, bool):
             self.db.session.add(inst)
 
 

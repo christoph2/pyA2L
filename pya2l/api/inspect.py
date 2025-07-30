@@ -199,7 +199,7 @@ def parse_if_data(parser, if_data: list):
     result = []
     for section in if_data:
         res = parser.parse(section.raw)
-        print(f"Parsed: {res}")
+        # print(f"Parsed: {res}")
         result.append(res)
     return result
 
