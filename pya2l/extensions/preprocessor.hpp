@@ -297,8 +297,9 @@ class Preprocessor {
                     }
                     if (include == true) {
                         auto _fn = token.payload();
+						trim(_fn);
 
-                        if (const auto incl_file = locate_file(_fn, path.parent_path().string()); incl_file.has_value()) {
+						if (const auto incl_file = locate_file(_fn, path.parent_path().string()); incl_file.has_value()) {
                             const auto length = (end_line - start_line_number);
                             update_line_map(abs_pth, line_offset, line_offset + length - 1, start_line_number, end_line - 1);
                             line_offset += length;

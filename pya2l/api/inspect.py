@@ -198,9 +198,12 @@ NATURAL_ALIGNMENTS = Alignment(byte=1, dword=4, float16=2, float32=4, float64=8,
 def parse_if_data(parser, if_data: list):
     result = []
     for section in if_data:
-        res = parser.parse(section.raw)
-        # print(f"Parsed: {res}")
-        result.append(res)
+        try:
+            res = parser.parse(section.raw)
+        except Exception as e:
+            print(f"Error parsing IF_DATA section: {section.raw!r}: {e!r}")
+        else:
+            result.append(res)
     return result
 
 
@@ -419,34 +422,6 @@ class MaxRefresh:
 class SymbolLink:
     symbolLink: Optional[str] = field(default=None)
     offset: Optional[int] = field(default=None)
-
-
-@dataclass
-class CompuTable:
-    num_values: Optional[int] = field(default=None)
-    interpolation: Optional[bool] = field(default=None)
-    default_value: Optional[float] = field(default=None)
-    in_values: List[float] = field(default_factory=list)
-    out_values: List[float] = field(default_factory=list)
-
-
-@dataclass
-class CompuTableVerb:
-    num_values: Optional[int] = field(default=None)
-    ranges: Optional[bool] = field(default=None)
-    default_value: Optional[str] = field(default=None)
-    in_values: List[float] = field(default_factory=list)
-    text_values: List[str] = field(default_factory=list)
-
-
-@dataclass
-class CompuTableVerbRanges:
-    num_values: Optional[int] = field(default=None)
-    ranges: Optional[bool] = field(default=None)
-    default_value: Optional[str] = field(default=None)
-    lower_values: List[float] = field(default_factory=list)
-    upper_values: List[float] = field(default_factory=list)
-    text_values: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -846,6 +821,89 @@ class NoCompuMethod(SingletonBase):
 
 
 @dataclass
+class CompuTab(CachedBase):
+    session: Any = field(repr=False)
+    compu_tab: model.CompuTab = field(repr=False)
+    name: str
+    longIdentifier: str
+    interpolation: bool
+    default_value: Optional[float] = field(default=None)
+    in_values: List[float] = field(default_factory=list)
+    out_values: List[float] = field(default_factory=list)
+
+    def __init__(self, session, name: str, module_name: Optional[str] = None):
+        self.session = session
+        compu_tab = session.query(model.CompuTab).filter(model.CompuTab.name == name)
+        if module_name is not None:
+            compu_tab.filter(model.CompuTab.module.name == module_name)
+        self.compu_tab = compu_tab.first()
+        if self.compu_tab is None:
+            raise ValueError(f"COMPU_TAB {name!r} does not exist.")
+        self.name = self.compu_tab.name
+        self.longIdentifier = self.compu_tab.longIdentifier
+        self.interpolation = True if self.compu_tab.conversionType == "TAB_INTP" else False
+        self.default_value = self.compu_tab.default_value_numeric.display_value if self.compu_tab.default_value_numeric else None
+        self.in_values = [x.inVal for x in self.compu_tab.pairs]
+        self.out_values = [x.outVal for x in self.compu_tab.pairs]
+
+
+@dataclass
+class CompuTabVerb(CachedBase):
+    session: Any = field(repr=False)
+    compu_tab_verb: model.CompuTab = field(repr=False)
+    name: str
+    longIdentifier: str
+    interpolation: bool
+    default_value: Optional[float] = field(default=None)
+    in_values: List[float] = field(default_factory=list)
+    text_values: List[str] = field(default_factory=list)
+
+    def __init__(self, session, name: str, module_name: Optional[str] = None):
+        self.session = session
+        compu_tab_verb = session.query(model.CompuVtab).filter(model.CompuVtab.name == name)
+        if module_name is not None:
+            compu_tab_verb.filter(model.CompuVtab.module.name == module_name)
+        self.compu_tab_verb = compu_tab_verb.first()
+        if self.compu_tab_verb is None:
+            raise ValueError(f"COMPU_VTAB {name!r} does not exist.")
+        self.name = self.compu_tab_verb.name
+        self.longIdentifier = self.compu_tab_verb.longIdentifier
+        self.interpolation = True if self.compu_tab_verb.conversionType == "TAB_INTP" else False
+        self.default_value = self.compu_tab_verb.default_value.display_string if self.compu_tab_verb.default_value else None
+        self.in_values = [x.inVal for x in self.compu_tab_verb.pairs]
+        self.text_values = [x.outVal for x in self.compu_tab_verb.pairs]
+
+
+@dataclass
+class CompuTableVerbRanges(CachedBase):
+    session: Any = field(repr=False)
+    compu_tab_verb_ranges: model.CompuTab = field(repr=False)
+    name: str
+    longIdentifier: str
+    default_value: Optional[float] = field(default=None)
+    lower_values: List[float] = field(default_factory=list)
+    upper_values: List[float] = field(default_factory=list)
+    text_values: List[str] = field(default_factory=list)
+
+    def __init__(self, session, name: str, module_name: Optional[str] = None):
+        self.session = session
+        compu_tab_verb_ranges = session.query(model.CompuVtabRange).filter(model.CompuVtabRange.name == name)
+        if module_name is not None:
+            compu_tab_verb_ranges.filter(model.CompuVtabRange.module.name == module_name)
+        self.compu_tab_verb_ranges = compu_tab_verb_ranges.first()
+        if self.compu_tab_verb_ranges is None:
+            raise ValueError(f"COMPU_VTAB_RANGE {name!r} does not exist.")
+        self.name = self.compu_tab_verb_ranges.name
+        self.longIdentifier = self.compu_tab_verb_ranges.longIdentifier
+        self.default_value = (
+            self.compu_tab_verb_ranges.default_value.display_string if self.compu_tab_verb_ranges.default_value else None
+        )
+        self.lower_values = [x.inValMin for x in self.compu_tab_verb_ranges.triples]
+        self.upper_values = [x.inValMax for x in self.compu_tab_verb_ranges.triples]
+        self.text_values = [x.outVal for x in self.compu_tab_verb_ranges.triples]
+
+
+@dataclass
 class CompuMethod(CachedBase):
     """Computation method for converting between internal and physical values.
 
@@ -886,6 +944,7 @@ class CompuMethod(CachedBase):
     """
 
     compu_method: model.CompuMethod = field(repr=False)
+    session: Any = field(repr=False)
     name: str
     longIdentifier: str
     conversionType: str
@@ -894,8 +953,9 @@ class CompuMethod(CachedBase):
     coeffs: Optional[Coeffs]
     coeffs_linear: Optional[CoeffsLinear]
     formula: Dict[str, Any]
-    tab: CompuTable
-    tab_verb: Union[CompuTableVerb, CompuTableVerbRanges]
+    tab: Optional[CompuTab]
+    tab_verb: Optional[CompuTabVerb]
+    tab_verb_ranges: Optional[CompuTableVerbRanges]
     statusStringRef: Optional[str]
     refUnit: Optional[str]
     evaluator: Callable = field(repr=False, default=Identical())
@@ -913,6 +973,7 @@ class CompuMethod(CachedBase):
             Name of the module, by default None
         """
         compu_method = session.query(model.CompuMethod).filter(model.CompuMethod.name == name)
+        self.session = session
         if module_name is not None:
             compu_method.filter(model.CompuMethod.name == module_name)
         self.compu_method = compu_method.first()
@@ -924,15 +985,15 @@ class CompuMethod(CachedBase):
         self.format = self.compu_method.format
         self.unit = self.compu_method.unit
         self.formula = {}
-        self.tab = {}
-        self.tab_verb = {}
+        self.tab = None
+        self.tab_verb = None
+        self.tab_verb_ranges = None
         self.statusStringRef = self.compu_method.status_string_ref.conversionTable if self.compu_method.status_string_ref else None
         self.refUnit = self.compu_method.ref_unit.unit if self.compu_method.ref_unit else None
         cm_type = self.conversionType
         self.coeffs_linear = None
         self.coeffs = None
-        self.tab = CompuTable()
-        self.tab_verb = CompuTableVerb()
+
         if cm_type == "IDENTICAL":
             pass
         elif cm_type == "FORM":
@@ -952,86 +1013,58 @@ class CompuMethod(CachedBase):
                 f=self.compu_method.coeffs.f,
             )
         elif cm_type in ("TAB_INTP", "TAB_NOINTP"):
-            cvt = (
-                session.query(model.CompuTab).filter(model.CompuTab.name == self.compu_method.compu_tab_ref.conversionTable).first()
-            )
-            pairs = cvt.pairs
-            self.tab = CompuTable(
-                num_values=len(pairs),
-                interpolation=True if cm_type == "TAB_INTP" else False,
-                default_value=cvt.default_value_numeric.display_value if cvt.default_value_numeric else None,
-                in_values=[x.inVal for x in pairs],
-                out_values=[x.outVal for x in pairs],
-            )
+            self.tab = CompuTab.get(self.session, name=self.compu_method.compu_tab_ref.conversionTable, module_name=module_name)
         elif cm_type == "TAB_VERB":
-            cvt = (
-                session.query(model.CompuVtab)
+            has_compu_vtab = self.session.query(
+                self.session.query(model.CompuVtab)
                 .filter(model.CompuVtab.name == self.compu_method.compu_tab_ref.conversionTable)
-                .first()
-            )
-            if cvt:
-                pairs = cvt.pairs
-                self.tab_verb = CompuTableVerb(
-                    ranges=False,
-                    num_values=len(pairs),
-                    default_value=cvt.default_value.display_string if cvt.default_value else None,
-                    in_values=[x.inVal for x in pairs],
-                    text_values=[x.outVal for x in pairs],
+                .exists()
+            ).scalar()
+            if has_compu_vtab:
+                self.tab_verb = CompuTabVerb.get(
+                    self.session, name=self.compu_method.compu_tab_ref.conversionTable, module_name=module_name
                 )
             else:
-                cvt = (
-                    session.query(model.CompuVtabRange)
-                    .filter(model.CompuVtabRange.name == self.compu_method.compu_tab_ref.conversionTable)
-                    .first()
+                self.tab_verb_ranges = CompuTableVerbRanges.get(
+                    self.session, name=self.compu_method.compu_tab_ref.conversionTable, module_name=module_name
                 )
-                if cvt:
-                    triples = cvt.triples
-                    self.tab_verb = CompuTableVerbRanges(
-                        ranges=True,
-                        num_values=len(triples),
-                        lower_values=[x.inValMin for x in triples],
-                        upper_values=[x.inValMax for x in triples],
-                        text_values=[x.outVal for x in triples],
-                        default_value=cvt.default_value.display_string if cvt.default_value else None,
-                    )
-        conversionType = cm_type
-        if conversionType in ("IDENTICAL", "NO_COMPU_METHOD"):
+        # Set evaluator.
+        if cm_type in ("IDENTICAL", "NO_COMPU_METHOD"):
             self.evaluator = Identical()
-        elif conversionType == "FORM":
+        elif cm_type == "FORM":
             formula = self.formula["formula"]
             formula_inv = self.formula["formula_inv"]
             mod_par = ModPar.get(session)
             system_constants = mod_par.systemConstants
             self.evaluator = Formula(formula, formula_inv, system_constants)
-        elif conversionType == "LINEAR":
+        elif cm_type == "LINEAR":
             coeffs = self.coeffs_linear
             if coeffs is None:
                 raise exceptions.StructuralError("'LINEAR' requires coefficients (COEFFS_LINEAR).")
             self.evaluator = Linear(coeffs)
-        elif conversionType == "RAT_FUNC":
+        elif cm_type == "RAT_FUNC":
             coeffs = self.coeffs
             if coeffs is None:
                 raise exceptions.StructuralError("'RAT_FUNC' requires coefficients (COEFFS).")
             self.evaluator = RatFunc(coeffs)
-        elif conversionType in ("TAB_INTP", "TAB_NOINTP"):
+        elif cm_type in ("TAB_INTP", "TAB_NOINTP"):
             klass = InterpolatedTable if self.tab.interpolation else LookupTable
             pairs = zip(self.tab.in_values, self.tab.out_values)
             default = self.tab.default_value
             self.evaluator = klass(pairs, default)
-        elif conversionType == "TAB_VERB":
-            default = self.tab_verb.default_value
-            if self.tab_verb.ranges:
-                triples = zip(
-                    self.tab_verb.lower_values,
-                    self.tab_verb.upper_values,
-                    self.tab_verb.text_values,
-                )
-                self.evaluator = LookupTableWithRanges(triples, default)
-            else:
+        elif cm_type == "TAB_VERB":
+            if self.tab_verb is not None:
                 pairs = zip(self.tab_verb.in_values, self.tab_verb.text_values)
-                self.evaluator = LookupTable(pairs, default)
+                self.evaluator = LookupTable(pairs, self.tab_verb.default_value)
+            else:
+                triples = zip(
+                    self.tab_verb_ranges.lower_values,
+                    self.tab_verb_ranges.upper_values,
+                    self.tab_verb_ranges.text_values,
+                )
+                self.evaluator = LookupTableWithRanges(triples, self.tab_verb_ranges.default_value)
         else:
-            raise ValueError(f"Unknown conversation type '{conversionType}'.")
+            raise ValueError(f"Unknown conversation type '{cm_type}'.")
 
     def int_to_physical(self, i: Union[int, float, Any]) -> Any:
         """Convert internal value to physical value.
@@ -1666,7 +1699,8 @@ def create_record_layout_components(parent) -> Dict:
             axis_info = AxisInfo(
                 data_type=axis_rescale.data_type,
                 category="RES_AXIS",
-                maximum_element_count=axis_rescale.maxNumberOfRescalePairs,  # NOTE: Element count here is number of *PAIRS*
+                maximum_element_count=axis_rescale.maxNumberOfRescalePairs,
+                # NOTE: Element count here is number of *PAIRS*
                 reversed_storage=reversed_storage,
                 addressing=axis_rescale.addressing,
                 adjustable=adjustable,
@@ -3215,7 +3249,6 @@ class VariantCoding(CachedBase):
     def __init__(self, session, name: str = None, module_name: str = None):
         variant_coding = session.query(model.VariantCoding)
         if module_name is not None:
-            print("VCM", module_name, dir(model.VariantCoding.module))
             variant_coding.filter(model.VariantCoding.module.name == module_name)
         variant_coding = variant_coding.first()
         self.session = session
@@ -3392,9 +3425,9 @@ class Module(CachedBase):
     Element("Blob", "BLOB", True),
             Element("Characteristic", "CHARACTERISTIC", True),
             Element("CompuMethod", "COMPU_METHOD", True),
-    Element("CompuTab", "COMPU_TAB", True),
-    Element("CompuVtab", "COMPU_VTAB", True),
-    Element("CompuVtabRange", "COMPU_VTAB_RANGE", True),
+            Element("CompuTab", "COMPU_TAB", True),
+            Element("CompuVtab", "COMPU_VTAB", True),
+            Element("CompuVtabRange", "COMPU_VTAB_RANGE", True),
     *** Element("Frame", "FRAME", False),
             Element("Function", "FUNCTION", True),
             Element("Group", "GROUP", True),
@@ -3403,7 +3436,7 @@ class Module(CachedBase):
             Element("Measurement", "MEASUREMENT", True),
             *** Element("ModCommon", "MOD_COMMON", False),
             *** Element("ModPar", "MOD_PAR", False),
-        Element("RecordLayout", "RECORD_LAYOUT", True),
+            Element("RecordLayout", "RECORD_LAYOUT", True),
     Element("Transformer", "TRANSFORMER", True),
     Element("TypedefAxis", "TYPEDEF_AXIS", True),
     Element("TypedefCharacteristic", "TYPEDEF_CHARACTERISTIC", True),
@@ -3418,7 +3451,7 @@ class Module(CachedBase):
     module: model.Module = field(repr=False)
     name: str
     longIdentifier: str
-    characteristic: list = field(default_factory=list)
+    characteristic: FilteredList
 
     def __init__(self, session, name: Optional[str] = None):
         self.session = session
@@ -3435,6 +3468,9 @@ class Module(CachedBase):
 
         self.characteristic = FilteredList(self.session, self.module.characteristic, Characteristic)
         self.compu_method = FilteredList(self.session, self.module.compu_method, CompuMethod)
+        self.compu_tab = FilteredList(self.session, self.module.compu_tab, CompuTab)
+        self.compu_tab_verb = FilteredList(self.session, self.module.compu_vtab, CompuTabVerb)
+        self.compu_tab_verb_ranges = FilteredList(self.session, self.module.compu_vtab_range, CompuTableVerbRanges)
 
         self.function = FilteredList(self.session, self.module.function, Function)
         self.group = FilteredList(self.session, self.module.group, Group, "groupName")

@@ -206,7 +206,6 @@ class IfDataParser:
             self.leave()
             self.match(IfDataTokenType.END)
             self.match(IfDataTokenType.IDENT, tk_value)
-            # return {tk_value: result}
             return result
         else:
             raise TypeError(f"Expected IDENT got {tk_type}[{tk_value!r}].")
@@ -303,7 +302,9 @@ class IfDataParser:
     def struct(self):
         result: list = []
         for member in self.syntax_tos.members:
-            result.append(self.enter(member.node))
+            tmp_res = self.enter(member.node)
+            if tmp_res != {}:
+                result.append(tmp_res)
             self.leave()
         return result
 
@@ -407,6 +408,14 @@ class IfDataParser:
 
     def match(self, token_type: IfDataTokenType, value: Optional[Any] = None) -> bool:
         ok = self.current_token.type == token_type
+        if not ok:
+            print(f"{token_type!r} not matched against {self.current_token.type!r}")
+            while True:
+                self.consume()
+                la = self.lookahead(0)
+                if la.type == token_type:
+                    ok = True
+                    break
         token_value = self.current_token.value
         self.consume()
         if value is None:
