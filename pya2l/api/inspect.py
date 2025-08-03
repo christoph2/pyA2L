@@ -618,7 +618,7 @@ class CachedBase:
             try:
                 inst = cls(session, name, module_name, *args)
             except Exception as e:
-                print(f"CachedBase.get({name}): {e!r}")
+                print(f"{cls.__name__}.get({name!r}): {e!r}")
                 return None
             cls._cache[entry] = inst
             cls._strong_ref.append(inst)
@@ -1830,7 +1830,7 @@ class AxisPts(CachedBase):
         self.longIdentifier = self.axis.longIdentifier
         self.address = self.axis.address
         self.inputQuantity = self.axis.inputQuantity  # REF: Measurement
-        self.depositAttr = RecordLayout(session, self.axis.depositAttr)
+        self.depositAttr = RecordLayout.get(session, self.axis.depositAttr)
         self.deposit = self.axis.deposit.mode if self.axis.deposit else None
         self.maxDiff = self.axis.maxDiff
         self._conversionRef = self.axis.conversion
@@ -1853,7 +1853,7 @@ class AxisPts(CachedBase):
         self.refMemorySegment = self.axis.ref_memory_segment.name if self.axis.ref_memory_segment else None
         self.stepSize = self.axis.step_size
         self.symbolLink = self._dissect_symbol_link(self.axis.symbol_link)
-        self.record_layout_components = create_record_layout_components(self)
+        self.record_layout_components = create_record_layout_components(self) if self.depositAttr else None
 
     @property
     def record_layout(self) -> RecordLayout:
@@ -2065,7 +2065,7 @@ class Characteristic(CachedBase):
         self.longIdentifier = self.characteristic.longIdentifier
         self.type = self.characteristic.type
         self.address = self.characteristic.address
-        self.deposit = RecordLayout(session, self.characteristic.deposit, module_name)
+        self.deposit = RecordLayout.get(session, self.characteristic.deposit, module_name)
         self.maxDiff = self.characteristic.maxDiff
         self._conversionRef = self.characteristic.conversion
         self.compuMethod = (
@@ -2114,7 +2114,7 @@ class Characteristic(CachedBase):
             )
         else:
             self.virtual_characteristic = None
-        self.record_layout_components = create_record_layout_components(self)
+        self.record_layout_components = create_record_layout_components(self) if self.deposit else None
         self.fnc_np_shape: tuple = ()
         if self.matrixDim.valid():
             self.fnc_np_shape = fnc_np_shape(self.matrixDim)
@@ -3000,7 +3000,7 @@ class StructureComponent(CachedBase):
             raise ValueError(f"STRUCTURE_COMPONENT {name!r} does not exist.")
 
         self.name = self.component.name
-        self.deposit = RecordLayout(session, self.component.deposit, module_name)
+        self.deposit = RecordLayout.get(session, self.component.deposit, module_name)
         self.offset = self.component.offset
         self.link = self.component.link
         self.symbol = self.component.symbol
@@ -3190,7 +3190,7 @@ class TypedefCharacteristic(CachedBase):
         self.longIdentifier = self.typedef.longIdentifier
         self.type = self.typedef.type
         self._conversionRef = self.typedef.conversion
-        self.deposit = RecordLayout(session, self.typedef.deposit, module_name)
+        self.deposit = RecordLayout.get(session, self.typedef.deposit, module_name)
         self.maxDiff = self.typedef.maxDiff
         self.lowerLimit = self.typedef.lowerLimit
         self.upperLimit = self.typedef.upperLimit
