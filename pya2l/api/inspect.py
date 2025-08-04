@@ -29,7 +29,18 @@ from dataclasses import asdict, dataclass, field
 from enum import IntEnum
 from functools import cached_property, reduce
 from operator import attrgetter, mul
-from typing import Any, Callable, Dict, Generator, Generic, List, Optional, Tuple, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generator,
+    Generic,
+    List,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 from sqlalchemy import exists, not_
 
@@ -49,6 +60,7 @@ from pya2l.functions import (
     RatFunc,
 )
 from pya2l.utils import SingletonBase, align_as, enum_from_str, ffs
+
 
 T = TypeVar("T")
 
@@ -571,6 +583,7 @@ def fnc_np_order(order: Optional[str]) -> Optional[str]:
     else:
         return None
 
+
 class FilteredList(Generic[T]):
 
     def __init__(self, session, association, klass: T, attr_name: str = "name") -> None:
@@ -579,7 +592,7 @@ class FilteredList(Generic[T]):
         self.klass = klass
         self.attribute = attrgetter(attr_name)
 
-    def query(self, criterion: Optional[Callable] = None) -> Generator[T]:
+    def query(self, criterion: Optional[Callable] = None) -> Generator:
         if criterion is None:
             criterion = lambda x: x
         for row in self.association:
@@ -3426,7 +3439,7 @@ class UserRights(CachedBase):
     session: Any = field(repr=False)
     user_rights: model.UserRights = field(repr=False)
     userLevelId: str
-    
+
     def __init__(self, session, userLevelId: str, module_name: Optional[str] = None):
         self.session = session
         user_rights = session.query(model.UserRights).filter(model.UserRights.userLevelId == userLevelId)
@@ -3435,9 +3448,9 @@ class UserRights(CachedBase):
         self.user_rights = user_rights.first()
         if self.user_rights is None:
             raise ValueError(f"USER_RIGHTS {userLevelId!r} does not exist.")
-        self.userLevelId = self.user_rights.userLevelId    
-    
-    
+        self.userLevelId = self.user_rights.userLevelId
+
+
 @dataclass
 class Module(CachedBase):
     """
@@ -3488,7 +3501,6 @@ class Module(CachedBase):
     unit: FilteredList[Unit]
     user_rights: FilteredList[UserRights]
     variant_coding: Optional[VariantCoding]
-
 
     def __init__(self, session, name: Optional[str] = None):
         self.session = session
