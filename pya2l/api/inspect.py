@@ -29,7 +29,7 @@ from dataclasses import asdict, dataclass, field
 from enum import IntEnum
 from functools import cached_property, reduce
 from operator import attrgetter, mul
-from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Generator, Generic, List, Optional, Tuple, TypeVar, Union
 
 from sqlalchemy import exists, not_
 
@@ -50,6 +50,7 @@ from pya2l.functions import (
 )
 from pya2l.utils import SingletonBase, align_as, enum_from_str, ffs
 
+T = TypeVar("T")
 
 DB_CACHE_SIZE = 4096  # Completly arbitrary, could be configurable.
 
@@ -570,6 +571,22 @@ def fnc_np_order(order: Optional[str]) -> Optional[str]:
     else:
         return None
 
+class FilteredList(Generic[T]):
+
+    def __init__(self, session, association, klass: T, attr_name: str = "name") -> None:
+        self.session = session
+        self.association = association
+        self.klass = klass
+        self.attribute = attrgetter(attr_name)
+
+    def query(self, criterion: Optional[Callable] = None) -> Generator[T]:
+        if criterion is None:
+            criterion = lambda x: x
+        for row in self.association:
+            if criterion(row):
+                xn = self.klass.get(self.session, self.attribute(row))
+                yield xn
+
 
 class CachedBase:
     """Base class for all user classes in this module, implementing a cache manager.
@@ -877,7 +894,7 @@ class CompuTabVerb(CachedBase):
 
 
 @dataclass
-class CompuTableVerbRanges(CachedBase):
+class CompuTabVerbRanges(CachedBase):
     session: Any = field(repr=False)
     compu_tab_verb_ranges: model.CompuTab = field(repr=False)
     name: str
@@ -935,7 +952,7 @@ class CompuMethod(CachedBase):
         Formula for conversion
     tab : CompuTable
         Table for numeric conversion
-    tab_verb : Union[CompuTableVerb, CompuTableVerbRanges]
+    tab_verb : Union[CompuTableVerb, CompuTabVerbRanges]
         Table for verbal conversion
     statusStringRef : Optional[str]
         Reference to status strings
@@ -957,7 +974,7 @@ class CompuMethod(CachedBase):
     formula: Dict[str, Any]
     tab: Optional[CompuTab]
     tab_verb: Optional[CompuTabVerb]
-    tab_verb_ranges: Optional[CompuTableVerbRanges]
+    tab_verb_ranges: Optional[CompuTabVerbRanges]
     statusStringRef: Optional[str]
     refUnit: Optional[str]
     evaluator: Callable = field(repr=False, default=Identical())
@@ -1027,7 +1044,7 @@ class CompuMethod(CachedBase):
                     self.session, name=self.compu_method.compu_tab_ref.conversionTable, module_name=module_name
                 )
             else:
-                self.tab_verb_ranges = CompuTableVerbRanges.get(
+                self.tab_verb_ranges = CompuTabVerbRanges.get(
                     self.session, name=self.compu_method.compu_tab_ref.conversionTable, module_name=module_name
                 )
         # Set evaluator.
@@ -3402,23 +3419,25 @@ class Unit(CachedBase):
             return None
 
 
-class FilteredList:
+@dataclass
+class UserRights(CachedBase):
+    """"""
 
-    def __init__(self, session, association, klass, attr_name: str = "name"):
+    session: Any = field(repr=False)
+    user_rights: model.UserRights = field(repr=False)
+    userLevelId: str
+    
+    def __init__(self, session, userLevelId: str, module_name: Optional[str] = None):
         self.session = session
-        self.association = association
-        self.klass = klass
-        self.attribute = attrgetter(attr_name)
-
-    def query(self, criterion: Optional[Callable] = None) -> Generator:
-        if criterion is None:
-            criterion = lambda x: x
-        for row in self.association:
-            if criterion(row):
-                xn = self.klass.get(self.session, self.attribute(row))
-                yield xn
-
-
+        user_rights = session.query(model.UserRights).filter(model.UserRights.userLevelId == userLevelId)
+        if module_name is not None:
+            user_rights.filter(model.UserRights.module.name == module_name)
+        self.user_rights = user_rights.first()
+        if self.user_rights is None:
+            raise ValueError(f"USER_RIGHTS {userLevelId!r} does not exist.")
+        self.userLevelId = self.user_rights.userLevelId    
+    
+    
 @dataclass
 class Module(CachedBase):
     """
@@ -3453,7 +3472,23 @@ class Module(CachedBase):
     module: model.Module = field(repr=False)
     name: str
     longIdentifier: str
-    characteristic: FilteredList
+    axis_pts: FilteredList[AxisPts]
+    characteristic: FilteredList[Characteristic]
+    compu_method: FilteredList[CompuMethod]
+    compu_tab: FilteredList[CompuTab]
+    compu_tab_verb: FilteredList[CompuTabVerb]
+    compu_tab_verb_ranges: FilteredList[CompuTabVerbRanges]
+    function: FilteredList[Function]
+    group: FilteredList[Group]
+    if_data: Dict[str, Any]
+    measurement: FilteredList[Measurement]
+    mod_common: Optional[ModCommon]
+    mod_par: Optional[ModPar]
+    record_layout: FilteredList[RecordLayout]
+    unit: FilteredList[Unit]
+    user_rights: FilteredList[UserRights]
+    variant_coding: Optional[VariantCoding]
+
 
     def __init__(self, session, name: Optional[str] = None):
         self.session = session
@@ -3472,7 +3507,7 @@ class Module(CachedBase):
         self.compu_method = FilteredList(self.session, self.module.compu_method, CompuMethod)
         self.compu_tab = FilteredList(self.session, self.module.compu_tab, CompuTab)
         self.compu_tab_verb = FilteredList(self.session, self.module.compu_vtab, CompuTabVerb)
-        self.compu_tab_verb_ranges = FilteredList(self.session, self.module.compu_vtab_range, CompuTableVerbRanges)
+        self.compu_tab_verb_ranges = FilteredList(self.session, self.module.compu_vtab_range, CompuTabVerbRanges)
 
         self.function = FilteredList(self.session, self.module.function, Function)
         self.group = FilteredList(self.session, self.module.group, Group, "groupName")

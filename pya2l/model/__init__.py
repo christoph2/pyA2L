@@ -4893,7 +4893,7 @@ class VariantCoding(Base):
     var_naming = relationship("VarNaming", back_populates="variant_coding", uselist=False)
     var_separator = relationship("VarSeparator", back_populates="variant_coding", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="variant_coding", uselist=False)
+    module = relationship("Module", back_populates="variant_coding") # uselist=False, , single_parent=True
 
 
 class VarCharacteristic(Base):
