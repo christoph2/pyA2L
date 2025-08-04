@@ -196,6 +196,8 @@ NATURAL_ALIGNMENTS = Alignment(byte=1, dword=4, float16=2, float32=4, float64=8,
 
 
 def parse_if_data(parser, if_data: list):
+    if if_data is None:
+        return []
     result = []
     for section in if_data:
         try:
@@ -835,7 +837,7 @@ class CompuTab(CachedBase):
         self.session = session
         compu_tab = session.query(model.CompuTab).filter(model.CompuTab.name == name)
         if module_name is not None:
-            compu_tab.filter(model.CompuTab.module.name == module_name)
+            compu_tab.join(model.Module).filter(model.Module.name == module_name)
         self.compu_tab = compu_tab.first()
         if self.compu_tab is None:
             raise ValueError(f"COMPU_TAB {name!r} does not exist.")
@@ -862,7 +864,7 @@ class CompuTabVerb(CachedBase):
         self.session = session
         compu_tab_verb = session.query(model.CompuVtab).filter(model.CompuVtab.name == name)
         if module_name is not None:
-            compu_tab_verb.filter(model.CompuVtab.module.name == module_name)
+            compu_tab_verb.join(model.Module).filter(model.Module.name == module_name)
         self.compu_tab_verb = compu_tab_verb.first()
         if self.compu_tab_verb is None:
             raise ValueError(f"COMPU_VTAB {name!r} does not exist.")
@@ -889,7 +891,7 @@ class CompuTableVerbRanges(CachedBase):
         self.session = session
         compu_tab_verb_ranges = session.query(model.CompuVtabRange).filter(model.CompuVtabRange.name == name)
         if module_name is not None:
-            compu_tab_verb_ranges.filter(model.CompuVtabRange.module.name == module_name)
+            compu_tab_verb_ranges.join(model.Module).filter(model.Module.name == module_name)
         self.compu_tab_verb_ranges = compu_tab_verb_ranges.first()
         if self.compu_tab_verb_ranges is None:
             raise ValueError(f"COMPU_VTAB_RANGE {name!r} does not exist.")
@@ -975,7 +977,7 @@ class CompuMethod(CachedBase):
         compu_method = session.query(model.CompuMethod).filter(model.CompuMethod.name == name)
         self.session = session
         if module_name is not None:
-            compu_method.filter(model.CompuMethod.name == module_name)
+            compu_method.join(model.Module).filter(model.Module.name == module_name)
         self.compu_method = compu_method.first()
         if self.compu_method is None:
             raise ValueError(f"COMPU_METHOD {name!r} does not exist.")
@@ -1468,7 +1470,7 @@ class RecordLayout(CachedBase):
     def __init__(self, session, name: str, module_name: str = None):
         layout = session.query(model.RecordLayout).filter(model.RecordLayout.name == name)
         if module_name is not None:
-            layout.filter(model.RecordLayout.module.name == module_name)
+            layout.join(model.Module).filter(model.Module.name == module_name)
         self.layout = layout.first()
         if self.layout is None:
             raise ValueError(f"RECORD_LAYOUT {name!r} does not exist.")
@@ -1822,7 +1824,7 @@ class AxisPts(CachedBase):
     def __init__(self, session, name: str, module_name: str = None):
         axis = session.query(model.AxisPts).filter(model.AxisPts.name == name)
         if module_name is not None:
-            axis.filter(model.AxisPts.module.name == module_name)
+            axis.join(model.Module).filter(model.Module.name == module_name)
         self.axis = axis.first()
         if self.axis is None:
             raise ValueError(f"AXIS {name!r} does not exist.")
@@ -2057,7 +2059,7 @@ class Characteristic(CachedBase):
     def __init__(self, session, name: str, module_name: str = None):
         characteristic = session.query(model.Characteristic).filter(model.Characteristic.name == name)
         if module_name is not None:
-            characteristic.filter(model.Characteristic.module.name == module_name)
+            characteristic.join(model.Module).filter(model.Module.name == module_name)
         self.characteristic = characteristic.first()
         if self.characteristic is None:
             raise ValueError(f"CHARACTERISTIC {name!r} does not exist.")
@@ -2548,7 +2550,7 @@ class Measurement(CachedBase):
     def __init__(self, session, name: str, module_name: str = None):
         measurement = session.query(model.Measurement).filter(model.Measurement.name == name)
         if module_name is not None:
-            measurement.filter(model.Measurement.module.name == module_name)
+            measurement.join(model.Module).filter(model.Module.name == module_name)
         self.measurement = measurement.first()
         if self.measurement is None:
             raise ValueError(f"MEASUREMENT {name!r} does not exist.")
@@ -2672,7 +2674,7 @@ class Function(CachedBase):
         self.session = session
         function = session.query(model.Function).filter(model.Function.name == name)
         if module_name is not None:
-            function.filter(model.Function.module.name == module_name)
+            function.join(model.Module).filter(model.Module.name == module_name)
         self.function = function.first()
         if self.function is None:
             raise ValueError(f"FUNCTION {name!r} does not exist.")
@@ -2828,7 +2830,7 @@ class Group(CachedBase):
         self.session = session
         group = session.query(model.Group).filter(model.Group.groupName == name)
         if module_name is not None:
-            group.filter(model.Group.module.name == module_name)
+            group.join(model.Module).filter(model.Module.name == module_name)
         self.group = group.first()
         if self.group is None:
             raise ValueError(f"GROUP {name!r} does not exist.")
@@ -2934,7 +2936,7 @@ class TypedefStructure(CachedBase):
         self.session = session
         typedef = session.query(model.TypedefStructure).filter(model.TypedefStructure.name == name)
         if module_name is not None:
-            typedef.filter(model.TypedefStructure.module.name == module_name)
+            typedef.join(model.Module).filter(model.Module.name == module_name)
         self.typedef = typedef.first()
         if self.typedef is None:
             raise ValueError(f"TYPEDEF_STRUCTURE {name!r} does not exist.")
@@ -2994,7 +2996,7 @@ class StructureComponent(CachedBase):
         self.session = session
         component = session.query(model.StructureComponent).filter(model.StructureComponent.name == name)
         if module_name is not None:
-            component.filter(model.StructureComponent.module.name == module_name)
+            component.join(model.Module).filter(model.Module.name == module_name)
         self.component = component.first()
         if self.component is None:
             raise ValueError(f"STRUCTURE_COMPONENT {name!r} does not exist.")
@@ -3045,7 +3047,7 @@ class Instance(CachedBase):
         self.session = session
         instance = session.query(model.Instance).filter(model.Instance.name == name)
         if module_name is not None:
-            instance.filter(model.Instance.module.name == module_name)
+            instance.join(model.Module).filter(model.Module.name == module_name)
         self.instance = instance.first()
         if self.instance is None:
             raise ValueError(f"INSTANCE {name!r} does not exist.")
@@ -3114,7 +3116,7 @@ class TypedefMeasurement(CachedBase):
     def __init__(self, session, name: str, module_name: str = None):
         typedef = session.query(model.TypedefMeasurement).filter(model.TypedefMeasurement.name == name)
         if module_name is not None:
-            typedef.filter(model.TypedefMeasurement.module.name == module_name)
+            typedef.join(model.Module).filter(model.Module.name == module_name)
         self.typedef = typedef.first()
         if self.typedef is None:
             raise ValueError(f"TYPEDEF_MEASUREMENT {name!r} does not exist.")
@@ -3182,7 +3184,7 @@ class TypedefCharacteristic(CachedBase):
     def __init__(self, session, name: str, module_name: str = None):
         typedef = session.query(model.TypedefCharacteristic).filter(model.TypedefCharacteristic.name == name)
         if module_name is not None:
-            typedef.filter(model.TypedefMeasurement.module.name == module_name)
+            typedef.join(model.Module).filter(model.Module.name == module_name)
         self.typedef = typedef.first()
         if self.typedef is None:
             raise ValueError(f"TYPEDEF_CHARACTERISTIC {name!r} does not exist.")
@@ -3249,7 +3251,7 @@ class VariantCoding(CachedBase):
     def __init__(self, session, name: str = None, module_name: str = None):
         variant_coding = session.query(model.VariantCoding)
         if module_name is not None:
-            variant_coding.filter(model.VariantCoding.module.name == module_name)
+            variant_coding.join(model.Module).filter(model.Module.name == module_name)
         variant_coding = variant_coding.first()
         self.session = session
         if variant_coding:
@@ -3365,7 +3367,7 @@ class Unit(CachedBase):
         self.session = session
         unit = session.query(model.Unit).filter(model.Unit.name == name)
         if module_name is not None:
-            unit.filter(model.Unit.module.name == module_name)
+            unit.join(model.Module).filter(model.Module.name == module_name)
         self.unit = unit.first()
         if self.unit is None:
             raise ValueError(f"UNIT {name!r} does not exist.")
@@ -3477,8 +3479,8 @@ class Module(CachedBase):
         self.if_data = parse_if_data(self.ifdata_parser, self.module.if_data)
 
         self.measurement = FilteredList(self.session, self.module.measurement, Measurement)
-        self.mod_common = ModCommon.get(self.session, self.name)
-        self.mod_par = ModPar.get(self.session, self.name)
+        self.mod_common = ModCommon.get(self.session, self.name, module_name=self.module.name)
+        self.mod_par = ModPar.get(self.session, self.name, module_name=self.module.name)
 
         self.record_layout = FilteredList(self.session, self.module.record_layout, RecordLayout)
 
