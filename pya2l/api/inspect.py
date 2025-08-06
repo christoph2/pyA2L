@@ -47,7 +47,6 @@ from sqlalchemy import exists, not_
 import pya2l.model as model
 from pya2l import exceptions
 from pya2l.a2lparser_ext import process_sys_consts
-from pya2l.aml.ifdata_parser import IfDataParser
 from pya2l.functions import (
     Coeffs,
     CoeffsLinear,
@@ -206,20 +205,6 @@ class Alignment:
 
 
 NATURAL_ALIGNMENTS = Alignment(byte=1, dword=4, float16=2, float32=4, float64=8, qword=8, word=2)
-
-
-def parse_if_data(parser, if_data: list):
-    if if_data is None:
-        return []
-    result = []
-    for section in if_data:
-        try:
-            res = parser.parse(section.raw)
-        except Exception as e:
-            print(f"Error parsing IF_DATA section: {section.raw!r}: {e!r}")
-        else:
-            result.append(res)
-    return result
 
 
 @dataclass
@@ -655,6 +640,10 @@ class CachedBase:
             cls._cache[entry] = inst
             cls._strong_ref.append(inst)
         return cls._cache[entry]
+
+    @classmethod
+    def inny(cls):
+        print("INNY: ", cls.__name__)
 
 
 class NoCompuMethod(SingletonBase):
@@ -3284,6 +3273,11 @@ class VariantCoding(CachedBase):
             variant_coding.join(model.Module).filter(model.Module.name == module_name)
         variant_coding = variant_coding.first()
         self.session = session
+        self.naming = None
+        self.separator = None
+        self.criterions = []
+        self.characteristics = []
+        self.forbidden_combs = []
         if variant_coding:
             self.variant_coded = True
             self.naming = variant_coding.var_naming.tag if variant_coding.var_naming else "NUMERIC"
@@ -3511,8 +3505,6 @@ class Module(CachedBase):
         self.name = self.module.name
         self.longIdentifier = self.module.longIdentifier
 
-        self.ifdata_parser = IfDataParser(self.session)
-
         self.axis_pts = FilteredList(self.session, self.module.axis_pts, AxisPts)
 
         self.characteristic = FilteredList(self.session, self.module.characteristic, Characteristic)
@@ -3523,7 +3515,7 @@ class Module(CachedBase):
 
         self.function = FilteredList(self.session, self.module.function, Function)
         self.group = FilteredList(self.session, self.module.group, Group, "groupName")
-        self.if_data = parse_if_data(self.ifdata_parser, self.module.if_data)
+        self.if_data = self.session.parse_ifdata(self.module.if_data)
 
         self.measurement = FilteredList(self.session, self.module.measurement, Measurement)
         self.mod_common = ModCommon.get(self.session, self.name, module_name=self.module.name)
@@ -3532,5 +3524,42 @@ class Module(CachedBase):
         self.record_layout = FilteredList(self.session, self.module.record_layout, RecordLayout)
 
         self.unit = FilteredList(self.session, self.module.unit, Unit)
+        self.user_rights = FilteredList(self.session, self.module.user_rights, UserRights, "userLevelId")
 
         self.variant_coding = VariantCoding.get(self.session, module_name=self.module.name)
+
+
+@dataclass
+class Project:
+    """"""
+
+    session: Any = field(repr=False)
+    project: model.Project = field(repr=False)
+    name: str
+    longIdentifier: str
+    comment: Optional[str]
+    projectNumber: Optional[str]
+    version: Optional[str]
+    module: List[Module]
+
+    def __init__(self, session, file_name: str = ""):
+        self.session = session
+        project = session.query(model.Project).first()
+        self.project = project
+        self.name = project.name
+        self.longIdentifier = project.longIdentifier
+        if project.header:
+            self.comment = project.header.comment
+            if project.header.project_no:
+                self.projectNumber = project.header.project_no.projectNumber
+            else:
+                self.projectNumber = None
+            if project.header.version:
+                self.version = project.header.version.versionIdentifier
+            else:
+                self.version = None
+        else:
+            self.comment = None
+        self.module = []
+        for mod in project.module:
+            self.module.append(Module(self.session, mod.name))

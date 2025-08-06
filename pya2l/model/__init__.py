@@ -29,6 +29,7 @@ import mmap
 import pickle
 import re
 import sqlite3
+from typing import Any, List, Optional
 
 from sqlalchemy import Column, ForeignKey, Index, create_engine, event, orm, types
 from sqlalchemy.engine import Engine
@@ -4893,7 +4894,7 @@ class VariantCoding(Base):
     var_naming = relationship("VarNaming", back_populates="variant_coding", uselist=False)
     var_separator = relationship("VarSeparator", back_populates="variant_coding", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
-    module = relationship("Module", back_populates="variant_coding") # uselist=False, , single_parent=True
+    module = relationship("Module", back_populates="variant_coding")  # uselist=False, , single_parent=True
 
 
 class VarCharacteristic(Base):
@@ -5253,6 +5254,48 @@ class AMLSection(Base):
     )
 
 
+class SessionProxy:
+
+    def __init__(self, session):
+        self._session = session
+        self._ifdata_parser = None
+
+    def setup_ifdata_parser(self):
+        self._ifdata_parser = IfDataParser(self._session)
+
+    def __getattr__(self, name: str):
+        return getattr(self._session, name)
+
+    def parse_ifdata(self, sections: List[str]):
+        if self._ifdata_parser is None or not self._ifdata_parser.root or not sections:
+            return []
+        else:
+            result = []
+            for section in sections:
+                try:
+                    res = self._ifdata_parser.parse(section.raw)
+                except Exception as e:
+                    print(f"Error parsing IF_DATA section: {section.raw!r}: {e!r}")
+                else:
+                    result.append(res)
+            return result
+
+    """
+    def parse_if_data(parser, if_data: list):
+    if if_data is None:
+        return []
+    result = []
+    for section in if_data:
+        try:
+            res = parser.parse(section.raw)
+        except Exception as e:
+            print(f"Error parsing IF_DATA section: {section.raw!r}: {e!r}")
+        else:
+            result.append(res)
+    return result
+    """
+
+
 class A2LDatabase:
     def __init__(self, filename, debug=False, logLevel="INFO"):
         if filename == ":memory:":
@@ -5269,21 +5312,14 @@ class A2LDatabase:
             native_datetime=True,
         )
 
-        self._session = orm.Session(self._engine, autoflush=False, autocommit=False)
+        self._session = SessionProxy(orm.Session(self._engine, autoflush=False, autocommit=False))
         self._metadata = Base.metadata
-        # loadInitialData(Node)
         Base.metadata.create_all(self.engine)
         meta = MetaData(schema_version=CURRENT_SCHEMA_VERSION)
         self.session.add(meta)
         self.session.flush()
         self.session.commit()
         self._closed = False
-
-    def init_ifdata_parser(self) -> None:
-        self._ifdata_parser = IfDataParser(self.session)
-
-    def parse_ifdata(self, section: str) -> dict:
-        return self._ifdata_parser(section)
 
     def __del__(self):
         if not self._closed:
