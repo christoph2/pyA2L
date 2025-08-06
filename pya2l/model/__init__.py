@@ -5280,21 +5280,6 @@ class SessionProxy:
                     result.append(res)
             return result
 
-    """
-    def parse_if_data(parser, if_data: list):
-    if if_data is None:
-        return []
-    result = []
-    for section in if_data:
-        try:
-            res = parser.parse(section.raw)
-        except Exception as e:
-            print(f"Error parsing IF_DATA section: {section.raw!r}: {e!r}")
-        else:
-            result.append(res)
-    return result
-    """
-
 
 class A2LDatabase:
     def __init__(self, filename, debug=False, logLevel="INFO"):

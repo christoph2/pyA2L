@@ -373,34 +373,6 @@ class Annotation:
 
 
 @dataclass
-class MemoryLayout:
-    prgType: PrgTypeLayout
-    address: int
-    size: int
-    offset_0: int
-    offset_1: int
-    offset_2: int
-    offset_3: int
-    offset_4: int
-
-
-@dataclass
-class MemorySegment:
-    name: str
-    longIdentifier: str
-    prgType: PrgTypeSegment
-    memoryType: MemoryType
-    attribute: SegmentAttributeType
-    address: int
-    size: int
-    offset_0: int
-    offset_1: int
-    offset_2: int
-    offset_3: int
-    offset_4: int
-
-
-@dataclass
 class DependentCharacteristic:
     formula: str
     characteristics: List[str]
@@ -1144,6 +1116,89 @@ class CompuMethod(CachedBase):
 
 
 @dataclass
+class MemoryLayout:
+    """
+    - address: int
+        Initial address of the program segment to be described.
+
+    - offset_0': int
+
+    - offset_1': int
+
+    - offset_2': int
+
+    - offset_3': int
+
+    - offset_4': int
+        Offsets for mirrored segments 0..4
+
+    - prgType': ['PRG_CODE' | 'PRG_DATA' | 'PRG_RESERVED']
+
+    - size': int
+        Length of the program segment to be described.
+    """
+
+    prgType: PrgTypeLayout
+    address: int
+    size: int
+    offset_0: int
+    offset_1: int
+    offset_2: int
+    offset_3: int
+    offset_4: int
+    if_data: List[Dict]
+
+
+@dataclass
+class MemorySegment:
+    """
+    Layout of memory segments
+
+    - address: int
+
+    - attribute: ['INTERN' | 'EXTERN']
+
+    - longIdentifier: 'external RAM',
+        comment, description
+
+    - memoryType: ['EEPROM' | 'EPROM' | 'FLASH' | 'RAM' | 'ROM' | 'REGISTER']
+
+    - name: str
+        Identifier, reference to IF_DATA Blob is based on this 'name'.
+
+    - offset_0: int
+
+    - offset_1: int
+
+    - offset_2: int
+
+    - offset_3: int
+
+    - offset_4: int
+        Offsets for mirrored segments 0..4
+
+    - prgType: ['CALIBRATION_VARIABLES' | 'CODE' | 'DATA' | 'EXCLUDE_FROM_FLASH' | 'OFFLINE_DATA' |
+                'RESERVED' | 'SERAM' | 'VARIABLES']
+    - size: int
+        Length of the segment.
+    """
+
+    name: str
+    longIdentifier: str
+    prgType: PrgTypeSegment
+    memoryType: MemoryType
+    attribute: SegmentAttributeType
+    address: int
+    size: int
+    offset_0: int
+    offset_1: int
+    offset_2: int
+    offset_3: int
+    offset_4: int
+    if_data: List[Dict]
+
+
+@dataclass
 class ModPar(CachedBase):
     """
 
@@ -1179,59 +1234,6 @@ class ModPar(CachedBase):
 
     epk: str
         EPROM identifier.
-
-    memoryLayouts: list of dicts
-        Layout of memory segments (deprecated, `memorySegments` should be used instead.
-
-        - address: int
-            Initial address of the program segment to be described.
-
-        - offset_0': int
-
-        - offset_1': int
-
-        - offset_2': int
-
-        - offset_3': int
-
-        - offset_4': int
-            Offsets for mirrored segments 0..4
-
-        - prgType': ['PRG_CODE' | 'PRG_DATA' | 'PRG_RESERVED']
-
-        - size': int
-            Length of the program segment to be described.
-
-    memorySegments: list of dicts
-        Layout of memory segments
-
-        - address: int
-
-        - attribute: ['INTERN' | 'EXTERN']
-
-        - longIdentifier: 'external RAM',
-            comment, description
-
-        - memoryType: ['EEPROM' | 'EPROM' | 'FLASH' | 'RAM' | 'ROM' | 'REGISTER']
-
-        - name: str
-            Identifier, reference to IF_DATA Blob is based on this 'name'.
-
-        - offset_0: int
-
-        - offset_1: int
-
-        - offset_2: int
-
-        - offset_3: int
-
-        - offset_4: int
-            Offsets for mirrored segments 0..4
-
-        - prgType: ['CALIBRATION_VARIABLES' | 'CODE' | 'DATA' | 'EXCLUDE_FROM_FLASH' | 'OFFLINE_DATA' |
-                    'RESERVED' | 'SERAM' | 'VARIABLES']
-        - size: int
-            Length of the segment.
 
     noOfInterfaces: int
         Number of interfaces.
@@ -1284,8 +1286,8 @@ class ModPar(CachedBase):
         self.ecu = self.modpar.ecu.controlUnit if self.modpar.ecu else None
         self.ecuCalibrationOffset = self.modpar.ecu_calibration_offset.offset if self.modpar.ecu_calibration_offset else None
         self.epk = self.modpar.epk.identifier if self.modpar.epk else None
-        self.memoryLayouts = self._create_memory_layout(self.modpar.memory_layout)
-        self.memorySegments = self._create_memory_segments(self.modpar.memory_segment)
+        self.memoryLayouts = self._create_memory_layout(session, self.modpar.memory_layout)
+        self.memorySegments = self._create_memory_segments(session, self.modpar.memory_segment)
         self.noOfInterfaces = self.modpar.no_of_interfaces.num if self.modpar.no_of_interfaces else None
         self.phoneNo = self.modpar.phone_no.telnum if self.modpar.phone_no else None
         self.supplier = self.modpar.supplier.manufacturer if self.modpar.supplier else None
@@ -1313,7 +1315,7 @@ class ModPar(CachedBase):
         return []
 
     @staticmethod
-    def _create_memory_layout(layouts) -> List[MemoryLayout]:
+    def _create_memory_layout(session, layouts) -> List[MemoryLayout]:
         result = []
         if layouts is not None:
             for layout in layouts:
@@ -1326,12 +1328,13 @@ class ModPar(CachedBase):
                     layout.offset_2,
                     layout.offset_3,
                     layout.offset_4,
+                    session.parse_ifdata(layout.if_data),
                 )
                 result.append(entry)
         return result
 
     @staticmethod
-    def _create_memory_segments(segments) -> List[MemorySegment]:
+    def _create_memory_segments(session, segments) -> List[MemorySegment]:
         result = []
         if segments is not None:
             for segment in segments:
@@ -1348,6 +1351,7 @@ class ModPar(CachedBase):
                     segment.offset_2,
                     segment.offset_3,
                     segment.offset_4,
+                    session.parse_ifdata(segment.if_data),
                 )
                 result.append(entry)
         return result
@@ -1829,6 +1833,7 @@ class AxisPts(CachedBase):
     ecuAddressExtension: int
     extendedLimits: ExtendedLimits
     format: Optional[str]
+    if_data: List[Dict]
     functionList: List[str]
     guardRails: bool
     monotony: Optional[str]
@@ -1875,6 +1880,7 @@ class AxisPts(CachedBase):
         self.stepSize = self.axis.step_size
         self.symbolLink = self._dissect_symbol_link(self.axis.symbol_link)
         self.record_layout_components = create_record_layout_components(self) if self.depositAttr else None
+        self.if_data = session.parse_ifdata(self.axis.if_data)
 
     @property
     def record_layout(self) -> RecordLayout:
@@ -2074,6 +2080,7 @@ class Characteristic(CachedBase):
     virtual_characteristic: VirtualCharacteristic
     fnc_np_shape: tuple
     record_layout_components: Dict
+    if_data: List[Dict]
 
     def __init__(self, session, name: str, module_name: str = None):
         characteristic = session.query(model.Characteristic).filter(model.Characteristic.name == name)
@@ -2143,6 +2150,7 @@ class Characteristic(CachedBase):
             self.fnc_np_shape = (self.number,)
         elif self.axisDescriptions:
             self.fnc_np_shape = tuple([ax.maxAxisPoints for ax in self.axisDescriptions])
+        self.if_data = session.parse_ifdata(self.characteristic.if_data)
 
     def axisDescription(self, axis) -> AxisDescr:
         MAP = {
@@ -2565,6 +2573,7 @@ class Measurement(CachedBase):
     virtual: List[str]
     compuMethod: CompuMethod
     fnc_np_shape: tuple
+    if_data: List[Dict]
 
     def __init__(self, session, name: str, module_name: str = None):
         measurement = session.query(model.Measurement).filter(model.Measurement.name == name)
@@ -2603,6 +2612,7 @@ class Measurement(CachedBase):
         self.virtual = self.measurement.virtual.measuringChannel if self.measurement.virtual else []
         self.compuMethod = CompuMethod.get(session, self._conversionRef)
         self.fnc_np_shape = fnc_np_shape(self.matrixDim)
+        self.if_data = session.parse_ifdata(self.measurement.if_data)
 
     @property
     def is_virtual(self):
@@ -2682,6 +2692,7 @@ class Function(CachedBase):
     longIdentifier: Optional[str]
     annotations: List[Annotation]
     functionVersion: str
+    if_data: List[Dict]
     inMeasurements: List[str]
     locMeasurements: List[str]
     outMeasurements: List[str]
@@ -2701,6 +2712,7 @@ class Function(CachedBase):
         self.longIdentifier = self.function.longIdentifier
         self.annotations = _annotations(session, self.function.annotation)
         self.functionVersion = self.function.function_version.versionIdentifier if self.function.function_version else None
+        self.if_data = session.parse_ifdata(self.function.if_data)
         self._inMeasurements = None
         self._locMeasurements = None
         self._outMeasurements = None
@@ -2840,6 +2852,7 @@ class Group(CachedBase):
     longIdentifier: Optional[str]
     annotations: List[Annotation]
     root: bool
+    if_data: List[Dict]
     characteristics: List[Any]
     measurements: List[Any]
     functions: List[Any]
@@ -2857,6 +2870,7 @@ class Group(CachedBase):
         self.longIdentifier = self.group.groupLongIdentifier
         self.annotations = _annotations(session, self.group.annotation)
         self.root = False if self.group.root is None else True
+        self.if_data = session.parse_ifdata(self.group.if_data)
         self._characteristics = None
         self._measurements = None
         self._functions = None
@@ -3487,7 +3501,7 @@ class Module(CachedBase):
     compu_tab_verb_ranges: FilteredList[CompuTabVerbRanges]
     function: FilteredList[Function]
     group: FilteredList[Group]
-    if_data: Dict[str, Any]
+    if_data: List[Dict[str, Any]]
     measurement: FilteredList[Measurement]
     mod_common: Optional[ModCommon]
     mod_par: Optional[ModPar]
