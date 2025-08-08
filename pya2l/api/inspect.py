@@ -3469,6 +3469,67 @@ class Unit(CachedBase):
 
 
 @dataclass
+class Blob(CachedBase):
+    session: Any = field(repr=False)
+    blob: model.Blob = field(repr=False)
+    name: str
+    longIdentifier: str
+    address: int
+    length: int
+    calibration_access: Optional[str]
+    
+    def __init__(self, session, name: str, module_name: Optional[str] = None):
+        self.session = session
+        blob = session.query(model.Blob).filter(model.Blob.name == name)
+        if module_name is not None:
+            blob.join(model.Module).filter(model.Module.name == module_name)
+        self.blob = blob.first()
+        if self.blob is None:
+            raise ValueError(f"BLOB {name!r} does not exist.")
+        self.name = self.blob.name
+        self.longIdentifier = self.blob.longIdentifier    
+        self.address = self.blob.address
+        self.length = self.blob.length
+        if self.blob.calibration_access is not None:
+            self.calibration_access = self.blob.calibration_access.type
+        else:
+            self.calibration_access = None
+            
+
+@dataclass
+class Transformer(CachedBase):
+    session: Any = field(repr=False)
+    transformer: model.Transformer = field(repr=False)
+    name: str
+    version: str
+    dllname32: str
+    dllname64: str
+    timeout: int
+    trigger: str
+    reverse: str
+    transformer_in_objects: List[str]
+    transformer_out_objects: List[str]
+
+    def __init__(self, session, name: str, module_name: Optional[str] = None):
+        self.session = session
+        transformer = session.query(model.Transformer).filter(model.Transformer.name == name)
+        if module_name is not None:
+            transformer.join(model.Module).filter(model.Module.name == module_name)
+        self.transformer = transformer.first()
+        if self.transformer is None:
+            raise ValueError(f"TRANSFORMER {name!r} does not exist.")
+        self.name = self.transformer.name
+        self.version = self.transformer.version
+        self.dllname32 = self.transformer.dllname32
+        self.dllname64 = self.transformer.dllname64
+        self.timeout = self.transformer.timeout     
+        self.trigger = self.transformer.trigger       
+        self.reverse = self.transformer.reverse
+        self.transformer_in_objects = self.transformer.transformer_in_objects.identifier
+        self.transformer_out_objects = self.transformer.transformer_out_objects.identifier
+
+
+@dataclass
 class UserRights(CachedBase):
     """"""
 
@@ -3492,7 +3553,7 @@ class Module(CachedBase):
     """
     *** Element("A2ml", "A2ML", False),
             Element("AxisPts", "AXIS_PTS", True),
-    Element("Blob", "BLOB", True),
+            Element("Blob", "BLOB", True),
             Element("Characteristic", "CHARACTERISTIC", True),
             Element("CompuMethod", "COMPU_METHOD", True),
             Element("CompuTab", "COMPU_TAB", True),
@@ -3522,6 +3583,7 @@ class Module(CachedBase):
     name: str
     longIdentifier: str
     axis_pts: FilteredList[AxisPts]
+    blob: FilteredList[Blob]
     characteristic: FilteredList[Characteristic]
     compu_method: FilteredList[CompuMethod]
     compu_tab: FilteredList[CompuTab]
@@ -3535,6 +3597,7 @@ class Module(CachedBase):
     mod_common: Optional[ModCommon]
     mod_par: Optional[ModPar]
     record_layout: FilteredList[RecordLayout]
+    transformer: FilteredList[Transformer]
     unit: FilteredList[Unit]
     user_rights: FilteredList[UserRights]
     variant_coding: Optional[VariantCoding]
@@ -3549,6 +3612,7 @@ class Module(CachedBase):
         self.longIdentifier = self.module.longIdentifier
 
         self.axis_pts = FilteredList(self.session, self.module.axis_pts, AxisPts)
+        self.blob = FilteredList(self.session, self.module.blob, Blob)
 
         self.characteristic = FilteredList(self.session, self.module.characteristic, Characteristic)
         self.compu_method = FilteredList(self.session, self.module.compu_method, CompuMethod)
@@ -3566,6 +3630,7 @@ class Module(CachedBase):
         self.mod_par = ModPar.get(self.session, self.name, module_name=self.module.name)
 
         self.record_layout = FilteredList(self.session, self.module.record_layout, RecordLayout)
+        self.transformer = FilteredList(self.session, self.module.transformer, Transformer)
 
         self.unit = FilteredList(self.session, self.module.unit, Unit)
         self.user_rights = FilteredList(self.session, self.module.user_rights, UserRights, "userLevelId")
