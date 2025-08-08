@@ -14,11 +14,11 @@ jobs:
       fail-fast: false
       matrix:
           os: [
-            #ubuntu-latest, 
+            ubuntu-latest,
             windows-latest,
             macos-latest
           ]
-          python: ['3.5', '3.6', '3.7', '3.8', '3.9', '3.10']
+          python: ['3.10', '3.11', '3.12', '3.13']
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python }}
@@ -30,7 +30,7 @@ jobs:
         python -m pip install --upgrade pip setuptools
         pip install -r requirements.txt
         pip install -r requirements.test.txt
-        python setup.py install
+        pip install -e .
     - name: Test with pytest
       run: |
         pip install pytest
