@@ -126,7 +126,7 @@ def import_a2l(
     )
     session = db.session
     session.commit()
-    session.setup_ifdata_parser()
+    session.setup_ifdata_parser(loglevel=loglevel)
     return session
 
 
@@ -157,7 +157,7 @@ def open_existing(file_name: str, loglevel: str = "INFO"):
         session = db.session
         res = session.query(model.MetaData).first()
         if res:
-            session.setup_ifdata_parser()
+            session.setup_ifdata_parser(loglevel=loglevel)
             return session
         else:
             raise InvalidA2LDatabase("Database seems to be corrupted. No meta-data found.")

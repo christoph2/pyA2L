@@ -6,6 +6,7 @@ from typing import Any, Optional
 import pya2l.model as model
 from pya2l.a2lparser_ext import AmlType, unmarshal
 from pya2l.aml.ifdata_lexer import IfDataLexer
+from pya2l.logger import Logger
 
 
 class IfDataTokenType(IntEnum):
@@ -159,13 +160,13 @@ def toplevel_ifdata(tree) -> Any:
             return members[0]
         else:
             raise ValueError("Dont know how to handle.")
-        print(len(tree.members), type(members[0]), [t.members.keys() for t in members])
         raise TypeError("NO BLOCKS!!!")
 
 
 class IfDataParser:
 
-    def __init__(self, session) -> None:
+    def __init__(self, session, loglevel: str = "INFO") -> None:
+        self.logger = Logger("IF_DATA", loglevel)
         aml_section = session.query(model.AMLSection).first()
         if aml_section:
             aml_root = unmarshal(aml_section.parsed)
@@ -246,7 +247,7 @@ class IfDataParser:
                         if self.current_token.type == IfDataTokenType.END:
                             break
             else:
-                print(f"Invalid token {tk.type} for tagged struct. Expected identifier.")
+                self.logger.error(f"Invalid token {tk.type} for tagged struct. Expected identifier.")
         return_value = {}
         for k, v in result.items():
             if isinstance(self.syntax_tos.members, dict):
@@ -271,7 +272,7 @@ class IfDataParser:
             tk = self.current_token
             block = False
         if tk.type != IfDataTokenType.IDENT:
-            print(f"Invalid token {tk.type} for tagged union. Expected identifier.")
+            self.logger.error(f"Invalid token {tk.type} for tagged union. Expected identifier.")
             if block:
                 self.rewind()
             return {}
@@ -295,6 +296,7 @@ class IfDataParser:
                     self.leave()
                 return {tk_value: result}
         else:
+            self.logger.error(f"TAGGED_UNION has no member {tk_value!r}.")
             amount = 2 if block else 1
             self.rewind(amount)
             return {}
@@ -373,7 +375,7 @@ class IfDataParser:
         elif isinstance(klass, NullObject):
             result = {}
         else:
-            print(f"Unsupported class {klass!r}")
+            self.logger.error(f"Unsupported class {klass!r}")
         self.level += 1
         return result
 
@@ -409,7 +411,7 @@ class IfDataParser:
     def match(self, token_type: IfDataTokenType, value: Optional[Any] = None) -> bool:
         ok = self.current_token.type == token_type
         if not ok:
-            print(f"{token_type!r} not matched against {self.current_token.type!r}")
+            self.logger.error(f"{token_type!r} not matched against {self.current_token.type!r}")
             while True:
                 self.consume()
                 la = self.lookahead(0)
@@ -505,5 +507,6 @@ class IfDataParser:
         elif node.aml_type == AmlType.NONE:
             result = None
         else:
-            print(node)
+            # print(node)
+            pass
         return result

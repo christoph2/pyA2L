@@ -1579,7 +1579,7 @@ class Module(Base, HasIfDatas):
     compu_tab = relationship("CompuTab", back_populates="module", uselist=True)
     compu_vtab = relationship("CompuVtab", back_populates="module", uselist=True)
     compu_vtab_range = relationship("CompuVtabRange", back_populates="module", uselist=True)
-    frame = relationship("Frame", back_populates="module", uselist=False)
+    frame = relationship("Frame", back_populates="module", uselist=True)
     function = relationship("Function", back_populates="module", uselist=True)
     group = relationship("Group", back_populates="module", uselist=True)
     instance = relationship("Instance", back_populates="module", uselist=True)
@@ -5260,8 +5260,8 @@ class SessionProxy:
         self._session = session
         self._ifdata_parser = None
 
-    def setup_ifdata_parser(self):
-        self._ifdata_parser = IfDataParser(self._session)
+    def setup_ifdata_parser(self, loglevel: str = "INFO"):
+        self._ifdata_parser = IfDataParser(self._session, loglevel)
 
     def __getattr__(self, name: str):
         return getattr(self._session, name)

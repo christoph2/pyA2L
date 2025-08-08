@@ -3235,6 +3235,34 @@ class TypedefCharacteristic(CachedBase):
 
 
 @dataclass
+class Frame(CachedBase):
+    """"""
+
+    session: Any = field(repr=False)
+    frame: model.Frame = field(repr=False)
+    name: str
+    longIdentifier: Optional[str]
+    scalingUnit: int
+    rate: int
+    frame_measurement: List[str]
+    if_data: List[Dict]
+
+    def __init__(self, session, name: str, module_name: str = None):
+        frame = session.query(model.Frame).filter(model.Frame.name == name)
+        if module_name is not None:
+            frame.join(model.Module).filter(model.Module.name == module_name)
+        self.frame = frame.first()
+        if self.frame is None:
+            raise ValueError(f"TYPEDEF_CHARACTERISTIC {name!r} does not exist.")
+        self.name = name
+        self.longIdentifier = self.frame.longIdentifier
+        self.scalingUnit = self.frame.scalingUnit
+        self.rate = self.frame.rate
+        self.frame_measurement = [f.identifier for f in self.frame.frame_measurement]
+        self.if_data = session.parse_ifdata(self.frame.if_data)
+
+
+@dataclass
 class VarCriterion:
     name: str
     longIdentifier: str
@@ -3470,7 +3498,7 @@ class Module(CachedBase):
             Element("CompuTab", "COMPU_TAB", True),
             Element("CompuVtab", "COMPU_VTAB", True),
             Element("CompuVtabRange", "COMPU_VTAB_RANGE", True),
-    *** Element("Frame", "FRAME", False),
+            *** Element("Frame", "FRAME", False),
             Element("Function", "FUNCTION", True),
             Element("Group", "GROUP", True),
             Element("IfData", "IF_DATA", True),
@@ -3485,7 +3513,7 @@ class Module(CachedBase):
     Element("TypedefMeasurement", "TYPEDEF_MEASUREMENT", True),
     Element("TypedefStructure", "TYPEDEF_STRUCTURE", True),
             Element("Unit", "UNIT", True),
-    Element("UserRights", "USER_RIGHTS", True),
+            Element("UserRights", "USER_RIGHTS", True),
             *** Element("VariantCoding", "VARIANT_CODING", False),
     """
 
@@ -3499,6 +3527,7 @@ class Module(CachedBase):
     compu_tab: FilteredList[CompuTab]
     compu_tab_verb: FilteredList[CompuTabVerb]
     compu_tab_verb_ranges: FilteredList[CompuTabVerbRanges]
+    frame: FilteredList[Frame]
     function: FilteredList[Function]
     group: FilteredList[Group]
     if_data: List[Dict[str, Any]]
@@ -3527,6 +3556,7 @@ class Module(CachedBase):
         self.compu_tab_verb = FilteredList(self.session, self.module.compu_vtab, CompuTabVerb)
         self.compu_tab_verb_ranges = FilteredList(self.session, self.module.compu_vtab_range, CompuTabVerbRanges)
 
+        self.frame = FilteredList(self.session, self.module.frame, Frame)
         self.function = FilteredList(self.session, self.module.function, Function)
         self.group = FilteredList(self.session, self.module.group, Group, "groupName")
         self.if_data = self.session.parse_ifdata(self.module.if_data)
