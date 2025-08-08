@@ -4507,9 +4507,9 @@ class Transformer(Base, HasTransformerInObjects, HasTransformerOutObjects):
 
     timeout = StdULong()
 
-    trigger = Ident()
+    trigger = StdIdent()
 
-    reverse = Ident()
+    reverse = StdIdent()
 
     __required_parameters__ = (
         Parameter("name", Ident, False),
