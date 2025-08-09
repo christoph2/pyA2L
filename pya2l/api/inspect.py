@@ -2932,6 +2932,48 @@ class Group(CachedBase):
 
 
 @dataclass
+class StructureComponent(CachedBase):
+    """
+
+    Parameters
+    ----------
+    session: Sqlite3 session object
+
+
+    Attributes
+    ----------
+    session:
+        Raw Sqlite3 database object.
+
+    name: str
+
+    type_ref: Any
+
+    offset: int
+    """
+
+    session: Any = field(repr=False)
+    component: model.StructureComponent = field(repr=False)
+    name: str
+    type_ref: Any
+    offset: int
+
+    def __init__(self, session, name=None, module_name: str = None, parent=None, *args):
+        self.session = session
+        component = session.query(model.StructureComponent).filter(model.StructureComponent.name == name)
+        if module_name is not None:
+            component.join(model.Module).filter(model.Module.name == module_name)
+        self.component = component.first()
+        if self.component is None:
+            raise ValueError(f"STRUCTURE_COMPONENT {name!r} does not exist.")
+        self.name = self.component.name
+        self.type_ref = self.component.type_ref
+        self.offset = self.component.offset
+        self.component.matrix_dim
+        # self.component.symbol_type_link
+
+
+@dataclass
 class TypedefStructure(CachedBase):
     """
 
@@ -2951,10 +2993,6 @@ class TypedefStructure(CachedBase):
         comment, description.
 
     size: int
-
-    link: str
-
-    symbol: str
     """
 
     session: Any = field(repr=False)
@@ -2962,8 +3000,7 @@ class TypedefStructure(CachedBase):
     name: str
     longIdentifier: Optional[str]
     size: int
-    link: str
-    symbol: str
+    components: List[StructureComponent]
 
     def __init__(self, session, name=None, module_name: str = None):
         self.session = session
@@ -2973,11 +3010,11 @@ class TypedefStructure(CachedBase):
         self.typedef = typedef.first()
         if self.typedef is None:
             raise ValueError(f"TYPEDEF_STRUCTURE {name!r} does not exist.")
+        print("TS", self.typedef, self.typedef.symbol_type_link_id, dir(self.typedef))
         self.name = self.typedef.name
         self.longIdentifier = self.typedef.longIdentifier
         self.size = self.typedef.size
-        self.link = self.typedef.link
-        self.symbol = self.typedef.symbol
+        # symbol_type_link
         instance_names = session.query(model.Instance.name).filter(model.Instance.typeName == self.name).all()
         self._instances = [Instance.get(session, name[0]) for name in instance_names]
         self._components = [
@@ -2991,54 +3028,6 @@ class TypedefStructure(CachedBase):
     @property
     def components(self):
         return self._components
-
-
-@dataclass
-class StructureComponent(CachedBase):
-    """
-
-    Parameters
-    ----------
-    session: Sqlite3 session object
-
-
-    Attributes
-    ----------
-    session:
-        Raw Sqlite3 database object.
-
-    name: str
-
-    deposit: str
-
-    offset: int
-
-    link: str
-
-    symbol: str
-    """
-
-    session: Any = field(repr=False)
-    component: model.StructureComponent = field(repr=False)
-    name: str
-    deposit: RecordLayout
-    link: str
-    symbol: str
-
-    def __init__(self, session, name=None, module_name: str = None, parent=None, *args):
-        self.session = session
-        component = session.query(model.StructureComponent).filter(model.StructureComponent.name == name)
-        if module_name is not None:
-            component.join(model.Module).filter(model.Module.name == module_name)
-        self.component = component.first()
-        if self.component is None:
-            raise ValueError(f"STRUCTURE_COMPONENT {name!r} does not exist.")
-
-        self.name = self.component.name
-        self.deposit = RecordLayout.get(session, self.component.deposit, module_name)
-        self.offset = self.component.offset
-        self.link = self.component.link
-        self.symbol = self.component.symbol
 
 
 @dataclass
@@ -3477,7 +3466,7 @@ class Blob(CachedBase):
     address: int
     length: int
     calibration_access: Optional[str]
-    
+
     def __init__(self, session, name: str, module_name: Optional[str] = None):
         self.session = session
         blob = session.query(model.Blob).filter(model.Blob.name == name)
@@ -3487,14 +3476,14 @@ class Blob(CachedBase):
         if self.blob is None:
             raise ValueError(f"BLOB {name!r} does not exist.")
         self.name = self.blob.name
-        self.longIdentifier = self.blob.longIdentifier    
+        self.longIdentifier = self.blob.longIdentifier
         self.address = self.blob.address
         self.length = self.blob.length
         if self.blob.calibration_access is not None:
             self.calibration_access = self.blob.calibration_access.type
         else:
             self.calibration_access = None
-            
+
 
 @dataclass
 class Transformer(CachedBase):
@@ -3522,8 +3511,8 @@ class Transformer(CachedBase):
         self.version = self.transformer.version
         self.dllname32 = self.transformer.dllname32
         self.dllname64 = self.transformer.dllname64
-        self.timeout = self.transformer.timeout     
-        self.trigger = self.transformer.trigger       
+        self.timeout = self.transformer.timeout
+        self.trigger = self.transformer.trigger
         self.reverse = self.transformer.reverse
         self.transformer_in_objects = self.transformer.transformer_in_objects.identifier
         self.transformer_out_objects = self.transformer.transformer_out_objects.identifier
@@ -3536,6 +3525,8 @@ class UserRights(CachedBase):
     session: Any = field(repr=False)
     user_rights: model.UserRights = field(repr=False)
     userLevelId: str
+    readOnly: bool
+    ref_group: List[str]
 
     def __init__(self, session, userLevelId: str, module_name: Optional[str] = None):
         self.session = session
@@ -3546,6 +3537,8 @@ class UserRights(CachedBase):
         if self.user_rights is None:
             raise ValueError(f"USER_RIGHTS {userLevelId!r} does not exist.")
         self.userLevelId = self.user_rights.userLevelId
+        self.readOnly = self.user_rights.readOnly
+        self.ref_group = self.user_rights.ref_group.identifier
 
 
 @dataclass
@@ -3568,7 +3561,7 @@ class Module(CachedBase):
             *** Element("ModCommon", "MOD_COMMON", False),
             *** Element("ModPar", "MOD_PAR", False),
             Element("RecordLayout", "RECORD_LAYOUT", True),
-    Element("Transformer", "TRANSFORMER", True),
+            Element("Transformer", "TRANSFORMER", True),
     Element("TypedefAxis", "TYPEDEF_AXIS", True),
     Element("TypedefCharacteristic", "TYPEDEF_CHARACTERISTIC", True),
     Element("TypedefMeasurement", "TYPEDEF_MEASUREMENT", True),
@@ -3631,6 +3624,8 @@ class Module(CachedBase):
 
         self.record_layout = FilteredList(self.session, self.module.record_layout, RecordLayout)
         self.transformer = FilteredList(self.session, self.module.transformer, Transformer)
+
+        self.typedef_structure = FilteredList(self.session, self.module.typedef_structure, TypedefStructure)
 
         self.unit = FilteredList(self.session, self.module.unit, Unit)
         self.user_rights = FilteredList(self.session, self.module.user_rights, UserRights, "userLevelId")

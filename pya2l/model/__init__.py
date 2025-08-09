@@ -4728,6 +4728,7 @@ class TypedefStructure(Base, HasSymbolTypeLink):
     structure_component = relationship("StructureComponent", back_populates="typedef_structure", uselist=True)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
     module = relationship("Module", back_populates="typedef_structure", uselist=False)
+    # symbol_type_link = relationship("SymbolTypeLink", back_populates="structure_component", uselist=False)
 
 
 class StructureComponent(Base, HasMatrixDims, HasSymbolTypeLink):
