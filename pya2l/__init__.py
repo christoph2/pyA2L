@@ -30,7 +30,13 @@ import sys
 import typing
 from io import TextIOWrapper
 
-from rich.traceback import install
+
+try:
+    from rich.traceback import install
+
+    RICH_AVAILABLE = True
+except ImportError:
+    RICH_AVAILABLE = False
 
 import pya2l.model as model
 from pya2l.a2lparser import A2LParser, path_components
@@ -38,7 +44,8 @@ from pya2l.logger import Logger
 from pya2l.templates import doTemplateFromText
 
 
-install(show_locals=True, max_frames=3)  # Install custom exception handler.
+if RICH_AVAILABLE:
+    install(show_locals=True, max_frames=3)  # Install custom exception handler.
 pyver = sys.version_info
 
 

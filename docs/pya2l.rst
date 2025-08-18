@@ -157,6 +157,22 @@ pya2l.api.inspect module
     :undoc-members:
     :show-inheritance:
 
+pya2l.api.create module
+----------------------
+
+.. automodule:: pya2l.api.create
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pya2l.aml.ifdata_parser module
+----------------------------
+
+.. automodule:: pya2l.aml.ifdata_parser
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
