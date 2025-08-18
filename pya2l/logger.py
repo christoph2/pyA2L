@@ -28,7 +28,13 @@ __version__ = "0.1.0"
 
 import logging
 
-from rich.logging import RichHandler
+
+try:
+    from rich.logging import RichHandler
+
+    RICH_AVAILABLE = True
+except ImportError:
+    RICH_AVAILABLE = False
 
 
 class Logger:
@@ -41,13 +47,18 @@ class Logger:
             self.logger = logging.getLogger(f"{self.LOGGER_BASE_NAME}.{name}")
             # self.logger.setLevel(level.upper())
             self.setLevel(level)
-            # handler = logging.StreamHandler()
-            handler = RichHandler()
+            if RICH_AVAILABLE:
+                handler = RichHandler()
+            else:
+                handler = logging.StreamHandler()
             # handler.setLevel(level.upper())
             formatter = logging.Formatter(self.FORMAT)
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
-        self.logger = logging.getLogger("rich")
+        if RICH_AVAILABLE:
+            self.logger = logging.getLogger("rich")
+        else:
+            self.logger = logging.getLogger(f"{self.LOGGER_BASE_NAME}.{name}")
         self.lastMessage = None
         self.lastSeverity = None
 

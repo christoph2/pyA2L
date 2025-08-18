@@ -64,6 +64,117 @@ My A2L file includes tons of files, which in turn include other files. Do I have
 No. There's a environment variable called *ASAP_INCLUDE*, which -- if present, is used to search for */INCLUDE* files. Conventions of your operating system hold. Just like *C*/*C++* *INCLUDE* or good old *PATH*.
 
 
+How do I work with IF_DATA sections in A2L files?
+--------------------------------------------------
+
+IF_DATA sections contain vendor-specific information in A2L files. pyA2L provides a dedicated parser for these sections:
+
+.. code-block:: python
+
+    from pya2l import DB
+    from pya2l.aml.ifdata_parser import IfDataParser
+
+    db = DB()
+    session = db.open_create("ASAP2_Demo_V161.a2l")
+
+    # Create an IF_DATA parser
+    ifdata_parser = IfDataParser(session)
+
+    # Parse an IF_DATA section
+    ifdata_text = """/begin IF_DATA XCP
+    /begin SEGMENT 0x01 0x02 0x00 0x00 0x00
+    /begin CHECKSUM XCP_ADD_44 MAX_BLOCK_SIZE 0xFFFF EXTERNAL_FUNCTION "" /end CHECKSUM
+    /end SEGMENT
+    /end IF_DATA"""
+
+    result = ifdata_parser.parse(ifdata_text)
+    print(result)
+
+You can also access IF_DATA sections that are already parsed from A2L elements:
+
+.. code-block:: python
+
+    from pya2l import DB
+    from pya2l.api.inspect import Project
+
+    db = DB()
+    session = db.open_create("ASAP2_Demo_V161.a2l")
+    project = Project(session)
+
+    # Access module IF_DATA
+    module = project.module[0]
+    if hasattr(module, 'if_data') and module.if_data:
+        print(module.if_data)
+
+
+How do I create new A2L elements programmatically?
+-------------------------------------------------
+
+pyA2L provides creator classes in the `pya2l.api.create` module for creating new A2L elements:
+
+.. code-block:: python
+
+    from pya2l import DB
+    from pya2l.api.create import CompuMethodCreator, MeasurementCreator
+
+    db = DB()
+    session = db.create("new_database")
+
+    # Create a computation method
+    cm_creator = CompuMethodCreator(session)
+    compu_method = cm_creator.create_compu_method(
+        name="CM_LINEAR",
+        long_identifier="Linear conversion",
+        conversion_type="LINEAR",
+        format_str="%.2f",
+        unit="km/h"
+    )
+    cm_creator.add_coeffs_linear(compu_method, a=0.1, b=0.0)
+
+    # Create a measurement
+    meas_creator = MeasurementCreator(session)
+    measurement = meas_creator.create_measurement(
+        name="ENGINE_SPEED",
+        long_identifier="Engine speed",
+        datatype="UWORD",
+        compu_method="CM_LINEAR",
+        lower_limit=0,
+        upper_limit=8000,
+        unit="rpm"
+    )
+
+    # Commit changes
+    session.commit()
+
+See the `create_elements.py` example in the examples directory for a more comprehensive demonstration.
+
+
+How do I filter query results when working with A2L elements?
+-----------------------------------------------------------
+
+When querying A2L elements, you can use lambda functions to filter the results:
+
+.. code-block:: python
+
+    from pya2l import DB
+    from pya2l.api.inspect import Project
+
+    db = DB()
+    session = db.open_create("ASAP2_Demo_V161.a2l")
+    project = Project(session)
+    module = project.module[0]
+
+    # Get all measurements with FLOAT32_IEEE data type
+    float_measurements = list(module.measurement.query(
+        lambda x: x.datatype == "FLOAT32_IEEE"
+    ))
+
+    # Get all characteristics with names starting with "ENGINE_"
+    engine_chars = list(module.characteristic.query(
+        lambda x: x.name.startswith("ENGINE_")
+    ))
+
+
 Any missing questions and answers?
 ----------------------------------
 

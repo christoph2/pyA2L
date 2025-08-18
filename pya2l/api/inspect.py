@@ -1,5 +1,15 @@
 #!/usr/bin/env python
-"""Classes for easy, convenient, read-only access to A2L databases."""
+"""Classes for easy, convenient, read-only access to A2L databases.
+
+This module provides a comprehensive API for accessing and inspecting A2L database
+entities such as measurements, characteristics, axis points, and computation methods.
+It is designed to be used with SQLAlchemy sessions to query the database and
+present the results in a more user-friendly format.
+
+The module includes classes for all major A2L entities, with methods to access
+their properties and relationships. It also provides utility functions for
+converting between different data formats and representations.
+"""
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
@@ -132,12 +142,52 @@ ASAM_TYPE_RANGES = {
 
 
 class PrgTypeLayout(IntEnum):
+    """Enumeration for program memory layout types.
+
+    This enum defines the different types of program memory layouts
+    that can be specified in an A2L file.
+
+    Attributes
+    ----------
+    PRG_CODE : int
+        Program code memory layout
+    PRG_DATA : int
+        Program data memory layout
+    PRG_RESERVED : int
+        Reserved program memory layout
+    """
+
     PRG_CODE = 0
     PRG_DATA = 1
     PRG_RESERVED = 2
 
 
 class PrgTypeSegment(IntEnum):
+    """Enumeration for program memory segment types.
+
+    This enum defines the different types of program memory segments
+    that can be specified in an A2L file.
+
+    Attributes
+    ----------
+    CALIBRATION_VARIABLES : int
+        Segment containing calibration variables
+    CODE : int
+        Segment containing program code
+    DATA : int
+        Segment containing data
+    EXCLUDE_FROM_FLASH : int
+        Segment that should be excluded from flash programming
+    OFFLINE_DATA : int
+        Segment containing offline data
+    RESERVED : int
+        Reserved segment type
+    SERAM : int
+        Segment in Serial RAM
+    VARIABLES : int
+        Segment containing variables
+    """
+
     CALIBRATION_VARIABLES = 0
     CODE = 1
     DATA = 2
@@ -149,6 +199,27 @@ class PrgTypeSegment(IntEnum):
 
 
 class MemoryType(IntEnum):
+    """Enumeration for memory types.
+
+    This enum defines the different types of memory that can be
+    specified in an A2L file.
+
+    Attributes
+    ----------
+    EEPROM : int
+        Electrically Erasable Programmable Read-Only Memory
+    EPROM : int
+        Erasable Programmable Read-Only Memory
+    FLASH : int
+        Flash memory
+    RAM : int
+        Random Access Memory
+    ROM : int
+        Read-Only Memory
+    NOT_IN_ECU : int
+        Memory not physically present in the ECU
+    """
+
     EEPROM = 0
     EPROM = 1
     FLASH = 2
@@ -158,6 +229,19 @@ class MemoryType(IntEnum):
 
 
 class SegmentAttributeType(IntEnum):
+    """Enumeration for segment attribute types.
+
+    This enum defines the different types of segment attributes
+    that can be specified in an A2L file.
+
+    Attributes
+    ----------
+    INTERN : int
+        Internal segment (within the ECU)
+    EXTERN : int
+        External segment (outside the ECU)
+    """
+
     INTERN = 0
     EXTERN = 1
 
@@ -169,6 +253,30 @@ class SegmentAttributeType(IntEnum):
 
 @dataclass
 class Alignment:
+    """Class representing memory alignment requirements for different data types.
+
+    This class defines the alignment requirements for various data types
+    and provides methods to get the alignment for a specific data type
+    and to align an offset according to the requirements.
+
+    Attributes
+    ----------
+    byte : int
+        Alignment requirement for byte-sized data types (8 bits)
+    dword : int
+        Alignment requirement for double word-sized data types (32 bits)
+    float16 : int
+        Alignment requirement for 16-bit floating point data types
+    float32 : int
+        Alignment requirement for 32-bit floating point data types
+    float64 : int
+        Alignment requirement for 64-bit floating point data types
+    qword : int
+        Alignment requirement for quad word-sized data types (64 bits)
+    word : int
+        Alignment requirement for word-sized data types (16 bits)
+    """
+
     byte: int
     dword: int
     float16: int
@@ -177,6 +285,7 @@ class Alignment:
     qword: int
     word: int
 
+    # Mapping from ASAM data types to alignment type attributes
     TYPE_MAP = {
         "BYTE": "byte",
         "UBYTE": "byte",
@@ -195,12 +304,48 @@ class Alignment:
     }
 
     def get(self, data_type: str) -> int:
+        """Get the alignment requirement for a specific data type.
+
+        Parameters
+        ----------
+        data_type : str
+            The ASAM data type name (e.g., 'UBYTE', 'SWORD', 'FLOAT32_IEEE')
+
+        Returns
+        -------
+        int
+            The alignment requirement in bytes
+
+        Raises
+        ------
+        ValueError
+            If the data type is not recognized
+        """
         if data_type not in self.TYPE_MAP:
             raise ValueError(f"Invalid data type {data_type!r}.")
         attr = self.TYPE_MAP.get(data_type)
         return getattr(self, attr)
 
     def align(self, data_type: str, offset: int) -> int:
+        """Align an offset according to the requirements of a data type.
+
+        Parameters
+        ----------
+        data_type : str
+            The ASAM data type name (e.g., 'UBYTE', 'SWORD', 'FLOAT32_IEEE')
+        offset : int
+            The offset to align
+
+        Returns
+        -------
+        int
+            The aligned offset
+
+        Raises
+        ------
+        ValueError
+            If the data type is not recognized
+        """
         return align_as(offset, self.get(data_type))
 
 
@@ -209,27 +354,89 @@ NATURAL_ALIGNMENTS = Alignment(byte=1, dword=4, float16=2, float32=4, float64=8,
 
 @dataclass
 class RecordLayoutBase:
+    """Base class for record layout components.
+
+    This class serves as a base for various record layout components
+    such as axis points, function values, etc. It provides common
+    attributes and methods used by all record layout components.
+
+    Attributes
+    ----------
+    position : Optional[int]
+        Position of the component in the record layout
+    data_type : Optional[str]
+        ASAM data type of the component
+    axis : str
+        Axis identifier (e.g., 'x', 'y', 'z')
+    address : int
+        Memory address of the component
+    """
+
     position: Optional[int] = field(default=None)
     data_type: Optional[str] = field(default=None)
     axis: str = field(default="-")
     address: int = field(default=-1)
 
     def valid(self) -> bool:
+        """Check if the record layout component is valid.
+
+        A valid component must have both position and data_type defined.
+
+        Returns
+        -------
+        bool
+            True if the component is valid, False otherwise
+        """
         return self.position is not None and self.data_type is not None
 
     @cached_property
     def byte_size(self) -> int:
+        """Get the size of the component in bytes.
+
+        Returns
+        -------
+        int
+            Size of the component in bytes based on its data type
+        """
         return ASAM_TYPE_SIZES.get(self.data_type)
 
 
 @dataclass
 class RecordLayoutAxisPts(RecordLayoutBase):
+    """Record layout component for axis points.
+
+    This class represents the axis points component in a record layout,
+    which defines how axis points are stored in memory.
+
+    Attributes
+    ----------
+    indexIncr : Optional[str]
+        Increment type for indices
+    addressing : Optional[str]
+        Addressing mode for the axis points
+    """
+
     indexIncr: Optional[str] = field(default=None)
     addressing: Optional[str] = field(default=None)
 
 
 @dataclass
 class RecordLayoutAxisRescale(RecordLayoutBase):
+    """Record layout component for axis rescale points.
+
+    This class represents the axis rescale component in a record layout,
+    which defines how axis rescale points are stored in memory.
+
+    Attributes
+    ----------
+    indexIncr : Optional[str]
+        Increment type for indices
+    maxNumberOfRescalePairs : Optional[int]
+        Maximum number of rescale pairs
+    addressing : Optional[str]
+        Addressing mode for the rescale points
+    """
+
     indexIncr: Optional[str] = field(default=None)
     maxNumberOfRescalePairs: Optional[int] = field(default=None)
     addressing: Optional[str] = field(default=None)
@@ -237,57 +444,140 @@ class RecordLayoutAxisRescale(RecordLayoutBase):
 
 @dataclass
 class RecordLayoutFncValues(RecordLayoutBase):
+    """Record layout component for function values.
+
+    This class represents the function values component in a record layout,
+    which defines how function values are stored in memory.
+
+    Attributes
+    ----------
+    indexMode : Optional[str]
+        Mode for indexing the function values
+    addresstype : Optional[str]
+        Type of addressing for the function values
+    """
+
     indexMode: Optional[str] = field(default=None)
     addresstype: Optional[str] = field(default=None)
 
 
 @dataclass
 class RecordLayoutDistOp(RecordLayoutBase):
+    """Record layout component for distance operation.
+
+    This class represents the distance operation component in a record layout,
+    which defines how distance operations are stored in memory.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutIdentification(RecordLayoutBase):
+    """Record layout component for identification.
+
+    This class represents the identification component in a record layout,
+    which defines how identification data is stored in memory.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutNoAxisPts(RecordLayoutBase):
+    """Record layout component for number of axis points.
+
+    This class represents the number of axis points component in a record layout,
+    which defines how the count of axis points is stored in memory.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutNoRescale(RecordLayoutBase):
+    """Record layout component for number of rescale points.
+
+    This class represents the number of rescale points component in a record layout,
+    which defines how the count of rescale points is stored in memory.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutOffset(RecordLayoutBase):
+    """Record layout component for offset.
+
+    This class represents the offset component in a record layout,
+    which defines how offset values are stored in memory.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutReserved(RecordLayoutBase):
+    """Record layout component for reserved space.
+
+    This class represents the reserved space component in a record layout,
+    which defines areas of memory that are reserved for future use.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutRipAddr(RecordLayoutBase):
+    """Record layout component for RIP address.
+
+    This class represents the RIP (Relative Instruction Pointer) address component
+    in a record layout, which defines how RIP addresses are stored in memory.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutSrcAddr(RecordLayoutBase):
+    """Record layout component for source address.
+
+    This class represents the source address component in a record layout,
+    which defines how source addresses are stored in memory.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutShiftOp(RecordLayoutBase):
+    """Record layout component for shift operation.
+
+    This class represents the shift operation component in a record layout,
+    which defines how shift operations are stored in memory.
+    """
+
     pass
 
 
 @dataclass
 class RecordLayoutFixNoAxisPts:
+    """Record layout component for fixed number of axis points.
+
+    This class represents a fixed number of axis points in a record layout,
+    which defines a constant number of axis points rather than reading
+    the count from memory.
+
+    Attributes
+    ----------
+    number : Optional[int]
+        The fixed number of axis points
+    position : int
+        Position in the record layout
+    axis : str
+        Axis identifier (e.g., 'x', 'y', 'z')
+    """
+
     number: Optional[int] = field(default=None)
     position: int = field(default=0)
     axis: str = field(default="-")
@@ -312,61 +602,188 @@ RL_COMPONENT_NAMES = {
 
 @dataclass
 class FixAxisPar:
+    """Fixed axis parameters for axis descriptions.
+
+    This class represents fixed axis parameters that define how axis points
+    are distributed in memory using a shift-based approach.
+
+    Attributes
+    ----------
+    offset : Optional[int]
+        Offset of the first axis point
+    shift : Optional[int]
+        Shift value for calculating axis point positions
+    numberapo : Optional[int]
+        Number of axis points
+    """
+
     offset: Optional[int] = field(default=None)
     shift: Optional[int] = field(default=None)
     numberapo: Optional[int] = field(default=None)
 
     def valid(self) -> bool:
+        """Check if the fixed axis parameters are valid.
+
+        Valid parameters must have offset, shift, and numberapo defined.
+
+        Returns
+        -------
+        bool
+            True if the parameters are valid, False otherwise
+        """
         return self.offset is not None and self.shift is not None and self.numberapo is not None
 
 
 @dataclass
 class FixAxisParDist:
+    """Fixed axis parameters with distance for axis descriptions.
+
+    This class represents fixed axis parameters that define how axis points
+    are distributed in memory using a distance-based approach.
+
+    Attributes
+    ----------
+    offset : Optional[int]
+        Offset of the first axis point
+    distance : Optional[int]
+        Distance between consecutive axis points
+    numberapo : Optional[int]
+        Number of axis points
+    """
+
     offset: Optional[int] = field(default=None)
     distance: Optional[int] = field(default=None)
     numberapo: Optional[int] = field(default=None)
 
     def valid(self) -> bool:
+        """Check if the fixed axis parameters are valid.
+
+        Valid parameters must have offset, distance, and numberapo defined.
+
+        Returns
+        -------
+        bool
+            True if the parameters are valid, False otherwise
+        """
         return self.offset is not None and self.distance is not None and self.numberapo is not None
 
 
 @dataclass
 class ExtendedLimits:
+    """Extended limits for axis descriptions and characteristics.
+
+    This class represents extended limits that define the valid range
+    of values for an axis or characteristic beyond the standard limits.
+
+    Attributes
+    ----------
+    lowerLimit : Optional[float]
+        Lower limit of the valid range
+    upperLimit : Optional[float]
+        Upper limit of the valid range
+    """
+
     lowerLimit: Optional[float] = field(default=None)
     upperLimit: Optional[float] = field(default=None)
 
     def valid(self) -> bool:
+        """Check if the extended limits are valid.
+
+        Valid limits must have both lowerLimit and upperLimit defined.
+
+        Returns
+        -------
+        bool
+            True if the limits are valid, False otherwise
+        """
         return self.lowerLimit is not None and self.upperLimit is not None
 
 
 @dataclass
 class MatrixDim:
+    """Matrix dimensions for multi-dimensional data.
+
+    This class represents the dimensions of a matrix (1D, 2D, or 3D)
+    used for multi-dimensional data in characteristics and measurements.
+
+    Attributes
+    ----------
+    x : Optional[int]
+        Size of the first dimension (X)
+    y : Optional[int]
+        Size of the second dimension (Y)
+    z : Optional[int]
+        Size of the third dimension (Z)
+    numbers : tuple
+        Tuple of dimension sizes
+    """
+
     x: Optional[int] = field(default=None)
     y: Optional[int] = field(default=None)
     z: Optional[int] = field(default=None)
 
     def __init__(self, matrix_dim):
+        """Initialize a MatrixDim instance.
+
+        Parameters
+        ----------
+        matrix_dim : Any
+            Object containing matrix dimension information
+
+        Notes
+        -----
+        The matrix_dim object should have a 'numbers' attribute that is
+        a sequence of dimension sizes.
+        """
         self.numbers = ()
         if matrix_dim is not None:
-            numbers = matrix_dim.numbers
-            self.numbers = numbers
-            length = len(numbers)
-            if length >= 3:
-                self.z = numbers[2]
-                self.y = numbers[1]
-                self.x = numbers[0]
-            elif length == 2:
-                self.y = numbers[1]
-                self.x = numbers[0]
-            elif length == 1:
-                self.x = numbers[0]
+            try:
+                numbers = matrix_dim.numbers
+                self.numbers = numbers
+                length = len(numbers)
+                if length >= 3:
+                    self.z = numbers[2]
+                    self.y = numbers[1]
+                    self.x = numbers[0]
+                elif length == 2:
+                    self.y = numbers[1]
+                    self.x = numbers[0]
+                elif length == 1:
+                    self.x = numbers[0]
+            except (AttributeError, IndexError) as e:
+                # Handle case where matrix_dim doesn't have expected structure
+                print(f"Error initializing MatrixDim: {e}")
 
     def valid(self) -> bool:
+        """Check if the matrix dimensions are valid.
+
+        Valid dimensions must have x, y, and z defined.
+
+        Returns
+        -------
+        bool
+            True if the dimensions are valid, False otherwise
+        """
         return self.x is not None and self.y is not None and self.z is not None
 
 
 @dataclass
 class Annotation:
+    """Annotation for A2L objects.
+
+    This class represents an annotation that can be attached to various
+    A2L objects to provide additional information.
+
+    Attributes
+    ----------
+    label : Optional[str]
+        Label or title of the annotation
+    origin : Optional[str]
+        Origin or source of the annotation
+    text : List[str]
+        List of text lines in the annotation
+    """
+
     label: Optional[str]
     origin: Optional[str]
     text: List[str]
@@ -374,30 +791,109 @@ class Annotation:
 
 @dataclass
 class DependentCharacteristic:
+    """Dependent characteristic definition.
+
+    This class represents a dependent characteristic, which is a characteristic
+    whose value depends on other characteristics through a formula.
+
+    Attributes
+    ----------
+    formula : str
+        Formula that defines how the dependent characteristic is calculated
+    characteristics : List[str]
+        List of characteristic names that the formula depends on
+    """
+
     formula: str
     characteristics: List[str]
 
 
 @dataclass
 class VirtualCharacteristic:
+    """Virtual characteristic definition.
+
+    This class represents a virtual characteristic, which is a characteristic
+    that doesn't have a physical representation in memory but is calculated
+    from other characteristics.
+
+    Attributes
+    ----------
+    formula : str
+        Formula that defines how the virtual characteristic is calculated
+    characteristics : List[str]
+        List of characteristic names that the formula depends on
+    """
+
     formula: str
     characteristics: List[str]
 
 
 @dataclass
 class MaxRefresh:
+    """Maximum refresh rate information.
+
+    This class represents the maximum refresh rate for a measurement,
+    defining how frequently the measurement can be updated.
+
+    Attributes
+    ----------
+    scalingUnit : Optional[int]
+        Scaling unit for the refresh rate (e.g., 1=seconds, 1000=milliseconds)
+    rate : Optional[int]
+        Maximum refresh rate value
+    """
+
     scalingUnit: Optional[int] = field(default=None)
     rate: Optional[int] = field(default=None)
 
 
 @dataclass
 class SymbolLink:
+    """Symbol link information.
+
+    This class represents a link to a symbol in the ECU code,
+    which can be used to reference variables or functions.
+
+    Attributes
+    ----------
+    symbolLink : Optional[str]
+        Name of the symbol to link to
+    offset : Optional[int]
+        Offset to add to the symbol's address
+    """
+
     symbolLink: Optional[str] = field(default=None)
     offset: Optional[int] = field(default=None)
 
 
 @dataclass
 class AxisInfo:
+    """Axis information for characteristics and measurements.
+
+    This class provides detailed information about an axis in a
+    characteristic or measurement, including its data type, storage
+    format, and element count.
+
+    Attributes
+    ----------
+    data_type : str
+        ASAM data type of the axis elements
+    category : str
+        Category of the axis (e.g., 'CURVE_AXIS', 'MAP_AXIS')
+    maximum_element_count : int
+        Maximum number of elements in the axis
+    reversed_storage : bool
+        Whether the axis elements are stored in reversed order
+    addressing : str
+        Addressing mode for the axis elements
+    elements : Dict
+        Dictionary of axis elements
+    adjustable : bool
+        Whether the axis is adjustable
+    actual_element_count : Optional[int]
+        Actual number of elements in the axis (may be less than maximum)
+    """
+
     data_type: str
     category: str
     maximum_element_count: int
@@ -542,20 +1038,78 @@ def fnc_np_order(order: Optional[str]) -> Optional[str]:
 
 
 class FilteredList(Generic[T]):
+    """A filtered list of objects from a database association.
+
+    This class provides a way to filter and query objects from a database
+    association, returning instances of a specified class.
+
+    Attributes
+    ----------
+    session : Any
+        SQLAlchemy session object
+    association : Any
+        Database association to query
+    klass : Type[T]
+        Class to instantiate for each row
+    attribute : Callable
+        Function to extract the attribute used for instantiation
+    """
 
     def __init__(self, session, association, klass: T, attr_name: str = "name") -> None:
+        """Initialize a FilteredList instance.
+
+        Parameters
+        ----------
+        session : Any
+            SQLAlchemy session object
+        association : Any
+            Database association to query
+        klass : Type[T]
+            Class to instantiate for each row
+        attr_name : str, optional
+            Name of the attribute to use for instantiation, by default "name"
+        """
         self.session = session
         self.association = association
         self.klass = klass
         self.attribute = attrgetter(attr_name)
 
     def query(self, criterion: Optional[Callable] = None) -> Generator:
+        """Query the association with an optional filter criterion.
+
+        Parameters
+        ----------
+        criterion : Optional[Callable], optional
+            Function to filter rows, by default None
+
+        Returns
+        -------
+        Generator
+            Generator yielding instances of the specified class
+
+        Notes
+        -----
+        If criterion is None, all rows are returned.
+        The criterion function should take a row and return True if the row
+        should be included in the results.
+        """
         if criterion is None:
             criterion = lambda x: x
-        for row in self.association:
-            if criterion(row):
-                xn = self.klass.get(self.session, self.attribute(row))
-                yield xn
+
+        if self.association is None:
+            return
+
+        try:
+            for row in self.association:
+                if criterion(row):
+                    try:
+                        xn = self.klass.get(self.session, self.attribute(row))
+                        if xn is not None:
+                            yield xn
+                    except (AttributeError, ValueError) as e:
+                        print(f"Error getting {self.klass.__name__} instance: {e}")
+        except Exception as e:
+            print(f"Error querying association: {e}")
 
 
 class CachedBase:
@@ -563,6 +1117,13 @@ class CachedBase:
 
     This class provides a caching mechanism to avoid creating duplicate instances
     of the same object, which can improve performance and memory usage.
+
+    Attributes
+    ----------
+    _cache : weakref.WeakValueDictionary
+        Dictionary mapping (class_name, object_name, args) tuples to instances
+    _strong_ref : collections.deque
+        Deque of strong references to instances to prevent garbage collection
 
     Note
     ----
@@ -579,6 +1140,23 @@ class CachedBase:
     _strong_ref: collections.deque = collections.deque(maxlen=DB_CACHE_SIZE)
 
     def __new__(cls, *args, **kwargs):
+        """Create a new instance of the class.
+
+        This method is called when a new instance is created directly
+        (not through the `get` method).
+
+        Parameters
+        ----------
+        *args : Any
+            Positional arguments to pass to the constructor
+        **kwargs : Any
+            Keyword arguments to pass to the constructor
+
+        Returns
+        -------
+        Any
+            A new instance of the class
+        """
         instance = super().__new__(cls)  # Call the parent class's __new__ method
         return instance
 
@@ -600,21 +1178,35 @@ class CachedBase:
         Returns
         -------
         Any
-            An instance of the class
+            An instance of the class, or None if an error occurs
+
+        Notes
+        -----
+        This method first checks if an instance with the given parameters
+        already exists in the cache. If it does, that instance is returned.
+        Otherwise, a new instance is created, added to the cache, and returned.
         """
+        if session is None:
+            print(f"{cls.__name__}.get(): session cannot be None")
+            return None
+
         entry = (cls.__name__, name, args)
         if entry not in cls._cache:
             try:
                 inst = cls(session, name, module_name, *args)
+                cls._cache[entry] = inst
+                cls._strong_ref.append(inst)
             except Exception as e:
                 print(f"{cls.__name__}.get({name!r}): {e!r}")
                 return None
-            cls._cache[entry] = inst
-            cls._strong_ref.append(inst)
         return cls._cache[entry]
 
     @classmethod
     def inny(cls):
+        """Debug method to print the class name.
+
+        This method is used for debugging purposes.
+        """
         print("INNY: ", cls.__name__)
 
 

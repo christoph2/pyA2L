@@ -34,9 +34,8 @@ from typing import Any, List, Optional
 from sqlalchemy import Column, ForeignKey, Index, create_engine, event, orm, types
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.ext.orderinglist import ordering_list
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import as_declarative, backref, declared_attr, relationship
 
 from pya2l.aml.ifdata_parser import IfDataParser
 from pya2l.model.mixins import AxisDescrMixIn, CompareByPositionMixIn
@@ -5308,7 +5307,7 @@ class A2LDatabase:
         self._closed = False
 
     def __del__(self):
-        if not self._closed:
+        if hasattr(self, "_closed") and not self._closed:
             self.close()
 
     def close(self):
