@@ -144,3 +144,9 @@ build-verbosity = 3
 build = "cp3{10,11,12,13,14}-*"
 skip = ["*_i686", "*-musllinux*"]
 build-frontend = "build"
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64", "aarch64", "armv7l"]
+manylinux-x86_64-image = "manylinux2014"
+manylinux-aarch64-image = "manylinux2014"
+manylinux-armv7l-image = "manylinux2014"

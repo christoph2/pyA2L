@@ -209,6 +209,54 @@ Examples
 - See pya2l/examples for sample A2L files and scripts.
 - The Sphinx docs contain a fuller tutorial and how-to guides.
 
+Create API and coverage parity
+------------------------------
+pyA2L offers a Creator API in pya2l.api.create to programmatically build or augment A2L content. The project’s goal is coverage parity: everything you can query via pya2l.api.inspect is intended to be creatable via pya2l.api.create.
+
+Example: creating common entities
+
+```python
+from pya2l import DB
+from pya2l.api.create import ModuleCreator
+from pya2l.api.inspect import Module
+
+# Open or create a database
+session = DB().open_create("MyProject.a2l")  # or .a2ldb
+
+mc = ModuleCreator(session)
+# Create a module
+mod = mc.create_module("DEMO", "Demo ECU module")
+
+# Units and conversions
+temp_unit = mc.add_unit(mod, name="degC", long_identifier="Celsius",
+                        display="°C", type_str="TEMPERATURE")
+ct = mc.add_compu_tab(mod, name="TAB_NOINTP_DEMO", long_identifier="Demo Tab",
+                      conversion_type="TAB_NOINTP",
+                      pairs=[(0, 0.0), (100, 1.0)], default_numeric=0.0)
+
+# Frames and transformers
+fr = mc.add_frame(mod, name="FRAME1", long_identifier="Demo frame",
+                  scaling_unit=1, rate=10, measurements=["ENGINE_SPEED"])
+tr = mc.add_transformer(mod, name="TR1", version="1.0",
+                        dllname32="tr32.dll", dllname64="tr64.dll",
+                        timeout=1000, trigger="ON_CHANGE", reverse="NONE",
+                        in_objects=["ENGINE_SPEED"], out_objects=["SPEED_PHYS"])
+
+# Typedefs and instances
+ts = mc.add_typedef_structure(mod, name="TSig", long_identifier="Signal",
+                              size=8)
+mc.add_structure_component(ts, name="raw", type_ref="UWORD", offset=0)
+inst = mc.add_instance(mod, name="S1", long_identifier="Inst of TSig",
+                       type_name="TSig", address=0x1000)
+
+# Verify with inspect helpers
+mi = Module(session)
+print("#frames:", len(list(mi.frame.query())))
+print("#compu tabs:", len(list(mi.compu_tab.query())))
+```
+
+See pya2l/examples/create_quickstart.py for a more complete example.
+
 Command-line usage
 ------------------
 A small CLI is provided as a console script named `a2ldb-imex`:
