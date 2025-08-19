@@ -4256,6 +4256,8 @@ class Project:
                 self.version = None
         else:
             self.comment = None
+            self.projectNumber = None
+            self.version = None
         self.module = []
         for mod in project.module:
             self.module.append(Module(self.session, mod.name))
