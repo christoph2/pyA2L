@@ -31,46 +31,9 @@ Contents
 
 About ASAM MCD-2 MC (ASAP2)
 ---------------------------
-ASAM MCD-2 MC, commonly referred to as ASAP2, defines a standardized description format for measurement signals and calibration parameters in Electronic Control Units (ECUs). It specifies the human‑readable A2L file that acts as a contract between ECU software and tooling so that different vendors’ tools can interpret memory, convert raw values to physical engineering units, and apply calibrations consistently.
+ASAM MCD-2 MC (ASAP2) is the ASAM standard that defines the A2L description format for ECU measurement signals and calibration parameters. In practice, the A2L acts as a contract between ECU software and tools so different vendors can consistently locate data in memory and convert raw values into physical engineering units. Runtime transport (e.g., CCP/XCP) is out of scope of the standard.
 
-Scope and workflow context
-- ASAP2/A2L describes WHAT exists in ECU memory (addresses, data types, layouts) and HOW to interpret it (conversions, units, limits). It does not define the runtime transport; that’s typically handled by CCP or XCP.
-- In practice, engineers combine an A2L with CCP/XCP to stream measurements from the ECU and to write calibration values during development, testing, and calibration.
-
-Top‑level A2L structure (essentials)
-- PROJECT → MODULE: A2L is organized into a PROJECT with one or more MODULE blocks (usually one per ECU software image).
-- COMMON / MOD_PAR / MOD_COMMON: Module‑wide settings such as byte order, alignment, system constants, EPK/addresses, and global defaults.
-- MEASUREMENT: Declares read‑only measurement signals with data type, ECU address, bit mask (if needed), sampling characteristics, and the conversion to physical values.
-- CHARACTERISTIC: Declares calibratable data such as scalars, curves, and maps, including storage class, ECU address, record layout, default values, limits, and associated axes.
-- AXIS_DESCR / AXIS_PTS: Define axis properties for curves/maps (type, points count, data type, address or reference to axis characteristics, default values).
-- RECORD_LAYOUT: Describes the binary layout of calibrations in memory (order and type of elements, alignment, bit/byte order), enabling tools to read/write structured data correctly.
-- UNIT: Defines engineering units and display formats; COMPU_METHOD/COMPU_TAB specify how raw ECU values become physical values.
-- FUNCTION / GROUP: Provide logical grouping of measurements and characteristics and their relationships (e.g., for browsing and authorization).
-- VARIANT_CODING: Describes variant handling if the ECU image contains multiple feature variants.
-- IF_DATA: Vendor‑ or protocol‑specific extensions embedded in the A2L.
-
-Data types, addresses, and memory layout
-- ASAP2 supports integer and floating‑point types with explicit byte order and alignment rules; elements may be masked or bit‑positioned within a larger word.
-- Addresses may be absolute or segmented/banked depending on the target; A2L captures the necessary address space info used by CCP/XCP.
-- RECORD_LAYOUT is key for complex objects (CURVE/MAP) and encodes structure (e.g., axis first vs. column‑major, reserved bytes, fix‑axis handling).
-
-From raw to physical values (conversions)
-- COMPU_METHOD covers conversion formulas and formatting; common methods include:
-  - IDENTICAL (no conversion), LINEAR/RATIONAL (y = (a·x + b) / (c·x + d)), LOG, and user‑defined FORMULA strings.
-- COMPU_TAB / COMPU_VTAB / COMPU_VTAB_RANGE provide table‑based conversions for enumerations, lookup tables, and range‑to‑text mappings.
-- Units, display formats, and value limits are part of the conversion context and are referenced by MEASUREMENTs and CHARACTERISTICs.
-
-Axes and multidimensional calibrations
-- CHARACTERISTICs may have 0D (SCALAR), 1D (CURVE), 2D/3D (MAP) and beyond; each dimension is described by an AXIS_DESCR.
-- Axis types include STD_AXIS, COM_AXIS, FIX_AXIS, and RESCALE. An axis can reference another CHARACTERISTIC (axis‑points characteristic) or embed FIX_AXIS definitions.
-
-Namespaces, includes, and modularization
-- A2L supports INCLUDE of other files, and namespaces allow structuring large projects across suppliers and domains.
-
-Versioning and compatibility
-- A2L has evolved through several revisions; this project currently targets ASAP2 v1.6. Many concepts are stable across versions, but certain keywords and IF_DATA blocks are version‑specific.
-
-For a detailed, authoritative overview of the standard, see the ASAM wiki page: https://www.asam.net/standards/detail/mcd-2-mc/wiki/
+For an authoritative overview of the standard, see the ASAM page: https://www.asam.net/standards/detail/mcd-2-mc/
 
 What pyA2L offers
 -----------------
