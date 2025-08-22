@@ -38,7 +38,8 @@ jobs:
           CIBW_ARCHS_LINUX: x86_64 aarch64 armv7l
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
           CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
-          CIBW_MANYLINUX_ARMV7L_IMAGE: manylinux2014      - uses: actions/upload-artifact@v4
+          CIBW_MANYLINUX_ARMV7L_IMAGE: manylinux2014      
+      - uses: actions/upload-artifact@v4
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
