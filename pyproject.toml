@@ -138,7 +138,6 @@ exclude_dirs = [".venv", "tests"]
 skips = ["B307", "B404", "B605", "B607", "B603"]
 
 [tool.cibuildwheel]
-build-verbosity = 3
 #test-command = "pya2l {package}/tests"
 
 build = "cp3{10,11,12,13,14}-*"
