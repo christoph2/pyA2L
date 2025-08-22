@@ -1,42 +1,55 @@
-# Building pyA2L
+# Building pyA2L (from source)
 
-pyA2L uses code generated from ANTLR grammars for much of the heavy lifting when parsing ASAP2 documents. This code is not version controlled, but instead generated during build time. That means that if you just cloned this repository, it is not yet ready to use. You must first build it, which requires a working Java installation to run ANTLR.
+pyA2L ships binary wheels for common platforms on PyPI as `pya2ldb`. If a wheel is not available for your platform, you can build from source.
 
 ## Prerequisites
 
-1. Install Java
-2. Install ANTLR: https://github.com/antlr/antlr4/blob/master/doc/getting-started.md
+- Python 3.10+
+- A C/C++ toolchain (e.g., MSVC Build Tools on Windows, Xcode Command Line Tools on macOS, or GCC/Clang on Linux)
+- CMake 3.12+
+- pip >= 21.3
 
-## Code generation
+Note: The project uses pybind11 and CMake under the hood. ANTLR and Java are not required for normal builds.
 
-To generate code, call setup.py with the `antlr` command:
+## One‑liner build and install (recommended)
 
-```bash
-python setup.py antlr
-```
-
-However, it is generally not necessary to run this command directly.
-
-## Development environment
-
-If you want to contribute to the pyA2L project, running:
+Using pip (PEP 517):
 
 ```bash
-python setup.py develop
+pip install -v .
 ```
 
-will also auto-generate code.
+This will compile the native extensions and install `pya2ldb` into your environment.
 
-## Binary distribution
+## Development install
 
-The same is true when creating a binary for distribution with:
+If you plan to work on the codebase, a development install keeps sources editable:
 
 ```bash
-python setup.py bdist
+pip install -v -e .
 ```
 
-or
+This uses the build backend defined in `pyproject.toml` and will recompile extensions as needed.
+
+## Building distribution artifacts
+
+Build a source distribution and wheel into the `dist/` directory:
 
 ```bash
-python setup.py bdist_wheel
+python -m build
 ```
+
+You can then upload with `twine`.
+
+## Building the documentation
+
+The user guides live in `docs/` (mostly Markdown). The Sphinx entry point is `docs/index.rst`, which links to those pages for convenient browsing on GitHub.
+
+To build the Sphinx site locally:
+
+```bash
+python -m pip install -r docs/requirements.txt sphinx
+sphinx-build -b html docs docs/_build/html
+```
+
+Open `docs/_build/html/index.html` in your browser.

@@ -25,7 +25,14 @@ author = "Christoph Schueler"
 # The short X.Y version
 version = ""
 # The full version, including alpha/beta/rc tags
-release = "0.9"
+# Keep Sphinx version in sync with the installed package version
+try:
+    from importlib.metadata import version as _pkg_version
+
+    release = _pkg_version("pya2ldb")
+except Exception:
+    # Fallback to static string if metadata is unavailable
+    release = "unknown"
 
 
 # -- General configuration ---------------------------------------------------

@@ -1,10 +1,6 @@
 pyA2L
 =====
 
-[![Code Climate](https://codeclimate.com/github/christoph2/pyA2L/badges/gpa.svg)](https://codeclimate.com/github/christoph2/pyA2L)
-[![Coverage Status](https://coveralls.io/repos/github/christoph2/pyA2L/badge.svg?branch=master)](https://coveralls.io/github/christoph2/pyA2L?branch=master)
-[![Build Status](https://travis-ci.org/christoph2/pyA2L.svg)](https://travis-ci.org/christoph2/pyA2L)
-[![Build status](https://ci.appveyor.com/api/projects/status/2sa0ascmg0b6lbt6?svg=true)](https://ci.appveyor.com/project/christoph2/pya2l)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![GPL License](http://img.shields.io/badge/license-GPL-blue.svg)](http://opensource.org/licenses/GPL-2.0)
 
@@ -160,8 +156,8 @@ export_a2l("ASAP2_Demo_V161", "exported.a2l")
 
 Tips
 - The default file encoding for A2L import is latin-1; override via encoding= parameter if needed.
-- You need a working Java and ANTLR setup when building from source; pip wheels are provided for supported platforms.
-- The Python package name is pya2ldb (not pya2l).
+- pip wheels are [provided](https://pypi.org/project/pya2ldb/#files) for supported platforms.
+- The Python package name is pya2ldb (not pya2l!!!).
 
 Examples
 - See pya2l/examples for sample A2L files and scripts.
@@ -235,9 +231,8 @@ $ a2ldb-imex -e path/to/file.a2ldb -o exported.a2l
 
 Compatibility
 -------------
-- Python: 3.10 – 3.13 (per pyproject classifiers)
+- Python: 3.10 – 3.14
 - Platforms: Prebuilt wheels are published for selected platforms. From source, Windows/macOS are supported; Linux may require building native extensions.
-- ASAP2: Version 1.6
 
 Project links
 -------------
@@ -248,61 +243,14 @@ Project links
 
 Contributing
 ------------
-Contributions are welcome! Please open an issue to discuss significant changes before submitting a PR. See the existing tests under `pya2l/tests` and examples under `pya2l/examples` to get started.
+Contributions are welcome! Please open an issue to discuss significant changes before submitting a PR. See the existing tests under `pya2l/tests` and examples under `pya2l/examples` to get started. Contributors should use pre-commit to run formatting and lint checks before committing; see https://pre-commit.com/ for installation and usage.
 
 Code of Conduct
 ---------------
-here is a basic example:
-```python
-from pya2l import DB
-import pya2l.model as model
+This project follows a Code of Conduct to foster an open and welcoming community. Please read and abide by it when interacting in issues, discussions, and pull requests.
 
-db = DB()
-base_dir = "examples/"
-a2l_file = "ASAP2_Demo_V161"
-try:
-    session = db.import_a2l(f"{base_dir}{a2l_file}.a2l")
-except OSError:
-    print("a2ldb for this file already exists, using it instead")
-    session = db.open_existing(f"{base_dir}{a2l_file}.a2ldb")
-
-measurements = session.query(model.Measurement).order_by(model.Measurement.name).all()
-for m in measurements:
-    print(f"{m.name:48} {m.datatype:12} 0x{m.ecu_address.address:08x}")
-```
+See CODE_OF_CONDUCT.md for full details.
 
 Changelog / Release notes
 -------------------------
 See GitHub Releases: https://github.com/christoph2/pyA2L/releases
-
-Acknowledgements
-----------------
-- Based on and inspired by the ASAM MCD-2 MC (ASAP2) standard.
-- Part of the pySART ecosystem.
-
-Mining fixes and feature ideas from GitHub issues
--------------------------------------------------
-You can generate a categorized report of “Fix candidates” and “Feature ideas” from the GitHub issue tracker:
-
-- Run from your shell (requires internet access):
-
-```bash
-# Basic: list open issues for the default repo
-python -m pya2l.scripts.issues_report
-
-# Specify repository and write to a Markdown file
-python -m pya2l.scripts.issues_report --repo christoph2/pyA2L --state open --out issues_report.md
-
-# Use a GitHub token to increase rate limits
-GITHUB_TOKEN=ghp_your_token python -m pya2l.scripts.issues_report
-```
-
-The script groups issues by labels:
-- Fix candidates: bug, regression, defect
-- Feature ideas: enhancement, feature, idea, improvement
-- Others: Uncategorized
-
-----------
-
-**pyA2L is part of pySART (Simplified AUTOSAR-Toolkit for Python).**
-----------

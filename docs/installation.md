@@ -6,7 +6,7 @@
 
 ## Prerequisites
 
-If you plan to build from source or work on the parser, you will need Java and ANTLR (see Building).
+If you plan to build from source, ensure you have a C/C++ toolchain and CMake installed (see Building). Java/ANTLR are not required for normal builds.
 
 ## Install from PyPI
 
@@ -21,5 +21,5 @@ Important: The package name is `pya2ldb` (not `pya2l`).
 ```bash
 git clone https://github.com/christoph2/pyA2L.git
 cd pyA2L
-python setup.py develop
+pip install -v -e .
 ```

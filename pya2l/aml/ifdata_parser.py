@@ -516,10 +516,12 @@ class IfDataParser:
         tk = self.current_token
 
         # Validate the token
-        if not self.validate_pdt(tk):
-            token_type_name = IfDataTokenType(tk.type).name
-            pdt_type_name = AMLPredefinedTypeEnum(self.syntax_tos.type).name
-            self.logger.warn(f"Token {token_type_name}[{tk.value}] may not be valid for PDT type {pdt_type_name}")
+        #
+        # TODO: Add support for array types.
+        # if not self.validate_pdt(tk):
+        #    token_type_name = IfDataTokenType(tk.type).name
+        #    pdt_type_name = AMLPredefinedTypeEnum(self.syntax_tos.type).name
+        #    self.logger.warn(f"Token {token_type_name}[{tk.value}] may not be valid for PDT type {pdt_type_name}")
 
         self.consume()
 
