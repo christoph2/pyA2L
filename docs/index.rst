@@ -10,13 +10,13 @@ Contents
 
 The detailed user documentation is currently authored in Markdown for easier browsing on GitHub. You can read those pages here:
 
-- Installation: https://github.com/christoph2/pyA2L/tree/main/docs/installation.md
-- Building from source: https://github.com/christoph2/pyA2L/tree/main/docs/building.md
-- Getting started: https://github.com/christoph2/pyA2L/tree/main/docs/getting_started.md
-- Tutorial: https://github.com/christoph2/pyA2L/tree/main/docs/tutorial.md
-- Configuration: https://github.com/christoph2/pyA2L/tree/main/docs/configuration.md
-- How‑to guides: https://github.com/christoph2/pyA2L/tree/main/docs/howto.md
-- Modules / API overview: https://github.com/christoph2/pyA2L/tree/main/docs/modules.md
+- Installation: https://github.com/christoph2/pyA2L/tree/master/docs/installation.md
+- Building from source: https://github.com/christoph2/pyA2L/tree/master/docs/building.md
+- Getting started: https://github.com/christoph2/pyA2L/tree/master/docs/getting_started.md
+- Tutorial: https://github.com/christoph2/pyA2L/tree/master/docs/tutorial.md
+- Configuration: https://github.com/christoph2/pyA2L/tree/master/docs/configuration.md
+- How‑to guides: https://github.com/christoph2/pyA2L/tree/master/docs/howto.md
+- Modules / API overview: https://github.com/christoph2/pyA2L/tree/master/docs/modules.md
 
 Note
 ----
