@@ -209,7 +209,7 @@ public:
 
     AMLPredefinedType() = delete;
 
-    AMLPredefinedType(AMLPredefinedTypeEnum pdt, const std::vector<int64_t>& arr_spec) :
+    AMLPredefinedType(AMLPredefinedTypeEnum pdt, const std::vector<uint32_t>& arr_spec) :
         m_pdt(pdt), m_arr_spec(arr_spec) {
     }
 
@@ -217,14 +217,14 @@ public:
         return m_pdt;
     }
 
-    const std::vector<int64_t>& get_array_spec() const noexcept {
+    const std::vector<uint32_t>& get_array_spec() const noexcept {
         return m_arr_spec;
     }
 
 private:
 
     AMLPredefinedTypeEnum m_pdt;
-    std::vector<int64_t> m_arr_spec{};
+    std::vector<uint32_t> m_arr_spec{};
 };
 
 

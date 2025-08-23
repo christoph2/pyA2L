@@ -517,6 +517,7 @@ class Unmarshaller {
         } else if (dt == "B") {
             return make_tagged_struct_member(multiple, load_block());
         }
+        return make_null_node();
     }
 
     Node load_tagged_struct() {
@@ -533,6 +534,7 @@ class Unmarshaller {
         } else if (disc == "R") {
             return load_referrrer();
         }
+        return make_null_node();
     }
 
     Node load_tagged_union() {
@@ -559,6 +561,7 @@ class Unmarshaller {
         } else if (disc == "R") {
             return load_referrrer();
         }
+        return make_null_node();
     }
 
     Node load_type() {
@@ -598,8 +601,8 @@ class Unmarshaller {
             return make_member(std::move(load_type()), false);
         } else if (disc == "B") {
             return make_member(std::move(load_block()), true);
-        } else {
         }
+        return make_null_node();
     }
 
     Node load_struct() {
@@ -624,6 +627,7 @@ class Unmarshaller {
         } else if (disc == "R") {
             return load_referrrer();
         }
+        return make_null_node();
     }
 
     Node load_block() {

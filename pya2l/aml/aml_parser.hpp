@@ -412,9 +412,9 @@ class AMLParser {
         }
     }
 
-    auto array_specifier() -> std::vector<int64_t> {
-        std::vector<int64_t> result;
-        int64_t              value;
+    auto array_specifier() -> std::vector<uint32_t> {
+        std::vector<uint32_t> result;
+        uint32_t              value;
         auto                 token = current_token();
         if (token.type == AmlTokenType::LSQ) {
             while (true) {
@@ -423,7 +423,7 @@ class AMLParser {
                     break;
                 }
                 match(AmlTokenType::LSQ);
-                value = get_int();
+                value = static_cast<uint32_t>(get_int());
                 result.push_back(value);
                 match(AmlTokenType::RSQ);
             }

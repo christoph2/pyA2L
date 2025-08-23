@@ -204,7 +204,7 @@ inline void dumps(std::stringstream& ss, const EnumerationOrReferrer& er) {
         ss << to_binary(enumerator_count);
         for (const auto& [tag, value] : enumerators) {
             ss << to_binary(tag);
-            ss << to_binary<uint32_t>(value);
+            ss << to_binary<uint32_t>(static_cast<uint32_t>(value));
         }
     } else if (std::holds_alternative<Referrer>(er)) {
         auto ref = std::get<Referrer>(er);
