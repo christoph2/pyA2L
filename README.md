@@ -239,7 +239,7 @@ Project links
 - Source code: https://github.com/christoph2/pyA2L
 - Issue tracker: https://github.com/christoph2/pyA2L/issues
 - PyPI: https://pypi.org/project/pya2ldb/
-- Documentation (source): [./docs](./docs)
+- [Documentation](./docs/index.rst)
 
 Contributing
 ------------
