@@ -29,7 +29,7 @@ import mmap
 import pickle
 import re
 import sqlite3
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Sequence
 
 from sqlalchemy import Column, ForeignKey, Index, create_engine, event, orm, types
 from sqlalchemy.engine import Engine
@@ -184,14 +184,14 @@ class Element:
     __str__ = __repr__
 
 
-def calculateCacheSize(value):
+def calculateCacheSize(value: int) -> int:
     return -(value // PAGE_SIZE)
 
 
 REGEXER_CACHE = {}
 
 
-def regexer(value, expr):
+def regexer(value: str, expr: str) -> bool:
     if not REGEXER_CACHE.get(expr):
         REGEXER_CACHE[expr] = re.compile(expr, re.UNICODE)
     re_expr = REGEXER_CACHE[expr]
@@ -199,7 +199,7 @@ def regexer(value, expr):
 
 
 @event.listens_for(Engine, "connect")
-def set_sqlite3_pragmas(dbapi_connection, connection_record):
+def set_sqlite3_pragmas(dbapi_connection: Any, connection_record: Any) -> None:
     dbapi_connection.create_function("REGEXP", 2, regexer)
     cursor = dbapi_connection.cursor()
     # cursor.execute("PRAGMA jornal_mode=WAL")
@@ -218,10 +218,10 @@ class Base:
     rid = Column("rid", types.Integer, primary_key=True)
 
     @declared_attr
-    def __tablename__(self):
+    def __tablename__(self) -> str:
         return self.__name__.lower()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         columns = [c.name for c in self.__class__.__table__.c]
         result = []
         for name, value in [(n, getattr(self, n)) for n in columns if not n.startswith("_")]:
@@ -5256,21 +5256,21 @@ class AMLSection(Base):
 
 class SessionProxy:
 
-    def __init__(self, session):
+    def __init__(self, session: orm.Session):
         self._session = session
         self._ifdata_parser = None
 
-    def setup_ifdata_parser(self, loglevel: str = "INFO"):
+    def setup_ifdata_parser(self, loglevel: str = "INFO") -> None:
         self._ifdata_parser = IfDataParser(self._session, loglevel)
 
-    def __getattr__(self, name: str):
+    def __getattr__(self, name: str) -> Any:
         return getattr(self._session, name)
 
-    def parse_ifdata(self, sections: List[str]):
+    def parse_ifdata(self, sections: Sequence["IfData"]) -> List[Any]:
         if self._ifdata_parser is None or not self._ifdata_parser.root or not sections:
             return []
         else:
-            result = []
+            result: List[Any] = []
             for section in sections:
                 try:
                     res = self._ifdata_parser.parse(section.raw)
@@ -5282,7 +5282,7 @@ class SessionProxy:
 
 
 class A2LDatabase:
-    def __init__(self, filename, debug=False, logLevel="INFO"):
+    def __init__(self, filename: str, debug: bool = False, logLevel: str = "INFO") -> None:
         if filename == ":memory:":
             self.dbname = ""
         else:
@@ -5295,46 +5295,55 @@ class A2LDatabase:
             echo=debug,
             connect_args={"detect_types": sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES},
             native_datetime=True,
+            pool_pre_ping=True,
         )
 
         self._session = SessionProxy(orm.Session(self._engine, autoflush=False, autocommit=False))
         self._metadata = Base.metadata
+        # Ensure tables exist and initialize metadata exactly once
         Base.metadata.create_all(self.engine)
-        meta = MetaData(schema_version=CURRENT_SCHEMA_VERSION)
-        self.session.add(meta)
-        self.session.flush()
-        self.session.commit()
+        try:
+            existing_meta = self.session.query(MetaData).first()
+        except Exception:
+            # If querying metadata itself fails, leave initialization to callers
+            existing_meta = None
+        if existing_meta is None:
+            # Fresh database or missing metadata: create initial metadata row
+            meta = MetaData(schema_version=CURRENT_SCHEMA_VERSION)
+            self.session.add(meta)
+            self.session.flush()
+            self.session.commit()
         self._closed = False
 
-    def __del__(self):
+    def __del__(self) -> None:
         if hasattr(self, "_closed") and not self._closed:
             self.close()
 
-    def close(self):
+    def close(self) -> None:
         """"""
         self.session.close()
         self.engine.dispose()
         self._closed = True
 
     @property
-    def engine(self):
+    def engine(self) -> Engine:
         return self._engine
 
     @property
-    def metadata(self):
+    def metadata(self) -> Any:
         return self._metadata
 
     @property
-    def session(self):
+    def session(self) -> "SessionProxy":
         return self._session
 
-    def begin_transaction(self):
+    def begin_transaction(self) -> None:
         """"""
 
-    def commit_transaction(self):
+    def commit_transaction(self) -> None:
         """"""
 
-    def rollback_transaction(self):
+    def rollback_transaction(self) -> None:
         """"""
 
 
@@ -5343,7 +5352,7 @@ KEYWORD_MAP = {
     "A2ML_VERSION": A2mlVersion,
     "ADDR_EPK": AddrEpk,
     "ALIGNMENT_BYTE": AlignmentByte,
-    "ALIGNMENT_FLOAT16_IEEE": AlignmentFloat32Ieee,
+    "ALIGNMENT_FLOAT16_IEEE": AlignmentFloat16Ieee,
     "ALIGNMENT_FLOAT32_IEEE": AlignmentFloat32Ieee,
     "ALIGNMENT_FLOAT64_IEEE": AlignmentFloat64Ieee,
     "ALIGNMENT_INT64": AlignmentInt64,

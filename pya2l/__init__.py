@@ -77,7 +77,7 @@ def import_a2l(
     encoding: str = "latin-1",
     loglevel: str = "INFO",
     progress_bar: bool = True,
-):
+) -> model.SessionProxy:
     """Import `.a2l` file to `.a2ldb` database.
 
 
@@ -137,7 +137,7 @@ def import_a2l(
     return session
 
 
-def open_existing(file_name: str, loglevel: str = "INFO"):
+def open_existing(file_name: str, loglevel: str = "INFO") -> model.SessionProxy:
     """Open an existing `.a2ldb` database.
 
     Parameters
@@ -167,11 +167,37 @@ def open_existing(file_name: str, loglevel: str = "INFO"):
             session.setup_ifdata_parser(loglevel=loglevel)
             return session
         else:
-            raise InvalidA2LDatabase("Database seems to be corrupted. No meta-data found.")
+            # Attempt recovery: delete corrupted DB and re-import from corresponding A2L
+            a2l_fn, _ = path_components(in_memory=False, file_name=file_name)
+            try:
+                # Ensure the DB file is removed first
+                import os
+
+                try:
+                    session.close()
+                    db.close()
+                except Exception:
+                    pass  # nosec
+                if os.path.exists(db_fn):
+                    os.remove(db_fn)
+                # Re-import
+                return import_a2l(
+                    file_name=str(a2l_fn),
+                    local=False,
+                    in_memory=False,
+                    remove_existing=False,
+                    encoding="latin-1",
+                    loglevel=loglevel,
+                    progress_bar=True,
+                )
+            except Exception as e:
+                raise InvalidA2LDatabase(
+                    f"Database seems to be corrupted (no meta-data). Attempted auto-recovery failed: {e}"
+                ) from e
         return session
 
 
-def open_create(file_name: str, local: bool = False, encoding: str = "latin-1", loglevel: str = "INFO"):
+def open_create(file_name: str, local: bool = False, encoding: str = "latin-1", loglevel: str = "INFO") -> model.SessionProxy:
     """Open or create an A2LDB."""
 
     a2l_fn, db_fn = path_components(in_memory=False, file_name=file_name)
@@ -181,7 +207,9 @@ def open_create(file_name: str, local: bool = False, encoding: str = "latin-1", 
         return open_existing(db_fn, loglevel)
 
 
-def export_a2l(db_name: str, output: typing.Union[TextIOWrapper, str, typing.Any] = sys.stdout, encoding="latin1"):  # noqa: UP007
+def export_a2l(
+    db_name: str, output: typing.Union[TextIOWrapper, str, typing.Any] = sys.stdout, encoding: str = "latin1"
+) -> None:  # noqa: UP007
     """
     Parameters
     ----------
@@ -218,15 +246,15 @@ class DB:
         encoding: str = "latin-1",
         loglevel: str = "INFO",
         progress_bar: bool = True,
-    ):
+    ) -> model.SessionProxy:
         return import_a2l(file_name, debug, in_memory, remove_existing, local, encoding, loglevel, progress_bar)
 
     @staticmethod
-    def open_existing(file_name: str, loglevel: str = "INFO"):
+    def open_existing(file_name: str, loglevel: str = "INFO") -> model.SessionProxy:
         return open_existing(file_name, loglevel)
 
     @staticmethod
-    def open_create(file_name: str, local: bool = False, encoding: str = "latin-1", loglevel: str = "INFO"):
+    def open_create(file_name: str, local: bool = False, encoding: str = "latin-1", loglevel: str = "INFO") -> model.SessionProxy:
         return open_create(file_name, local, encoding, loglevel)
 
     @staticmethod

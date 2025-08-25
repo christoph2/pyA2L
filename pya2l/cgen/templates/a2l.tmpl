@@ -44,6 +44,10 @@ project = session.query(model.Project).first()
               <% a2ml = entry2.a2ml %>
                     %if a2ml:
             /begin A2ML
+            <% aml_section = session.query(model.AMLSection).first() %>
+            % if aml_section and aml_section.text:
+${aml_section.text}
+            % endif
             /end A2ML
             %endif
               <% axis_pts = entry2.axis_pts %>
@@ -133,7 +137,7 @@ project = session.query(model.Project).first()
                             %if if_data:
                     %for entry4 in if_data:
                         /begin IF_DATA
-                            "${entry4.raw}"  /* raw */
+                            ${entry4.raw}
                         /end IF_DATA
                     %endfor
                     %endif
@@ -383,7 +387,7 @@ project = session.query(model.Project).first()
                             %if if_data:
                     %for entry4 in if_data:
                         /begin IF_DATA
-                            "${entry4.raw}"  /* raw */
+                            ${entry4.raw}
                         /end IF_DATA
                     %endfor
                     %endif
@@ -566,7 +570,7 @@ project = session.query(model.Project).first()
                     %if if_data:
                     %for entry4 in if_data:
                         /begin IF_DATA
-                            "${entry4.raw}"  /* raw */
+                            ${entry4.raw}
                         /end IF_DATA
                     %endfor
                     %endif
@@ -616,7 +620,7 @@ project = session.query(model.Project).first()
                             %if if_data:
                     %for entry4 in if_data:
                         /begin IF_DATA
-                            "${entry4.raw}"  /* raw */
+                            ${entry4.raw}
                         /end IF_DATA
                     %endfor
                     %endif
@@ -692,7 +696,7 @@ project = session.query(model.Project).first()
                             %if if_data:
                     %for entry4 in if_data:
                         /begin IF_DATA
-                            "${entry4.raw}"  /* raw */
+                            ${entry4.raw}
                         /end IF_DATA
                     %endfor
                     %endif
@@ -725,7 +729,7 @@ project = session.query(model.Project).first()
                     %if if_data:
             %for entry3 in if_data:
                 /begin IF_DATA
-                    "${entry3.raw}"  /* raw */
+                    ${entry3.raw}
                 /end IF_DATA
             %endfor
             %endif
@@ -763,7 +767,7 @@ project = session.query(model.Project).first()
                             %if if_data:
                     %for entry4 in if_data:
                         /begin IF_DATA
-                            "${entry4.raw}"  /* raw */
+                            ${entry4.raw}
                         /end IF_DATA
                     %endfor
                     %endif
@@ -894,7 +898,7 @@ project = session.query(model.Project).first()
                             %if if_data:
                     %for entry4 in if_data:
                         /begin IF_DATA
-                            "${entry4.raw}"  /* raw */
+                            ${entry4.raw}
                         /end IF_DATA
                     %endfor
                     %endif
@@ -1084,7 +1088,7 @@ project = session.query(model.Project).first()
                                       %if if_data:
                               %for entry5 in if_data:
                                   /begin IF_DATA
-                                      "${entry5.raw}"  /* raw */
+                                      ${entry5.raw}
                                   /end IF_DATA
                               %endfor
                               %endif
@@ -1111,7 +1115,7 @@ project = session.query(model.Project).first()
                                       %if if_data:
                               %for entry5 in if_data:
                                   /begin IF_DATA
-                                      "${entry5.raw}"  /* raw */
+                                      ${entry5.raw}
                                   /end IF_DATA
                               %endfor
                               %endif
@@ -1941,4 +1945,3 @@ project = session.query(model.Project).first()
       %endif
   /end PROJECT
   %endif
-

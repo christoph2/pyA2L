@@ -352,14 +352,14 @@ def update_tables(session, tables):
 
 
 class A2LParser:
-    def __init__(self):
-        self.debug = False
-        self.logger = Logger("A2LDB", "INFO")
+    def __init__(self) -> None:
+        self.debug: bool = False
+        self.logger: Logger = Logger("A2LDB", "INFO")
 
-    def __del__(self):
+    def __del__(self) -> None:
         pass
 
-    def close(self):
+    def close(self) -> None:
         pass
 
     def parse(
@@ -371,8 +371,8 @@ class A2LParser:
         remove_existing: bool = False,
         loglevel: str = "INFO",
         progress_bar: bool = True,
-    ):
-        self.silent = not progress_bar
+    ) -> model.A2LDatabase:
+        self.silent: bool = not progress_bar
         a2l_fn, db_fn = path_components(in_memory, file_name, local)
         if not in_memory:
             if remove_existing:
@@ -386,7 +386,7 @@ class A2LParser:
             self.logger.info("Detecting encoding...")
             encoding = detect_encoding(file_name=a2l_fn)
         start_time = perf_counter()
-        self.db = model.A2LDatabase(str(db_fn), debug=self.debug)
+        self.db: model.A2LDatabase = model.A2LDatabase(str(db_fn), debug=self.debug)
         # self.db.session.commit()
         self.logger.info(f"Importing {a2l_fn!r} [{encoding}] ==> DB {db_fn!r}.")
         try:
@@ -424,7 +424,7 @@ class A2LParser:
         self.logger.info(f"Done. Elapsed time [{perf_counter() - start_time:.2f}s].")
         return self.db
 
-    def traverse(self, tree, parent, attr, multiple, level=0):
+    def traverse(self, tree: typing.Any, parent: typing.Any, attr: typing.Optional[str], multiple: bool, level: int = 0) -> None:
         self.counter += 1
         inst = None
         mult: list = []
