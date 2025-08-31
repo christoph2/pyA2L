@@ -12,6 +12,8 @@
 import os
 import sys
 
+from pya2l import __version__ as xversion
+
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -19,20 +21,13 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "pyA2L"
-copyright = "2020, Christoph Schueler"
+copyright = "2025, Christoph Schueler"
 author = "Christoph Schueler"
 
 # The short X.Y version
 version = ""
 # The full version, including alpha/beta/rc tags
-# Keep Sphinx version in sync with the installed package version
-try:
-    from importlib.metadata import version as _pkg_version
-
-    release = _pkg_version("pya2ldb")
-except Exception:
-    # Fallback to static string if metadata is unavailable
-    release = "unknown"
+release = xversion
 
 
 # -- General configuration ---------------------------------------------------
@@ -46,8 +41,13 @@ except Exception:
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "numpydoc",
     "sphinx.ext.doctest",
-    "sphinx.ext.todo",
+    "sphinx.ext.autosummary",
+    "sphinx_copybutton",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.autosectionlabel",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -56,8 +56,7 @@ templates_path = ["_templates"]
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
-source_suffix = ".rst"
+source_suffix = [".rst"]
 
 # The master toctree document.
 master_doc = "index"
@@ -83,7 +82,7 @@ pygments_style = "sphinx"
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-# html_theme = 'alabaster'
+html_theme = "pydata_sphinx_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -169,4 +168,14 @@ texinfo_documents = [
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
-poleon_custom_sections = None
+
+numpydoc_show_class_members = False
+autosummary_generate = True
+autosummary_imported_members = True
+
+autodoc_default_options = {
+    "member_order": "bysource",
+    "private-members": True,
+    "undoc-members": True,
+    "show-inheritance": True,
+}

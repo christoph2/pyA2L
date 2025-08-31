@@ -130,6 +130,9 @@ show_error_context = true
 
 [tool.ruff]
 target-version = "py312"
+line-length = 132
+
+[tool.ruff.lint]
 ignore = ["I001"]
 unfixable = ["B"]
 
