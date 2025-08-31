@@ -5,20 +5,28 @@ pyA2L is a Python toolkit for working with ASAM MCD-2 MC (ASAP2) A2L files. The 
 
 For background on the ASAP2 standard, see: https://www.asam.net/standards/detail/mcd-2-mc/wiki/
 
-Contents
---------
 
-The detailed user documentation is currently authored in Markdown for easier browsing on GitHub. You can read those pages here:
+.. image:: pya2l_social.jpg
+    :align: center
+    :scale: 25%
 
-- Installation: https://github.com/christoph2/pyA2L/tree/master/docs/installation.md
-- Building from source: https://github.com/christoph2/pyA2L/tree/master/docs/building.md
-- Getting started: https://github.com/christoph2/pyA2L/tree/master/docs/getting_started.md
-- Tutorial: https://github.com/christoph2/pyA2L/tree/master/docs/tutorial.md
-- Configuration: https://github.com/christoph2/pyA2L/tree/master/docs/configuration.md
-- How‑to guides: https://github.com/christoph2/pyA2L/tree/master/docs/howto.md
-- Modules / API overview: https://github.com/christoph2/pyA2L/tree/master/docs/modules.md
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
 
-Note
-----
+   README
+   getting_started
+   installation
+   building
+   configuration
+   tutorial
+   howto
+   faq
+   modules
 
-The legacy Sphinx `.rst` sources were converted to GitHub‑flavoured Markdown for easier browsing on GitHub. Some Sphinx‑only features (like ``automodule``) are summarized rather than rendered verbatim. For full API docs, use Sphinx locally or see inline docstrings in the code.
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
