@@ -12,7 +12,26 @@
 import os
 import sys
 
-from pya2l import __version__ as xversion
+
+def get_version():
+    import re
+    from pathlib import Path
+
+    VERSION = re.compile(r'version\s*=\s*"(?P<version>\d+\.\d+(\.\d+)?)\s*"', re.M)
+
+    try:
+        cfg = Path(r"../pyproject.toml")
+        data = cfg.open().read()
+    except Exception:
+        return "0.1"
+    else:
+        match = VERSION.search(data)
+        if match:
+            gd = match.groupdict()
+            version = gd.get("version")
+            if version:
+                return version
+    return "0.1"
 
 
 sys.path.insert(0, os.path.abspath(".."))
@@ -27,7 +46,7 @@ author = "Christoph Schueler"
 # The short X.Y version
 version = ""
 # The full version, including alpha/beta/rc tags
-release = xversion
+release = get_version()
 
 
 # -- General configuration ---------------------------------------------------
@@ -56,7 +75,7 @@ templates_path = ["_templates"]
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-source_suffix = [".rst"]
+source_suffix = {".rst": "restructuredtext"}
 
 # The master toctree document.
 master_doc = "index"
