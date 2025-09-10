@@ -393,7 +393,10 @@ class A2LParser:
             keyword_counter, values, tables, aml_data = ext.parse(str(a2l_fn), encoding, loglevel.upper())
         except Exception as e:
             print(f"{e!r}")
-            unlink(str(db_fn))
+            try:
+                unlink(str(db_fn))
+            except Exception:
+                pass  # nosec
             raise
         aml_section = model.AMLSection()
         if aml_data:
