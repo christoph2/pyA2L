@@ -4,7 +4,7 @@ version = "0.17.3"
 description = "A2L for Python"
 authors = ["Christoph Schueler <cpu12.gems@googlemail.com>"]
 license = "GPLv2"
-readme = "README.md"
+readme = "docs/README.rst"
 homepage = "https://github.com/christoph2/pyA2L"
 classifiers=[
     "Development Status :: 4 - Beta",
