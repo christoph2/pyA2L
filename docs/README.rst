@@ -5,7 +5,6 @@ Readme
 
 .. image:: pya2l_social.jpg
     :align: center
-    :scale: 25%
 
 
 pyA2L is an `ASAM MCD-2MC <https://www.asam.net/standards/detail/mcd-2-mc/>`__ processing
