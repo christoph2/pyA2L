@@ -106,6 +106,7 @@ class Node {
             m_map = other.m_map;
         }
     }
+
     // #endif
 
     Node& operator=(const Node& other) {
@@ -276,7 +277,6 @@ class Node {
         return std::get<std::string>(value());
     }
 
-
     AmlType aml_type() const noexcept {
         return m_aml_type;
     }
@@ -311,7 +311,7 @@ inline Node make_null_node() {
 
     Node::map_t map = {
         { "NAME",    Node(Node::AmlType::TERMINAL, "N/A") },
-        { "MEMBERS", Node(Node::AmlType::MEMBERS,  lst)  },
+        { "MEMBERS", Node(Node::AmlType::MEMBERS,  lst)   },
     };
     return Node(Node::AmlType::NULL_NODE, std::move(map));
 }
@@ -585,6 +585,8 @@ class Unmarshaller {
             return load_enum();
         } else if (disc == "NA") {
             return make_null_node();
+        } else if (disc == "TY") {
+            load_type();
         } else {
             assert(true == false);
         }

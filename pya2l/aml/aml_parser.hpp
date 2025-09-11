@@ -129,6 +129,16 @@ class AMLParser {
     auto type_name() -> Type {
         auto token = current_token();
 
+        if (token.type == AmlTokenType::TAG) {
+            std::string tag_value{};
+            if (std::holds_alternative<std::string>(*token.value)) {
+                tag_value = std::get<std::string>(*token.value);
+            }
+            std::cerr << "Unexpected TAG '" << tag_value << "\'\n";
+            consume();
+            token = current_token();
+        }
+
         if (token.type == AmlTokenType::STRUCT) {
             return struct_type_name();
         } else if (token.type == AmlTokenType::TAGGED_STRUCT) {
@@ -415,7 +425,7 @@ class AMLParser {
     auto array_specifier() -> std::vector<uint32_t> {
         std::vector<uint32_t> result;
         uint32_t              value;
-        auto                 token = current_token();
+        auto                  token = current_token();
         if (token.type == AmlTokenType::LSQ) {
             while (true) {
                 token = current_token();
