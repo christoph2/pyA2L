@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pya2ldb"
-version = "0.17.4"
+version = "0.17.5"
 description = "A2L for Python"
 authors = ["Christoph Schueler <cpu12.gems@googlemail.com>"]
 license = "GPLv2"
@@ -37,6 +37,7 @@ SQLAlchemy = "^2.0.30"
 numpy = ">=1.26.4,<3"
 scipy = "^1.15.0"
 rich = "^13.7.1"
+numexpr = "^2.14.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"

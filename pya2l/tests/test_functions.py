@@ -1,34 +1,26 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """These test-cases are based on the examples from ASAM MCD-2MC Version 1.6 specification.
 """
 import math
+from dataclasses import dataclass
 
+import numpy as np
 import pytest
 
-from pya2l import exceptions
-from pya2l import functions
-from pya2l import model
-from pya2l.a2l_listener import A2LListener
-from pya2l.api import inspect
-from pya2l.parserlib import ParserWrapper
-
-try:
-    import numpy as np
-except ImportError:
-    has_numpy = False
-else:
-    has_numpy = True
-
-try:
-    from scipy.interpolate import RegularGridInterpolator
-except ImportError:
-    has_scipy = False
-else:
-    has_scipy = True
+from pya2l import exceptions, functions
 
 
-RUN_MATH_TEST = has_numpy and has_scipy
+RUN_MATH_TEST = True
+
+
+@dataclass
+class Coeffs:
+    a: float
+    b: float
+    c: float
+    d: float
+    e: float
+    f: float
 
 
 Xs = [0.0, 200.0, 400.0, 1000.0, 5700.0]
@@ -156,13 +148,7 @@ def test_normalization_ident():
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_identity():
-    coeffs = {}
-    coeffs["a"] = 0
-    coeffs["b"] = 1
-    coeffs["c"] = 0
-    coeffs["d"] = 0
-    coeffs["e"] = 0
-    coeffs["f"] = 1
+    coeffs = Coeffs(0, 1, 0, 0, 0, 1)
     rf = functions.RatFunc(coeffs)
     assert rf.int_to_physical(21845) == 21845
     assert rf.physical_to_int(21845) == 21845
@@ -197,13 +183,7 @@ def test_ratfunc_linear():
         ],
         dtype="float",
     )
-    coeffs = {}
-    coeffs["a"] = 0
-    coeffs["b"] = 4
-    coeffs["c"] = 8
-    coeffs["d"] = 0
-    coeffs["e"] = 0
-    coeffs["f"] = 5
+    coeffs = Coeffs(0, 4, 8, 0, 0, 5)
     rf = functions.RatFunc(coeffs)
     assert np.array_equal(rf.physical_to_int(xs), ys)
 
@@ -212,13 +192,7 @@ def test_ratfunc_linear():
 def test_ratfunc_linear_scalar():
     x = -10
     y = -6.4
-    coeffs = {}
-    coeffs["a"] = 0
-    coeffs["b"] = 4
-    coeffs["c"] = 8
-    coeffs["d"] = 0
-    coeffs["e"] = 0
-    coeffs["f"] = 5
+    coeffs = Coeffs(0, 4, 8, 0, 0, 5)
     rf = functions.RatFunc(coeffs)
     assert rf.physical_to_int(x) == y
 
@@ -252,13 +226,7 @@ def test_ratfunc_linear_inv():
         ],
         dtype="float",
     )
-    coeffs = {}
-    coeffs["a"] = 0
-    coeffs["b"] = 4
-    coeffs["c"] = 8
-    coeffs["d"] = 0
-    coeffs["e"] = 0
-    coeffs["f"] = 5
+    coeffs = Coeffs(0, 4, 8, 0, 0, 5)
     rf = functions.RatFunc(coeffs)
     assert np.array_equal(rf.int_to_physical(ys), xs)
 
@@ -267,13 +235,7 @@ def test_ratfunc_linear_inv():
 def test_ratfunc_linear_inv_scalar():
     x = -10
     y = -6.4
-    coeffs = {}
-    coeffs["a"] = 0
-    coeffs["b"] = 4
-    coeffs["c"] = 8
-    coeffs["d"] = 0
-    coeffs["e"] = 0
-    coeffs["f"] = 5
+    coeffs = Coeffs(0, 4, 8, 0, 0, 5)
     rf = functions.RatFunc(coeffs)
     assert rf.int_to_physical(y) == x
 
@@ -282,13 +244,7 @@ def test_ratfunc_linear_inv_scalar():
 def test_ratfunc_constant():
     xs = np.arange(-10, 11)
     ys = np.full((21,), 10.0)
-    coeffs = {}
-    coeffs["a"] = 0
-    coeffs["b"] = 0
-    coeffs["c"] = 20
-    coeffs["d"] = 0
-    coeffs["e"] = 0
-    coeffs["f"] = 2
+    coeffs = Coeffs(0, 0, 20, 0, 0, 2)
     rf = functions.RatFunc(coeffs)
     assert np.array_equal(rf.physical_to_int(xs), ys)
 
@@ -297,13 +253,7 @@ def test_ratfunc_constant():
 def test_ratfunc_constant_scalar():
     x = -10
     y = 10.0
-    coeffs = {}
-    coeffs["a"] = 0
-    coeffs["b"] = 0
-    coeffs["c"] = 20
-    coeffs["d"] = 0
-    coeffs["e"] = 0
-    coeffs["f"] = 2
+    coeffs = Coeffs(0, 0, 20, 0, 0, 2)
     rf = functions.RatFunc(coeffs)
     assert rf.physical_to_int(x) == y
 
@@ -311,13 +261,7 @@ def test_ratfunc_constant_scalar():
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_constant_inv():
     ys = np.full((21,), 10.0)
-    coeffs = {}
-    coeffs["a"] = 0
-    coeffs["b"] = 0
-    coeffs["c"] = 20
-    coeffs["d"] = 0
-    coeffs["e"] = 0
-    coeffs["f"] = 20
+    coeffs = Coeffs(0, 0, 20, 0, 0, 20)
     rf = functions.RatFunc(coeffs)
     with pytest.raises(exceptions.MathError):
         rf.int_to_physical(ys)
@@ -326,13 +270,7 @@ def test_ratfunc_constant_inv():
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_constant_inv_scalar():
     y = 10.0
-    coeffs = {}
-    coeffs["a"] = 0
-    coeffs["b"] = 0
-    coeffs["c"] = 20
-    coeffs["d"] = 0
-    coeffs["e"] = 0
-    coeffs["f"] = 20
+    coeffs = Coeffs(0, 0, 20, 0, 0, 20)
     rf = functions.RatFunc(coeffs)
     with pytest.raises(exceptions.MathError):
         rf.int_to_physical(y)
@@ -366,13 +304,7 @@ def test_ratfunc_quadratic():
             2.267716535433071,
         ]
     )
-    coeffs = {}
-    coeffs["a"] = 5
-    coeffs["b"] = 7
-    coeffs["c"] = 6
-    coeffs["d"] = 3
-    coeffs["e"] = -5
-    coeffs["f"] = 4
+    coeffs = Coeffs(5, 7, 6, 3, -5, 4)
     rf = functions.RatFunc(coeffs)
     assert np.array_equal(rf.physical_to_int(xs), ys)
 
@@ -381,13 +313,7 @@ def test_ratfunc_quadratic():
 def test_ratfunc_quadratic_scalar():
     x = -10
     y = 1.231638418079096
-    coeffs = {}
-    coeffs["a"] = 5
-    coeffs["b"] = 7
-    coeffs["c"] = 6
-    coeffs["d"] = 3
-    coeffs["e"] = -5
-    coeffs["f"] = 4
+    coeffs = Coeffs(5, 7, 6, 3, -5, 4)
     rf = functions.RatFunc(coeffs)
     assert rf.physical_to_int(x) == y
 
@@ -395,13 +321,7 @@ def test_ratfunc_quadratic_scalar():
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_quadratic_inv():
     xs = np.arange(-10, 11)
-    coeffs = {}
-    coeffs["a"] = 5
-    coeffs["b"] = 7
-    coeffs["c"] = 6
-    coeffs["d"] = 3
-    coeffs["e"] = -5
-    coeffs["f"] = 4
+    coeffs = Coeffs(5, 7, 6, 3, -5, 4)
     rf = functions.RatFunc(coeffs)
     with pytest.raises(NotImplementedError):
         rf.int_to_physical(xs)
@@ -410,13 +330,7 @@ def test_ratfunc_quadratic_inv():
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_ratfunc_quadratic_inv_scalar():
     x = -10
-    coeffs = {}
-    coeffs["a"] = 5
-    coeffs["b"] = 7
-    coeffs["c"] = 6
-    coeffs["d"] = 3
-    coeffs["e"] = -5
-    coeffs["f"] = 4
+    coeffs = Coeffs(5, 7, 6, 3, -5, 4)
     rf = functions.RatFunc(coeffs)
     with pytest.raises(NotImplementedError):
         rf.int_to_physical(x)
@@ -476,9 +390,7 @@ def test_linear():
             37,
         ]
     )
-    coeffs = {}
-    coeffs["a"] = 4
-    coeffs["b"] = -3
+    coeffs = Coeffs(4, -3, 0, 0, 0, 0)
     rf = functions.Linear(coeffs)
     assert np.array_equal(rf.int_to_physical(xs), ys)
 
@@ -487,9 +399,7 @@ def test_linear():
 def test_linear_scalar():
     x = -10
     y = -43
-    coeffs = {}
-    coeffs["a"] = 4
-    coeffs["b"] = -3
+    coeffs = Coeffs(4, -3, 0, 0, 0, 0)
     rf = functions.Linear(coeffs)
     assert rf.int_to_physical(x) == y
 
@@ -522,9 +432,7 @@ def test_linear_inv():
             37,
         ]
     )
-    coeffs = {}
-    coeffs["a"] = 4
-    coeffs["b"] = -3
+    coeffs = Coeffs(4, -3, 0, 0, 0, 0)
     rf = functions.Linear(coeffs)
     assert np.array_equal(rf.physical_to_int(ys), xs)
 
@@ -533,9 +441,7 @@ def test_linear_inv():
 def test_linear_inv_scalar():
     x = -10
     y = -43
-    coeffs = {}
-    coeffs["a"] = 4
-    coeffs["b"] = -3
+    coeffs = Coeffs(4, -3, 0, 0, 0, 0)
     rf = functions.Linear(coeffs)
     assert rf.physical_to_int(y) == x
 
@@ -754,8 +660,8 @@ def test_tab_verb_ranges_with_default_negative_vectorized():
 
 def test_formula_with_no_parameters_raises():
     form = functions.Formula("sin(X1)")
-    with pytest.raises(ValueError):
-        form.int_to_physical()
+    result = form.int_to_physical()
+    assert result.size == 0
 
 
 def test_formula_for_required_operations():

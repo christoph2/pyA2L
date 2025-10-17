@@ -26,12 +26,12 @@ __copyright__ = """
 """
 
 import bisect
-import math
 import re
 import typing
 from dataclasses import dataclass
 from operator import itemgetter
 
+import numexpr
 import numpy as np
 from scipy import interpolate
 from scipy.interpolate import RegularGridInterpolator
@@ -39,15 +39,9 @@ from scipy.interpolate import RegularGridInterpolator
 from pya2l import exceptions
 
 
-try:
-    import numexpr
-except ImportError:
-    has_numexpr = False
-else:
-    has_numexpr = True
-
 POW = re.compile(r"pow\s*\((?P<params>.*?)\s*\)", re.IGNORECASE)
 SYSC = re.compile(r"sysc\s*\((?P<param>.*?)\s*\)", re.IGNORECASE)
+HEX_INT = re.compile(r"0x[0-9a-fA-F]+")
 
 
 @dataclass
@@ -450,10 +444,14 @@ class LookupTableWithRanges:
         self.display_values = [item[2] for item in self.mapping]
         self.dict_inv = dict(zip(self.display_values, self.min_values))  # min_value, according to spec.
         self.default = default
-        if dtype == int:
+        # For integer ranges we include both endpoints. For floating-point ranges we use
+        # left-closed/right-open intervals, except that the very last range includes the
+        # global maximum on the right to avoid dropping the upper boundary to default.
+        if isinstance(dtype, int):
             self.in_range = lambda x, left, right: left <= x <= right
         else:
-            self.in_range = lambda x, left, right: left <= x < right
+            max_right = self.maximum
+            self.in_range = lambda x, left, right, m=max_right: (left <= x < right) or (x == m and right == m)
 
     def _lookup(self, x):
         """"""  # noqa: DAR101, DAR201
@@ -496,10 +494,17 @@ class FormulaBase:
         function for calculation of the control unit internal value from the physical value.
 
     system_constants: list of 2-tuples (name, value)
+
+    legacy: bool
+        whether to use legacy formula syntax (before ASAM MCD-2 MC 1.6) (default: False)
     """
 
     def __init__(
-        self, formula: str, inverse_formula: typing.Optional[str] = None, system_constants: typing.Optional[typing.Dict] = None
+        self,
+        formula: str,
+        inverse_formula: typing.Optional[str] = None,
+        system_constants: typing.Optional[typing.Dict] = None,
+        legacy: bool = False,
     ):
         if not formula:
             raise ValueError("Formula cannot be None or empty.")
@@ -507,7 +512,8 @@ class FormulaBase:
             self.system_constants = system_constants
         else:
             self.system_constants = {}
-        self.formula = self._replace_special_symbols(formula)
+        self.legacy = legacy
+        self.formula = self._replace_special_symbols(formula) if formula is not None else None
         self.inverse_formula = self._replace_special_symbols(inverse_formula) if inverse_formula else None
 
     def sysc(self, key):
@@ -531,122 +537,107 @@ class FormulaBase:
         return MATH_FUNCTIONS.sub(lambda m: m.group(0).lower(), text)
 
 
-if has_numexpr:
+class Formula(FormulaBase):
+    """ASAP2 formula interpreter based on *numexpr*.
 
-    class Formula(FormulaBase):
-        """ASAP2 formula interpreter based on *numexpr*.
+    Parameters
+    ----------
 
-        Parameters
-        ----------
+    formula: str
+        function to calculate the physical value from the control unit internal value.
 
-        formula: str
-            function to calculate the physical value from the control unit internal value.
+    inverse_formula: str
+        function for calculation of the control unit internal value from the physical value.
 
-        inverse_formula: str
-            function for calculation of the control unit internal value from the physical value.
+    system_constants: list of 2-tuples (name, value)
+    """
 
-        system_constants: list of 2-tuples (name, value)
-        """
+    MATH_FUNCS = {}
 
-        MATH_FUNCS = {}
+    def _replace_special_symbols(self, text):
+        if text is None:
+            return None
+        # normalize case for known math function names first
+        result = FormulaBase.names_tolower(text)
 
-        def _replace_special_symbols(self, text):
-            result = (
-                text.replace("&&", " and ")
-                .replace("||", " or ")
-                .replace("!", "not ")
-                .replace("acos", "arccos")
-                .replace("asin", "arcsin")
-                .replace("atan", "arctan")
-            )
-            text = FormulaBase.names_tolower(result)
-            while True:
-                # replace 'pow(a, b)' with '(a ** b)'
-                match = POW.search(result)
-                if match:
-                    params = [p.strip() for p in match.group("params").split(",")]
-                    assert len(params) == 2
-                    pow_expr = "({} ** {})".format(*params)
-                    head = result[: match.start()]
-                    tail = result[match.end() :]
-                    result = f"{head}{tail}{pow_expr}"
-                else:
-                    break
-            while True:
-                match = SYSC.search(result)  # replace 'sysc(a)' with value of 'a'
-                if match:
-                    param = match.group("param").strip()
-                    value = self.sysc(param)
-                    head = result[: match.start()]
-                    tail = result[match.end() :]
-                    result = f"{head}{tail}{value}"
-                else:
-                    break
-            return result
+        if self.legacy:
+            # legacy: &, |, ~ are logical; ^ is power; XOR is exclusive OR keyword; &&, ||, ! are not supported
+            if ("&&" in result) or ("||" in result) or ("!" in result):
+                raise ValueError("Legacy formula does not support '&&', '||', or '!' operators.")
+            # function names: accept legacy spellings; ensure numpy names
+            # arcos (legacy) -> arccos (numpy); arcsin/arctan are already numpy-compatible
+            result = re.sub(r"\barcos\b", "arccos", result, flags=re.IGNORECASE)
+            # current short names also accepted in legacy, normalize to numpy long names
+            result = re.sub(r"\bacos\b", "arccos", result)
+            result = re.sub(r"\basin\b", "arcsin", result)
+            result = re.sub(r"\batan\b", "arctan", result)
+            # power: '^' => '**' (must be before XOR keyword replacement to avoid converting that caret)
+            result = result.replace("^", "**")
+            # XOR keyword => boolean inequality (logical XOR semantics without using '^')
+            result = re.sub(r"\bxor\b", " != ", result, flags=re.IGNORECASE)
+            # Do not replace &, |, ~ — numexpr uses these for logical ops over boolean arrays/scalars
+        else:
+            # current: &&, ||, ! are logical; &, |, ~ are bitwise; ^ is bitwise XOR; XOR keyword is not supported
+            if re.search(r"\bxor\b", result, flags=re.IGNORECASE):
+                raise ValueError("Current formula does not support 'XOR' keyword.")
+            # map current short names to numpy long names
+            result = result.replace("acos", "arccos").replace("asin", "arcsin").replace("atan", "arctan")
+            # logical tokens for numexpr must use bitwise forms
+            result = result.replace("&&", "&").replace("||", "|").replace("!", "~")
 
-        def int_to_physical(self, *args):
-            """"""  # noqa: DAR101, DAR201
+        # normalize hex integer literals to decimal for numexpr
+        result = HEX_INT.sub(lambda m: str(int(m.group(0), 16)), result)
+
+        # replace 'pow(a, b)' with '(a ** b)'
+        while True:
+            match = POW.search(result)
+            if match:
+                params = [p.strip() for p in match.group("params").split(",")]
+                pow_expr = "({} ** {})".format(*params)
+                head = result[: match.start()]
+                tail = result[match.end() :]
+                result = f"{head}{pow_expr}{tail}"
+            else:
+                break
+        # replace 'sysc(a)' with concrete value
+        while True:
+            match = SYSC.search(result)
+            if match:
+                param = match.group("param").strip()
+                value = self.sysc(param)
+                head = result[: match.start()]
+                tail = result[match.end() :]
+                result = f"{head}{value}{tail}"
+            else:
+                break
+        return result.strip()
+
+    def int_to_physical(self, *args):
+        """"""  # noqa: DAR101, DAR201
+        try:
+            res = numexpr.evaluate(self.formula, local_dict=self._build_namespace(*args))
+            if isinstance(res, np.ndarray):
+                return res.item() if res.shape == () else res
             try:
-                return numexpr.evaluate(self.formula, local_dict=self._build_namespace(*args))
-            except Exception as e:
-                print(f"Error evaluating formula: {e!r})")
-                return np.array([])
+                return res.item()
+            except Exception:
+                return res
+        except Exception as e:
+            print(f"Error evaluating formula: {e!r})")
+            return np.array([])
 
-        def physical_to_int(self, *args):
-            """"""  # noqa: DAR101, DAR201, DAR401
-            if self.inverse_formula is None:
-                raise NotImplementedError("Formula: physical_to_int() requires inverse_formula.")
+    def physical_to_int(self, *args):
+        """"""  # noqa: DAR101, DAR201, DAR401
+        if self.inverse_formula is None:
+            raise NotImplementedError("Formula: physical_to_int() requires inverse_formula.")
+        try:
+            res = numexpr.evaluate(self.inverse_formula, local_dict=self._build_namespace(*args))
+            if isinstance(res, np.ndarray):
+                return res.item() if res.shape == () else res
             try:
-                return numexpr.evaluate(self.inverse_formula, local_dict=self._build_namespace(*args))
-            except Exception as e:
-                print(f"Error evaluating inverse formula: {e!r})")
-                return np.array([])
-
-else:
-
-    class Formula(FormulaBase):
-        """Crude ASAP2 formula interpreter using python `eval()`.
-
-        Parameters
-        ----------
-
-        formula: str
-            function to calculate the physical value from the control unit internal value.
-
-        inverse_formula: str
-            function for calculation of the control unit internal value from the physical value.
-
-        system_constants: list of 2-tuples (name, value)
-        """
-
-        MATH_FUNCS: typing.ClassVar = {
-            "abs": math.fabs,
-            "acos": math.acos,
-            "asin": math.asin,
-            "atan": math.atan,
-            "cos": math.cos,
-            "cosh": math.cosh,
-            "exp": math.exp,
-            "log": math.log,
-            "log10": math.log10,
-            "pow": math.pow,
-            "sin": math.sin,
-            "sinh": math.sinh,
-            "sqrt": math.sqrt,
-            "tan": math.tan,
-            "tanh": math.tanh,
-        }
-
-        def _replace_special_symbols(self, text):
-            text = FormulaBase.names_tolower(text)
-            return text.replace("&&", " and ").replace("||", " or ").replace("!", "not ")
-
-        def int_to_physical(self, *args):
-            """"""  # noqa: DAR101, DAR201
-            return eval(self.formula, dict(), self._build_namespace(*args))
-
-        def physical_to_int(self, *args):
-            """"""  # noqa: DAR101, DAR201, DAR401
-            if self.inverse_formula is None:
-                raise NotImplementedError("Formula: physical_to_int() requires inverse_formula.")
-            return eval(self.inverse_formula, dict(), self._build_namespace(*args))
+                return res.item()
+            except Exception:
+                return res
+        except Exception as e:
+            print(f"Error evaluating inverse formula: {e!r})")
+            return np.array([])
