@@ -238,10 +238,6 @@ class A2LParser {
             m_reader->consume();
             m_keyword_counter++;
             auto kw = ValueContainer(kw_tos().m_name);
-
-            if (kw.get_name() == "VAR_FORBIDDEN_COMB") {
-                auto fc = true;
-            }
             auto [p, m] = do_parameters();
             value_tos().set_parameters(std::move(p));
             value_tos().set_multiple_values(std::move(m));
