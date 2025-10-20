@@ -33,12 +33,12 @@
         char [101];   /* Name of the DAQ-List (data acquisition list),
                          measurement source .        */
 
-                      /* If the DAQ-Liste only supports one fixed ECU 
+                      /* If the DAQ-Liste only supports one fixed ECU
                          sampling rate, it can be declared below
                          to achieve compatibility with the ASAP2 standard.
                          Otherwise description of the possible ECU
                          sampling rates in QP_BLOB      */
-        int;          /* Period definition : Basic scaling unit in 
+        int;          /* Period definition : Basic scaling unit in
                          CSE defined in ASAP1b (CSE=Code for Scaling Unit) */
         long;         /* Period definition : Rate in Scaling Units */
       };
@@ -128,7 +128,7 @@
 
 /* Description of the checksum calculation process */
     block "CHECKSUM" struct {
-       char[256];    /* Name of the Checksum DLL representing the ECU Algorithm, 
+       char[256];    /* Name of the Checksum DLL representing the ECU Algorithm,
                         including file-Extension without path */
 };
 
@@ -256,4 +256,3 @@ block "TP_BLOB" struct {
        };
     };
 };
-

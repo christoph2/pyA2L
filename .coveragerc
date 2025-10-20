@@ -1,6 +1,6 @@
 [run]
 branch = True
-omit = 
+omit =
     pya2l/tests/*
     pya2l/model/*
     pya2l/classes.py
@@ -23,7 +23,7 @@ exclude_lines =
     except ImportError
 
     raise AssertionError
-    
+
     if 0:
     if __name__ == .__main__.:
 

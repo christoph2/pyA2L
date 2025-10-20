@@ -95,7 +95,7 @@
   /* IF_DATA section used with MEMORY_SEGMENT (can be missing if no         */
   /* differences between the 2 views)                                       */
 
-  ("ADDRESS_MAPPING" struct 
+  ("ADDRESS_MAPPING" struct
     {
      ulong;              /* Start address of MEMORY_SEGMENT                 */
      ulong;              /* mapped start address for ETK                    */
@@ -136,7 +136,7 @@
         enum {           /* assigned application                            */
           "MEASUREMENT"=0,
           "BYPASS"=1
-        }; 
+        };
         ulong;           /* address of trigger flag (only valid if trigger  */
                          /* type INDIRECT)                                  */
         uint;            /* maximum length of display table in bytes        */
@@ -193,7 +193,7 @@
         };
       };
 
-      "CODE_CHK" struct 
+      "CODE_CHK" struct
       {
       /* A check, whether program and data are matching can be performed,   */
       /* if the ECU copies a certain 'program identifier' (e.g. the code    */
@@ -224,7 +224,7 @@
       /* Description of ETK configuration parameters, as configured with    */
       /* the ETK configuration tool                                         */
 
-      ( "EMU_DATA" struct 
+      ( "EMU_DATA" struct
       {
       /* Additional description of data ranges overwriting the              */
       /* MEMORY_SEGMENT description                                         */
@@ -265,7 +265,7 @@
         ulong;           /* Mirror offset 5                                 */
       })*;
 
-      ( "EMU_RAM" struct 
+      ( "EMU_RAM" struct
       {
       /* Additional description of external RAM ranges overwriting the      */
       /* MEMORY_SEGMENT description                                         */
@@ -283,7 +283,7 @@
         ulong;           /* Mirror offset 5                                 */
       })*;
 
-      ( "RESERVED_DISTAB_MEMORY" struct 
+      ( "RESERVED_DISTAB_MEMORY" struct
       {
       /* Description of 'reserved ranges' (especially in the data or code   */
       /* ranges; e.g. location of the display tables) that are excluded     */
@@ -317,7 +317,7 @@
         ulong;           /* Mirror offset 5                                 */
       })*;
 
-      "ETK_MAILBOX" struct 
+      "ETK_MAILBOX" struct
       {
       /* Description of the ETK mailbox that is used for communication      */
       /* between the ECU and the application program (e.g. for programming  */
@@ -354,7 +354,7 @@
                          /* 0x100 = V1.0                                    */
       };
 
-      block "ETK_PRESENCE_CHECK" struct 
+      block "ETK_PRESENCE_CHECK" struct
       {
         ulong;           /* address of ETK recognition pattern              */
         taggedstruct {
@@ -362,7 +362,7 @@
         };
       };
 
-      block "COLDSTART_HANDSHAKE" struct 
+      block "COLDSTART_HANDSHAKE" struct
       {
         ulong;           /* address of ETKS cold start pattern              */
         taggedstruct {
@@ -402,14 +402,14 @@
           "MAILBOX" struct {
             ulong;           /* MBX_Version                                 */
                              /* Version of mailbox                          */
-            ulong;           /* MBX_PageSetupTime                           */  
+            ulong;           /* MBX_PageSetupTime                           */
                              /* max time the ECU needs to set up page in ms */
             ulong;           /* MBX_StartAddress                            */
                              /* Start address of table                      */
           };
 
           "AUTOSTART_BEHAVIOR" enum {
-            "LAST_ACTIVE_PAGE" = 0, /* Table to be filled by INCA with info */  
+            "LAST_ACTIVE_PAGE" = 0, /* Table to be filled by INCA with info */
                                     /* for the current active page          */
             "ALWAYS_WP"        = 1, /* Request field to be filled by INCA   */
                                     /* always with info for working page    */

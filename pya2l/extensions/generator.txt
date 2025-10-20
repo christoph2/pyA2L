@@ -11,16 +11,16 @@ struct Generator {
     struct promise_type {
         Ty_ m_val;
 
-        Generator get_return_object() { 
-            return this; 
+        Generator get_return_object() {
+            return this;
         }
 
-        std::suspend_never initial_suspend() { 
-            return {}; 
+        std::suspend_never initial_suspend() {
+            return {};
         }
 
-        std::suspend_always final_suspend() noexcept(true) { 
-            return {}; 
+        std::suspend_always final_suspend() noexcept(true) {
+            return {};
         }
 
         std::suspend_always yield_value(const Ty_& val) {
@@ -34,39 +34,39 @@ struct Generator {
     ** Iterator implementation.
      */
     struct iterator {
-        
-        bool operator!=(const iterator &rhs) { 
-            return not m_h_ptr->done(); 
+
+        bool operator!=(const iterator &rhs) {
+            return not m_h_ptr->done();
         }
-        
+
         iterator &operator++() {
             m_h_ptr->resume();
             return *this;
         }
 
-        int operator*() { 
-            return m_h_ptr->promise().m_val; 
+        int operator*() {
+            return m_h_ptr->promise().m_val;
         }
-        
+
         std::coroutine_handle<promise_type> *m_h_ptr;
     };
 
-    iterator begin() { 
-        return iterator{&m_handle}; 
+    iterator begin() {
+        return iterator{&m_handle};
     }
 
-    iterator end() { 
-        return iterator{nullptr}; 
+    iterator end() {
+        return iterator{nullptr};
     }
-  
+
   /* ----------------------------------------------------------------------------------
    */
     Generator(promise_type *p) : m_handle(std::coroutine_handle<promise_type>::from_promise(*p)) {}
 
-    ~Generator() { 
-        m_handle.destroy(); 
+    ~Generator() {
+        m_handle.destroy();
     }
-  
+
     std::coroutine_handle<promise_type> m_handle;
 };
 

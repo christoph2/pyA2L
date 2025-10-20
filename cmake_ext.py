@@ -18,6 +18,7 @@ from pybind11.setup_helpers import Pybind11Extension
 from setuptools import Extension
 from setuptools.command.build_ext import build_ext
 
+
 PB11_CMAKE = get_cmake_dir()
 
 # Convert distutils Windows platform specifiers to CMake -A arguments

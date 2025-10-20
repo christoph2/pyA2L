@@ -14,9 +14,9 @@ block "IF_DATA" taggedunion if_data
     "CUMMINS_EXTENSIONS" struct
     {
         ("CMT_PROPERTY" struct
-        {                                 /* multiple possible   */ 
-            char[256];                    /* PROPERTY NAME       */ 
-            char[256];                    /* PROPERTY VALUE      */ 
+        {                                 /* multiple possible   */
+            char[256];                    /* PROPERTY NAME       */
+            char[256];                    /* PROPERTY VALUE      */
         })*;
     };
 };

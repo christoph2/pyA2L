@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
@@ -37,6 +36,10 @@ import antlr4
 from antlr4.BufferedTokenStream import BufferedTokenStream
 from antlr4.error.ErrorListener import ErrorListener
 
+from pya2l import a2llg
+from pya2l.aml.classes import AMLPredefinedTypes, Referrer
+
+
 # import importlib as imp
 # import pya2l
 # imp.reload(pya2l)
@@ -47,8 +50,6 @@ from antlr4.error.ErrorListener import ErrorListener
 # import pya2l.aml.classes
 # imp.reload(pya2l.aml.classes)
 
-from pya2l import a2llg
-from pya2l.aml.classes import AMLPredefinedTypes, Referrer
 
 
 EOF = -1

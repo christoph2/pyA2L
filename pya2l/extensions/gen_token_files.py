@@ -401,7 +401,7 @@ TPs = (
     ("STRING", 284),
 )
 
-with open("token_type.hpp", "wt") as of:
+with open("token_type.hpp", "w") as of:
     of.write(HEADER)
     of.write("const std::map<std::string, int> A2L_KEYWORDS {\n")
     for idx, item in enumerate(literalNames):
@@ -418,7 +418,7 @@ with open("token_type.hpp", "wt") as of:
     of.write("};\n")
     of.write(FOOTER)
 
-with open("a2ltoken.hpp", "wt") as of:
+with open("a2ltoken.hpp", "w") as of:
     of.write(HEADER2)
     of.write("enum class A2LTokenType: uint16_t {\n")
 
@@ -442,7 +442,7 @@ with open("a2ltoken.hpp", "wt") as of:
     of.write(FOOTER2)
 
 
-with open("a2l.tokens", "wt") as of:
+with open("a2l.tokens", "w") as of:
     for idx in range(275):
         of.write(f"T__{idx}={idx + 1}\n")
     for n, v in TPs:

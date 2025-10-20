@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: latin-1 -*-
 import pytest
 
-from pya2l.aml.classes import AMLPredefinedTypes
-from pya2l.aml.classes import map_predefined_type
+from pya2l.aml.classes import AMLPredefinedTypes, map_predefined_type
 from pya2l.aml.listener import AMLListener
 from pya2l.parserlib import ParserWrapper
 
@@ -33,7 +31,7 @@ def test_enum_without_tag():
     res = parser.parseFromString(DATA)
     enum = res.listener_result.declarations[0].type_definition.type_name.type_
     assert enum.name is None
-    enumerators = sorted(enum.enumerators.items(), key = lambda t: t[1])
+    enumerators = sorted(enum.enumerators.items(), key=lambda t: t[1])
     assert len(enumerators) == 3
     en0_t, en0_c = enumerators[0]
     en1_t, en1_c = enumerators[1]
@@ -67,7 +65,7 @@ def test_enum_with_tag():
     res = parser.parseFromString(DATA)
     enum = res.listener_result.declarations[0].type_definition.type_name.type_
     assert enum.name == "checksum"
-    enumerators = sorted(enum.enumerators.items(), key = lambda t: t[1])
+    enumerators = sorted(enum.enumerators.items(), key=lambda t: t[1])
     assert len(enumerators) == 10
     en0_t, en0_c = enumerators[0]
     en1_t, en1_c = enumerators[1]
@@ -115,7 +113,7 @@ def test_enum_without_constants():
     res = parser.parseFromString(DATA)
     enum = res.listener_result.declarations[0].type_definition.type_name.type_
     assert enum.name is None
-    enumerators = sorted(enum.enumerators.items(), key = lambda t: t[1])
+    enumerators = sorted(enum.enumerators.items(), key=lambda t: t[1])
     assert len(enumerators) == 3
     en0_t, en0_c = enumerators[0]
     en1_t, en1_c = enumerators[1]
@@ -141,7 +139,7 @@ def test_enum_one_constant():
     """
     res = parser.parseFromString(DATA)
     enum = res.listener_result.declarations[0].type_definition.type_name.type_
-    enumerators = sorted(enum.enumerators.items(), key = lambda t: t[1])
+    enumerators = sorted(enum.enumerators.items(), key=lambda t: t[1])
     assert enum.name is None
     assert len(enumerators) == 3
     en0_t, en0_c = enumerators[0]
@@ -176,7 +174,7 @@ def test_enum_unsteady_constants():
     res = parser.parseFromString(DATA)
     enum = res.listener_result.declarations[0].type_definition.type_name.type_
     assert enum.name is None
-    enumerators = sorted(enum.enumerators.items(), key = lambda t: t[1])
+    enumerators = sorted(enum.enumerators.items(), key=lambda t: t[1])
     assert len(enumerators) == 10
     en0_t, en0_c = enumerators[0]
     en1_t, en1_c = enumerators[1]
@@ -241,7 +239,7 @@ def struct(structs):
     assert tn.name is None
     enum = tn.type_
     assert enum.name is None
-    enumerators = sorted(enum.enumerators.items(), key = lambda t: t[1])
+    enumerators = sorted(enum.enumerators.items(), key=lambda t: t[1])
     assert len(enumerators) == 3
     en0_t, en0_c = enumerators[0]
     assert en0_t == "DAQ"
@@ -478,12 +476,12 @@ def block_def(block_definitions):
     assert tn.name is None
     enum = tn.type_
     assert enum.name is None
-    enumerators = sorted(enum.enumerators.items(), key = lambda t: t[1])
+    enumerators = sorted(enum.enumerators.items(), key=lambda t: t[1])
     assert len(enumerators) == 4
     en0_t, en0_c = enumerators[0]
     assert en0_t == "GRANULARITY_ODT_ENTRY_SIZE_STIM_BYTE"
     assert en0_c == 1
-    en1_t, en1_c  = enumerators[1]
+    en1_t, en1_c = enumerators[1]
     assert en1_t == "GRANULARITY_ODT_ENTRY_SIZE_STIM_WORD"
     assert en1_c == 2
     en2_t, en2_c = enumerators[2]
@@ -621,6 +619,7 @@ def test_struct_referrers():
     assert tn.type_.category == "StructType"
     assert bd.member is None
     assert bd.multiple == False
+
 
 def test_taggedstruct_referrers():
     parser = ParserWrapper("aml", "amlFile", AMLListener)
@@ -771,6 +770,7 @@ def test_taggedunion_referrers():
     tn = bd.type_name
     assert tn.tag is None
     assert tn.type_.identifier == "Daq_Event"
+
 
 def test_aml_13():
     parser = ParserWrapper("aml", "amlFile", AMLListener)

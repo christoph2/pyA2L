@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import pathlib
 import sys
 
 import pytest
+
 
 try:
     from pya2l.preprocessor import Preprocessor

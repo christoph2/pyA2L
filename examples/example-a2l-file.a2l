@@ -1,7 +1,7 @@
-/************************************************************************************/ 
-/*                                                                                  */ 
-/*   ASAP2 v1.6.1 language example                                                  */ 
-/*                                                                                  */ 
+/************************************************************************************/
+/*                                                                                  */
+/*   ASAP2 v1.6.1 language example                                                  */
+/*                                                                                  */
 /*   2013-02-13                                                                     */
 /*   File: example-a2l-file.a2l                                                     */
 /*   Version: 1.0                                                                   */
@@ -9,8 +9,8 @@
 /*   ASAM e.V.                                                                      */
 /*   Altlaufstr. 40                                                                 */
 /*   85635 Höhenkirchen                                                             */
-/*                                                                                  */ 
-/************************************************************************************/ 
+/*                                                                                  */
+/************************************************************************************/
 
 ASAP2_VERSION 1 61
 
@@ -24,9 +24,9 @@ ASAP2_VERSION 1 61
    /begin MODULE
       Module_01
       "default_Module"
-	  
+
 //	  /include "asam.aml"
-	  
+
       /begin MOD_PAR "default_ModPar"
          ADDR_EPK 0x100100FF
          EPK "EPROM_ID_01"
@@ -56,33 +56,33 @@ ASAP2_VERSION 1 61
          ALIGNMENT_FLOAT32_IEEE 4
          ALIGNMENT_FLOAT64_IEEE 8
       /end MOD_COMMON
-	  
+
       /begin IF_DATA XCP
          /begin PROTOCOL_LAYER
-            0x0100 
-            2000 
-            2000 
-            2000 
-            65535 
-            2000 
-            0005 
-            0005 
-            0x08 
-            0x0008 
-            BYTE_ORDER_MSB_LAST 
-            ADDRESS_GRANULARITY_BYTE 
-            SEED_AND_KEY_EXTERNAL_FUNCTION "SeedNKeyXcp.dll" 
+            0x0100
+            2000
+            2000
+            2000
+            65535
+            2000
+            0005
+            0005
+            0x08
+            0x0008
+            BYTE_ORDER_MSB_LAST
+            ADDRESS_GRANULARITY_BYTE
+            SEED_AND_KEY_EXTERNAL_FUNCTION "SeedNKeyXcp.dll"
          /end PROTOCOL_LAYER
          /begin DAQ
-            STATIC 
-            0x06 
-            0x06 
-            0x00 
-            OPTIMISATION_TYPE_DEFAULT 
-            ADDRESS_EXTENSION_FREE 
-            IDENTIFICATION_FIELD_TYPE_ABSOLUTE 
-            0x04 
-            OVERLOAD_INDICATION_EVENT 
+            STATIC
+            0x06
+            0x06
+            0x00
+            OPTIMISATION_TYPE_DEFAULT
+            ADDRESS_EXTENSION_FREE
+            IDENTIFICATION_FIELD_TYPE_ABSOLUTE
+            0x04
+            OVERLOAD_INDICATION_EVENT
             /begin DAQ_LIST
                0x0
                DAQ_LIST_TYPE DAQ
@@ -243,7 +243,7 @@ ASAP2_VERSION 1 61
             /end DAQ_EVENT
          /end IF_DATA
       /end MEASUREMENT
-      
+
       /begin MEASUREMENT Measurement_03
          "Preasure_chamber_03"
          UWORD
@@ -268,7 +268,7 @@ ASAP2_VERSION 1 61
             /end DAQ_EVENT
          /end IF_DATA
       /end MEASUREMENT
-      
+
       /begin MEASUREMENT Measurement_04
          "Preasure_chamber_04"
          UWORD
@@ -293,7 +293,7 @@ ASAP2_VERSION 1 61
             /end DAQ_EVENT
          /end IF_DATA
       /end MEASUREMENT
-      
+
       /begin MEASUREMENT Measurement_05
          "Preasure_chamber_05"
          UWORD
@@ -318,7 +318,7 @@ ASAP2_VERSION 1 61
             /end DAQ_EVENT
          /end IF_DATA
       /end MEASUREMENT
-      
+
       /begin MEASUREMENT Measurement_06
          "Preasure_chamber_06"
          UWORD
@@ -343,7 +343,7 @@ ASAP2_VERSION 1 61
             /end DAQ_EVENT
          /end IF_DATA
       /end MEASUREMENT
-      
+
       /begin MEASUREMENT Measurement_07
          "Preasure_chamber_07"
          UBYTE
@@ -368,7 +368,7 @@ ASAP2_VERSION 1 61
             /end DAQ_EVENT
          /end IF_DATA
       /end MEASUREMENT
-      
+
       /begin MEASUREMENT Measurement_08
          "Preasure_chamber_08"
          UWORD
@@ -393,7 +393,7 @@ ASAP2_VERSION 1 61
             /end DAQ_EVENT
          /end IF_DATA
       /end MEASUREMENT
-      
+
       /begin MEASUREMENT Measurement_09
          "Preasure_chamber_09"
          UWORD
@@ -418,7 +418,7 @@ ASAP2_VERSION 1 61
             /end DAQ_EVENT
          /end IF_DATA
       /end MEASUREMENT
-      
+
       /begin MEASUREMENT Measurement_10
          "Preasure_chamber_10"
          UWORD
@@ -443,7 +443,7 @@ ASAP2_VERSION 1 61
             /end DAQ_EVENT
          /end IF_DATA
       /end MEASUREMENT
-      
+
       /begin MEASUREMENT Measurement_11
          "Preasure_chamber_11"
          UWORD
@@ -468,7 +468,7 @@ ASAP2_VERSION 1 61
             /end DAQ_EVENT
          /end IF_DATA
       /end MEASUREMENT
-      
+
       /begin MEASUREMENT Measurement_12
          "Preasure_chamber_12"
          UWORD
@@ -493,7 +493,7 @@ ASAP2_VERSION 1 61
             /end DAQ_EVENT
          /end IF_DATA
       /end MEASUREMENT
-      
+
       /begin MEASUREMENT Measurement_13
          "Preasure_chamber_13"
          UBYTE
@@ -518,7 +518,7 @@ ASAP2_VERSION 1 61
             /end DAQ_EVENT
          /end IF_DATA
       /end MEASUREMENT
-      
+
       /begin MEASUREMENT Measurement_14
          "Preasure_chamber_14"
          UBYTE
@@ -568,7 +568,7 @@ ASAP2_VERSION 1 61
             /end DAQ_EVENT
          /end IF_DATA
       /end MEASUREMENT
-      
+
       /begin MEASUREMENT Measurement_16
          "Preasure_chamber_16"
          UWORD
@@ -593,7 +593,7 @@ ASAP2_VERSION 1 61
             /end DAQ_EVENT
          /end IF_DATA
       /end MEASUREMENT
-	  
+
       /begin CHARACTERISTIC Characteristic_01
          "regulator_01"
          VALUE
@@ -606,7 +606,7 @@ ASAP2_VERSION 1 61
          DISPLAY_IDENTIFIER Characteristic_01
          BIT_MASK 0x1F
       /end CHARACTERISTIC
-	  
+
       /begin CHARACTERISTIC Characteristic_02
          "regulator_02"
          VALUE
@@ -619,7 +619,7 @@ ASAP2_VERSION 1 61
          DISPLAY_IDENTIFIER Characteristic_02
          FORMAT "%6.3"
       /end CHARACTERISTIC
-      
+
       /begin CHARACTERISTIC Characteristic_03
          "regulator_03"
          VALUE
@@ -775,7 +775,7 @@ ASAP2_VERSION 1 61
          DISPLAY_IDENTIFIER Characteristic_14
          FORMAT "%6.3"
       /end CHARACTERISTIC
-      
+
       /begin CHARACTERISTIC Characteristic_15
          "regulator_15"
          MAP
@@ -806,7 +806,7 @@ ASAP2_VERSION 1 61
             FORMAT "%5.1"
          /end AXIS_DESCR
       /end CHARACTERISTIC
-      
+
       /begin CHARACTERISTIC Characteristic_16
          "regulator_16"
          CURVE
@@ -829,7 +829,7 @@ ASAP2_VERSION 1 61
             AXIS_PTS_REF AxisPts_01
          /end AXIS_DESCR
       /end CHARACTERISTIC
-      
+
       /begin COMPU_METHOD CompuMethod_01
          ""
          RAT_FUNC
@@ -837,7 +837,7 @@ ASAP2_VERSION 1 61
          "-"
          COEFFS 0 1. 0. 0 0 2
       /end COMPU_METHOD
-	  
+
       /begin COMPU_METHOD CompuMethod_02
          ""
          TAB_VERB
@@ -845,7 +845,7 @@ ASAP2_VERSION 1 61
          "-"
          COMPU_TAB_REF CompuVtab_01
       /end COMPU_METHOD
-      
+
       /begin COMPU_METHOD CompuMethod_03
          "RATIONALFUNCTION_[0;1;0;0;0;1]"
          RAT_FUNC
@@ -853,7 +853,7 @@ ASAP2_VERSION 1 61
          "-"
          COEFFS 0. 1. 0. 0. 0. 1.
       /end COMPU_METHOD
-      
+
       /begin COMPU_METHOD CompuMethod_04
          "RATIONALFUNCTION_[0;1;0;0;0;0.02]"
          RAT_FUNC
@@ -861,7 +861,7 @@ ASAP2_VERSION 1 61
          "s"
          COEFFS 0. 1. 0. 0. 0. 2.e-002
       /end COMPU_METHOD
-	  
+
       /begin COMPU_METHOD CompuMethod_05
          "RATIONALFUNCTION_[0;1;0;0;0;0.1]"
          RAT_FUNC
@@ -869,7 +869,7 @@ ASAP2_VERSION 1 61
          "%"
          COEFFS 0. 1. 0. 0. 0. 2.5e-003
       /end COMPU_METHOD
-      
+
       /begin COMPU_METHOD CompuMethod_06
          ""
          RAT_FUNC
@@ -877,7 +877,7 @@ ASAP2_VERSION 1 61
          "rpm"
          COEFFS 0 4. 0. 0 0 1
       /end COMPU_METHOD
-      
+
       /begin COMPU_METHOD CompuMethod_07
          "RATIONALFUNCTION_[0;1;0;0;0;0.205]"
          RAT_FUNC
@@ -885,7 +885,7 @@ ASAP2_VERSION 1 61
          "U/min"
          COEFFS 0. 1. 0. 0. 0. 0.205
       /end COMPU_METHOD
-      
+
       /begin COMPU_METHOD CompuMethod_08
          ""
          RAT_FUNC
@@ -893,7 +893,7 @@ ASAP2_VERSION 1 61
          "V"
          COEFFS 0 819. 0. 0 0 1
       /end COMPU_METHOD
-      
+
       /begin COMPU_METHOD CompuMethod_09
          ""
          RAT_FUNC
@@ -901,7 +901,7 @@ ASAP2_VERSION 1 61
          "bar"
          COEFFS 0 100. 0. 0 0 1
       /end COMPU_METHOD
-	  
+
       /begin COMPU_VTAB CompuVtab_01
          ""
          TAB_VERB
@@ -909,15 +909,15 @@ ASAP2_VERSION 1 61
          0 "FALSE"
          1 "TRUE"
       /end COMPU_VTAB
-	  
+
       /begin RECORD_LAYOUT RecordLayout_01
          FNC_VALUES 1 UBYTE COLUMN_DIR PLONG
       /end RECORD_LAYOUT
-	  
+
       /begin RECORD_LAYOUT RecordLayout_02
          FNC_VALUES 1 UWORD COLUMN_DIR PLONG
       /end RECORD_LAYOUT
-      
+
       /begin RECORD_LAYOUT RecordLayout_03
          NO_AXIS_PTS_X 1 UBYTE
          AXIS_PTS_X 2 UBYTE INDEX_INCR DIRECT
@@ -925,16 +925,16 @@ ASAP2_VERSION 1 61
          AXIS_PTS_Y 4 UWORD INDEX_INCR DIRECT
          FNC_VALUES 5 UWORD COLUMN_DIR DIRECT
       /end RECORD_LAYOUT
-      
+
       /begin RECORD_LAYOUT RecordLayout_04
          NO_AXIS_PTS_X 1 UWORD
          AXIS_PTS_X 2 UWORD INDEX_DECR DIRECT
       /end RECORD_LAYOUT
-      
+
       /begin RECORD_LAYOUT RecordLayout_05
          FNC_VALUES 1 SWORD COLUMN_DIR PLONG
       /end RECORD_LAYOUT
-      
+
       /begin AXIS_PTS AxisPts_01
          ""
          0xEE001134

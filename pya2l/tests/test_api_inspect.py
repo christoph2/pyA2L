@@ -1,17 +1,17 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import pytest
 
-from pya2l import exceptions
-from pya2l import model
+from pya2l import exceptions, model
 from pya2l.a2l_listener import A2LListener
-from pya2l.api.inspect import CompuMethod
-from pya2l.api.inspect import Group
-from pya2l.api.inspect import Measurement
-from pya2l.api.inspect import ModCommon
-from pya2l.api.inspect import ModPar
-from pya2l.api.inspect import NoCompuMethod
-from pya2l.api.inspect import TypedefStructure
+from pya2l.api.inspect import (
+    CompuMethod,
+    Group,
+    Measurement,
+    ModCommon,
+    ModPar,
+    NoCompuMethod,
+    TypedefStructure,
+)
 from pya2l.parserlib import ParserWrapper
 
 

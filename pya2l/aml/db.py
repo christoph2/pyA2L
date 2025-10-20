@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: latin-1 -*-
 """Load/store AML abstract syntax trees from/to A2LDBs."""
 
 __copyright__ = """
@@ -28,9 +27,8 @@ __copyright__ = """
 from collections import defaultdict
 from logging import getLogger
 
-from pya2l import a2llg
+from pya2l import a2llg, model
 from pya2l.aml import classes
-from pya2l import model
 
 
 class Importer:

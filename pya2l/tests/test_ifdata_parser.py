@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import contextlib
 import pkgutil
 from pprint import pprint
@@ -7,6 +6,7 @@ from pprint import pprint
 import pytest
 
 from pya2l import parsers
+
 
 ETAS1 = """
     /begin IF_DATA ASAP1B_Bypass
@@ -156,7 +156,7 @@ BASIC = """
 
 def load_file(name):
     parser = parsers.aml()
-    data = str(pkgutil.get_data("pya2l", "examples/{}".format(name)), "ascii")
+    data = str(pkgutil.get_data("pya2l", f"examples/{name}"), "ascii")
     result = parser.parseFromString(data)
     return result.listener_result
 
