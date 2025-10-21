@@ -14,7 +14,7 @@ Import an .a2l file to database
     session = db.import_a2l("ASAP2_Demo_V161.a2l")
 
 If nothing went wrong, your working directory now contains a file named `ASAP2_Demo_V161.a2ldb`,
-which is simply a `Sqlite3 <https://www.sqlite.org/>`_ database file. 
+which is simply a `Sqlite3 <https://www.sqlite.org/>`_ database file.
 
 Unlike other ASAP2 toolkits, you are not required
 to parse your `.a2l` files over and over again, which can be quite expensive.
@@ -33,7 +33,7 @@ You may have noticed, that in both cases the return value is stored in an object
 
 Enter `SQLAlchemy <https://www.sqlalchemy.org/>`_!
 
-SQLAlchemy offers, amongst other things, a powerful expression language. 
+SQLAlchemy offers, amongst other things, a powerful expression language.
 
 
 Running a first database query
@@ -82,6 +82,5 @@ Yields the following output:
 
 The classes describing an `.a2ldb` database live in `pya2l.model <../pya2l/model/__init__.py>`_, they are required to query, modify, and add model instances.
 
-The test-suite found  `here <../pya2l/tests/test_a2l_parser.py>`_ is a good starting point for further experimentations, because 
+The test-suite found  `here <../pya2l/tests/test_a2l_parser.py>`_ is a good starting point for further experimentations, because
 it touches virtually every A2L element/attribute.
-

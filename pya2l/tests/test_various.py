@@ -1,13 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: latin-1 -*-
 import sys
 
 import pytest
 
 from pya2l import DB
-from pya2l.cse_units import CSE
-from pya2l.cse_units import CSE_Type
-from pya2l.cse_units import Referer
+from pya2l.cse_units import CSE, CSE_Type, Referer
+
 
 if sys.platform == "win32":
     FILE_NAME = r"f:\projects\examples\example-a2l-file"

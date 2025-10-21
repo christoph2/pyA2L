@@ -1,66 +1,66 @@
-/begin A2ML 
-/* template.aml *******************************************************************/ 
-/*                                              */ 
-/*                                                                                */ 
-/* Template for designing IF_DATA fields for ASAM MCD-2MC files and BLOB's        */ 
-/* for driver interface.                                                          */ 
-/* ********************************************************************************/ 
-block "IF_DATA" taggedunion if_data 
-{ 
-  "ASAP1B_EXAMPLE"  /* The tag of ASAP1B is reserved for ASAM Interfaces  */ 
-            /* EXAMPLE shall be substituted with a name of     */ 
-            /* manufacturer's choice.                               */ 
- 
-  taggedstruct  /* optional parameters  */ 
-   
-    (block "SOURCE" struct  
-    { 
-      struct  /*  indispensable */  
-      { 
-        char [101];  /* source name (string)*/ 
-        int;  /* min period ( conforming together with min factor */ 
-            /* the fastest samplingrate available ).            */ 
-        long;  /* min factor */     
-      }; 
-      taggedstruct    /* optional parameters  */ 
-      { 
-        block "QP_BLOB" struct   /* QP_BLOB for driver */ 
-        { 
-          /* QP_BLOB specification  */ 
-        }; 
-      }; 
-    } 
-    )*;      /*  multiple SOURCE may exist */ 
- 
-    block "TP_BLOB" struct    /* TP_BLOB for driver */ 
-    { 
-      /* TP_BLOB specification  */ 
-    }; 
- 
-    block "DP_BLOB" struct   /* DP_BLOB for driver */  
-    { 
-            /* DP_BLOB specification  */ 
-    }; 
- 
-    block "PA_BLOB" struct   /* PA_BLOB for driver */ 
-    { 
-      /* PA_BLOB specification  */ 
-    }; 
-    block "KP_BLOB" struct   /* KP_BLOB for driver */  
-    { 
-      /* KP_BLOB specification  */ 
-    }; 
- 
-    /*  for MODULE  may only TP_BLOB and SOURCE be specified    */ 
-    /*  for CHARACTERISTIC  may only DP_BLOB and PA_BLOB be specified    */ 
-    /*  for AXIS_PTS  may only DP_BLOB and PA_BLOB be specified    */ 
-    /*  for MEMORY_LAYOUT  may only DP_BLOB and PA_BLOB be specified    */ 
-    /*  for MEASUREMENT  may only KP_BLOB, DP_BLOB and PA_BLOB be specified  */ 
-  }; 
- 
-  /* Extra tags can be defined here */ 
- 
-}; 
- 
-/***********************************************************************/ 
-/end A2ML 
+/begin A2ML
+/* template.aml *******************************************************************/
+/*                                              */
+/*                                                                                */
+/* Template for designing IF_DATA fields for ASAM MCD-2MC files and BLOB's        */
+/* for driver interface.                                                          */
+/* ********************************************************************************/
+block "IF_DATA" taggedunion if_data
+{
+  "ASAP1B_EXAMPLE"  /* The tag of ASAP1B is reserved for ASAM Interfaces  */
+            /* EXAMPLE shall be substituted with a name of     */
+            /* manufacturer's choice.                               */
+
+  taggedstruct  /* optional parameters  */
+
+    (block "SOURCE" struct
+    {
+      struct  /*  indispensable */
+      {
+        char [101];  /* source name (string)*/
+        int;  /* min period ( conforming together with min factor */
+            /* the fastest samplingrate available ).            */
+        long;  /* min factor */
+      };
+      taggedstruct    /* optional parameters  */
+      {
+        block "QP_BLOB" struct   /* QP_BLOB for driver */
+        {
+          /* QP_BLOB specification  */
+        };
+      };
+    }
+    )*;      /*  multiple SOURCE may exist */
+
+    block "TP_BLOB" struct    /* TP_BLOB for driver */
+    {
+      /* TP_BLOB specification  */
+    };
+
+    block "DP_BLOB" struct   /* DP_BLOB for driver */
+    {
+            /* DP_BLOB specification  */
+    };
+
+    block "PA_BLOB" struct   /* PA_BLOB for driver */
+    {
+      /* PA_BLOB specification  */
+    };
+    block "KP_BLOB" struct   /* KP_BLOB for driver */
+    {
+      /* KP_BLOB specification  */
+    };
+
+    /*  for MODULE  may only TP_BLOB and SOURCE be specified    */
+    /*  for CHARACTERISTIC  may only DP_BLOB and PA_BLOB be specified    */
+    /*  for AXIS_PTS  may only DP_BLOB and PA_BLOB be specified    */
+    /*  for MEMORY_LAYOUT  may only DP_BLOB and PA_BLOB be specified    */
+    /*  for MEASUREMENT  may only KP_BLOB, DP_BLOB and PA_BLOB be specified  */
+  };
+
+  /* Extra tags can be defined here */
+
+};
+
+/***********************************************************************/
+/end A2ML

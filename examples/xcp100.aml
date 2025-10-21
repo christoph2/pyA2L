@@ -422,7 +422,7 @@
           "BULK_TRANSFER" = 2,
           "INTERRUPT_TRANSFER" = 3
         };
-        uint;  /* wMaxPacketSize: Maximum packet  
+        uint;  /* wMaxPacketSize: Maximum packet
  size of endpoint in bytes       */
         uchar;  /* bInterval: polling of endpoint  */
         enum {
@@ -437,14 +437,14 @@
           "ALIGNMENT_64_BIT" = 3
         };
         taggedstruct {
-          "RECOMMENDED_HOST_BUFSIZE" uint;  /* Recommended size for the host 
+          "RECOMMENDED_HOST_BUFSIZE" uint;  /* Recommended size for the host
  buffer size. The size is defined
  as multiple of wMaxPacketSize.  */
         };
       };  /* end of ep_parameters */
 
       struct USB_Parameters {
-        uint;  /* XCP on USB version  
+        uint;  /* XCP on USB version
  e.g. "1.0" = 0x0100 */
         uint;  /* Vendor ID                       */
         uint;  /* Product ID                      */
@@ -472,9 +472,9 @@
           (block "DAQ_LIST_USB_ENDPOINT" struct {
             uint;  /* reference to DAQ_LIST_NUMBER          */
             taggedstruct {
-              "FIXED_IN" uchar;  /* this DAQ list always                
+              "FIXED_IN" uchar;  /* this DAQ list always
  ENDPOINT_NUMBER, not endpoint address */
-              "FIXED_OUT" uchar;  /* this STIM list always               
+              "FIXED_OUT" uchar;  /* this STIM list always
  ENDPOINT_NUMBER, not endpoint address */
             };
           })*;  /* end of DAQ_LIST_USB_ENDPOINT */
@@ -559,7 +559,7 @@
 
         uchar;             /* NAX */
 
-        enum { 
+        enum {
           "HEADER_NAX"              = 0,
           "HEADER_NAX_FILL"         = 1,
           "HEADER_NAX_CTR"          = 2,
@@ -659,4 +659,3 @@
       };
 
     /end A2ML
-

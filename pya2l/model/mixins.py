@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.

@@ -11,7 +11,7 @@
         WuP                             /* stimulation mode of ECU: WuP */
         MSB_FIRST                        /* byte order in measurements and characteristics */
         1                               /* 1: 1st startDiagnosticSession without baudrate switch */
-        
+
        DATA_ACCESS
        0x000000
        0x000000
@@ -19,7 +19,7 @@
        0
        0
        1
- 
+
 	/*SERAM SERAM_A SERAM_U SERAM_O SERAM_E Flash addr  RAM addr  Data rd  code ver  Code read  Load mode*/
         SERAM   0x40000 0x40000 0x5C3FF 0x5C3FF 0     0     1   0     0        1
 
@@ -90,7 +90,7 @@
         /*  TIME_DEF           5      1    100      1    500      0 */
         /*  TIME_DEF          10      1    500      2   1000      1 */
           TIME_DEF            20      2    49       12   250      0
-         
+
         /begin PAGE_SWITCH
 	ESCAPE_CODE
 	ESCAPE_CODE_PARA 0x90
@@ -99,4 +99,3 @@
 
       /end TP_BLOB
     /end IF_DATA
-

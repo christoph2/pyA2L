@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
@@ -28,14 +27,14 @@ __author__ = "Christoph Schueler"
 __version__ = "0.1.0"
 
 
-from decimal import Decimal as D
 import pickle
 import re
+from decimal import Decimal as D
 
 import antlr4
 
-from pya2l.logger import Logger
 import pya2l.model as model
+from pya2l.logger import Logger
 
 
 def delist(iterable, scalar=False):
@@ -62,7 +61,7 @@ class BaseListener(antlr4.ParseTreeListener):
     value = []
 
     def __init__(self, prepro_result, loglevel="INFO", encoding="latin-1", *args, **kws):
-        super(BaseListener, self).__init__(*args, **kws)
+        super().__init__(*args, **kws)
         self.encoding = encoding
         filenames, line_map, ifdata_reader = prepro_result
         self.ifdata_reader = ifdata_reader
@@ -108,7 +107,7 @@ class BaseListener(antlr4.ParseTreeListener):
         text = ctx.i.text if ctx.i else ""
         result = ""
         for element in ctx.a:
-            result += "[{}]".format(element.value)
+            result += f"[{element.value}]"
         ctx.value = text + result
 
     def exitArraySpecifier(self, ctx):
@@ -121,7 +120,7 @@ class BaseListener(antlr4.ParseTreeListener):
         ctx.value = value
 
     def _formatMessage(self, msg, location):
-        return "[{0}:{1}] {2}".format(location.start.line, location.start.column + 1, msg)
+        return f"[{location.start.line}:{location.start.column + 1}] {msg}"
 
     def _log(self, method, msg, location=None):
         if location:
@@ -350,7 +349,7 @@ class A2LListener(BaseListener):
         upgradeNo = ctx.upgradeNo.value
 
         if versionNo > 1 or (versionNo == 1 and upgradeNo < 60):
-            self.warn("ASAP2 Version '{}.{}' may not parsed correctly.".format(versionNo, upgradeNo))
+            self.warn(f"ASAP2 Version '{versionNo}.{upgradeNo}' may not parsed correctly.")
 
         ctx.value = model.Asap2Version(versionNo=versionNo, upgradeNo=upgradeNo)
         self.db.session.add(ctx.value)

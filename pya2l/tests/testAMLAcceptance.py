@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __copyright__ = """
    pySART - Simplified AUTOSAR-Toolkit for Python.
@@ -31,6 +30,7 @@ __version__ = "0.1.0"
 import unittest
 
 from pya2l import aml
+
 
 """
 """

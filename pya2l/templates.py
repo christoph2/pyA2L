@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
@@ -37,19 +36,22 @@ from mako import exceptions
 from mako.runtime import Context
 from mako.template import Template
 
+
 # from csstuff import strings
 
 
 def indentText(text: str, leftmargin: int = 0):
     return "\n".join(
         [
-            "%s%s"
-            % (
-                (" " * leftmargin),
-                line,
+            (
+                "%s%s"
+                % (
+                    (" " * leftmargin),
+                    line,
+                )
+                if line
+                else ""
             )
-            if line
-            else ""
             for line in text.splitlines()
         ]
     )

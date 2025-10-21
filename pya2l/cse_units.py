@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: latin-1 -*-
 
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
@@ -28,6 +27,7 @@ __copyright__ = """
 
 from collections import namedtuple
 from enum import IntEnum
+
 
 CSE_Type = namedtuple("CSE_Type", "code unit referred_to comment")
 

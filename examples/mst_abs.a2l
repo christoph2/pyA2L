@@ -1,8 +1,8 @@
-/begin PROJECT               MST_ABS  "Project example" 
-    /begin HEADER            "General project description" 
-        VERSION              "0815" 
-        PROJECT_NO          _1188 
-    /end HEADER 
- 
-    /include engine_ecu.a2l 
-/end PROJECT 
+/begin PROJECT               MST_ABS  "Project example"
+    /begin HEADER            "General project description"
+        VERSION              "0815"
+        PROJECT_NO          _1188
+    /end HEADER
+
+    /include engine_ecu.a2l
+/end PROJECT

@@ -2177,7 +2177,7 @@ ASAP2_VERSION 1 61
       ALIGNMENT_FLOAT64_IEEE 4
     /end MOD_COMMON
 
-    
+
 /*  ==============================================================================================  */
 /*                                                                                                  */
 /*  XCP Interface description                                                                       */
@@ -2185,102 +2185,102 @@ ASAP2_VERSION 1 61
 /*  ==============================================================================================  */
 
 
-    /begin IF_DATA XCP 
-      /begin PROTOCOL_LAYER 
-        0x100 0x20 0x20 0x20 0x20 0x20 0x20 0x20 0x8 0x8 BYTE_ORDER_MSB_LAST ADDRESS_GRANULARITY_BYTE 
-        OPTIONAL_CMD SET_REQUEST 
-        OPTIONAL_CMD GET_SEED 
-        OPTIONAL_CMD UNLOCK 
-        OPTIONAL_CMD SET_MTA 
-        OPTIONAL_CMD SHORT_DOWNLOAD 
-        OPTIONAL_CMD PROGRAM_START 
-        OPTIONAL_CMD PROGRAM_CLEAR 
-        OPTIONAL_CMD PROGRAM 
-        OPTIONAL_CMD PROGRAM_RESET 
-        OPTIONAL_CMD GET_PGM_PROCESSOR_INFO 
-        OPTIONAL_CMD GET_SECTOR_INFO 
-        OPTIONAL_CMD PROGRAM_PREPARE 
-        OPTIONAL_CMD PROGRAM_NEXT 
-        OPTIONAL_CMD PROGRAM_MAX 
-        OPTIONAL_CMD PROGRAM_VERIFY 
-        OPTIONAL_CMD TRANSPORT_LAYER_CMD 
-        OPTIONAL_CMD GET_ID 
-        OPTIONAL_CMD UPLOAD 
-        OPTIONAL_CMD SHORT_UPLOAD 
-        OPTIONAL_CMD BUILD_CHECKSUM 
-        OPTIONAL_CMD DOWNLOAD_NEXT 
-        OPTIONAL_CMD SET_CAL_PAGE 
-        OPTIONAL_CMD GET_CAL_PAGE 
-        OPTIONAL_CMD CLEAR_DAQ_LIST 
-        OPTIONAL_CMD SET_DAQ_PTR 
-        OPTIONAL_CMD WRITE_DAQ 
-        OPTIONAL_CMD SET_DAQ_LIST_MODE 
-        OPTIONAL_CMD GET_DAQ_LIST_MODE 
-        OPTIONAL_CMD START_STOP_DAQ_LIST 
-        OPTIONAL_CMD FREE_DAQ 
-        OPTIONAL_CMD ALLOC_DAQ 
-        OPTIONAL_CMD ALLOC_ODT 
-        OPTIONAL_CMD ALLOC_ODT_ENTRY 
-        OPTIONAL_CMD START_STOP_SYNCH 
-        OPTIONAL_CMD DOWNLOAD 
-        OPTIONAL_CMD MODIFY_BITS 
-        OPTIONAL_CMD GET_PAG_PROCESSOR_INFO 
-        OPTIONAL_CMD GET_SEGMENT_INFO 
-        OPTIONAL_CMD GET_PAGE_INFO 
-        OPTIONAL_CMD SET_SEGMENT_MODE 
-        OPTIONAL_CMD GET_SEGMENT_MODE 
-        OPTIONAL_CMD COPY_CAL_PAGE 
-        OPTIONAL_CMD GET_DAQ_CLOCK 
-        OPTIONAL_CMD READ_DAQ 
-        OPTIONAL_CMD GET_DAQ_LIST_MODE 
-        OPTIONAL_CMD DOWNLOAD_MAX 
-        COMMUNICATION_MODE_SUPPORTED 
-          BLOCK 
-            SLAVE 
-            MASTER 0x14 0x5 
+    /begin IF_DATA XCP
+      /begin PROTOCOL_LAYER
+        0x100 0x20 0x20 0x20 0x20 0x20 0x20 0x20 0x8 0x8 BYTE_ORDER_MSB_LAST ADDRESS_GRANULARITY_BYTE
+        OPTIONAL_CMD SET_REQUEST
+        OPTIONAL_CMD GET_SEED
+        OPTIONAL_CMD UNLOCK
+        OPTIONAL_CMD SET_MTA
+        OPTIONAL_CMD SHORT_DOWNLOAD
+        OPTIONAL_CMD PROGRAM_START
+        OPTIONAL_CMD PROGRAM_CLEAR
+        OPTIONAL_CMD PROGRAM
+        OPTIONAL_CMD PROGRAM_RESET
+        OPTIONAL_CMD GET_PGM_PROCESSOR_INFO
+        OPTIONAL_CMD GET_SECTOR_INFO
+        OPTIONAL_CMD PROGRAM_PREPARE
+        OPTIONAL_CMD PROGRAM_NEXT
+        OPTIONAL_CMD PROGRAM_MAX
+        OPTIONAL_CMD PROGRAM_VERIFY
+        OPTIONAL_CMD TRANSPORT_LAYER_CMD
+        OPTIONAL_CMD GET_ID
+        OPTIONAL_CMD UPLOAD
+        OPTIONAL_CMD SHORT_UPLOAD
+        OPTIONAL_CMD BUILD_CHECKSUM
+        OPTIONAL_CMD DOWNLOAD_NEXT
+        OPTIONAL_CMD SET_CAL_PAGE
+        OPTIONAL_CMD GET_CAL_PAGE
+        OPTIONAL_CMD CLEAR_DAQ_LIST
+        OPTIONAL_CMD SET_DAQ_PTR
+        OPTIONAL_CMD WRITE_DAQ
+        OPTIONAL_CMD SET_DAQ_LIST_MODE
+        OPTIONAL_CMD GET_DAQ_LIST_MODE
+        OPTIONAL_CMD START_STOP_DAQ_LIST
+        OPTIONAL_CMD FREE_DAQ
+        OPTIONAL_CMD ALLOC_DAQ
+        OPTIONAL_CMD ALLOC_ODT
+        OPTIONAL_CMD ALLOC_ODT_ENTRY
+        OPTIONAL_CMD START_STOP_SYNCH
+        OPTIONAL_CMD DOWNLOAD
+        OPTIONAL_CMD MODIFY_BITS
+        OPTIONAL_CMD GET_PAG_PROCESSOR_INFO
+        OPTIONAL_CMD GET_SEGMENT_INFO
+        OPTIONAL_CMD GET_PAGE_INFO
+        OPTIONAL_CMD SET_SEGMENT_MODE
+        OPTIONAL_CMD GET_SEGMENT_MODE
+        OPTIONAL_CMD COPY_CAL_PAGE
+        OPTIONAL_CMD GET_DAQ_CLOCK
+        OPTIONAL_CMD READ_DAQ
+        OPTIONAL_CMD GET_DAQ_LIST_MODE
+        OPTIONAL_CMD DOWNLOAD_MAX
+        COMMUNICATION_MODE_SUPPORTED
+          BLOCK
+            SLAVE
+            MASTER 0x14 0x5
       /end PROTOCOL_LAYER
-      /begin DAQ 
-        STATIC 0x3 0x2 0x0 OPTIMISATION_TYPE_DEFAULT ADDRESS_EXTENSION_DAQ IDENTIFICATION_FIELD_TYPE_ABSOLUTE GRANULARITY_ODT_ENTRY_SIZE_DAQ_BYTE 0x4 OVERLOAD_INDICATION_EVENT 
-        PRESCALER_SUPPORTED 
-        /begin TIMESTAMP_SUPPORTED 
-          0x1 SIZE_DWORD UNIT_1US 
+      /begin DAQ
+        STATIC 0x3 0x2 0x0 OPTIMISATION_TYPE_DEFAULT ADDRESS_EXTENSION_DAQ IDENTIFICATION_FIELD_TYPE_ABSOLUTE GRANULARITY_ODT_ENTRY_SIZE_DAQ_BYTE 0x4 OVERLOAD_INDICATION_EVENT
+        PRESCALER_SUPPORTED
+        /begin TIMESTAMP_SUPPORTED
+          0x1 SIZE_DWORD UNIT_1US
         /end TIMESTAMP_SUPPORTED
-        /begin DAQ_LIST 
-          0x0 
-          DAQ_LIST_TYPE DAQ 
-          MAX_ODT 0x5 
-          MAX_ODT_ENTRIES 0x7 
+        /begin DAQ_LIST
+          0x0
+          DAQ_LIST_TYPE DAQ
+          MAX_ODT 0x5
+          MAX_ODT_ENTRIES 0x7
         /end DAQ_LIST
-        /begin DAQ_LIST 
-          0x1 
-          DAQ_LIST_TYPE DAQ 
-          MAX_ODT 0x4 
-          MAX_ODT_ENTRIES 0x7 
+        /begin DAQ_LIST
+          0x1
+          DAQ_LIST_TYPE DAQ
+          MAX_ODT 0x4
+          MAX_ODT_ENTRIES 0x7
         /end DAQ_LIST
-        /begin DAQ_LIST 
-          0x2 
-          DAQ_LIST_TYPE DAQ 
-          MAX_ODT 0x3 
-          MAX_ODT_ENTRIES 0x7 
+        /begin DAQ_LIST
+          0x2
+          DAQ_LIST_TYPE DAQ
+          MAX_ODT 0x3
+          MAX_ODT_ENTRIES 0x7
         /end DAQ_LIST
-        /begin EVENT 
-          "5ms" "5ms" 0x0 DAQ 0xFF 0x5 0x6 0xFF 
+        /begin EVENT
+          "5ms" "5ms" 0x0 DAQ 0xFF 0x5 0x6 0xFF
         /end EVENT
-        /begin EVENT 
-          "extEvent" "extEvent" 0x1 DAQ 0xFF 0x1 0x9 0xFF 
+        /begin EVENT
+          "extEvent" "extEvent" 0x1 DAQ 0xFF 0x1 0x9 0xFF
         /end EVENT
       /end DAQ
-      /begin XCP_ON_CAN 
-        0x100 
-        CAN_ID_BROADCAST 0x52 
-        CAN_ID_MASTER 0x51 
-        CAN_ID_SLAVE 0x50 
-        BAUDRATE 0x7A120 
+      /begin XCP_ON_CAN
+        0x100
+        CAN_ID_BROADCAST 0x52
+        CAN_ID_MASTER 0x51
+        CAN_ID_SLAVE 0x50
+        BAUDRATE 0x7A120
       /end XCP_ON_CAN
     /end IF_DATA
- 
 
- 
+
+
 /*  ==============================================================================================  */
 /*                                                                                                  */
 /*  MOD_PAR with the memory segment descriptions                                                    */
@@ -2290,26 +2290,26 @@ ASAP2_VERSION 1 61
 
     /begin MOD_PAR ""
       NO_OF_INTERFACES 1
-      
-      /begin MEMORY_SEGMENT ECU_Code 
-        "Memory segment for code part of the ECU" 
-        DATA FLASH EXTERN 0x16000 0x86C -1 -1 -1 -1 -1 
-        /begin IF_DATA XCP 
-          /begin SEGMENT 
-            0x0 0x2 0x0 0x0 0x0 
-            /begin PAGE 
-              0x0 ECU_ACCESS_DONT_CARE XCP_READ_ACCESS_WITH_ECU_ONLY XCP_WRITE_ACCESS_NOT_ALLOWED 
+
+      /begin MEMORY_SEGMENT ECU_Code
+        "Memory segment for code part of the ECU"
+        DATA FLASH EXTERN 0x16000 0x86C -1 -1 -1 -1 -1
+        /begin IF_DATA XCP
+          /begin SEGMENT
+            0x0 0x2 0x0 0x0 0x0
+            /begin PAGE
+              0x0 ECU_ACCESS_DONT_CARE XCP_READ_ACCESS_WITH_ECU_ONLY XCP_WRITE_ACCESS_NOT_ALLOWED
             /end PAGE
-            /begin PAGE 
-              0x1 ECU_ACCESS_DONT_CARE XCP_READ_ACCESS_WITH_ECU_ONLY XCP_WRITE_ACCESS_WITH_ECU_ONLY 
+            /begin PAGE
+              0x1 ECU_ACCESS_DONT_CARE XCP_READ_ACCESS_WITH_ECU_ONLY XCP_WRITE_ACCESS_WITH_ECU_ONLY
             /end PAGE
           /end SEGMENT
         /end IF_DATA
       /end MEMORY_SEGMENT
 
-      /begin MEMORY_SEGMENT ECU_Data 
-        "Memory segment for parameters" 
-        DATA FLASH EXTERN 0x810000 0x10000 -1 -1 -1 -1 -1 
+      /begin MEMORY_SEGMENT ECU_Data
+        "Memory segment for parameters"
+        DATA FLASH EXTERN 0x810000 0x10000 -1 -1 -1 -1 -1
       /end MEMORY_SEGMENT
 
       SYSTEM_CONSTANT "System_Constant_1" "-3.45"
@@ -2351,7 +2351,7 @@ ASAP2_VERSION 1 61
       COEFFS 0 1 0 0 0 1
     /end COMPU_METHOD
 
-    /begin COMPU_METHOD CM.RAT_FUNC.DIV_10 
+    /begin COMPU_METHOD CM.RAT_FUNC.DIV_10
       "rational function with parameter set for impl = f(phys) = phys * 10"
       RAT_FUNC "%3.1" "km/h"
       COEFFS 0 10 0 0 0 1
@@ -2363,7 +2363,7 @@ ASAP2_VERSION 1 61
       COEFFS 0 81.9175 0 0 0 1
     /end COMPU_METHOD
 
-    
+
 /*  ==============================================================================================  */
 /*                                                                                                  */
 /*  type FORM should only be used if the computation is complex and not feasible by RAT_FUNC        */
@@ -2373,27 +2373,27 @@ ASAP2_VERSION 1 61
 /*                                                                                                  */
 /*  ==============================================================================================  */
 
-    /begin COMPU_METHOD CM.FORM.X_PLUS_4 
-      "" 
-      FORM 
-      "%6.1" 
-      "rpm" 
+    /begin COMPU_METHOD CM.FORM.X_PLUS_4
+      ""
+      FORM
+      "%6.1"
+      "rpm"
       /begin FORMULA
-        "X1+4" 
+        "X1+4"
         FORMULA_INV "X1-4"
       /end FORMULA
-    /end COMPU_METHOD 
+    /end COMPU_METHOD
 
 
-    /begin COMPU_METHOD CM.VIRTUAL.EXTERNAL_VALUE 
-      "" 
-      FORM 
-      "%6.1" 
-      "rpm" 
+    /begin COMPU_METHOD CM.VIRTUAL.EXTERNAL_VALUE
+      ""
+      FORM
+      "%6.1"
+      "rpm"
       /begin FORMULA
         "4*X1"                                             /* FORMULA_INV not needed here */
       /end FORMULA
-    /end COMPU_METHOD 
+    /end COMPU_METHOD
 
 
 /*  ==============================================================================================  */
@@ -2404,103 +2404,103 @@ ASAP2_VERSION 1 61
 /*  ==============================================================================================  */
 
     /begin COMPU_METHOD CM.TAB_INTP.DEFAULT_VALUE
-      "" 
-      TAB_INTP "%8.4" "U/  min  " 
+      ""
+      TAB_INTP "%8.4" "U/  min  "
       COMPU_TAB_REF CM.TAB_INTP.DEFAULT_VALUE.REF
-    /end COMPU_METHOD 
+    /end COMPU_METHOD
 
-    /begin COMPU_TAB CM.TAB_INTP.DEFAULT_VALUE.REF   
-       "" 
-       TAB_INTP 
-       12 
-       -3 98   
-       -1 99   
+    /begin COMPU_TAB CM.TAB_INTP.DEFAULT_VALUE.REF
+       ""
+       TAB_INTP
+       12
+       -3 98
+       -1 99
        0 100
-       2 102   
-       4 104  
-       5 105  
-       6 106 
-       7 107  
-       8 108  
-       9 109  
-       10 110  
+       2 102
+       4 104
+       5 105
+       6 106
+       7 107
+       8 108
+       9 109
+       10 110
        13 111
        DEFAULT_VALUE_NUMERIC 300.56                        /* DEFAULT_VALUE_NUMERIC should be used here as the normal output is numeric */
-    /end COMPU_TAB 
+    /end COMPU_TAB
 
     /begin COMPU_METHOD CM.TAB_INTP.NO_DEFAULT_VALUE
-      "" 
-      TAB_INTP "%8.4" "U/  min  " 
+      ""
+      TAB_INTP "%8.4" "U/  min  "
       COMPU_TAB_REF CM.TAB_INTP.NO_DEFAULT_VALUE.REF
-    /end COMPU_METHOD 
-    
-    /begin COMPU_TAB CM.TAB_INTP.NO_DEFAULT_VALUE.REF   
-       "" 
-       TAB_INTP 
-       12 
-       -3 98   
-       -1 99   
+    /end COMPU_METHOD
+
+    /begin COMPU_TAB CM.TAB_INTP.NO_DEFAULT_VALUE.REF
+       ""
+       TAB_INTP
+       12
+       -3 98
+       -1 99
        0 100
-       2 102   
-       4 104  
-       5 105  
-       6 106 
-       7 107  
-       8 108  
-       9 109  
-       10 110  
+       2 102
+       4 104
+       5 105
+       6 106
+       7 107
+       8 108
+       9 109
+       10 110
        13 111
-    /end COMPU_TAB 
+    /end COMPU_TAB
 
 
     /begin COMPU_METHOD CM.TAB_NOINTP.DEFAULT_VALUE
-      "" 
-      TAB_INTP "%8.4" "U/  min  " 
+      ""
+      TAB_INTP "%8.4" "U/  min  "
       COMPU_TAB_REF CM.TAB_NOINTP.DEFAULT_VALUE.REF
-    /end COMPU_METHOD 
-    
-    /begin COMPU_TAB CM.TAB_NOINTP.DEFAULT_VALUE.REF   
-       "" 
-       TAB_NOINTP 
-       12 
-       -3 98   
-       -1 99   
+    /end COMPU_METHOD
+
+    /begin COMPU_TAB CM.TAB_NOINTP.DEFAULT_VALUE.REF
+       ""
+       TAB_NOINTP
+       12
+       -3 98
+       -1 99
        0 100
-       2 102   
-       4 104  
-       5 105  
-       6 106 
-       7 107  
-       8 108  
-       9 109  
-       10 110  
+       2 102
+       4 104
+       5 105
+       6 106
+       7 107
+       8 108
+       9 109
+       10 110
        13 111
        DEFAULT_VALUE_NUMERIC 300.56                        /* DEFAULT_VALUE_NUMERIC should be used here as the normal output is numeric */
-    /end COMPU_TAB 
+    /end COMPU_TAB
 
     /begin COMPU_METHOD CM.TAB_NOINTP.NO_DEFAULT_VALUE
-      "" 
-      TAB_INTP "%8.4" "U/  min  " 
+      ""
+      TAB_INTP "%8.4" "U/  min  "
       COMPU_TAB_REF CM.TAB_NOINTP.NO_DEFAULT_VALUE.REF
-    /end COMPU_METHOD 
-    
-    /begin COMPU_TAB CM.TAB_NOINTP.NO_DEFAULT_VALUE.REF   
-       "" 
-       TAB_NOINTP 
-       12 
-       -3 98   
-       -1 99   
+    /end COMPU_METHOD
+
+    /begin COMPU_TAB CM.TAB_NOINTP.NO_DEFAULT_VALUE.REF
+       ""
+       TAB_NOINTP
+       12
+       -3 98
+       -1 99
        0 100
-       2 102   
-       4 104  
-       5 105  
-       6 106 
-       7 107  
-       8 108  
-       9 109  
-       10 110  
+       2 102
+       4 104
+       5 105
+       6 106
+       7 107
+       8 108
+       9 109
+       10 110
        13 111
-    /end COMPU_TAB 
+    /end COMPU_TAB
 
 
 /*  ==============================================================================================  */
@@ -2519,7 +2519,7 @@ ASAP2_VERSION 1 61
       COMPU_TAB_REF CM.TAB_VERB.DEFAULT_VALUE.REF
     /end COMPU_METHOD
     /begin COMPU_VTAB CM.TAB_VERB.DEFAULT_VALUE.REF
-      "List of text strings and relation to impl value" 
+      "List of text strings and relation to impl value"
       TAB_VERB 3
       1 "SawTooth"
       2 "Square"
@@ -2533,7 +2533,7 @@ ASAP2_VERSION 1 61
       COMPU_TAB_REF CM.TAB_VERB.NO_DEFAULT_VALUE.REF
     /end COMPU_METHOD
     /begin COMPU_VTAB CM.TAB_VERB.NO_DEFAULT_VALUE.REF
-      "List of text strings and relation to impl value" 
+      "List of text strings and relation to impl value"
       TAB_VERB 6
       2 "red"
       3 "orange"
@@ -2544,54 +2544,54 @@ ASAP2_VERSION 1 61
     /end COMPU_VTAB
 
 
-    /begin COMPU_METHOD CM.VTAB_RANGE.DEFAULT_VALUE 
-       "verbal range with default value" 
-       TAB_VERB 
-       "%4.2" 
-       "" 
-       COMPU_TAB_REF CM.VTAB_RANGE.DEFAULT_VALUE.REF 
-    /end COMPU_METHOD 
-    
-    /begin COMPU_VTAB_RANGE CM.VTAB_RANGE.DEFAULT_VALUE.REF 
-       "" 
-       11 
-       0 1 "Zero_to_one" 
-       2 3 "two_to_three" 
-       4 7 "four_to_seven" 
-       14 17 "fourteen_to_seventeen" 
-       18 99 "eigteen_to_ninetynine" 
-       100 100 "hundred" 
-       101 101 "hundredone" 
-       102 102 "hundredtwo" 
-       103 103 "hundredthree" 
-       104 104 "hundredfour" 
-       105 105 "hundredfive" 
-       DEFAULT_VALUE "out of range value"
-    /end COMPU_VTAB_RANGE 
+    /begin COMPU_METHOD CM.VTAB_RANGE.DEFAULT_VALUE
+       "verbal range with default value"
+       TAB_VERB
+       "%4.2"
+       ""
+       COMPU_TAB_REF CM.VTAB_RANGE.DEFAULT_VALUE.REF
+    /end COMPU_METHOD
 
-    /begin COMPU_METHOD CM.VTAB_RANGE.NO_DEFAULT_VALUE 
-       "verbal range without default value" 
-       TAB_VERB 
-       "%4.2" 
-       "" 
-       COMPU_TAB_REF CM.VTAB_RANGE.NO_DEFAULT_VALUE.REF 
-    /end COMPU_METHOD 
-    
-    /begin COMPU_VTAB_RANGE CM.VTAB_RANGE.NO_DEFAULT_VALUE.REF 
-       "" 
-       11 
-       0 1 "Zero_to_one" 
-       2 3 "two_to_three" 
-       4 7 "four_to_seven" 
-       14 17 "fourteen_to_seventeen" 
-       18 99 "eigteen_to_ninetynine" 
-       100 100 "hundred" 
-       101 101 "hundredone" 
-       102 102 "hundredtwo" 
-       103 103 "hundredthree" 
-       104 104 "hundredfour" 
-       105 105 "hundredfive" 
-    /end COMPU_VTAB_RANGE 
+    /begin COMPU_VTAB_RANGE CM.VTAB_RANGE.DEFAULT_VALUE.REF
+       ""
+       11
+       0 1 "Zero_to_one"
+       2 3 "two_to_three"
+       4 7 "four_to_seven"
+       14 17 "fourteen_to_seventeen"
+       18 99 "eigteen_to_ninetynine"
+       100 100 "hundred"
+       101 101 "hundredone"
+       102 102 "hundredtwo"
+       103 103 "hundredthree"
+       104 104 "hundredfour"
+       105 105 "hundredfive"
+       DEFAULT_VALUE "out of range value"
+    /end COMPU_VTAB_RANGE
+
+    /begin COMPU_METHOD CM.VTAB_RANGE.NO_DEFAULT_VALUE
+       "verbal range without default value"
+       TAB_VERB
+       "%4.2"
+       ""
+       COMPU_TAB_REF CM.VTAB_RANGE.NO_DEFAULT_VALUE.REF
+    /end COMPU_METHOD
+
+    /begin COMPU_VTAB_RANGE CM.VTAB_RANGE.NO_DEFAULT_VALUE.REF
+       ""
+       11
+       0 1 "Zero_to_one"
+       2 3 "two_to_three"
+       4 7 "four_to_seven"
+       14 17 "fourteen_to_seventeen"
+       18 99 "eigteen_to_ninetynine"
+       100 100 "hundred"
+       101 101 "hundredone"
+       102 102 "hundredtwo"
+       103 103 "hundredthree"
+       104 104 "hundredfour"
+       105 105 "hundredfive"
+    /end COMPU_VTAB_RANGE
 
 
 /*  ==============================================================================================  */
@@ -2763,7 +2763,7 @@ ASAP2_VERSION 1 61
       FORMAT "%5.0"
       MATRIX_DIM 16 1 1
     /end MEASUREMENT
-    
+
     /begin MEASUREMENT ASAM.M.MATRIX_DIM_8_2_1.UBYTE.IDENTICAL
       "Scalar measurement"
       UBYTE CM.IDENTICAL 0 0 0 255
@@ -2771,7 +2771,7 @@ ASAP2_VERSION 1 61
       FORMAT "%5.0"
       MATRIX_DIM 8 2 1
     /end MEASUREMENT
-    
+
     /begin MEASUREMENT ASAM.M.MATRIX_DIM_8_4_2.UBYTE.IDENTICAL
       "Scalar measurement"
       UBYTE CM.IDENTICAL 0 0 0 255
@@ -2780,10 +2780,10 @@ ASAP2_VERSION 1 61
       MATRIX_DIM 8 4 2
     /end MEASUREMENT
 
-    
+
     /begin MEASUREMENT ASAM.M.VIRTUAL.SCALAR.SWORD.PHYSICAL
       "Virtual measurement with 2 * ASAM.M.SCALAR.SBYTE.LINEAR_MUL_2 as input (based on the phys value of ASAM.M.SCALAR.SBYTE.LINEAR_MUL_2"
-      SWORD 
+      SWORD
       CM.VIRTUAL.EXTERNAL_VALUE                            /* computation method defines how the virtual measurement is calculated out of the input measurement */
       0 0 -32768 32767
       ECU_ADDRESS 0x0                                      /* no real address, measurement value is calculated by the MCD tool */
@@ -2866,7 +2866,7 @@ ASAP2_VERSION 1 61
     /end RECORD_LAYOUT
 
 
-    /begin RECORD_LAYOUT RL.AXIS.UBYTE 
+    /begin RECORD_LAYOUT RL.AXIS.UBYTE
       AXIS_PTS_X 1 UBYTE INDEX_INCR DIRECT
     /end RECORD_LAYOUT
 
@@ -2875,19 +2875,19 @@ ASAP2_VERSION 1 61
     /end RECORD_LAYOUT
 
 
-    /begin RECORD_LAYOUT RL.CURVE.SWORD.SBYTE.DECR 
+    /begin RECORD_LAYOUT RL.CURVE.SWORD.SBYTE.DECR
       NO_AXIS_PTS_X 1 UBYTE                                /* current number of axis points */
       AXIS_PTS_X 2 SBYTE INDEX_DECR DIRECT
       FNC_VALUES 3 SWORD ROW_DIR DIRECT
     /end RECORD_LAYOUT
 
-    /begin RECORD_LAYOUT RL.CURVE.SWORD.SBYTE.INCR 
+    /begin RECORD_LAYOUT RL.CURVE.SWORD.SBYTE.INCR
       NO_AXIS_PTS_X 1 UBYTE                                /* current number of axis points */
       AXIS_PTS_X 2 SBYTE INDEX_INCR DIRECT
       FNC_VALUES 3 SWORD ROW_DIR DIRECT
     /end RECORD_LAYOUT
 
-    /begin RECORD_LAYOUT RL.AXIS_PTS.SBYTE.DECR 
+    /begin RECORD_LAYOUT RL.AXIS_PTS.SBYTE.DECR
       NO_AXIS_PTS_X 1 UBYTE                                /* current number of axis points */
       AXIS_PTS_X 2 SBYTE INDEX_DECR DIRECT
     /end RECORD_LAYOUT
@@ -2898,7 +2898,7 @@ ASAP2_VERSION 1 61
       AXIS_RESCALE_X    3 UBYTE 5 INDEX_INCR DIRECT
     /end RECORD_LAYOUT
 
-    /begin RECORD_LAYOUT RL.MAP.SWORD.SBYTE.SBYTE.INCR 
+    /begin RECORD_LAYOUT RL.MAP.SWORD.SBYTE.SBYTE.INCR
       NO_AXIS_PTS_X 1 UBYTE                                /* current number of axis points */
       NO_AXIS_PTS_Y 2 UBYTE                                /* current number of axis points */
       AXIS_PTS_X 3 SBYTE INDEX_INCR DIRECT
@@ -2906,7 +2906,7 @@ ASAP2_VERSION 1 61
       FNC_VALUES 5 SWORD ROW_DIR DIRECT
     /end RECORD_LAYOUT
 
-    /begin RECORD_LAYOUT RL.CUBOID.SWORD.SBYTE.DECR 
+    /begin RECORD_LAYOUT RL.CUBOID.SWORD.SBYTE.DECR
       NO_AXIS_PTS_Z 1 UBYTE                                /* current number of axis points */
       AXIS_PTS_Z 2 SBYTE INDEX_DECR DIRECT
       FNC_VALUES 3 SWORD ROW_DIR DIRECT
@@ -2928,11 +2928,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.UBYTE.IDENTICAL
       "Scalar FW U16 and CDF20 as name"
-      VALUE 
-      0x810000 
+      VALUE
+      0x810000
       RL.FNC.UBYTE.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.IDENTICAL  
+      0
+      CM.IDENTICAL
       10 200
       EXTENDED_LIMITS 0 256
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.UBYTE
@@ -2940,11 +2940,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.SBYTE.IDENTICAL
       "Scalar SBYTE"
-      VALUE 
-      0x810001 
+      VALUE
+      0x810001
       RL.FNC.SBYTE.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.IDENTICAL  
+      0
+      CM.IDENTICAL
       -100 100
       EXTENDED_LIMITS -128 127
       FORMAT "%6.1"                                         /* overwrites the format given in the computation method */
@@ -2953,11 +2953,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.UWORD.IDENTICAL
       "Scalar UWORD"
-      VALUE 
-      0x810002 
+      VALUE
+      0x810002
       RL.FNC.UWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.IDENTICAL  
+      0
+      CM.IDENTICAL
       0 65535
       EXTENDED_LIMITS 0 65535
       BIT_MASK 0xFFFF
@@ -2974,11 +2974,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.UWORD.IDENTICAL.BITMASK_0FF0
       "Scalar UWORD"
-      VALUE 
-      0x810002 
+      VALUE
+      0x810002
       RL.FNC.UWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.IDENTICAL  
+      0
+      CM.IDENTICAL
       0 255
       EXTENDED_LIMITS 0 65535
       BIT_MASK 0x0FF0
@@ -2988,11 +2988,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.UWORD.IDENTICAL.BITMASK_0001
       "Scalar UWORD"
-      VALUE 
-      0x810002 
+      VALUE
+      0x810002
       RL.FNC.UWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.IDENTICAL  
+      0
+      CM.IDENTICAL
       0 1
       EXTENDED_LIMITS 0 65535
       BIT_MASK 0x0001
@@ -3002,11 +3002,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.UWORD.IDENTICAL.BITMASK_0010
       "Scalar UWORD"
-      VALUE 
-      0x810002 
+      VALUE
+      0x810002
       RL.FNC.UWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.IDENTICAL  
+      0
+      CM.IDENTICAL
       0 1
       EXTENDED_LIMITS 0 65535
       BIT_MASK 0x0010
@@ -3016,11 +3016,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.SWORD.IDENTICAL
       "Scalar SWORD"
-      VALUE 
-      0x810004 
+      VALUE
+      0x810004
       RL.FNC.SWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.IDENTICAL  
+      0
+      CM.IDENTICAL
       -10000 20000
       EXTENDED_LIMITS -32268 32267
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.SWORD.IDENTICAL
@@ -3028,11 +3028,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.SWORD.LINEAR_MUL_2
       "Scalar SWORD"
-      VALUE 
-      0x810004 
+      VALUE
+      0x810004
       RL.FNC.SWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.LINEAR.MUL_2  
+      0
+      CM.LINEAR.MUL_2
       -10000 20000
       EXTENDED_LIMITS -32268 32267
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.SWORD.LINEAR_MUL_2
@@ -3040,11 +3040,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.SWORD.RAT_FUNC_DIV_10
       "Scalar SWORD"
-      VALUE 
-      0x810004 
+      VALUE
+      0x810004
       RL.FNC.SWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.RAT_FUNC.DIV_10  
+      0
+      CM.RAT_FUNC.DIV_10
       -10000 20000
       EXTENDED_LIMITS -32268 32267
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.SWORD.RAT_FUNC_DIV_10
@@ -3052,11 +3052,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.SWORD.FORM_X_PLUS_4
       "Scalar SWORD"
-      VALUE 
-      0x810004 
+      VALUE
+      0x810004
       RL.FNC.SWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.FORM.X_PLUS_4  
+      0
+      CM.FORM.X_PLUS_4
       -10000 20000
       EXTENDED_LIMITS -32268 32267
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.SWORD.FORM_X_PLUS_4
@@ -3064,11 +3064,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.SWORD.TAB_INTP_DEFAULT_VALUE
       "Scalar SWORD"
-      VALUE 
-      0x810004 
+      VALUE
+      0x810004
       RL.FNC.SWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.TAB_INTP.DEFAULT_VALUE  
+      0
+      CM.TAB_INTP.DEFAULT_VALUE
       -10000 20000
       EXTENDED_LIMITS -32268 32267
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.SWORD.TAB_INTP_DEFAULT_VALUE
@@ -3076,11 +3076,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.SWORD.TAB_INTP_NO_DEFAULT_VALUE
       "Scalar SWORD"
-      VALUE 
-      0x810004 
+      VALUE
+      0x810004
       RL.FNC.SWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.TAB_INTP.NO_DEFAULT_VALUE  
+      0
+      CM.TAB_INTP.NO_DEFAULT_VALUE
       -10000 20000
       EXTENDED_LIMITS -32268 32267
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.SWORD.TAB_INTP_NO_DEFAULT_VALUE
@@ -3088,11 +3088,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.SWORD.TAB_NOINTP_DEFAULT_VALUE
       "Scalar SWORD"
-      VALUE 
-      0x810004 
+      VALUE
+      0x810004
       RL.FNC.SWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.TAB_NOINTP.DEFAULT_VALUE  
+      0
+      CM.TAB_NOINTP.DEFAULT_VALUE
       -10000 20000
       EXTENDED_LIMITS -32268 32267
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.SWORD.TAB_NOINTP_DEFAULT_VALUE
@@ -3100,11 +3100,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.SWORD.TAB_NOINTP_NO_DEFAULT_VALUE
       "Scalar SWORD"
-      VALUE 
-      0x810004 
+      VALUE
+      0x810004
       RL.FNC.SWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.TAB_NOINTP.NO_DEFAULT_VALUE  
+      0
+      CM.TAB_NOINTP.NO_DEFAULT_VALUE
       -10000 20000
       EXTENDED_LIMITS -32268 32267
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.SWORD.TAB_NOINTP_NO_DEFAULT_VALUE
@@ -3112,11 +3112,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.SWORD.TAB_VERB_DEFAULT_VALUE
       "Scalar SWORD"
-      VALUE 
-      0x810004 
+      VALUE
+      0x810004
       RL.FNC.SWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.TAB_VERB.DEFAULT_VALUE  
+      0
+      CM.TAB_VERB.DEFAULT_VALUE
       -10000 20000
       EXTENDED_LIMITS -32268 32267
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.SWORD.TAB_VERB_DEFAULT_VALUE
@@ -3124,11 +3124,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.SWORD.TAB_VERB_NO_DEFAULT_VALUE
       "Scalar SWORD"
-      VALUE 
-      0x810004 
+      VALUE
+      0x810004
       RL.FNC.SWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.TAB_VERB.NO_DEFAULT_VALUE  
+      0
+      CM.TAB_VERB.NO_DEFAULT_VALUE
       -10000 20000
       EXTENDED_LIMITS -32268 32267
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.SWORD.TAB_VERB_NO_DEFAULT_VALUE
@@ -3136,11 +3136,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.SWORD.VTAB_RANGE_DEFAULT_VALUE
       "Scalar SWORD"
-      VALUE 
-      0x810004 
+      VALUE
+      0x810004
       RL.FNC.SWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.VTAB_RANGE.DEFAULT_VALUE  
+      0
+      CM.VTAB_RANGE.DEFAULT_VALUE
       -10000 20000
       EXTENDED_LIMITS -32268 32267
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.SWORD.VTAB_RANGE_DEFAULT_VALUE
@@ -3148,11 +3148,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.SWORD.VTAB_RANGE_NO_DEFAULT_VALUE
       "Scalar SWORD"
-      VALUE 
-      0x810004 
+      VALUE
+      0x810004
       RL.FNC.SWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.VTAB_RANGE.NO_DEFAULT_VALUE  
+      0
+      CM.VTAB_RANGE.NO_DEFAULT_VALUE
       -10000 20000
       EXTENDED_LIMITS -32268 32267
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.SWORD.VTAB_RANGE_NO_DEFAULT_VALUE
@@ -3160,11 +3160,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.SWORD.RAT_FUNC_DIV_81_9175
       "Scalar SWORD"
-      VALUE 
-      0x810004 
+      VALUE
+      0x810004
       RL.FNC.SWORD.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.RAT_FUNC.DIV_81_9175  
+      0
+      CM.RAT_FUNC.DIV_81_9175
       -10000 20000
       EXTENDED_LIMITS -32268 32267
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.SWORD
@@ -3172,11 +3172,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.ULONG.IDENTICAL
       "Scalar ULONG"
-      VALUE 
-      0x810008 
+      VALUE
+      0x810008
       RL.FNC.ULONG.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.IDENTICAL  
+      0
+      CM.IDENTICAL
       -1000000 2000000
       EXTENDED_LIMITS -10000000 20000000
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.ULONG.IDENTICAL
@@ -3184,11 +3184,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.SLONG.IDENTICAL
       "Scalar SLONG"
-      VALUE 
-      0x81000C 
+      VALUE
+      0x81000C
       RL.FNC.SLONG.ROW_DIR                                 /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.IDENTICAL  
+      0
+      CM.IDENTICAL
       -1000000 2000000
       EXTENDED_LIMITS -10000000 20000000
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.SLONG.IDENTICAL
@@ -3196,11 +3196,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.FLOAT32_IEEE.IDENTICAL
       "Scalar FLOAT32_IEEE"
-      VALUE 
-      0x810010 
+      VALUE
+      0x810010
       RL.FNC.FLOAT32_IEEE.ROW_DIR                          /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.IDENTICAL  
+      0
+      CM.IDENTICAL
       10 200
       EXTENDED_LIMITS 0 256
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.FLOAT32_IEEE.IDENTICAL
@@ -3208,11 +3208,11 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.SCALAR.FLOAT64_IEEE.IDENTICAL
       "Scalar FLOAT64_IEEE"
-      VALUE 
-      0x810010 
+      VALUE
+      0x810010
       RL.FNC.FLOAT64_IEEE.ROW_DIR                          /* ROW_DIR / COLUMN_DIR is here exchangeable as only one value is stored */
-      0 
-      CM.IDENTICAL  
+      0
+      CM.IDENTICAL
       -100 200
       EXTENDED_LIMITS -10000.0 20000.0
       DISPLAY_IDENTIFIER DI.ASAM.C.SCALAR.FLOAT64_IEEE.IDENTICAL
@@ -3234,13 +3234,13 @@ ASAP2_VERSION 1 61
 
 
 
-    /begin CHARACTERISTIC ASAM.C.ARRAY.SWORD.MATRIX_DIM_3_4.ROW_DIR 
+    /begin CHARACTERISTIC ASAM.C.ARRAY.SWORD.MATRIX_DIM_3_4.ROW_DIR
       "Array 3x4 of SWORD"
-      VAL_BLK 
-      0x810100 
-      RL.FNC.SWORD.ROW_DIR 
-      0 
-      CM.IDENTICAL  
+      VAL_BLK
+      0x810100
+      RL.FNC.SWORD.ROW_DIR
+      0
+      CM.IDENTICAL
       -400 400
       EXTENDED_LIMITS -1000 1000
       MATRIX_DIM 3 4 1
@@ -3248,13 +3248,13 @@ ASAP2_VERSION 1 61
       DISPLAY_IDENTIFIER DI.ASAM.C.ARRAY.SWORD.MATRIX_DIM_3_4.ROW_DIR
     /end CHARACTERISTIC
 
-    /begin CHARACTERISTIC ASAM.C.ARRAY.SWORD.MATRIX_DIM_3_4.COLUMN_DIR 
+    /begin CHARACTERISTIC ASAM.C.ARRAY.SWORD.MATRIX_DIM_3_4.COLUMN_DIR
       "Array 3x4 of SWORD"
-      VAL_BLK 
-      0x810120 
-      RL.FNC.SWORD.COLUMN_DIR 
-      0 
-      CM.IDENTICAL  
+      VAL_BLK
+      0x810120
+      RL.FNC.SWORD.COLUMN_DIR
+      0
+      CM.IDENTICAL
       -400 400
       EXTENDED_LIMITS -1000 1000
       MATRIX_DIM 3 4 1
@@ -3262,13 +3262,13 @@ ASAP2_VERSION 1 61
       DISPLAY_IDENTIFIER DI.ASAM.C.ARRAY.SWORD.MATRIX_DIM_3_4.COLUMN_DIR
     /end CHARACTERISTIC
 
-    /begin CHARACTERISTIC ASAM.C.ARRAY.SWORD.MATRIX_DIM_6.ROW_DIR 
+    /begin CHARACTERISTIC ASAM.C.ARRAY.SWORD.MATRIX_DIM_6.ROW_DIR
       "Array 6 of SWORD"
-      VAL_BLK 
-      0x810140 
+      VAL_BLK
+      0x810140
       RL.FNC.SWORD.ROW_DIR                                 /* COLUMN_DIR results here in the same memory usage as only one dimension is used */
-      0 
-      CM.IDENTICAL  
+      0
+      CM.IDENTICAL
       -400 400
       EXTENDED_LIMITS -1000 1000
       MATRIX_DIM 6 1 1
@@ -3291,18 +3291,18 @@ ASAP2_VERSION 1 61
 /*                                                                                                  */
 /*  ==============================================================================================  */
 
-    /begin CHARACTERISTIC 
+    /begin CHARACTERISTIC
       ASAM.C.ASCII.UBYTE.NUMBER_42
-      "ASCII string" 
-      ASCII 
+      "ASCII string"
+      ASCII
       0x810200
-      RL.FNC.UBYTE.ROW_DIR 
-      0 
-      CM.IDENTICAL 
-      0 255 
-      NUMBER 42 
+      RL.FNC.UBYTE.ROW_DIR
+      0
+      CM.IDENTICAL
+      0 255
+      NUMBER 42
       DISPLAY_IDENTIFIER DI.ASAM.C.ASCII.UBYTE.NUMBER_42
-    /end CHARACTERISTIC 
+    /end CHARACTERISTIC
 
 
 /*  ==============================================================================================  */
@@ -3320,17 +3320,17 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.CURVE.STD_AXIS
       "Curve with standard axis"
-      CURVE 
+      CURVE
       0x810300                                             /* memory needed: 1x Byte for no of axis points, 8x Byte for axis points + 8x word for output values */
       RL.CURVE.SWORD.SBYTE.DECR                            /* Record layout that covers axis and FNC values */
-      0 
-      CM.IDENTICAL  
-      -32268 32267 
+      0
+      CM.IDENTICAL
+      -32268 32267
       /begin AXIS_DESCR
-        STD_AXIS 
-        ASAM.M.SCALAR.SBYTE.IDENTICAL 
-        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */  
-        8 
+        STD_AXIS
+        ASAM.M.SCALAR.SBYTE.IDENTICAL
+        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */
+        8
         -128 127
       /end AXIS_DESCR
       FORMAT "%8.3"
@@ -3339,16 +3339,16 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.CURVE.COM_AXIS
       "Curve with common axis"
-      CURVE 
+      CURVE
       0x810320
       RL.FNC.SWORD.ROW_DIR                                 /* Record layout that covers FNC values */
-      0 
-      CM.IDENTICAL 
+      0
+      CM.IDENTICAL
       -32268 32267
       /begin AXIS_DESCR
-        COM_AXIS 
-        ASAM.M.SCALAR.SBYTE.IDENTICAL 
-        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */  
+        COM_AXIS
+        ASAM.M.SCALAR.SBYTE.IDENTICAL
+        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */
         8                                                  /* will be overwritten by max number of axis points of AXIS_PTS */
         -128 127
         AXIS_PTS_REF ASAM.C.AXIS_PTS.UBYTE_8
@@ -3356,31 +3356,31 @@ ASAP2_VERSION 1 61
       DISPLAY_IDENTIFIER DI.ASAM.C.CURVE.COM_AXIS
     /end CHARACTERISTIC
 
-    /begin AXIS_PTS ASAM.C.AXIS_PTS.UBYTE_8 
+    /begin AXIS_PTS ASAM.C.AXIS_PTS.UBYTE_8
       "Common axis for "
       0x810340
       ASAM.M.SCALAR.SBYTE.IDENTICAL                        /* will be overwritten by input quantity of AXIS_DESCR */
       RL.AXIS_PTS.SBYTE.DECR                               /* Record layout that covers axis values */
-      0 
+      0
       CM.IDENTICAL                                         /* will be overwritten by computation method of AXIS_DESCR */
-      8 
+      8
       -128 127
       DISPLAY_IDENTIFIER DI.ASAM.C.AXIS_PTS.UBYTE_8
     /end AXIS_PTS
 
     /begin CHARACTERISTIC ASAM.C.CURVE.FIX_AXIS.PAR_DIST
       "Curve with fix axis and FIX_AXIS_PAR_DIST"
-      CURVE 
+      CURVE
       0x810350
       RL.FNC.SWORD.ROW_DIR                                 /* Record layout that covers FNC values */
-      0 
-      CM.IDENTICAL 
+      0
+      CM.IDENTICAL
       -32268 32267
       /begin AXIS_DESCR
-        FIX_AXIS 
-        ASAM.M.SCALAR.SBYTE.IDENTICAL 
-        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */  
-        6 
+        FIX_AXIS
+        ASAM.M.SCALAR.SBYTE.IDENTICAL
+        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */
+        6
         -128 127
         FIX_AXIS_PAR_DIST 1 1 6
       /end AXIS_DESCR
@@ -3389,17 +3389,17 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.CURVE.FIX_AXIS.PAR
       "Curve with fix axis and FIX_AXIS_PAR"
-      CURVE 
+      CURVE
       0x810360
       RL.FNC.SWORD.ROW_DIR                                 /* Record layout that covers FNC values */
-      0 
-      CM.IDENTICAL 
+      0
+      CM.IDENTICAL
       -32268 32267
       /begin AXIS_DESCR
-        FIX_AXIS 
-        ASAM.M.SCALAR.SBYTE.IDENTICAL 
-        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */  
-        6 
+        FIX_AXIS
+        ASAM.M.SCALAR.SBYTE.IDENTICAL
+        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */
+        6
         -128 127
         FIX_AXIS_PAR_DIST 0 4 6
       /end AXIS_DESCR
@@ -3408,16 +3408,16 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.CURVE.FIX_AXIS.PAR_LIST
       "Curve with fix axis and FIX_AXIS_PAR_LIST"
-      CURVE 
+      CURVE
       0x810370
       RL.FNC.SWORD.ROW_DIR                                 /* Record layout that covers FNC values */
-      0 
-      CM.IDENTICAL 
+      0
+      CM.IDENTICAL
       -32268 32267
       /begin AXIS_DESCR
-        FIX_AXIS 
-        ASAM.M.SCALAR.SBYTE.IDENTICAL 
-        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */  
+        FIX_AXIS
+        ASAM.M.SCALAR.SBYTE.IDENTICAL
+        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */
         6                                                  /* shall match the number of axis points listed in FIX_AXIS_PAR_LIST */
         -128 127
         /begin FIX_AXIS_PAR_LIST
@@ -3429,16 +3429,16 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.CURVE.CURVE_AXIS
       "Curve with curve axis"
-      CURVE 
+      CURVE
       0x810380
       RL.FNC.SWORD.ROW_DIR                                 /* Record layout that covers FNC values */
-      0 
-      CM.IDENTICAL 
+      0
+      CM.IDENTICAL
       -32268 32267
       /begin AXIS_DESCR
-        CURVE_AXIS 
-        ASAM.M.SCALAR.SBYTE.IDENTICAL 
-        NO_COMPU_METHOD                                    /* CURVE_AXIS have no input conversion */  
+        CURVE_AXIS
+        ASAM.M.SCALAR.SBYTE.IDENTICAL
+        NO_COMPU_METHOD                                    /* CURVE_AXIS have no input conversion */
         8                                                  /* will be overwritten by max number of axis points of AXIS_PTS */
         -128 127
         CURVE_AXIS_REF ASAM.C.CURVE_AXIS
@@ -3448,17 +3448,17 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.CURVE_AXIS
       "Curve used as axis"
-      CURVE 
-      0x810390 
+      CURVE
+      0x810390
       RL.CURVE.SWORD.SBYTE.INCR                            /* Record layout that covers axis and FNC values */
-      0 
-      CM.IDENTICAL  
-      -32268 32267 
+      0
+      CM.IDENTICAL
+      -32268 32267
       /begin AXIS_DESCR
-        STD_AXIS 
-        ASAM.M.SCALAR.SBYTE.IDENTICAL 
-        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */  
-        8 
+        STD_AXIS
+        ASAM.M.SCALAR.SBYTE.IDENTICAL
+        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */
+        8
         -128 127
       /end AXIS_DESCR
       DISPLAY_IDENTIFIER DI.ASAM.C.CURVE_AXIS
@@ -3466,16 +3466,16 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.CURVE.RES_AXIS
       "Curve with rescale axis"
-      CURVE 
+      CURVE
       0x8103A0
       RL.FNC.SWORD.ROW_DIR                                 /* Record layout that covers FNC values */
-      0 
-      CM.IDENTICAL 
+      0
+      CM.IDENTICAL
       -32268 32267
       /begin AXIS_DESCR
-        RES_AXIS 
-        ASAM.M.SCALAR.SBYTE.IDENTICAL 
-        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */  
+        RES_AXIS
+        ASAM.M.SCALAR.SBYTE.IDENTICAL
+        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */
         9                                                  /* will be overwritten by number of rescale pairs */
         0 255
         AXIS_PTS_REF ASAM.C.AXIS_PTS.RESCALE
@@ -3483,31 +3483,31 @@ ASAP2_VERSION 1 61
       DISPLAY_IDENTIFIER DI.ASAM.C.CURVE.RES_AXIS
     /end CHARACTERISTIC
 
-    /begin AXIS_PTS ASAM.C.AXIS_PTS.RESCALE 
-      "Rescale Axis" 
+    /begin AXIS_PTS ASAM.C.AXIS_PTS.RESCALE
+      "Rescale Axis"
       0x8103B0
-      ASAM.M.SCALAR.SBYTE.IDENTICAL 
-      RL.AXIS_PTS.RES_AXIS 
-      0 
-      CM.IDENTICAL 
-      5 
-      0 255 
+      ASAM.M.SCALAR.SBYTE.IDENTICAL
+      RL.AXIS_PTS.RES_AXIS
+      0
+      CM.IDENTICAL
+      5
+      0 255
       DISPLAY_IDENTIFIER DI_0x83BA20.VTAB.RE_AXIS.X_RE_AXIS_xU8
     /end AXIS_PTS
 
     /begin CHARACTERISTIC ASAM.C.CURVE.STD_AXIS.MONOTONY_STRICT_INCREASE
       "Curve with standard axis"
-      CURVE 
-      0x810800 
+      CURVE
+      0x810800
       RL.CURVE.SWORD.SBYTE.DECR                            /* Record layout that covers axis and FNC values */
-      0 
-      CM.IDENTICAL  
-      -32268 32267 
+      0
+      CM.IDENTICAL
+      -32268 32267
       /begin AXIS_DESCR
-        STD_AXIS 
-        ASAM.M.SCALAR.SBYTE.IDENTICAL 
-        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */  
-        8 
+        STD_AXIS
+        ASAM.M.SCALAR.SBYTE.IDENTICAL
+        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */
+        8
         -128 127
         MONOTONY STRICT_INCREASE                           /* allows only axis values strictly increasing */
       /end AXIS_DESCR
@@ -3517,17 +3517,17 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.CURVE.STD_AXIS.MONOTONY_STRICT_DECREASE
       "Curve with standard axis"
-      CURVE 
-      0x810820 
+      CURVE
+      0x810820
       RL.CURVE.SWORD.SBYTE.DECR                            /* Record layout that covers axis and FNC values */
-      0 
-      CM.IDENTICAL  
-      -32268 32267 
+      0
+      CM.IDENTICAL
+      -32268 32267
       /begin AXIS_DESCR
-        STD_AXIS 
-        ASAM.M.SCALAR.SBYTE.IDENTICAL 
-        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */  
-        8 
+        STD_AXIS
+        ASAM.M.SCALAR.SBYTE.IDENTICAL
+        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */
+        8
         -128 127
         MONOTONY STRICT_DECREASE                           /* allows only axis values strictly decreasing */
       /end AXIS_DESCR
@@ -3538,24 +3538,24 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.MAP.STD_AXIS.STD_AXIS
       "Map with 2x standard axis"
-      MAP 
+      MAP
       0x810400                                             /* memory needed: 1x Byte for no of axis points, 8x Byte for axis points + 8x word for output values */
       RL.MAP.SWORD.SBYTE.SBYTE.INCR                        /* Record layout that covers axis and FNC values */
-      0 
-      CM.IDENTICAL  
-      -32268 32267 
+      0
+      CM.IDENTICAL
+      -32268 32267
       /begin AXIS_DESCR
-        STD_AXIS 
-        ASAM.M.SCALAR.SBYTE.IDENTICAL 
-        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */  
-        4 
+        STD_AXIS
+        ASAM.M.SCALAR.SBYTE.IDENTICAL
+        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */
+        4
         -128 127
       /end AXIS_DESCR
       /begin AXIS_DESCR
-        STD_AXIS 
-        ASAM.M.SCALAR.UBYTE.TAB_VERB_NO_DEFAULT_VALUE 
-        CM.TAB_VERB.NO_DEFAULT_VALUE                       /* shall be the same computation as used with the input quantity */  
-        5 
+        STD_AXIS
+        ASAM.M.SCALAR.UBYTE.TAB_VERB_NO_DEFAULT_VALUE
+        CM.TAB_VERB.NO_DEFAULT_VALUE                       /* shall be the same computation as used with the input quantity */
+        5
         -128 127
       /end AXIS_DESCR
       DISPLAY_IDENTIFIER DI.ASAM.C.MAP.STD_AXIS.STD_AXIS
@@ -3563,25 +3563,25 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.MAP.COM_AXIS.FIX_AXIS
       "Map with 2x standard axis"
-      MAP 
+      MAP
       0x810440                                             /* memory needed: 1x Byte for no of axis points, 8x Byte for axis points + 8x word for output values */
       RL.FNC.SWORD.ROW_DIR                                 /* Record layout that covers FNC values */
-      0 
-      CM.IDENTICAL  
-      -32268 32267 
+      0
+      CM.IDENTICAL
+      -32268 32267
       /begin AXIS_DESCR
-        COM_AXIS 
-        ASAM.M.SCALAR.SBYTE.IDENTICAL 
-        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */  
+        COM_AXIS
+        ASAM.M.SCALAR.SBYTE.IDENTICAL
+        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */
         8                                                  /* will be overwritten by max number of axis points of AXIS_PTS */
         -128 127
         AXIS_PTS_REF ASAM.C.AXIS_PTS.UBYTE_8
       /end AXIS_DESCR
       /begin AXIS_DESCR
-        FIX_AXIS 
-        ASAM.M.SCALAR.SBYTE.IDENTICAL 
-        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */  
-        3 
+        FIX_AXIS
+        ASAM.M.SCALAR.SBYTE.IDENTICAL
+        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */
+        3
         -128 127
         FIX_AXIS_PAR_DIST 1 1 3
       /end AXIS_DESCR
@@ -3590,33 +3590,33 @@ ASAP2_VERSION 1 61
 
     /begin CHARACTERISTIC ASAM.C.CUBOID.COM_AXIS.FIX_AXIS.STD_AXIS
       "Map with 2x standard axis"
-      CUBOID 
-      0x810470 
+      CUBOID
+      0x810470
       RL.CUBOID.SWORD.SBYTE.DECR                           /* Record layout that covers FNC values + STD axis */
-      0 
-      CM.IDENTICAL  
-      -32268 32267 
+      0
+      CM.IDENTICAL
+      -32268 32267
       /begin AXIS_DESCR
-        COM_AXIS 
-        ASAM.M.SCALAR.SBYTE.IDENTICAL 
-        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */  
-        8 
+        COM_AXIS
+        ASAM.M.SCALAR.SBYTE.IDENTICAL
+        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */
+        8
         -128 127
         AXIS_PTS_REF ASAM.C.AXIS_PTS.UBYTE_8
       /end AXIS_DESCR
       /begin AXIS_DESCR
-        FIX_AXIS 
-        ASAM.M.SCALAR.SBYTE.IDENTICAL 
-        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */  
-        3 
+        FIX_AXIS
+        ASAM.M.SCALAR.SBYTE.IDENTICAL
+        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */
+        3
         -128 127
         FIX_AXIS_PAR_DIST 1 1 3
       /end AXIS_DESCR
       /begin AXIS_DESCR
-        STD_AXIS 
-        ASAM.M.SCALAR.SBYTE.IDENTICAL 
-        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */  
-        4 
+        STD_AXIS
+        ASAM.M.SCALAR.SBYTE.IDENTICAL
+        CM.IDENTICAL                                       /* shall be the same computation as used with the input quantity */
+        4
         -128 127
       /end AXIS_DESCR
       DISPLAY_IDENTIFIER DI.ASAM.C.CUBOID.COM_AXIS.FIX_AXIS.STD_AXIS
@@ -3636,82 +3636,82 @@ ASAP2_VERSION 1 61
 
 
     /begin CHARACTERISTIC ASAM.C.DEPENDENT.REF_1.SWORD
-      "Dependent SWORD" 
-      VALUE 
+      "Dependent SWORD"
+      VALUE
       0x810600                                             /* dependent parameter is located in the ECU memory. The MCD tool updated the value when the source value is changed */
       RL.FNC.SWORD.ROW_DIR                                 /* SWORD needed to cover the result of the dependent calculation */
-      0 
+      0
       CM.IDENTICAL
       -32268 32267
-      /begin DEPENDENT_CHARACTERISTIC 
-         "X1 + 5" 
+      /begin DEPENDENT_CHARACTERISTIC
+         "X1 + 5"
          ASAM.C.SCALAR.SBYTE.IDENTICAL                     /* used as input X1 variable in teh dependent formula */
       /end DEPENDENT_CHARACTERISTIC
       DISPLAY_IDENTIFIER DI.ASAM.C.DEPENDENT.REF_1.SWORD
-    /end CHARACTERISTIC 
+    /end CHARACTERISTIC
 
     /begin CHARACTERISTIC ASAM.C.DEPENDENT.REF_2.UWORD
-      "Dependent UWORD" 
-      VALUE 
-      0x810602 
+      "Dependent UWORD"
+      VALUE
+      0x810602
       RL.FNC.UWORD.ROW_DIR                                 /* UWORD needed to cover the result of the dependent calculation */
-      0 
+      0
       CM.IDENTICAL
-      0.0 65535.0 
-      /begin DEPENDENT_CHARACTERISTIC 
-        "X1 + 25" 
+      0.0 65535.0
+      /begin DEPENDENT_CHARACTERISTIC
+        "X1 + 25"
         ASAM.C.SCALAR.UBYTE.IDENTICAL
       /end DEPENDENT_CHARACTERISTIC
       DISPLAY_IDENTIFIER DI.ASAM.C.DEPENDENT.REF_2.UWORD
-    /end CHARACTERISTIC 
+    /end CHARACTERISTIC
 
     /begin CHARACTERISTIC ASAM.C.DEPENDENT.REF_3.SWORD
-      "Dependent UWORD" 
-      VALUE 
-      0x810604 
+      "Dependent UWORD"
+      VALUE
+      0x810604
       RL.FNC.SWORD.ROW_DIR                                 /* SWORD needed to cover the result of the dependent calculation */
-      0 
+      0
       CM.IDENTICAL
       -32268 32267
-      /begin DEPENDENT_CHARACTERISTIC 
-        "X1 + X2" 
+      /begin DEPENDENT_CHARACTERISTIC
+        "X1 + X2"
         ASAM.C.DEPENDENT.REF_1.SWORD
         ASAM.C.DEPENDENT.REF_2.UWORD
       /end DEPENDENT_CHARACTERISTIC
       DISPLAY_IDENTIFIER DI.ASAM.C.DEPENDENT.REF_3.SWORD
-    /end CHARACTERISTIC 
+    /end CHARACTERISTIC
 
     /begin CHARACTERISTIC ASAM.C.DEPENDENT.REF_4.FLOAT64_IEEE
-      "Dependent UWORD" 
-      VALUE 
-      0x810610 
+      "Dependent UWORD"
+      VALUE
+      0x810610
       RL.FNC.FLOAT64_IEEE.ROW_DIR                          /* SWORD needed to cover the result of the dependent calculation */
-      0 
+      0
       CM.IDENTICAL
       -32268 32267
-      /begin DEPENDENT_CHARACTERISTIC 
+      /begin DEPENDENT_CHARACTERISTIC
         "X1 + sysc(System_Constant_1)"
         ASAM.C.DEPENDENT.REF_1.SWORD
       /end DEPENDENT_CHARACTERISTIC
       DISPLAY_IDENTIFIER DI.ASAM.C.DEPENDENT.REF_4.FLOAT64_IEEE
       FORMAT "%8.2"
-    /end CHARACTERISTIC 
+    /end CHARACTERISTIC
 
     /begin CHARACTERISTIC ASAM.C.DEPENDENT.REF_5.FLOAT64_IEEE
-      "Dependent UWORD" 
-      VALUE 
-      0x810608 
+      "Dependent UWORD"
+      VALUE
+      0x810608
       RL.FNC.FLOAT64_IEEE.ROW_DIR                          /* SWORD needed to cover the result of the dependent calculation */
-      0 
+      0
       CM.IDENTICAL
       -10000.0 10000.0
-      /begin DEPENDENT_CHARACTERISTIC 
-        "X1 * 2" 
+      /begin DEPENDENT_CHARACTERISTIC
+        "X1 * 2"
         ASAM.C.VIRTUAL.SYSTEM_CONSTANT_1
       /end DEPENDENT_CHARACTERISTIC
       DISPLAY_IDENTIFIER DI.ASAM.C.DEPENDENT.REF_5.FLOAT64_IEEE
       FORMAT "%8.2"
-    /end CHARACTERISTIC 
+    /end CHARACTERISTIC
 
 
 /*  ==============================================================================================  */
@@ -3727,78 +3727,78 @@ ASAP2_VERSION 1 61
 
 
     /begin CHARACTERISTIC ASAM.C.VIRTUAL.REF_1.SWORD
-      "Virtual SWORD" 
-      VALUE 
+      "Virtual SWORD"
+      VALUE
       0x0                                                  /* address is 0 as the virtual value is not part of the ECU or the hex file */
       RL.FNC.SWORD.ROW_DIR                                 /* SWORD needed to cover the result of the dependent calculation */
-      0 
+      0
       CM.IDENTICAL
       0 255
-      /begin VIRTUAL_CHARACTERISTIC 
-         "X1 - 9" 
+      /begin VIRTUAL_CHARACTERISTIC
+         "X1 - 9"
          ASAM.C.SCALAR.SBYTE.IDENTICAL                     /* used as input X1 variable in teh dependent formula */
       /end VIRTUAL_CHARACTERISTIC
       DISPLAY_IDENTIFIER DI.ASAM.C.VIRTUAL.REF_1.SWORD
-    /end CHARACTERISTIC 
+    /end CHARACTERISTIC
 
     /begin CHARACTERISTIC ASAM.C.VIRTUAL.REF_2.UWORD
-      "Virtual UWORD" 
-      VALUE 
+      "Virtual UWORD"
+      VALUE
       0x0                                                  /* address is 0 as the virtual value is not part of the ECU or the hex file */
       RL.FNC.UWORD.ROW_DIR                                 /* UWORD needed to cover the result of the dependent calculation */
-      0 
+      0
       CM.IDENTICAL
-      0.0 255.0 
-      /begin VIRTUAL_CHARACTERISTIC 
-        "X1 + 19" 
+      0.0 255.0
+      /begin VIRTUAL_CHARACTERISTIC
+        "X1 + 19"
         ASAM.C.SCALAR.UBYTE.IDENTICAL
       /end VIRTUAL_CHARACTERISTIC
       DISPLAY_IDENTIFIER DI.ASAM.C.VIRTUAL.REF_2.UWORD
-    /end CHARACTERISTIC 
+    /end CHARACTERISTIC
 
     /begin CHARACTERISTIC ASAM.C.VIRTUAL.REF_3.SWORD
-      "Virtual UWORD" 
-      VALUE 
+      "Virtual UWORD"
+      VALUE
       0x0                                                  /* address is 0 as the virtual value is not part of the ECU or the hex file */
       RL.FNC.SWORD.ROW_DIR                                 /* SWORD needed to cover the result of the dependent calculation */
-      0 
+      0
       CM.IDENTICAL
-      0.0 255.0 
-      /begin VIRTUAL_CHARACTERISTIC 
-        "X1 + X2" 
+      0.0 255.0
+      /begin VIRTUAL_CHARACTERISTIC
+        "X1 + X2"
         ASAM.C.VIRTUAL.REF_1.SWORD
         ASAM.C.VIRTUAL.REF_2.UWORD
       /end VIRTUAL_CHARACTERISTIC
       DISPLAY_IDENTIFIER DI.ASAM.C.VIRTUAL.REF_3.SWORD
-    /end CHARACTERISTIC 
+    /end CHARACTERISTIC
 
-    /begin CHARACTERISTIC ASAM.C.VIRTUAL.SYSTEM_CONSTANT_1 
+    /begin CHARACTERISTIC ASAM.C.VIRTUAL.SYSTEM_CONSTANT_1
     "Virtual value including a system constant in the calculation formula"
       VALUE
       0x0                                                  /* address is 0 as the virtual value is not part of the ECU or the hex file */
       RL.FNC.FLOAT64_IEEE.ROW_DIR                          /* Float needed to cover the result of the dependent calculation */
-      0 
+      0
       CM.IDENTICAL
-      0.0 255.0 
+      0.0 255.0
       /begin VIRTUAL_CHARACTERISTIC
         "X1 + sysc(System_Constant_1)"                     /* system constant needs to contain a valid number. Otherwise the calculation leeds to an error */
         ASAM.C.SCALAR.UBYTE.IDENTICAL
-      /end VIRTUAL_CHARACTERISTIC 
+      /end VIRTUAL_CHARACTERISTIC
       DISPLAY_IDENTIFIER DI.ASAM.C.VIRTUAL.SYSTEM_CONSTANT_1
       FORMAT "%8.2"
     /end CHARACTERISTIC
 
-    /begin CHARACTERISTIC ASAM.C.VIRTUAL.ASCII 
+    /begin CHARACTERISTIC ASAM.C.VIRTUAL.ASCII
     "Virtual ASCII string"
       ASCII                                                /* type needs to be ASCII as the referenced system constant contains a string */
       0x0                                                  /* address is 0 as the virtual value is not part of the ECU or the hex file */
       RL.FNC.UBYTE.ROW_DIR                                 /* UBYTE needed to cover ASCII */
-      0 
+      0
       CM.IDENTICAL
-      0.0 255.0 
+      0.0 255.0
       /begin VIRTUAL_CHARACTERISTIC
-        "sysc(System_Constant_3)" 
-      /end VIRTUAL_CHARACTERISTIC 
+        "sysc(System_Constant_3)"
+      /end VIRTUAL_CHARACTERISTIC
       NUMBER 100                                           /* needs minimum the length of the text length of the system constant */
       DISPLAY_IDENTIFIER DI.ASAM.C.VIRTUAL.SYSTEM_CONSTANT_1
     /end CHARACTERISTIC
@@ -3817,7 +3817,7 @@ ASAP2_VERSION 1 61
     /begin FUNCTION FunctionScalar ""
       /begin SUB_FUNCTION
         FunctionDependentParameters
-      /end SUB_FUNCTION 
+      /end SUB_FUNCTION
       /begin DEF_CHARACTERISTIC
         ASAM.C.SCALAR.FLOAT32_IEEE.IDENTICAL
         ASAM.C.SCALAR.FLOAT64_IEEE.IDENTICAL
@@ -4003,7 +4003,7 @@ ASAP2_VERSION 1 61
     /begin GROUP Group_Function_All "contains all groups with special functions"
       ROOT
       /begin SUB_GROUP
-        Group_Function_Virtual 
+        Group_Function_Virtual
         Group_Function_Monotony
         Group_Function_Computation
         Group_Function_Bitmask
@@ -4015,8 +4015,8 @@ ASAP2_VERSION 1 61
         FunctionVirtualMeasurements
       /end FUNCTION_LIST
       /begin REF_CHARACTERISTIC
-        ASAM.C.SCALAR.SBYTE.IDENTICAL 
-        ASAM.C.SCALAR.UBYTE.IDENTICAL 
+        ASAM.C.SCALAR.SBYTE.IDENTICAL
+        ASAM.C.SCALAR.UBYTE.IDENTICAL
         ASAM.C.VIRTUAL.ASCII
         ASAM.C.VIRTUAL.REF_1.SWORD
         ASAM.C.VIRTUAL.REF_2.UWORD
