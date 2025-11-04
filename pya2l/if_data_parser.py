@@ -51,7 +51,6 @@ from pya2l.aml.classes import AMLPredefinedTypes, Referrer
 # imp.reload(pya2l.aml.classes)
 
 
-
 EOF = -1
 
 
