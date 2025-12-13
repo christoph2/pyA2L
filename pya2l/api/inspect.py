@@ -141,6 +141,63 @@ ASAM_TYPE_RANGES = {
 }
 
 
+def cached_per_session(session: Any, key: str, factory: Callable[[], T]) -> T:
+    """Cache a value within the SQLAlchemy session.info dictionary.
+
+    If a value for the given key is already present in session.info, it is returned.
+    Otherwise, the factory function is called to produce the value, which is then
+    stored in session.info under the given key and returned.
+
+    This is useful for caching session-specific data that is expensive to compute.
+
+    Parameters
+    ----------
+    session : Any
+        The SQLAlchemy session object.
+    key : str
+        The key to use for caching in session.info.
+    factory : Callable[[], T]
+        A zero-argument callable that returns the value to be cached.
+
+    Returns
+    -------
+    T
+        The cached or newly computed value.
+    """
+    info = getattr(session, "info", {})
+    if key in info:
+        return info[key]
+
+    value = factory()
+    info[key] = value
+    return value
+
+
+def _legacy_flag_from_db(session: Any) -> bool:
+    """Determine if the connected database uses legacy formulas.
+
+    Legacy formulas apply to ASAP2 versions < 1.60
+    """
+    asap_version = session.query(model.Asap2Version).first()
+    if asap_version is None:
+        return False
+    try:
+        version_no = asap_version.versionNo
+        upgrade_no = asap_version.upgradeNo
+    except AttributeError:
+        return False
+    return (version_no == 1) and (upgrade_no < 60)
+
+
+def get_legacy_formulas(session: Any) -> bool:
+    """Return whether legacy formulas should be used for the given session.
+
+    The result is cached so the database is queried at most once per session/engine.
+    Preference is given to storing the flag in SQLAlchemy Session.info when available.
+    """
+    return cached_per_session(session, "pya2l_legacy_formulas", lambda: _legacy_flag_from_db(session))
+
+
 class PrgTypeLayout(IntEnum):
     """Enumeration for program memory layout types.
 
@@ -1621,7 +1678,7 @@ class CompuMethod(CachedBase):
             formula_inv = self.formula["formula_inv"]
             mod_par = ModPar.get(session)
             system_constants = mod_par.systemConstants
-            self.evaluator = Formula(formula, formula_inv, system_constants)
+            self.evaluator = Formula(formula, formula_inv, system_constants, legacy=get_legacy_formulas(session))
         elif cm_type == "LINEAR":
             coeffs = self.coeffs_linear
             if coeffs is None:
