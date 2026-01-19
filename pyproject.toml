@@ -51,6 +51,24 @@ flake8-bugbear = "^24.4.26"
 pre-commit-hooks = "^5.0.0"
 
 pyupgrade = "^3.16.0"
+bumpver = "^2024.1130"
+
+[tool.bumpver]
+current_version = "0.17.6"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message = "bump version {old_version} -> {new_version}"
+commit = true
+tag = true
+push = false
+ignore_remote_version = true
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = [
+    'version = "{version}"',
+]
+"pya2l/version.py" = [
+    '__version__ = "{version}"',
+]
 [build-system]
 requires = ["poetry-core>=1.6.0", "wheel", "cmake>=3.12", "pybind11[global]>=2.12.0"]
 build-backend = "poetry.core.masonry.api"
