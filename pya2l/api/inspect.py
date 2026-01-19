@@ -10,6 +10,7 @@ The module includes classes for all major A2L entities, with methods to access
 their properties and relationships. It also provides utility functions for
 converting between different data formats and representations.
 """
+
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 

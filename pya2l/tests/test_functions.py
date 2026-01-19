@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """These test-cases are based on the examples from ASAM MCD-2MC Version 1.6 specification."""
+
 import math
 from dataclasses import dataclass
 

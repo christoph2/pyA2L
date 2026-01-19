@@ -7,6 +7,7 @@
 cmake -S /path/to/source -B /path/to/build
 cmake -build /path/to/build
 """
+
 import os
 import re
 import subprocess
