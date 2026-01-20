@@ -61,9 +61,7 @@ def test_clean_ifdata():
     assert len(sections) == 1
     data = sections[((11, 4), (15, 9))]
     assert data == "/begin IF_DATA XCP\n/begin DAQ_EVENT\nFIXED_EVENT_LIST EVENT 0x0\n/end DAQ_EVENT\n    /end IF_DATA"
-    assert (
-        res.a2l_data
-        == """/begin MEASUREMENT
+    assert res.a2l_data == """/begin MEASUREMENT
     ecuCounter
     "16 bit counter incrementing exactly every 100us in XCP slave time"
     UWORD ecuCounter_
@@ -80,7 +78,6 @@ def test_clean_ifdata():
 
     /end IF_DATA
 /end MEASUREMENT"""
-    )
 
 
 @pytest.mark.skipif(Preprocessor is None, reason="Preprocessor not available")
