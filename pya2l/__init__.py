@@ -225,7 +225,7 @@ def export_a2l(
     if isinstance(output, TextIOWrapper):
         output.write(data)
     else:
-        with open(file=output, mode="w", encoding=encoding) as outf:
+        with open(file=output, mode="w", encoding=encoding, newline="\n") as outf:
             outf.write(data)
 
 
