@@ -780,37 +780,39 @@ class MatrixDim:
     y: Optional[int] = field(default=None)
     z: Optional[int] = field(default=None)
 
-    def __init__(self, matrix_dim):
-        """Initialize a MatrixDim instance.
+    def __post_init__(self):
+        self.numbers = tuple(d for d in (self.x, self.y, self.z) if d is not None)
+
+    @classmethod
+    def from_model(cls, matrix_dim):
+        """Create a MatrixDim instance from a model object.
 
         Parameters
         ----------
         matrix_dim : Any
             Object containing matrix dimension information
-
-        Notes
-        -----
-        The matrix_dim object should have a 'numbers' attribute that is
-        a sequence of dimension sizes.
         """
-        self.numbers = ()
-        if matrix_dim is not None:
-            try:
-                numbers = matrix_dim.numbers
-                self.numbers = numbers
-                length = len(numbers)
-                if length >= 3:
-                    self.z = numbers[2]
-                    self.y = numbers[1]
-                    self.x = numbers[0]
-                elif length == 2:
-                    self.y = numbers[1]
-                    self.x = numbers[0]
-                elif length == 1:
-                    self.x = numbers[0]
-            except (AttributeError, IndexError) as e:
-                # Handle case where matrix_dim doesn't have expected structure
-                print(f"Error initializing MatrixDim: {e}")
+        if matrix_dim is None:
+            return cls()
+
+        try:
+            numbers = matrix_dim.numbers
+            length = len(numbers)
+            x, y, z = None, None, None
+            if length >= 3:
+                z = numbers[2]
+                y = numbers[1]
+                x = numbers[0]
+            elif length == 2:
+                y = numbers[1]
+                x = numbers[0]
+            elif length == 1:
+                x = numbers[0]
+            return cls(x=x, y=y, z=z)
+        except (AttributeError, IndexError) as e:
+            # Handle case where matrix_dim doesn't have expected structure
+            print(f"Error initializing MatrixDim from model: {e}")
+            return cls()
 
     def valid(self) -> bool:
         """Check if the matrix dimensions are valid.
@@ -2967,7 +2969,7 @@ class Characteristic(CachedBase):
 
     @staticmethod
     def _create_matrix_dim(matrix_dim):
-        return MatrixDim(matrix_dim)
+        return MatrixDim.from_model(matrix_dim)
 
     @staticmethod
     def _dissect_max_refresh(max_ref):
@@ -3288,7 +3290,7 @@ class Measurement(CachedBase):
 
     @staticmethod
     def _create_matrix_dim(matrix_dim):
-        return MatrixDim(matrix_dim)
+        return MatrixDim.from_model(matrix_dim)
 
     @staticmethod
     def _dissect_max_refresh(max_ref):
