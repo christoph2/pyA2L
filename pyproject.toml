@@ -78,8 +78,14 @@ build-backend = "poetry.core.masonry.api"
 a2ldb-imex = "pya2l.scripts.a2ldb_imex:main"
 
 [tool.pytest]
-addopts = "--verbose --tb=short --junitxml=result.xml -o junit_family=xunit2"
-testpaths = "pya2l/tests"
+addopts = [
+  "--verbose",
+  "--tb=short",
+  "--junitxml=result.xml",
+  "-o",
+  "junit_family=xunit2",
+]
+testpaths = ["pya2l/tests"]
 
 [tool.flake8]
 ignore = ["D203", "E203", "E266", "E501", "W503", "F403", "F401", "BLK100"]
