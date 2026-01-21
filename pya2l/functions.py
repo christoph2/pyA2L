@@ -447,7 +447,7 @@ class LookupTableWithRanges:
         # For integer ranges we include both endpoints. For floating-point ranges we use
         # left-closed/right-open intervals, except that the very last range includes the
         # global maximum on the right to avoid dropping the upper boundary to default.
-        if isinstance(dtype, int):
+        if dtype is int:
             self.in_range = lambda x, left, right: left <= x <= right
         else:
             max_right = self.maximum
