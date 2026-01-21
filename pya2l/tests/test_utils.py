@@ -1,4 +1,82 @@
-from pya2l.utils import align_as, padding
+from pya2l.utils import align_as, padding, slicer, cygpathToWin, Tristate, ffs, Bunch, SingletonBase, NotAvailable, nfc_equal, fold_equal, enum_from_str
+import pytest
+from enum import IntEnum
+
+
+def test_slicer():
+    assert list(slicer([1, 2, 3, 4, 5], 2, converter=lambda *x: list(x))) == [[1, 2], [3, 4], [5]]
+    assert list(slicer([1, 2, 3, 4, 5], 3, converter=lambda *x: list(x))) == [[1, 2, 3], [4, 5]]
+    assert list(slicer([1, 2, 3, 4, 5], 3, converter=lambda *x: tuple(x))) == [(1, 2, 3), (4, 5)]
+
+
+def test_cygpathToWin():
+    assert cygpathToWin("/cygdrive/c/temp") == "c:\\temp"
+    assert cygpathToWin("/usr/bin") == "/usr/bin"
+
+
+def test_tristate():
+    t = Tristate(True)
+    assert t == True
+    assert str(t) == "True"
+    assert repr(t) == "Tristate(True)"
+    
+    f = Tristate(False)
+    assert f == False
+    
+    n = Tristate(None)
+    assert n != True
+    assert n != False
+
+
+def test_ffs():
+    assert ffs(1) == 0
+    assert ffs(2) == 1
+    assert ffs(4) == 2
+    assert ffs(8) == 3
+
+
+def test_bunch():
+    b = Bunch(a=1, b=2)
+    assert b.a == 1
+    assert b['b'] == 2
+
+
+def test_nfc_equal():
+    assert nfc_equal("a", "a")
+    assert not nfc_equal("a", "b")
+
+
+def test_fold_equal():
+    assert fold_equal("A", "a")
+    assert not fold_equal("A", "B")
+
+
+class MyEnum(IntEnum):
+    VAL1 = 1
+    VAL2 = 2
+
+
+def test_enum_from_str():
+    assert enum_from_str(MyEnum, "VAL1") == MyEnum.VAL1
+    with pytest.raises(ValueError):
+        enum_from_str(MyEnum, "VAL3")
+
+
+def test_singleton():
+    class S(SingletonBase):
+        pass
+    s1 = S()
+    s2 = S()
+    assert s1 is s2
+
+
+def test_not_available():
+    na = NotAvailable()
+    assert na == NotAvailable()
+    assert str(na) == "n/a"
+    # Just check that it doesn't crash and returns a boolean or something
+    assert isinstance(na < 1, bool)
+    assert isinstance(na > 1, bool)
 
 
 def test_alignment_1():
