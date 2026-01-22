@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pya2ldb"
-version = "1.0.318"
+version = "1.0.319"
 description = "A2L for Python"
 authors = ["Christoph Schueler <cpu12.gems@googlemail.com>"]
 license = "GPLv2"
@@ -54,7 +54,7 @@ pyupgrade = "^3.16.0"
 bumpver = "^2024.1130"
 
 [tool.bumpver]
-current_version = "1.0.318"
+current_version = "1.0.319"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
