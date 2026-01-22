@@ -1257,7 +1257,7 @@ class CachedBase:
                 cls._cache[entry] = inst
                 cls._strong_ref.append(inst)
             except Exception as e:
-                print(f"{cls.__name__}.get({name!r}): {e!r}")
+                # print(f"{cls.__name__}.get({name!r}): {e!r}")
                 return None
         return cls._cache[entry]
 
@@ -3953,7 +3953,7 @@ class VariantCoding(CachedBase):
     def __init__(self, session, name: str = None, module_name: str = None):
         variant_coding = session.query(model.VariantCoding)
         if module_name is not None:
-            variant_coding.join(model.Module).filter(model.Module.name == module_name)
+            variant_coding = variant_coding.join(model.Module).filter(model.Module.name == module_name)
         variant_coding = variant_coding.first()
         self.session = session
         self.naming = None
@@ -4177,20 +4177,21 @@ class UserRights(CachedBase):
     session: Any = field(repr=False)
     user_rights: model.UserRights = field(repr=False)
     userLevelId: str
-    readOnly: bool
+    read_only: bool
     ref_group: List[str]
 
     def __init__(self, session, userLevelId: str, module_name: Optional[str] = None):
         self.session = session
-        user_rights = session.query(model.UserRights).filter(model.UserRights.userLevelId == userLevelId)
+        user_rights = session.query(model.UserRights)
         if module_name is not None:
-            user_rights.filter(model.UserRights.module.name == module_name)
+            user_rights = user_rights.join(model.Module).filter(model.Module.name == module_name)
+        user_rights = user_rights.filter(model.UserRights.userLevelId == userLevelId)
         self.user_rights = user_rights.first()
         if self.user_rights is None:
             raise ValueError(f"USER_RIGHTS {userLevelId!r} does not exist.")
         self.userLevelId = self.user_rights.userLevelId
-        self.readOnly = self.user_rights.readOnly
-        self.ref_group = self.user_rights.ref_group.identifier
+        self.read_only = self.user_rights.read_only
+        self.ref_group = [r.identifier for r in self.user_rights.ref_group]
 
 
 @dataclass

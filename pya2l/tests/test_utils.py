@@ -1,6 +1,19 @@
-from pya2l.utils import align_as, padding, slicer, cygpathToWin, Tristate, ffs, Bunch, SingletonBase, NotAvailable, nfc_equal, fold_equal, enum_from_str
-import pytest
 from enum import IntEnum
+
+from pya2l.utils import (
+    Bunch,
+    NotAvailable,
+    SingletonBase,
+    Tristate,
+    align_as,
+    cygpathToWin,
+    enum_from_str,
+    ffs,
+    fold_equal,
+    nfc_equal,
+    padding,
+    slicer,
+)
 
 
 def test_slicer():
@@ -19,10 +32,10 @@ def test_tristate():
     assert t == True
     assert str(t) == "True"
     assert repr(t) == "Tristate(True)"
-    
+
     f = Tristate(False)
     assert f == False
-    
+
     n = Tristate(None)
     assert n != True
     assert n != False
@@ -38,7 +51,7 @@ def test_ffs():
 def test_bunch():
     b = Bunch(a=1, b=2)
     assert b.a == 1
-    assert b['b'] == 2
+    assert b["b"] == 2
 
 
 def test_nfc_equal():
@@ -58,13 +71,13 @@ class MyEnum(IntEnum):
 
 def test_enum_from_str():
     assert enum_from_str(MyEnum, "VAL1") == MyEnum.VAL1
-    with pytest.raises(ValueError):
-        enum_from_str(MyEnum, "VAL3")
+    assert enum_from_str(MyEnum, "VAL3") is None
 
 
 def test_singleton():
     class S(SingletonBase):
         pass
+
     s1 = S()
     s2 = S()
     assert s1 is s2

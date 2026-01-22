@@ -266,4 +266,9 @@ def enum_from_str(enum_class: IntEnum, enumerator: str) -> IntEnum:
 
 
     """
-    return enum_class(enum_class.__members__.get(enumerator))
+    if enumerator is None:
+        return None
+    member = enum_class.__members__.get(enumerator)
+    if member is None:
+        return None
+    return enum_class(member)
