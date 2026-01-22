@@ -139,7 +139,7 @@ class CompuMethodCreator(Creator):
 
         # Associate with module if provided
         if module:
-            compu_method.module = module
+            module.compu_method.append(compu_method)
 
         # Add to session
         self.session.add(compu_method)
@@ -363,7 +363,7 @@ class MeasurementCreator(Creator):
 
         # Associate with module if provided
         if module:
-            measurement.module = module
+            module.measurement.append(measurement)
 
         # Add to session
         self.session.add(measurement)
@@ -421,13 +421,13 @@ class MeasurementCreator(Creator):
 
         # Add left shift if provided
         if left_shift is not None:
-            left_shift_obj = model.LeftShift(bitCount=left_shift)
+            left_shift_obj = model.LeftShift(bitcount=left_shift)
             left_shift_obj.bit_operation = bit_operation
             self.session.add(left_shift_obj)
 
         # Add right shift if provided
         if right_shift is not None:
-            right_shift_obj = model.RightShift(bitCount=right_shift)
+            right_shift_obj = model.RightShift(bitcount=right_shift)
             right_shift_obj.bit_operation = bit_operation
             self.session.add(right_shift_obj)
 
@@ -480,7 +480,13 @@ class MeasurementCreator(Creator):
         model.MatrixDim
             The newly created MatrixDim instance
         """
-        matrix_dim = model.MatrixDim(xDim=x_dim, yDim=y_dim if y_dim is not None else 0, zDim=z_dim if z_dim is not None else 0)
+        numbers = [x_dim]
+        if y_dim is not None:
+            numbers.append(y_dim)
+        if z_dim is not None:
+            numbers.append(z_dim)
+
+        matrix_dim = model.MatrixDim(numbers=numbers)
         matrix_dim.measurement = measurement
         self.session.add(matrix_dim)
         return matrix_dim
@@ -562,17 +568,9 @@ class MeasurementCreator(Creator):
         model.Virtual
             The newly created Virtual instance
         """
-        virtual = model.Virtual()
+        virtual = model.Virtual(measuringChannel=measuring_channel if measuring_channel is not None else [])
         virtual.measurement = measurement
         self.session.add(virtual)
-
-        # Add measuring channels if provided
-        if measuring_channel:
-            for channel in measuring_channel:
-                channel_obj = model.VirtualMeasuringChannels(measuringChannel=channel)
-                channel_obj.virtual = virtual
-                self.session.add(channel_obj)
-
         return virtual
 
 
@@ -657,7 +655,7 @@ class AxisPtsCreator(Creator):
 
         # Associate with module if provided
         if module:
-            axis_pts.module = module
+            module.axis_pts.append(axis_pts)
 
         # Add to session
         self.session.add(axis_pts)
@@ -680,7 +678,7 @@ class AxisPtsCreator(Creator):
             The newly created ByteOrder instance
         """
         byte_order_obj = model.ByteOrder(byteOrder=byte_order)
-        byte_order_obj.axis_pts = axis_pts
+        axis_pts.byte_order = byte_order_obj
         self.session.add(byte_order_obj)
         return byte_order_obj
 
@@ -782,7 +780,7 @@ class AxisPtsCreator(Creator):
             The newly created Monotony instance
         """
         monotony_obj = model.Monotony(monotony=monotony)
-        monotony_obj.axis_pts = axis_pts
+        axis_pts.monotony = monotony_obj
         self.session.add(monotony_obj)
         return monotony_obj
 
@@ -822,7 +820,7 @@ class AxisPtsCreator(Creator):
             The newly created StepSize instance
         """
         step_size_obj = model.StepSize(stepSize=step_size)
-        step_size_obj.axis_pts = axis_pts
+        axis_pts.step_size = step_size_obj
         self.session.add(step_size_obj)
         return step_size_obj
 
@@ -957,11 +955,11 @@ class ModuleCreator(Creator):
             The newly created Module instance
         """
         # Create the Module instance
-        module = model.Module(name=name, longIdentifier=long_identifier)
+        module = model.Module(name=name, longIdentifier=long_identifier if long_identifier is not None else "")
 
         # Associate with project if provided
         if project:
-            module.project = project
+            project.module.append(module)
 
         # Add to session
         self.session.add(module)
@@ -983,7 +981,8 @@ class ModuleCreator(Creator):
         model.IfData
             The newly created IfData instance
         """
-        if_data = model.IfData(content=if_data_text)
+        if_data = model.IfData()
+        if_data.ifDataText = if_data_text
         if_data.module = module
         self.session.add(if_data)
         return if_data
@@ -1176,13 +1175,13 @@ class ModuleCreator(Creator):
             The newly created Unit instance
         """
         unit = model.Unit(name=name, longIdentifier=long_identifier, display=display, type=type_str)
-        unit.module = module
+        module.unit.append(unit)
         self.session.add(unit)
 
         # Add ref_unit if provided
         if ref_unit:
             ref_unit_obj = model.RefUnit(unit=ref_unit)
-            ref_unit_obj.unit = unit
+            unit.ref_unit = ref_unit_obj
             self.session.add(ref_unit_obj)
 
         # Add unit_conversion if provided
@@ -1273,8 +1272,8 @@ class ModuleCreator(Creator):
             p.parent = vt
             self.session.add(p)
         if default_value is not None:
-            dv = model.DefaultValue(value=str(default_value))
-            dv.compu_vtab = vt
+            dv = model.DefaultValue(display_string=str(default_value))
+            vt.default_value = dv
             self.session.add(dv)
         return vt
 
@@ -1303,8 +1302,8 @@ class ModuleCreator(Creator):
             t.parent = vr
             self.session.add(t)
         if default_value is not None:
-            dv = model.DefaultValue(value=str(default_value))
-            dv.compu_vtab_range = vr
+            dv = model.DefaultValue(display_string=str(default_value))
+            vr.default_value = dv
             self.session.add(dv)
         return vr
 
@@ -1433,7 +1432,7 @@ class ModuleCreator(Creator):
             type_ref=type_ref,
             offset=offset,
         )
-        sc.typedef_structure = typedef_structure
+        typedef_structure.structure_component.append(sc)
         self.session.add(sc)
         return sc
 
@@ -1541,32 +1540,32 @@ class ModuleCreator(Creator):
         model.ModCommon
             The newly created ModCommon instance
         """
-        mod_common = model.ModCommon(comment=comment)
+        mod_common = model.ModCommon(comment=comment if comment is not None else "")
         mod_common.module = module
         self.session.add(mod_common)
 
         # Add byte order if provided
         if byte_order:
             byte_order_obj = model.ByteOrder(byteOrder=byte_order)
-            byte_order_obj.mod_common = mod_common
+            mod_common.byte_order = byte_order_obj
             self.session.add(byte_order_obj)
 
         # Add data size if provided
         if data_size:
             data_size_obj = model.DataSize(size=data_size)
-            data_size_obj.mod_common = mod_common
+            mod_common.data_size = data_size_obj
             self.session.add(data_size_obj)
 
         # Add deposit if provided
         if deposit:
             deposit_obj = model.Deposit(mode=deposit)
-            deposit_obj.mod_common = mod_common
+            mod_common.deposit = deposit_obj
             self.session.add(deposit_obj)
 
         # Add s_rec_layout if provided
         if s_rec_layout:
             s_rec_layout_obj = model.SRecLayout(name=s_rec_layout)
-            s_rec_layout_obj.mod_common = mod_common
+            mod_common.s_rec_layout = s_rec_layout_obj
             self.session.add(s_rec_layout_obj)
 
         return mod_common
@@ -1620,7 +1619,7 @@ class ModuleCreator(Creator):
         model.ModPar
             The newly created ModPar instance
         """
-        mod_par = model.ModPar(comment=comment)
+        mod_par = model.ModPar(comment=comment if comment is not None else "")
         mod_par.module = module
         self.session.add(mod_par)
 
@@ -1764,7 +1763,7 @@ class CharacteristicCreator(Creator):
 
         # Associate with module if provided
         if module:
-            characteristic.module = module
+            module.characteristic.append(characteristic)
 
         # Add to session
         self.session.add(characteristic)
@@ -1813,7 +1812,7 @@ class CharacteristicCreator(Creator):
             lowerLimit=lower_limit,
             upperLimit=upper_limit,
         )
-        axis_descr.characteristic = characteristic
+        characteristic.axis_descr.append(axis_descr)
         self.session.add(axis_descr)
         return axis_descr
 
@@ -1853,7 +1852,7 @@ class CharacteristicCreator(Creator):
             The newly created ByteOrder instance
         """
         byte_order_obj = model.ByteOrder(byteOrder=byte_order)
-        byte_order_obj.characteristic = characteristic
+        characteristic.byte_order = byte_order_obj
         self.session.add(byte_order_obj)
         return byte_order_obj
 
@@ -1878,7 +1877,13 @@ class CharacteristicCreator(Creator):
         model.MatrixDim
             The newly created MatrixDim instance
         """
-        matrix_dim = model.MatrixDim(xDim=x_dim, yDim=y_dim if y_dim is not None else 0, zDim=z_dim if z_dim is not None else 0)
+        numbers = [x_dim]
+        if y_dim is not None:
+            numbers.append(y_dim)
+        if z_dim is not None:
+            numbers.append(z_dim)
+
+        matrix_dim = model.MatrixDim(numbers=numbers)
         matrix_dim.characteristic = characteristic
         self.session.add(matrix_dim)
         return matrix_dim
@@ -1902,16 +1907,9 @@ class CharacteristicCreator(Creator):
         model.DependentCharacteristic
             The newly created DependentCharacteristic instance
         """
-        dependent_characteristic = model.DependentCharacteristic(formula=formula)
+        dependent_characteristic = model.DependentCharacteristic(formula=formula, characteristic_id=characteristic_names)
         dependent_characteristic.characteristic = characteristic
         self.session.add(dependent_characteristic)
-
-        # Add characteristic identifiers
-        for char_name in characteristic_names:
-            char_id = model.DependentCharacteristicIdentifiers(characteristic=char_name)
-            char_id.dependent_characteristic = dependent_characteristic
-            self.session.add(char_id)
-
         return dependent_characteristic
 
     def add_virtual_characteristic(
@@ -1933,16 +1931,9 @@ class CharacteristicCreator(Creator):
         model.VirtualCharacteristic
             The newly created VirtualCharacteristic instance
         """
-        virtual_characteristic = model.VirtualCharacteristic(formula=formula)
+        virtual_characteristic = model.VirtualCharacteristic(formula=formula, characteristic_id=characteristic_names)
         virtual_characteristic.characteristic = characteristic
         self.session.add(virtual_characteristic)
-
-        # Add characteristic identifiers
-        for char_name in characteristic_names:
-            char_id = model.VirtualCharacteristicIdentifiers(characteristic=char_name)
-            char_id.virtual_characteristic = virtual_characteristic
-            self.session.add(char_id)
-
         return virtual_characteristic
 
     def add_format(self, characteristic: model.Characteristic, format_string: str) -> model.Format:
@@ -2051,7 +2042,7 @@ class FunctionCreator(Creator):
 
         # Associate with module if provided
         if module:
-            function.module = module
+            module.function.append(function)
 
         # Add to session
         self.session.add(function)
@@ -2073,16 +2064,9 @@ class FunctionCreator(Creator):
         model.DefCharacteristic
             The newly created DefCharacteristic instance
         """
-        def_characteristic = model.DefCharacteristic()
+        def_characteristic = model.DefCharacteristic(identifier=characteristic_names)
         def_characteristic.function = function
         self.session.add(def_characteristic)
-
-        # Add characteristic identifiers
-        for char_name in characteristic_names:
-            char_id = model.DefCharacteristicIdentifiers(identifier=char_name)
-            char_id.parent = def_characteristic
-            self.session.add(char_id)
-
         return def_characteristic
 
     def add_function_version(self, function: model.Function, version_identifier: str) -> model.FunctionVersion:
@@ -2255,7 +2239,7 @@ class GroupCreator(Creator):
 
         # Associate with module if provided
         if module:
-            group.module = module
+            module.group.append(group)
 
         # Add to session
         self.session.add(group)
@@ -2277,16 +2261,9 @@ class GroupCreator(Creator):
         model.RefMeasurement
             The newly created RefMeasurement instance
         """
-        ref_measurement = model.RefMeasurement()
+        ref_measurement = model.RefMeasurement(identifier=measurement_names)
         ref_measurement.group = group
         self.session.add(ref_measurement)
-
-        # Add measurement identifiers
-        for meas_name in measurement_names:
-            meas_id = model.RefMeasurementIdentifiers(identifier=meas_name)
-            meas_id.parent = ref_measurement
-            self.session.add(meas_id)
-
         return ref_measurement
 
     def add_ref_characteristic(self, group: model.Group, characteristic_names: List[str]) -> model.RefCharacteristic:
@@ -2304,16 +2281,9 @@ class GroupCreator(Creator):
         model.RefCharacteristic
             The newly created RefCharacteristic instance
         """
-        ref_characteristic = model.RefCharacteristic()
+        ref_characteristic = model.RefCharacteristic(identifier=characteristic_names)
         ref_characteristic.group = group
         self.session.add(ref_characteristic)
-
-        # Add characteristic identifiers
-        for char_name in characteristic_names:
-            char_id = model.RefCharacteristicIdentifiers(identifier=char_name)
-            char_id.parent = ref_characteristic
-            self.session.add(char_id)
-
         return ref_characteristic
 
     def add_function_list(self, group: model.Group, function_names: List[str]) -> model.FunctionList:
@@ -2331,16 +2301,9 @@ class GroupCreator(Creator):
         model.FunctionList
             The newly created FunctionList instance
         """
-        function_list = model.FunctionList()
+        function_list = model.FunctionList(name=function_names)
         function_list.group = group
         self.session.add(function_list)
-
-        # Add function identifiers
-        for func_name in function_names:
-            func_id = model.FunctionListIdentifiers(name=func_name)
-            func_id.parent = function_list
-            self.session.add(func_id)
-
         return function_list
 
     def add_sub_group(self, group: model.Group, group_names: List[str]) -> model.SubGroup:
@@ -2358,16 +2321,9 @@ class GroupCreator(Creator):
         model.SubGroup
             The newly created SubGroup instance
         """
-        sub_group = model.SubGroup()
+        sub_group = model.SubGroup(identifier=group_names)
         sub_group.group = group
         self.session.add(sub_group)
-
-        # Add group identifiers
-        for group_name in group_names:
-            group_id = model.SubGroupIdentifiers(identifier=group_name)
-            group_id.parent = sub_group
-            self.session.add(group_id)
-
         return sub_group
 
     def add_root(self, group: model.Group) -> model.Root:
@@ -2384,7 +2340,7 @@ class GroupCreator(Creator):
             The newly created Root instance
         """
         root = model.Root()
-        root.group = group
+        group.root.append(root)
         self.session.add(root)
         return root
 
@@ -2428,7 +2384,7 @@ class RecordLayoutCreator(Creator):
 
         # Associate with module if provided
         if module:
-            record_layout.module = module
+            module.record_layout.append(record_layout)
 
         # Add to session
         self.session.add(record_layout)
@@ -2563,7 +2519,11 @@ class RecordLayoutCreator(Creator):
         model.FncValues
             The newly created FncValues instance
         """
-        fnc_values = model.FncValues(position=position, datatype=data_type, indexMode=index_mode, addresstype=address_type)
+        fnc_values = model.FncValues(position=position, datatype=data_type)
+        if index_mode:
+            fnc_values.indexMode = index_mode
+        if address_type:
+            fnc_values.addresstype = address_type
         fnc_values.record_layout = record_layout
         self.session.add(fnc_values)
         return fnc_values
