@@ -450,8 +450,7 @@ class LookupTableWithRanges:
         if dtype is int:
             self.in_range = lambda x, left, right: left <= x <= right
         else:
-            max_right = self.maximum
-            self.in_range = lambda x, left, right, m=max_right: (left <= x < right) or (x == m and right == m)
+            self.in_range = lambda x, left, right: (left <= x <= right)
 
     def _lookup(self, x):
         """"""  # noqa: DAR101, DAR201
