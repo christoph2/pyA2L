@@ -38,6 +38,7 @@ jobs:
         env:
           CIBW_ARCHS_WINDOWS: ${{ matrix.cibw_archs_windows || '' }}
           CIBW_ARCHS_LINUX: ${{ matrix.cibw_archs_linux || '' }}
+          CIBW_BEFORE_BUILD: "yum install -y python3-devel"
       - uses: actions/upload-artifact@v4
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
