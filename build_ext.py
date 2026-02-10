@@ -42,7 +42,7 @@ def alternate_libdir(pth: str):
         return ""
 
 
-def get_py_config() -> dict:
+def get_py_config() -> Optional[dict]:
     pynd = VARS["py_version_nodot"]  # Should always be present.
     include = sysconfig.get_path("include")  # Seems to be cross-platform.
     if uname.system == "Windows":
@@ -85,7 +85,7 @@ def get_py_config() -> dict:
                     break
         if not found:
             print("Could NOT locate Python library.")
-            return dict(exe=sys.executable, include=include, libdir="", library=library)
+            return None
     return dict(exe=sys.executable, include=include, libdir=libdir, library=library)
 
 
@@ -130,15 +130,16 @@ def build_extension(debug: bool = False, use_temp_dir: bool = False) -> None:
     debug = debug or get_env_bool("BUILD_DEBUG")
 
     cfg = "Debug" if debug else "Release"
+    cmake_args = []
     py_cfg = get_py_config()
-
-    cmake_args = [
-        f"-DPython3_EXECUTABLE={py_cfg['exe']}",
-        f"-DPython3_INCLUDE_DIR={py_cfg['include']}",
-        f"-DCMAKE_BUILD_TYPE={cfg}",  # not used on MSVC, but no harm
-    ]
-    if py_cfg["libdir"]:
-        cmake_args.append(f"-DPython3_LIBRARY={str(Path(py_cfg['libdir']) / Path(py_cfg['library']))}")
+    if py_cfg is not None:
+        cmake_args = [
+            f"-DPython3_EXECUTABLE={py_cfg['exe']}",
+            f"-DPython3_INCLUDE_DIR={py_cfg['include']}",
+            f"-DCMAKE_BUILD_TYPE={cfg}",  # not used on MSVC, but no harm
+        ]
+        if py_cfg["libdir"]:
+            cmake_args.append(f"-DPython3_LIBRARY={str(Path(py_cfg['libdir']) / Path(py_cfg['library']))}")
 
     build_args = ["--config Release", "--verbose"]
 
