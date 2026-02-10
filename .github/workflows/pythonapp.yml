@@ -1,6 +1,3 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
 name: pya2ldb
 
 on:
@@ -12,7 +9,6 @@ on:
 jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
-    continue-on-error: true
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -21,25 +17,22 @@ jobs:
           - os: macos-latest
           - os: ubuntu-24.04-arm
           - os: ubuntu-latest
-          - os: ubuntu-latest
-            cibw_archs_linux: armv7l
           - os: windows-11-arm
             cibw_archs_windows: ARM64
           - os: windows-latest
             cibw_archs_windows: AMD64
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up QEMU (for ARM emulation)
         if: ${{ matrix.cibw_archs_linux == 'armv7l' }}
         uses: docker/setup-qemu-action@v3
         with:
           platforms: arm
-      - uses: pypa/cibuildwheel@v3.1
+      - uses: pypa/cibuildwheel@v3.3
         env:
           CIBW_ARCHS_WINDOWS: ${{ matrix.cibw_archs_windows || '' }}
-          CIBW_ARCHS_LINUX: ${{ matrix.cibw_archs_linux || '' }}
-          CIBW_BEFORE_BUILD_LINUX: "yum install -y python3-devel"
-      - uses: actions/upload-artifact@v4
+          CIBW_ARCHS_MACOS: arm64
+      - uses: actions/upload-artifact@v6
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
@@ -48,30 +41,27 @@ jobs:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Build sdist
         run: |
           pip install -U build
           python -m build --sdist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           path: dist/*.tar.gz
           include-hidden-files: true
-          retention-days: 1
 
   upload_pypi:
-    needs: [ build_wheels, build_sdist ]
+    needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
-    environment: release
     permissions:
       id-token: write
       contents: read
     steps:
-      - uses: actions/download-artifact@v4.1.7
+      - uses: actions/download-artifact@v7
         with:
           path: dist
           merge-multiple: true
-
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@v1.13.0
         with:
