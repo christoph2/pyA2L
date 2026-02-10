@@ -134,6 +134,7 @@ def import_a2l(
     session = db.session
     session.commit()
     session.setup_ifdata_parser(loglevel=loglevel)
+    session._a2l_db_owner = db  # Keep in-memory DB alive
     return session
 
 
