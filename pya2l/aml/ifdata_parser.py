@@ -295,6 +295,11 @@ class IfDataParser:
             self.level = 0
             self.num_tokens = len(self.tokens)
 
+            # typical minimal token sequence: BEGIN, IDENT(IF_DATA), END, IDENT(IF_DATA) -> 4 tokens.
+            if self.num_tokens <= 4:
+                self.logger.debug("IF_DATA section empty or contains no entries; returning empty result")
+                return {}
+
             # Parse the IF_DATA section
             self.match(IfDataTokenType.BEGIN)
             self.match(IfDataTokenType.IDENT, "IF_DATA")
@@ -307,6 +312,9 @@ class IfDataParser:
         except EOFReached:
             self.logger.error("Unexpected end of input")
             raise ParsingError("Unexpected end of input")
+        except IndexError as e:
+            self.logger.debug(f"IndexError while parsing IF_DATA, returning empty result: {e}")
+            return {}
         except Exception as e:
             self.logger.error(f"Error parsing IF_DATA: {str(e)}")
             raise ParsingError(f"Error parsing IF_DATA: {str(e)}")

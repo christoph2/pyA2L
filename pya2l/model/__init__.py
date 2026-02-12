@@ -30,6 +30,7 @@ import pickle
 import re
 import sqlite3
 from typing import Any, List, Optional, Sequence
+import logging
 
 from sqlalchemy import Column, ForeignKey, Index, create_engine, event, orm, types
 from sqlalchemy.engine import Engine
@@ -5275,7 +5276,7 @@ class SessionProxy:
                 try:
                     res = self._ifdata_parser.parse(section.raw)
                 except Exception as e:
-                    print(f"Error parsing IF_DATA section: {section.raw!r}: {e!r}")
+                    logging.getLogger("pya2l.ifdata").debug(f"Error parsing IF_DATA section: {section.raw!r}: {e!r}")
                 else:
                     result.append(res)
             return result
