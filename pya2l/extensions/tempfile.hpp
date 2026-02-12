@@ -1,7 +1,7 @@
 /*
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-    (C) 2023-2024 by Christoph Schueler <cpu12.gems.googlemail.com>
+    (C) 2023-2026 by Christoph Schueler <cpu12.gems.googlemail.com>
 
     All Rights Reserved
 
@@ -29,21 +29,27 @@
     #include <fstream>
     #include <iostream>
     #include <stdexcept>
+    #include <random>
+    #include <chrono>
+    #include <sstream>
+    #include <thread>
 
 namespace fs = std::filesystem;
 
 /*
- * Create ofstream object and delete on d-tor (or using 'remove()').
+ *
+ * Files are created in std::filesystem::temp_directory_path() with a unique name + suffix.
+ *
  */
 class TempFile {
    public:
 
-    explicit TempFile(const std::string& path, bool binary = false) :
-        m_path(fs::path(path)),
-        m_file(path, std::ios::trunc | std::ios::out | (binary ? std::ios::binary : std::ios::out)),
+    explicit TempFile(const std::string& suffix, bool binary = false) :
+        m_path(create_unique_temp_path(suffix)),
+        m_file(m_path, std::ios::trunc | std::ios::out | (binary ? std::ios::binary : static_cast<std::ios::openmode>(0))),
         m_closed(false) {
         if (!m_file.is_open()) {
-            throw std::runtime_error("Could not open file '" + path + "'");
+            throw std::runtime_error("Could not open temporary file '" + m_path.string() + "'");
         }
     }
 
@@ -61,22 +67,16 @@ class TempFile {
         m_path(std::move(other.m_path)),
         m_file(std::move(other.m_file)),
         m_closed(other.m_closed) {
-        // Mark the moved-from object as closed
         other.m_closed = true;
     }
 
     // Move assignment operator
     TempFile& operator=(TempFile&& other) noexcept {
         if (this != &other) {
-            // Close current resources
             close();
-
-            // Move resources from other
             m_path = std::move(other.m_path);
             m_file = std::move(other.m_file);
             m_closed = other.m_closed;
-
-            // Mark the moved-from object as closed
             other.m_closed = true;
         }
         return *this;
@@ -92,19 +92,31 @@ class TempFile {
 
     void close() noexcept {
         if (!m_closed && m_file.is_open()) {
-            m_file.close();
+            try {
+                m_file.close();
+            } catch (...) {
+                // ignore
+            }
             m_closed = true;
         }
     }
 
     std::string abs_path() const noexcept {
-        return fs::absolute(m_path.string()).string();
+        try {
+            return fs::absolute(m_path).string();
+        } catch (...) {
+            return m_path.string();
+        }
     }
 
     void remove() noexcept {
         close();
-        if (!m_closed && fs::exists(m_path)) {
-            // fs::remove(m_path);
+        try {
+            if (fs::exists(m_path)) {
+                fs::remove(m_path);
+            }
+        } catch (...) {
+            // suppress exceptions during cleanup
         }
     }
 
@@ -121,6 +133,53 @@ class TempFile {
     fs::path      m_path;
     std::ofstream m_file;
     bool          m_closed;
+
+    static fs::path create_unique_temp_path(const std::string& suffix) {
+        const fs::path temp_dir = []() -> fs::path {
+            try {
+                return fs::temp_directory_path();
+            } catch (...) {
+                return fs::current_path();
+            }
+        }();
+
+        // base name prefix
+        const std::string prefix = "pya2l_";
+
+        // random generator
+        std::random_device rd;
+        std::mt19937_64 gen(rd());
+        std::uniform_int_distribution<uint64_t> dist;
+
+        // try multiple times to avoid collision
+        for (int attempt = 0; attempt < 16; ++attempt) {
+            // timestamp
+            const auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+            const uint64_t rnd = dist(gen);
+            std::ostringstream oss;
+            oss << prefix << std::hex << now << "_" << rnd << suffix;
+            fs::path candidate = temp_dir / oss.str();
+
+            // Try to create the file atomically by opening with std::ofstream with trunc.
+            // If creation succeeds, remove it immediately and return the path (we will open again in ctor).
+            // To ensure exclusivity, attempt to open exclusively by checking existence beforehand and after opening.
+            try {
+                if (!fs::exists(candidate)) {
+                    // attempt to create file
+                    std::ofstream ofs(candidate, std::ios::out | std::ios::app);
+                    if (ofs.is_open()) {
+                        ofs.close();
+                        return candidate;
+                    }
+                }
+            } catch (...) {
+                // ignore and try next
+            }
+            // small backoff
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+        throw std::runtime_error("Failed to create unique temporary filename with suffix '" + suffix + "'");
+    }
 };
 
 #endif  // __TEMPFILE_HPP

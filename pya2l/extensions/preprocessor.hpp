@@ -71,9 +71,10 @@ using preprocessor_result_t = std::tuple<Filenames, LineMap, IfDataReader>;
 class Preprocessor {
    public:
 
-    const std::string A2L_TMP    = "A2L.tmp";
-    const std::string AML_TMP    = "AML.tmp";
-    const std::string IFDATA_TMP = "IFDATA.tmp";
+    // Suffixes used for temporary files; files are created in the system temp directory.
+    const std::string A2L_TMP    = "_A2L.tmp";
+    const std::string AML_TMP    = "_AML.tmp";
+    const std::string IFDATA_TMP = "_IFDATA.tmp";
 
     explicit Preprocessor(spdlog::level::level_enum log_level) :
         tmp_a2l(A2L_TMP, true),
