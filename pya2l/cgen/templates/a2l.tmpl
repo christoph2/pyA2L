@@ -1,10 +1,8 @@
-
 <%
 asap2_version = session.query(model.Asap2Version).first()
 a2ml_version = session.query(model.A2mlVersion).first()
 project = session.query(model.Project).first()
 %>
-
   %if asap2_version:
   ASAP2_VERSION
       ${asap2_version.versionNo}  /* versionNo */
@@ -43,12 +41,10 @@ project = session.query(model.Project).first()
               "${entry2.longIdentifier}"  /* longIdentifier */
               <% a2ml = entry2.a2ml %>
                     %if a2ml:
-            /begin A2ML
             <% aml_section = session.query(model.AMLSection).first() %>
             % if aml_section and aml_section.text:
 ${aml_section.text}
             % endif
-            /end A2ML
             %endif
               <% axis_pts = entry2.axis_pts %>
                     %if axis_pts:
@@ -136,9 +132,7 @@ ${aml_section.text}
                     <% if_data = entry3.if_data %>
                             %if if_data:
                     %for entry4 in if_data:
-                        /begin IF_DATA
-                            ${entry4.raw}
-                        /end IF_DATA
+                    ${entry4.raw}
                     %endfor
                     %endif
                     <% monotony = entry3.monotony %>
@@ -386,9 +380,7 @@ ${aml_section.text}
                     <% if_data = entry3.if_data %>
                             %if if_data:
                     %for entry4 in if_data:
-                        /begin IF_DATA
-                            ${entry4.raw}
-                        /end IF_DATA
+                    ${entry4.raw}
                     %endfor
                     %endif
                     <% map_list = entry3.map_list %>
@@ -569,9 +561,7 @@ ${aml_section.text}
             <% if_data = frame.if_data %>
                     %if if_data:
                     %for entry4 in if_data:
-                        /begin IF_DATA
-                            ${entry4.raw}
-                        /end IF_DATA
+                    ${entry4.raw}
                     %endfor
                     %endif
             /end FRAME
@@ -619,9 +609,7 @@ ${aml_section.text}
                     <% if_data = entry3.if_data %>
                             %if if_data:
                     %for entry4 in if_data:
-                        /begin IF_DATA
-                            ${entry4.raw}
-                        /end IF_DATA
+                    ${entry4.raw}
                     %endfor
                     %endif
                     <% in_measurement = entry3.in_measurement %>
@@ -695,9 +683,7 @@ ${aml_section.text}
                     <% if_data = entry3.if_data %>
                             %if if_data:
                     %for entry4 in if_data:
-                        /begin IF_DATA
-                            ${entry4.raw}
-                        /end IF_DATA
+                    ${entry4.raw}
                     %endfor
                     %endif
                     <% ref_characteristic = entry3.ref_characteristic %>
@@ -728,9 +714,7 @@ ${aml_section.text}
               <% if_data = entry2.if_data %>
                     %if if_data:
             %for entry3 in if_data:
-                /begin IF_DATA
-                    ${entry3.raw}
-                /end IF_DATA
+            ${entry3.raw}
             %endfor
             %endif
               <% instance = entry2.instance %>
@@ -766,9 +750,7 @@ ${aml_section.text}
                     <% if_data = entry3.if_data %>
                             %if if_data:
                     %for entry4 in if_data:
-                        /begin IF_DATA
-                            ${entry4.raw}
-                        /end IF_DATA
+                    ${entry4.raw}
                     %endfor
                     %endif
                     <% number = entry3.number %>
@@ -897,9 +879,7 @@ ${aml_section.text}
                     <% if_data = entry3.if_data %>
                             %if if_data:
                     %for entry4 in if_data:
-                        /begin IF_DATA
-                            ${entry4.raw}
-                        /end IF_DATA
+                    ${entry4.raw}
                     %endfor
                     %endif
                     <% layout = entry3.layout %>
@@ -1087,9 +1067,7 @@ ${aml_section.text}
                             <% if_data = entry4.if_data %>
                                       %if if_data:
                               %for entry5 in if_data:
-                                  /begin IF_DATA
-                                      ${entry5.raw}
-                                  /end IF_DATA
+                              ${entry5.raw}
                               %endfor
                               %endif
                         /end MEMORY_LAYOUT
@@ -1114,9 +1092,7 @@ ${aml_section.text}
                             <% if_data = entry4.if_data %>
                                       %if if_data:
                               %for entry5 in if_data:
-                                  /begin IF_DATA
-                                      ${entry5.raw}
-                                  /end IF_DATA
+                              ${entry5.raw}
                               %endfor
                               %endif
                         /end MEMORY_SEGMENT
