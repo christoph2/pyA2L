@@ -1250,7 +1250,7 @@ class CachedBase:
             print(f"{cls.__name__}.get(): session cannot be None")
             return None
 
-        entry = (cls.__name__, name, args)
+        entry = (id(session), cls.__name__, name, module_name, args)
         if entry not in cls._cache:
             try:
                 inst = cls(session, name, module_name, *args)
