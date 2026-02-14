@@ -35,6 +35,24 @@ Round‑trip a database back into text:
 
    export_a2l("ASAP2_Demo_V161", "exported.a2l")
 
+CLI import/export (``a2ldb-imex``)
+----------------------------------
+
+Use the bundled console script instead of writing Python:
+
+.. code-block:: console
+
+   # Show help/version
+   a2ldb-imex -h
+   a2ldb-imex -V
+
+   # Import with explicit encoding, write DB in current directory, silence progress
+   a2ldb-imex -i examples\\ASAP2_Demo_V161.a2l -E utf-8 -L -p
+
+   # Export an existing DB back to A2L (file or stdout)
+   a2ldb-imex -e ASAP2_Demo_V161.a2ldb -o exported.a2l
+   a2ldb-imex -e ASAP2_Demo_V161.a2ldb > exported.a2l
+
 Dump measurements to Excel
 --------------------------
 
