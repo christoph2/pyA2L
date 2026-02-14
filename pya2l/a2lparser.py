@@ -1,10 +1,12 @@
 import re
+import sys
 import typing
 from collections import defaultdict
 from os import unlink
 from pathlib import Path
 from time import perf_counter
 
+from rich.console import Console
 from rich.progress import (
     BarColumn,
     Progress,
@@ -372,7 +374,9 @@ class A2LParser:
         loglevel: str = "INFO",
         progress_bar: bool = True,
     ) -> model.A2LDatabase:
-        self.silent: bool = not progress_bar
+        loglevel = loglevel.upper()
+        effective_progress = progress_bar and sys.stderr.isatty() and loglevel not in ("ERROR", "CRITICAL")
+        self.silent: bool = not effective_progress
         a2l_fn, db_fn = path_components(in_memory, file_name, local)
         if not in_memory:
             if remove_existing:
@@ -390,9 +394,9 @@ class A2LParser:
         # self.db.session.commit()
         self.logger.info(f"Importing {a2l_fn!r} [{encoding}] ==> DB {db_fn!r}.")
         try:
-            keyword_counter, values, tables, aml_data = ext.parse(str(a2l_fn), encoding, loglevel.upper())
+            keyword_counter, values, tables, aml_data = ext.parse(str(a2l_fn), encoding, loglevel)
         except Exception as e:
-            print(f"{e!r}")
+            print(f"{e!r}", file=sys.stderr)
             try:
                 unlink(str(db_fn))
             except Exception:
@@ -414,7 +418,7 @@ class A2LParser:
             "Remaining:",
             TimeRemainingColumn(),
         )
-        self.progress_bar = Progress(*progress_columns)
+        self.progress_bar = Progress(*progress_columns, console=Console(stderr=True), disable=self.silent)
         if not self.silent:
             self.task = self.progress_bar.add_task("[blue]writing to DB...", total=keyword_counter)
         self.advance = keyword_counter // 100 if keyword_counter >= 100 else 1
@@ -444,7 +448,7 @@ class A2LParser:
                 params = tree.parameters
 
             except UnicodeDecodeError as e:
-                print(e, "***", tree, name, table)
+                print(e, "***", tree, name, table, file=sys.stderr)
                 params = {}
                 # if_data = []
             mult = tree.multiple_values
