@@ -257,7 +257,7 @@ const std::map<std::string, int, std::less<>> A2L_KEYWORDS{
     { "VAR_FORBIDDEN_COMB",           243 },
     { "VAR_NAMING",                   244 },
     { "NUMERIC",                      245 },
-    { "APLHA",                        246 },
+    { "ALPHA",                        246 },
     { "VAR_SEPARATOR",                247 },
     { ".",                            248 },
     { "[",                            249 },

@@ -1934,7 +1934,7 @@ class VAR_MEASUREMENT(Keyword):
 
 
 class VAR_NAMING(Keyword):
-    attrs = [(Enum, "Tag", ("NUMERIC", "APLHA"))]
+    attrs = [(Enum, "Tag", ("NUMERIC", "ALPHA"))]
 
 
 class VAR_SELECTION_CHARACTERISTIC(Keyword):

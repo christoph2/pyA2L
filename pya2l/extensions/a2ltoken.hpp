@@ -257,7 +257,7 @@ enum class A2LTokenType : uint16_t {
     VAR_FORBIDDEN_COMB           = 243,
     VAR_NAMING                   = 244,
     NUMERIC                      = 245,
-    APLHA                        = 246,
+    ALPHA                        = 246,
     VAR_SEPARATOR                = 247,
     DOT                          = 248,
     BRO                          = 249,

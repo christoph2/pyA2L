@@ -288,11 +288,15 @@ Generator<TokenizerReturnType> tokenizer(std::basic_istream<char> &stream, bool 
                         co_yield { Token(TokenClass::REGULAR, line_numbers, token[char_class_to_int(current)]) };
                         token[char_class_to_int(CharClass::REGULAR)].clear();
                     }
-                    token[char_class_to_int(CharClass::STRING)].push_back(ch);
+                    auto &target =
+                        in_comment() ? token[char_class_to_int(CharClass::REGULAR)] : token[char_class_to_int(CharClass::STRING)];
+                    target.push_back(ch);
                 }
             } else {
                 if (in_string() || in_comment()) {
-                    token[char_class_to_int(CharClass::STRING)].push_back(ch);
+                    auto &target =
+                        in_comment() ? token[char_class_to_int(CharClass::REGULAR)] : token[char_class_to_int(CharClass::STRING)];
+                    target.push_back(ch);
                     if (token[char_class_to_int(CharClass::WHITESPACE)].length()) {
                         if (!supress_whitespace) {
                             LineNumbers line_numbers{ start_line, start_column, line, column - 1 };

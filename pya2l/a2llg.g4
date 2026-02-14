@@ -26,7 +26,7 @@
 
 lexer grammar a2llg;
 
-IDENT: [a-zA-Z_][a-zA-Z_0-9.]*;
+IDENT: ([a-zA-Z_]|'[')([a-zA-Z_0-9.]|'['|']')*;
 
 fragment
 EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;

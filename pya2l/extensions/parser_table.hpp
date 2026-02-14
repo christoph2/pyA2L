@@ -2792,7 +2792,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                 Keyword(
                                     A2LTokenType::VAR_NAMING, "VAR_NAMING", "VarNaming", false, false,
                                     {
-                                        Parameter(PredefinedType::Enum, "Tag", { "NUMERIC", "APLHA" }),
+                                        Parameter(PredefinedType::Enum, "Tag", { "NUMERIC", "ALPHA" }),
                                     },
                                     {}
                                 ),

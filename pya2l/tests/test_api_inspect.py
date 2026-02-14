@@ -794,6 +794,51 @@ def test_variant_coding(db):
 ASAP2_VERSION 1 71
 /begin PROJECT Project1 ""
   /begin MODULE Module1 ""
+    /begin VARIANT_CODING
+        VAR_NAMING ALPHA
+        /begin VAR_CRITERION VC1 "" "val1" /end VAR_CRITERION
+    /end VARIANT_CODING
+  /end MODULE
+/end PROJECT
+"""],
+    indirect=True,
+)
+def test_variant_coding_alpha(db):
+    vc = VariantCoding(db.session, module_name="Module1")
+    assert vc.naming == "ALPHA"
+    assert vc.criterions["VC1"].name == "VC1"
+
+
+COMPU_METHOD_MODULE_SCOPED = """
+ASAP2_VERSION 1 71
+/begin PROJECT P ""
+  /begin MODULE M1 ""
+    /begin COMPU_METHOD CM "" IDENTICAL "%1.1" "U1" /end COMPU_METHOD
+  /end MODULE
+  /begin MODULE M2 ""
+    /begin COMPU_METHOD CM "" IDENTICAL "%2.2" "U2" /end COMPU_METHOD
+  /end MODULE
+/end PROJECT
+"""
+
+
+@pytest.mark.parametrize("db", [COMPU_METHOD_MODULE_SCOPED], indirect=True)
+def test_compu_method_module_filter(db):
+    cm1 = CompuMethod(db.session, "CM", module_name="M1")
+    cm2 = CompuMethod(db.session, "CM", module_name="M2")
+
+    assert cm1.format == "%1.1"
+    assert cm1.unit == "U1"
+    assert cm2.format == "%2.2"
+    assert cm2.unit == "U2"
+
+
+@pytest.mark.parametrize(
+    "db",
+    ["""
+ASAP2_VERSION 1 71
+/begin PROJECT Project1 ""
+  /begin MODULE Module1 ""
     /begin USER_RIGHTS "user1"
         /begin READ_ONLY /end READ_ONLY
     /end USER_RIGHTS

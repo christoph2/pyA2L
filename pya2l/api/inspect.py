@@ -1507,7 +1507,7 @@ class CompuTabVerb(CachedBase):
         self.session = session
         compu_tab_verb = session.query(model.CompuVtab).filter(model.CompuVtab.name == name)
         if module_name is not None:
-            compu_tab_verb.join(model.Module).filter(model.Module.name == module_name)
+            compu_tab_verb = compu_tab_verb.join(model.Module).filter(model.Module.name == module_name)
         self.compu_tab_verb = compu_tab_verb.first()
         if self.compu_tab_verb is None:
             raise ValueError(f"COMPU_VTAB {name!r} does not exist.")
@@ -1534,7 +1534,7 @@ class CompuTabVerbRanges(CachedBase):
         self.session = session
         compu_tab_verb_ranges = session.query(model.CompuVtabRange).filter(model.CompuVtabRange.name == name)
         if module_name is not None:
-            compu_tab_verb_ranges.join(model.Module).filter(model.Module.name == module_name)
+            compu_tab_verb_ranges = compu_tab_verb_ranges.join(model.Module).filter(model.Module.name == module_name)
         self.compu_tab_verb_ranges = compu_tab_verb_ranges.first()
         if self.compu_tab_verb_ranges is None:
             raise ValueError(f"COMPU_VTAB_RANGE {name!r} does not exist.")
@@ -1620,7 +1620,7 @@ class CompuMethod(CachedBase):
         compu_method = session.query(model.CompuMethod).filter(model.CompuMethod.name == name)
         self.session = session
         if module_name is not None:
-            compu_method.join(model.Module).filter(model.Module.name == module_name)
+            compu_method = compu_method.join(model.Module).filter(model.Module.name == module_name)
         self.compu_method = compu_method.first()
         if self.compu_method is None:
             raise ValueError(f"COMPU_METHOD {name!r} does not exist.")

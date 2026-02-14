@@ -180,6 +180,21 @@ ASAP2_VERSION 1 71
 /end PROJECT
 """
 
+COMPU_METHOD_COMMENT_A2L = """
+ASAP2_VERSION 1 71
+/begin PROJECT CommentProject "CompuMethod comment Test"
+  /begin MODULE CommentModule ""
+    /begin COMPU_METHOD CM ""
+      /* multi-line
+         comment inside COMPU_METHOD */
+      IDENTICAL /* inline trailing comment */
+      "%6.3"
+      "unit"
+    /end COMPU_METHOD
+  /end MODULE
+/end PROJECT
+"""
+
 
 @pytest.fixture
 def parser():
@@ -331,3 +346,16 @@ def test_parse_nested_if_data(parser, tmp_path):
     assert "0x100" in raw
     assert "IF_DATA CAN" in raw
     assert "0x200" in raw
+
+
+def test_parse_compu_method_comment(parser, tmp_path):
+    a2l_file = tmp_path / "compu_comment.a2l"
+    a2l_file.write_text(COMPU_METHOD_COMMENT_A2L, encoding="latin-1")
+
+    db = parser.parse(str(a2l_file), in_memory=True)
+
+    compu = db.session.query(model.CompuMethod).filter_by(name="CM").first()
+    assert compu is not None
+    assert compu.conversionType == "IDENTICAL"
+    assert compu.format == "%6.3"
+    assert compu.unit == "unit"
