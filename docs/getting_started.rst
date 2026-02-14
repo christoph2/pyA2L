@@ -11,7 +11,11 @@ Import an .a2l file to database
     from pya2l import DB
 
     db = DB()
-    session = db.import_a2l("ASAP2_Demo_V161.a2l")
+    session = db.import_a2l(
+        "ASAP2_Demo_V161.a2l",
+        # encoding="latin-1" is default; override if your file differs
+        # progress_bar=False or loglevel="ERROR" to silence progress
+    )
 
 If nothing went wrong, your working directory now contains a file named `ASAP2_Demo_V161.a2ldb`,
 which is simply a `Sqlite3 <https://www.sqlite.org/>`_ database file.
@@ -81,6 +85,30 @@ Yields the following output:
     ASAM.M.VIRTUAL.SCALAR.SWORD.PHYSICAL             SWORD        0x00000000
 
 The classes describing an `.a2ldb` database live in `pya2l.model <../pya2l/model/__init__.py>`_, they are required to query, modify, and add model instances.
+
+Validate and export
+~~~~~~~~~~~~~~~~~~~
+
+Basic validation:
+
+.. code-block:: python
+
+    from pya2l import DB
+    from pya2l.api.validate import Validator
+
+    session = DB().open_existing("ASAP2_Demo_V161")
+    for msg in Validator(session)():
+        print(msg.type.name, msg.category.name, msg.diag_code.name, "-", msg.text)
+
+Export back to text:
+
+.. code-block:: python
+
+    from pya2l import export_a2l
+
+    export_a2l("ASAP2_Demo_V161", "exported.a2l")
+
+See :doc:`howto` for Excel export and other short recipes.
 
 The test-suite found  `here <../pya2l/tests/test_a2l_parser.py>`_ is a good starting point for further experimentations, because
 it touches virtually every A2L element/attribute.

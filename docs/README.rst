@@ -102,15 +102,22 @@ Installation
 Getting Started (Quickstart)
 ----------------------------
 
-Parse an A2L once, work from SQLite thereafter - Import a .a2l file and
-persist it as .a2ldb (SQLite):
+Parse once, work from SQLite thereafter.
+
+Import a .a2l file and persist it as .a2ldb (SQLite):
 
 .. code:: python
 
    from pya2l import DB
 
    db = DB()
-   session = db.import_a2l("ASAP2_Demo_V161.a2l")
+   session = db.import_a2l(
+       "ASAP2_Demo_V161.a2l",
+       # Optional:
+       # encoding="utf-8",        # default is latin-1
+       # progress_bar=False,      # silence the progress meter
+       # loglevel="ERROR",        # also suppresses progress
+   )
    # Creates ASAP2_Demo_V161.a2ldb in the working directory
 
 - Open an existing .a2ldb without re-parsing:
@@ -183,13 +190,19 @@ Export back to A2L (optional)
 
    export_a2l("ASAP2_Demo_V161", "exported.a2l")
 
-Tips - The default file encoding for A2L import is latin-1; override via
-encoding= parameter if needed. - pip wheels are
-`provided <https://pypi.org/project/pya2ldb/#files>`__ for supported
-platforms. - The Python package name is pya2ldb (not pya2l!!!).
+Tips
+----
 
-Examples - See pya2l/examples for sample A2L files and scripts. - The
-Sphinx docs contain a fuller tutorial and how-to guides.
+- Default import encoding is latin-1; override ``encoding=`` if your file differs.
+- Silence the progress meter via ``progress_bar=False`` or ``loglevel="ERROR"``.
+- Python package name is ``pya2ldb`` (not ``pya2l``).
+- See :doc:`howto` for Excel export and other short recipes.
+
+Examples
+--------
+
+- See ``pya2l/examples`` for sample A2L files and scripts.
+- The Sphinx docs contain a fuller tutorial and HOWTO guides.
 
 Create API and coverage parity
 ------------------------------
