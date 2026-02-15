@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """
-A2L Exporter: Vollständige, eigenständige Implementierung.
+A2L exporter: standalone implementation.
 
-Liest eine pyA2L a2ldb (A2LDatabase) und erzeugt eine A2L-ähnliche Textdatei.
-Robust gegenüber fehlenden/leeren IF_DATA-Sektionen.
+Reads a pyA2L a2ldb (A2LDatabase) and emits A2L-like text.
+Robust against missing/empty IF_DATA sections.
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Iterable, List, Optional, TextIO, Tuple, Union
 import argparse
 import logging
+import re
 
 from pya2l.model import A2LDatabase
 import pya2l.model as model
@@ -38,12 +39,12 @@ def open_database(db_path: Path, loglevel: str = "INFO") -> A2LDatabase:
     try:
         db.session.setup_ifdata_parser(loglevel)
     except Exception:
-        logging.getLogger(__name__).debug("IfData parser initialisierung fehlgeschlagen.", exc_info=True)
+        logging.getLogger(__name__).debug("Initializing IfData parser failed.", exc_info=True)
     return db
 
 
 def safe_get(obj: Any, attr: str) -> Any:
-    """Sicherer getattr, liefert None bei Fehlern."""
+    """Safe getattr that returns None on errors."""
     try:
         return getattr(obj, attr)
     except Exception:
@@ -56,7 +57,7 @@ def write_lines(out, lines: Iterable[str]) -> None:
 
 
 def write_raw_ifdata(out, ifdata_list: Optional[List[Any]]) -> None:
-    """Hängt vorhandene IF_DATA raw-Blöcke unverändert an."""
+    """Append existing IF_DATA raw blocks unchanged."""
     if not ifdata_list:
         return
     for ifd in ifdata_list:
@@ -472,6 +473,22 @@ def write_measurements(out, measurement_list: Optional[List[Any]]) -> None:
         out.write("    /end MEASUREMENT\n\n")
 
 
+def write_blobs(out, blobs: Optional[List[Any]]) -> None:
+    if not blobs:
+        return
+    for b in blobs:
+        out.write("    /begin BLOB\n")
+        out.write(f"      {b.name}  /* name */\n")
+        out.write(f'      "{safe_get(b, "longIdentifier") or ""}"  /* longIdentifier */\n')
+        out.write(f"      {safe_get(b, 'address') or 0}  /* address */\n")
+        out.write(f"      {safe_get(b, 'length') or 0}  /* length */\n")
+        ca = safe_get(b, "calibration_access")
+        if ca and safe_get(ca, "type"):
+            out.write("      CALIBRATION_ACCESS\n")
+            out.write(f"        {ca.type}  /* type */\n")
+        out.write("    /end BLOB\n\n")
+
+
 def write_mod_common(out, mod_common_obj: Optional[Any]) -> None:
     if not mod_common_obj:
         return
@@ -607,6 +624,61 @@ def write_typedefs(out, typedef_chars: Optional[List[Any]], typedef_meas: Option
             out.write("    /end TYPEDEF_STRUCTURE\n\n")
 
 
+def write_typedef_axes(out, typedef_axes: Optional[List[Any]]) -> None:
+    if not typedef_axes:
+        return
+    for ta in typedef_axes:
+        out.write("    /begin TYPEDEF_AXIS\n")
+        out.write(f"      {ta.name}  /* name */\n")
+        out.write(f'      "{safe_get(ta, "longIdentifier") or ""}"  /* longIdentifier */\n')
+        out.write(f"      {safe_get(ta, 'inputQuantity') or '-'}  /* inputQuantity */\n")
+        out.write(f"      {safe_get(ta, 'depositAttr') or '-'}  /* depositAttr */\n")
+        out.write(f"      {safe_get(ta, 'maxDiff') or 0}  /* maxDiff */\n")
+        out.write(f"      {safe_get(ta, 'conversion') or '-'}  /* conversion */\n")
+        out.write(f"      {safe_get(ta, 'maxAxisPoints') or 0}  /* maxAxisPoints */\n")
+        out.write(f"      {safe_get(ta, 'lowerLimit') or 0}  /* lowerLimit */\n")
+        out.write(f"      {safe_get(ta, 'upperLimit') or 0}  /* upperLimit */\n")
+        write_annotation(out, safe_get(ta, "annotation"))
+        if safe_get(ta, "byte_order"):
+            bo = ta.byte_order
+            out.write("      BYTE_ORDER\n")
+            out.write(f"        {bo.byteOrder}  /* byteOrder */\n")
+        ca = safe_get(ta, "calibration_access")
+        if ca and safe_get(ca, "type"):
+            out.write("      CALIBRATION_ACCESS\n")
+            out.write(f"        {ca.type}  /* type */\n")
+        dep = safe_get(ta, "deposit")
+        if dep and safe_get(dep, "mode"):
+            out.write("      DEPOSIT\n")
+            out.write(f"        {dep.mode}  /* mode */\n")
+        if safe_get(ta, "extended_limits"):
+            el = ta.extended_limits
+            out.write("      EXTENDED_LIMITS\n")
+            out.write(f"        {el.lowerLimit}  /* lowerLimit */\n")
+            out.write(f"        {el.upperLimit}  /* upperLimit */\n")
+        fmt = safe_get(ta, "format")
+        if fmt and safe_get(fmt, "format"):
+            out.write("      FORMAT\n")
+            out.write(f'        "{fmt.format}"  /* format */\n')
+        if safe_get(ta, "guard_rails"):
+            out.write("      GUARD_RAILS\n")
+        if safe_get(ta, "monotony"):
+            out.write("      MONOTONY\n")
+            out.write(f"        {ta.monotony.monotony}  /* monotony */\n")
+        if safe_get(ta, "phys_unit") and safe_get(ta.phys_unit, "unit"):
+            out.write("      PHYS_UNIT\n")
+            out.write(f'        "{ta.phys_unit.unit}"  /* unit */\n')
+        if safe_get(ta, "read_only"):
+            out.write("      READ_ONLY\n")
+        if safe_get(ta, "ref_memory_segment") and safe_get(ta.ref_memory_segment, "name"):
+            out.write("      REF_MEMORY_SEGMENT\n")
+            out.write(f"        {ta.ref_memory_segment.name}  /* name */\n")
+        if safe_get(ta, "step_size"):
+            out.write("      STEP_SIZE\n")
+            out.write(f"        {ta.step_size.stepSize}  /* stepSize */\n")
+        out.write("    /end TYPEDEF_AXIS\n\n")
+
+
 def write_units(out, unit_list: Optional[List[Any]]) -> None:
     if not unit_list:
         return
@@ -688,6 +760,66 @@ def write_variant_coding(out, vc: Optional[Any]) -> None:
     out.write("    /end VARIANT_CODING\n\n")
 
 
+def _camel_to_snake(name: str) -> str:
+    return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
+
+
+def _iter_columns(obj: Any) -> List[str]:
+    return [c.name for c in getattr(obj, "__table__").columns if not c.name.endswith("_rid") and c.name != "rid"]
+
+
+def write_record_layout_entries(out, keyword: str, entries: Union[Any, List[Any]]) -> None:
+    if entries is None:
+        return
+    if not isinstance(entries, list):
+        entries = [entries]
+    for entry in entries:
+        cols = _iter_columns(entry)
+        values = [safe_get(entry, col) for col in cols]
+        out.write(f"      {keyword}\n")
+        out.write("        " + " ".join("" if v is None else str(v) for v in values) + "\n")
+
+
+def write_record_layouts(out, layouts: Optional[List[Any]]) -> None:
+    if not layouts:
+        return
+    for rl in layouts:
+        out.write("    /begin RECORD_LAYOUT\n")
+        out.write(f"      {rl.name}  /* name */\n")
+        for elem in getattr(rl, "__optional_elements__", ()):
+            attr = _camel_to_snake(elem.name)
+            data = safe_get(rl, attr)
+            if data is None:
+                continue
+            write_record_layout_entries(out, elem.keyword_name, data)
+        out.write("    /end RECORD_LAYOUT\n\n")
+
+
+def write_transformers(out, transformers: Optional[List[Any]]) -> None:
+    if not transformers:
+        return
+    for tr in transformers:
+        out.write("    /begin TRANSFORMER\n")
+        out.write(f"      {tr.name}  /* name */\n")
+        out.write(f'      "{safe_get(tr, "version") or ""}"  /* version */\n')
+        out.write(f'      "{safe_get(tr, "dllname32") or ""}"  /* dllname32 */\n')
+        out.write(f'      "{safe_get(tr, "dllname64") or ""}"  /* dllname64 */\n')
+        out.write(f"      {safe_get(tr, 'timeout') or 0}  /* timeout */\n")
+        out.write(f"      {safe_get(tr, 'trigger') or '-'}  /* trigger */\n")
+        out.write(f"      {safe_get(tr, 'reverse') or '-'}  /* reverse */\n")
+        tio = safe_get(tr, "transformer_in_objects")
+        if tio and safe_get(tio, "identifier"):
+            out.write("      /begin TRANSFORMER_IN_OBJECTS\n")
+            out.write("        " + " ".join(str(x) for x in tio.identifier) + "\n")
+            out.write("      /end TRANSFORMER_IN_OBJECTS\n")
+        too = safe_get(tr, "transformer_out_objects")
+        if too and safe_get(too, "identifier"):
+            out.write("      /begin TRANSFORMER_OUT_OBJECTS\n")
+            out.write("        " + " ".join(str(x) for x in too.identifier) + "\n")
+            out.write("      /end TRANSFORMER_OUT_OBJECTS\n")
+        out.write("    /end TRANSFORMER\n\n")
+
+
 def _prepare_output(out_target: Union[Path, TextIO]) -> tuple[TextIO, bool]:
     if hasattr(out_target, "write"):
         return out_target, False
@@ -700,7 +832,7 @@ def export_db(db: A2LDatabase, out_path: Union[Path, TextIO], module_name: Optio
     logger = logging.getLogger(__name__)
     project = session.query(model.Project).first()
     if project is None:
-        logger.error("Keine Project-Zeile in der Datenbank gefunden.")
+        logger.error("No Project row found in the database.")
         return
 
     out, close_out = _prepare_output(out_path)
@@ -728,7 +860,7 @@ def export_db(db: A2LDatabase, out_path: Union[Path, TextIO], module_name: Optio
             modules_query = modules_query.filter(model.Module.name == module_name)
         modules = modules_query.all()
         if not modules:
-            logger.warning("Keine Module gefunden (oder falscher Modulname).")
+            logger.warning("No modules found (or incorrect module name).")
         for mod in modules:
             out.write("  /begin MODULE\n")
             out.write(f"    {mod.name}  /* name */\n")
@@ -740,6 +872,7 @@ def export_db(db: A2LDatabase, out_path: Union[Path, TextIO], module_name: Optio
                 out.write(aml_section.text.strip())
                 out.write("\n")
             write_axis_pts(out, safe_get(mod, "axis_pts"))
+            write_blobs(out, safe_get(mod, "blob"))
             write_characteristics(out, safe_get(mod, "characteristic"))
             write_compu_methods(out, safe_get(mod, "compu_method"))
             write_compu_tabs(out, safe_get(mod, "compu_tab"))
@@ -756,6 +889,42 @@ def export_db(db: A2LDatabase, out_path: Union[Path, TextIO], module_name: Optio
             if mp:
                 out.write("    /begin MOD_PAR\n")
                 out.write(f'      "{safe_get(mp, "comment") or ""}"  /* comment */\n')
+                for addr in safe_get(mp, "addr_epk") or []:
+                    out.write("      ADDR_EPK\n")
+                    out.write(f"        {safe_get(addr, 'address') or 0}  /* address */\n")
+                for cm in safe_get(mp, "calibration_method") or []:
+                    out.write("      /begin CALIBRATION_METHOD\n")
+                    out.write(f'        "{safe_get(cm, "method") or ""}"  /* method */\n')
+                    out.write(f"        {safe_get(cm, 'version') or 0}  /* version */\n")
+                    for ch in safe_get(cm, "calibration_handle") or []:
+                        out.write("        /begin CALIBRATION_HANDLE\n")
+                        handles = safe_get(ch, "handle") or []
+                        if handles:
+                            out.write("          " + " ".join(str(x) for x in handles) + "\n")
+                        cht = safe_get(ch, "calibration_handle_text")
+                        if cht and safe_get(cht, "text"):
+                            out.write("          CALIBRATION_HANDLE_TEXT\n")
+                            out.write(f'            "{cht.text}"\n')
+                        out.write("        /end CALIBRATION_HANDLE\n")
+                    out.write("      /end CALIBRATION_METHOD\n")
+                if safe_get(mp, "cpu_type") and safe_get(mp.cpu_type, "cPU"):
+                    out.write("      CPU_TYPE\n")
+                    out.write(f'        "{mp.cpu_type.cPU}"\n')
+                if safe_get(mp, "customer") and safe_get(mp.customer, "customer"):
+                    out.write("      CUSTOMER\n")
+                    out.write(f'        "{mp.customer.customer}"\n')
+                if safe_get(mp, "customer_no") and safe_get(mp.customer_no, "number"):
+                    out.write("      CUSTOMER_NO\n")
+                    out.write(f'        "{mp.customer_no.number}"\n')
+                if safe_get(mp, "ecu") and safe_get(mp.ecu, "controlUnit"):
+                    out.write("      ECU\n")
+                    out.write(f'        "{mp.ecu.controlUnit}"\n')
+                if safe_get(mp, "ecu_calibration_offset") and safe_get(mp.ecu_calibration_offset, "offset") is not None:
+                    out.write("      ECU_CALIBRATION_OFFSET\n")
+                    out.write(f"        {mp.ecu_calibration_offset.offset}\n")
+                if safe_get(mp, "epk") and safe_get(mp.epk, "identifier"):
+                    out.write("      EPK\n")
+                    out.write(f'        "{mp.epk.identifier}"\n')
                 write_memory_layouts(out, safe_get(mp, "memory_layout"))
                 write_memory_segments(out, safe_get(mp, "memory_segment"))
                 if safe_get(mp, "no_of_interfaces"):
@@ -772,11 +941,20 @@ def export_db(db: A2LDatabase, out_path: Union[Path, TextIO], module_name: Optio
                         out.write("      SYSTEM_CONSTANT\n")
                         out.write(f'        "{sc.name}"  /* name */\n')
                         out.write(f'        "{sc.value}"  /* value */\n')
+                if safe_get(mp, "user") and safe_get(mp.user, "userName"):
+                    out.write("      USER\n")
+                    out.write(f'        "{mp.user.userName}"\n')
+                if safe_get(mp, "version") and safe_get(mp.version, "versionIdentifier"):
+                    out.write("      VERSION\n")
+                    out.write(f'        "{mp.version.versionIdentifier}"\n')
                 out.write("    /end MOD_PAR\n\n")
             write_typedefs(out, safe_get(mod, "typedef_characteristic"), safe_get(mod, "typedef_measurement"), safe_get(mod, "typedef_structure"))
+            write_typedef_axes(out, safe_get(mod, "typedef_axis"))
             write_units(out, safe_get(mod, "unit"))
             write_user_rights(out, safe_get(mod, "user_rights"))
             write_variant_coding(out, safe_get(mod, "variant_coding"))
+            write_record_layouts(out, safe_get(mod, "record_layout"))
+            write_transformers(out, safe_get(mod, "transformer"))
             out.write("  /end MODULE\n\n")
         write_raw_ifdata(out, safe_get(project, "if_data"))
         out.write("/end PROJECT\n")
@@ -786,11 +964,11 @@ def export_db(db: A2LDatabase, out_path: Union[Path, TextIO], module_name: Optio
 
 
 def parse_args(argv: Optional[List[str]] = None) -> ExporterConfig:
-    parser = argparse.ArgumentParser(description="A2L Exporter aus pyA2L a2ldb.")
-    parser.add_argument("database", type=Path, help="Pfad zur a2ldb-Datei (oder basename ohne .a2ldb).")
-    parser.add_argument("-o", "--output", type=Path, help="Ausgabedatei (.a2l). Standard: <db>.a2l")
-    parser.add_argument("-m", "--module", type=str, help="Optional: nur dieses Modul exportieren.", default=None)
-    parser.add_argument("-l", "--loglevel", type=str, help="Log-Level (DEBUG, INFO, WARNING).", default="INFO")
+    parser = argparse.ArgumentParser(description="A2L exporter from pyA2L a2ldb.")
+    parser.add_argument("database", type=Path, help="Path to the a2ldb file (or basename without .a2ldb).")
+    parser.add_argument("-o", "--output", type=Path, help="Output file (.a2l). Default: <db>.a2l")
+    parser.add_argument("-m", "--module", type=str, help="Optional: export only this module.", default=None)
+    parser.add_argument("-l", "--loglevel", type=str, help="Log level (DEBUG, INFO, WARNING).", default="INFO")
     args = parser.parse_args(argv)
     db_path = args.database
     if not db_path.exists():
@@ -798,7 +976,7 @@ def parse_args(argv: Optional[List[str]] = None) -> ExporterConfig:
         if candidate.exists():
             db_path = candidate
         else:
-            raise FileNotFoundError(f"DB-Datei nicht gefunden: {args.database}")
+            raise FileNotFoundError(f"Database file not found: {args.database}")
     out_path = args.output or db_path.with_suffix(".a2l")
     return ExporterConfig(db_path=db_path, out_path=out_path, module_name=args.module, loglevel=args.loglevel)
 
@@ -807,7 +985,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     cfg = parse_args(argv)
     setup_logging(cfg.loglevel)
     logger = logging.getLogger(__name__)
-    logger.info("Starte Export...")
+    logger.info("Starting export...")
     db = open_database(cfg.db_path, cfg.loglevel)
     try:
         export_db(db, cfg.out_path, cfg.module_name)
@@ -815,9 +993,9 @@ def main(argv: Optional[List[str]] = None) -> None:
         try:
             db.close()
         except Exception:
-            logger.debug("Fehler beim Schließen der Datenbank.", exc_info=True)
+            logger.debug("Error while closing the database.", exc_info=True)
 
-    logger.info("Export beendet. Datei: %s", cfg.out_path)
+    logger.info("Export finished. File: %s", cfg.out_path)
 
 
 if __name__ == "__main__":

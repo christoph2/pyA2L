@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """Exporter: a2ldb -> JSON.
 
-Vollständiger JSON-Exporter im gleichen Umfang wie exporter_new.py.
-Robust, PEP8, Dataclasses, Typannotationen und Logging.
+Full JSON exporter matching exporter_new.py coverage.
+Robust implementation with dataclasses, type hints, and logging.
 """
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence
 import argparse
 import json
 import logging
+import re
 
 from pya2l.model import A2LDatabase
 import pya2l.model as model
@@ -21,7 +22,7 @@ import pya2l.model as model
 
 @dataclass
 class ExporterConfig:
-    """Konfiguration für den JSON-Exporter."""
+    """Configuration for the JSON exporter."""
     db_path: Path
     out_path: Path
     module_name: Optional[str]
@@ -30,26 +31,26 @@ class ExporterConfig:
 
 
 def setup_logging(level: str) -> None:
-    """Basis-Logging konfigurieren."""
+    """Configure basic logging."""
     numeric = getattr(logging, level.upper(), logging.INFO)
     logging.basicConfig(level=numeric, format="%(levelname)s: %(message)s")
 
 
 def open_database(db_path: Path, loglevel: str = "INFO") -> A2LDatabase:
-    """A2LDatabase öffnen; IfData-Parser optional initialisieren."""
+    """Open A2LDatabase; optionally initialize IF_DATA parser."""
     db = A2LDatabase(str(db_path), debug=False, logLevel=loglevel)
     try:
         db.session.setup_ifdata_parser(loglevel)
     except Exception:
         logging.getLogger(__name__).debug(
-            "IfData parser nicht initialisierbar.",
+            "IF_DATA parser could not be initialized.",
             exc_info=True,
         )
     return db
 
 
 def safe_get(obj: Any, attr: str) -> Any:
-    """Sicheres getattr mit None-Rückfall."""
+    """Safe getattr with None fallback."""
     try:
         return getattr(obj, attr)
     except Exception:
@@ -57,7 +58,7 @@ def safe_get(obj: Any, attr: str) -> Any:
 
 
 def as_list(value: Any) -> List[Any]:
-    """Normalisiert iterierbare ORM-Felder zu Python-Listen."""
+    """Normalize iterable ORM fields to Python lists."""
     if not value:
         return []
     if isinstance(value, list):
@@ -69,12 +70,12 @@ def as_list(value: Any) -> List[Any]:
 
 
 def _bool_flag(obj: Any) -> bool:
-    """ORM-Flagfelder sind oft als eigenes Objekt modelliert."""
+    """ORM flag fields are often modeled as dedicated objects."""
     return bool(obj)
 
 
 def matrix_dim_to_list(matrix_dim_obj: Any) -> Optional[List[int]]:
-    """MATRIX_DIM als Liste von ints."""
+    """Return MATRIX_DIM as a list of ints."""
     if not matrix_dim_obj:
         return None
     nums = safe_get(matrix_dim_obj, "numbers")
@@ -87,7 +88,7 @@ def matrix_dim_to_list(matrix_dim_obj: Any) -> Optional[List[int]]:
 
 
 def function_list_to_list(function_list_obj: Any) -> List[str]:
-    """FUNCTION_LIST als Liste von Namen (Strings)."""
+    """FUNCTION_LIST as a list of names (strings)."""
     if not function_list_obj:
         return []
     names = safe_get(function_list_obj, "name")
@@ -97,7 +98,7 @@ def function_list_to_list(function_list_obj: Any) -> List[str]:
 
 
 def symbol_link_to_dict(symbol_link_obj: Any) -> Optional[Dict[str, Any]]:
-    """SYMBOL_LINK als Dict."""
+    """SYMBOL_LINK as dict."""
     if not symbol_link_obj:
         return None
     return {
@@ -107,7 +108,7 @@ def symbol_link_to_dict(symbol_link_obj: Any) -> Optional[Dict[str, Any]]:
 
 
 def max_refresh_to_dict(max_refresh_obj: Any) -> Optional[Dict[str, Any]]:
-    """MAX_REFRESH als Dict."""
+    """MAX_REFRESH as dict."""
     if not max_refresh_obj:
         return None
     return {
@@ -117,7 +118,7 @@ def max_refresh_to_dict(max_refresh_obj: Any) -> Optional[Dict[str, Any]]:
 
 
 def ifdata_raw_list(sections: Optional[Iterable[Any]]) -> List[str]:
-    """Rohtexte der IF_DATA-Sektionen sammeln (falls vorhanden)."""
+    """Collect raw text of IF_DATA sections if present."""
     raws: List[str] = []
     for s in as_list(sections):
         raw = safe_get(s, "raw")
@@ -127,19 +128,19 @@ def ifdata_raw_list(sections: Optional[Iterable[Any]]) -> List[str]:
 
 
 def ifdata_parsed_list(session: Any, sections: Optional[Sequence[Any]]) -> List[Any]:
-    """IF_DATA parsen (best effort)."""
+    """Parse IF_DATA (best effort)."""
     if not sections:
         return []
     try:
         parsed = session.parse_ifdata(sections)
         return parsed or []
     except Exception:
-        logging.getLogger(__name__).debug("Fehler beim Parsen von IF_DATA.", exc_info=True)
+        logging.getLogger(__name__).debug("Error parsing IF_DATA.", exc_info=True)
         return []
 
 
 def annotation_to_list(annos: Optional[Iterable[Any]]) -> List[Dict[str, Any]]:
-    """Annotationen in einfache Dicts umwandeln."""
+    """Convert annotations to simple dicts."""
     result: List[Dict[str, Any]] = []
     for a in as_list(annos):
         label = safe_get(a, "annotation_label")
@@ -164,7 +165,7 @@ def annotation_to_list(annos: Optional[Iterable[Any]]) -> List[Dict[str, Any]]:
 
 
 def axis_descr_to_dict(session: Any, ad: Any) -> Dict[str, Any]:
-    """AXIS_DESCR -> Dict."""
+    """AXIS_DESCR to dict."""
     out: Dict[str, Any] = {
         "attribute": safe_get(ad, "attribute"),
         "inputQuantity": safe_get(ad, "inputQuantity"),
@@ -181,7 +182,7 @@ def axis_descr_to_dict(session: Any, ad: Any) -> Dict[str, Any]:
 
 
 def axis_pts_to_dict(session: Any, ap: Any) -> Dict[str, Any]:
-    """AXIS_PTS -> Dict."""
+    """AXIS_PTS to dict."""
     out: Dict[str, Any] = {
         "name": safe_get(ap, "name"),
         "longIdentifier": safe_get(ap, "longIdentifier"),
@@ -212,7 +213,7 @@ def axis_pts_to_dict(session: Any, ap: Any) -> Dict[str, Any]:
 
 
 def characteristic_to_dict(session: Any, ch: Any) -> Dict[str, Any]:
-    """CHARACTERISTIC -> Dict."""
+    """CHARACTERISTIC to dict."""
     out: Dict[str, Any] = {
         "name": safe_get(ch, "name"),
         "longIdentifier": safe_get(ch, "longIdentifier"),
@@ -241,7 +242,7 @@ def characteristic_to_dict(session: Any, ch: Any) -> Dict[str, Any]:
 
 
 def compu_method_to_dict(cm: Any) -> Dict[str, Any]:
-    """COMPU_METHOD -> Dict."""
+    """COMPU_METHOD to dict."""
     out: Dict[str, Any] = {
         "name": safe_get(cm, "name"),
         "longIdentifier": safe_get(cm, "longIdentifier"),
@@ -549,13 +550,38 @@ def mod_par_to_dict(session: Any, mp: Any) -> Optional[Dict[str, Any]]:
 
     out: Dict[str, Any] = {
         "comment": safe_get(mp, "comment"),
+        "addr_epk": [safe_get(a, "address") for a in as_list(safe_get(mp, "addr_epk"))],
+        "calibration_method": [],
+        "cpu_type": safe_get(safe_get(mp, "cpu_type"), "cPU"),
+        "customer": safe_get(safe_get(mp, "customer"), "customer"),
+        "customer_no": safe_get(safe_get(mp, "customer_no"), "number"),
+        "ecu": safe_get(safe_get(mp, "ecu"), "controlUnit"),
+        "ecu_calibration_offset": safe_get(safe_get(mp, "ecu_calibration_offset"), "offset"),
+        "epk": safe_get(safe_get(mp, "epk"), "identifier"),
         "memory_layout": [memory_layout_to_dict(session, ml) for ml in as_list(safe_get(mp, "memory_layout"))],
         "memory_segment": [memory_segment_to_dict(session, ms) for ms in as_list(safe_get(mp, "memory_segment"))],
         "no_of_interfaces": safe_get(safe_get(mp, "no_of_interfaces"), "num"),
         "phone_no": safe_get(safe_get(mp, "phone_no"), "telnum"),
         "supplier": safe_get(safe_get(mp, "supplier"), "manufacturer"),
         "system_constant": [],
+        "user": safe_get(safe_get(mp, "user"), "userName"),
+        "version": safe_get(safe_get(mp, "version"), "versionIdentifier"),
     }
+
+    for cm in as_list(safe_get(mp, "calibration_method")):
+        cm_entry: Dict[str, Any] = {
+            "method": safe_get(cm, "method"),
+            "version": safe_get(cm, "version"),
+            "calibration_handle": [],
+        }
+        for ch in as_list(safe_get(cm, "calibration_handle")):
+            cm_entry["calibration_handle"].append(
+                {
+                    "handle": list(as_list(safe_get(ch, "handle"))),
+                    "calibration_handle_text": safe_get(safe_get(ch, "calibration_handle_text"), "text"),
+                }
+            )
+        out["calibration_method"].append(cm_entry)
 
     for sc in as_list(safe_get(mp, "system_constant")):
         out["system_constant"].append({"name": safe_get(sc, "name"), "value": safe_get(sc, "value")})
@@ -602,6 +628,84 @@ def typedef_measurement_to_dict(tm: Any) -> Dict[str, Any]:
         "lowerLimit": safe_get(tm, "lowerLimit"),
         "upperLimit": safe_get(tm, "upperLimit"),
     }
+
+
+def blob_to_dict(b: Any) -> Dict[str, Any]:
+    return {
+        "name": safe_get(b, "name"),
+        "longIdentifier": safe_get(b, "longIdentifier"),
+        "address": safe_get(b, "address"),
+        "length": safe_get(b, "length"),
+        "calibration_access": safe_get(safe_get(b, "calibration_access"), "type"),
+    }
+
+
+def typedef_axis_to_dict(ta: Any) -> Dict[str, Any]:
+    return {
+        "name": safe_get(ta, "name"),
+        "longIdentifier": safe_get(ta, "longIdentifier"),
+        "inputQuantity": safe_get(ta, "inputQuantity"),
+        "depositAttr": safe_get(ta, "depositAttr"),
+        "maxDiff": safe_get(ta, "maxDiff"),
+        "conversion": safe_get(ta, "conversion"),
+        "maxAxisPoints": safe_get(ta, "maxAxisPoints"),
+        "lowerLimit": safe_get(ta, "lowerLimit"),
+        "upperLimit": safe_get(ta, "upperLimit"),
+        "annotation": annotation_to_list(safe_get(ta, "annotation")),
+        "byte_order": safe_get(safe_get(ta, "byte_order"), "byteOrder"),
+        "calibration_access": safe_get(safe_get(ta, "calibration_access"), "type"),
+        "deposit": safe_get(safe_get(ta, "deposit"), "mode"),
+        "extended_limits": None
+        if not safe_get(ta, "extended_limits")
+        else {
+            "lowerLimit": safe_get(ta.extended_limits, "lowerLimit"),
+            "upperLimit": safe_get(ta.extended_limits, "upperLimit"),
+        },
+        "format": safe_get(safe_get(ta, "format"), "format"),
+        "guard_rails": _bool_flag(safe_get(ta, "guard_rails")),
+        "monotony": safe_get(safe_get(ta, "monotony"), "monotony"),
+        "phys_unit": safe_get(safe_get(ta, "phys_unit"), "unit"),
+        "read_only": _bool_flag(safe_get(ta, "read_only")),
+        "ref_memory_segment": safe_get(safe_get(ta, "ref_memory_segment"), "name"),
+        "step_size": safe_get(safe_get(ta, "step_size"), "stepSize"),
+    }
+
+
+def transformer_to_dict(tr: Any) -> Dict[str, Any]:
+    return {
+        "name": safe_get(tr, "name"),
+        "version": safe_get(tr, "version"),
+        "dllname32": safe_get(tr, "dllname32"),
+        "dllname64": safe_get(tr, "dllname64"),
+        "timeout": safe_get(tr, "timeout"),
+        "trigger": safe_get(tr, "trigger"),
+        "reverse": safe_get(tr, "reverse"),
+        "transformer_in_objects": list(as_list(safe_get(safe_get(tr, "transformer_in_objects"), "identifier"))),
+        "transformer_out_objects": list(as_list(safe_get(safe_get(tr, "transformer_out_objects"), "identifier"))),
+    }
+
+
+def _column_dict(obj: Any) -> Dict[str, Any]:
+    if obj is None:
+        return {}
+    cols = [
+        c.name
+        for c in getattr(obj, "__table__").columns
+        if not c.name.endswith("_rid") and c.name not in ("rid",)
+    ]
+    return {col: safe_get(obj, col) for col in cols}
+
+
+def record_layout_to_dict(rl: Any) -> Dict[str, Any]:
+    out: Dict[str, Any] = {"name": safe_get(rl, "name"), "entries": []}
+    for elem in getattr(rl, "__optional_elements__", ()):
+        attr = re.sub(r"(?<!^)(?=[A-Z])", "_", elem.name).lower()
+        data = safe_get(rl, attr)
+        if data is None:
+            continue
+        for item in as_list(data):
+            out["entries"].append({"keyword": elem.keyword_name, "values": _column_dict(item)})
+    return out
 
 
 def typedef_structure_to_dict(ts: Any) -> Dict[str, Any]:
@@ -698,7 +802,7 @@ def variant_coding_to_dict(vc: Any) -> Optional[Dict[str, Any]]:
 
 
 def module_to_dict(session: Any, mod: Any) -> Dict[str, Any]:
-    """MODULE -> Dict (Umfang wie exporter_new.py)."""
+    """MODULE to dict (matching exporter_new.py coverage)."""
     aml_section = session.query(model.AMLSection).first()
 
     out: Dict[str, Any] = {
@@ -727,21 +831,25 @@ def module_to_dict(session: Any, mod: Any) -> Dict[str, Any]:
         "typedef_structure": [
             typedef_structure_to_dict(ts) for ts in as_list(safe_get(mod, "typedef_structure"))
         ],
+        "typedef_axis": [typedef_axis_to_dict(ta) for ta in as_list(safe_get(mod, "typedef_axis"))],
         "unit": [unit_to_dict(u) for u in as_list(safe_get(mod, "unit"))],
         "user_rights": [user_rights_to_dict(ur) for ur in as_list(safe_get(mod, "user_rights"))],
         "variant_coding": variant_coding_to_dict(safe_get(mod, "variant_coding")),
         "if_data_raw": ifdata_raw_list(safe_get(mod, "if_data")),
         "if_data_parsed": ifdata_parsed_list(session, safe_get(mod, "if_data")),
+        "blob": [blob_to_dict(b) for b in as_list(safe_get(mod, "blob"))],
+        "record_layout": [record_layout_to_dict(rl) for rl in as_list(safe_get(mod, "record_layout"))],
+        "transformer": [transformer_to_dict(tr) for tr in as_list(safe_get(mod, "transformer"))],
     }
     return out
 
 
 def project_to_dict(db: A2LDatabase, module_name: Optional[str] = None) -> Dict[str, Any]:
-    """Erzeuge ein serialisierbares Dict für das komplette Projekt."""
+    """Create a serializable dict for the entire project."""
     session = db.session
     proj = session.query(model.Project).first()
     if proj is None:
-        raise RuntimeError("Keine Project-Zeile in der Datenbank gefunden.")
+        raise RuntimeError("No Project row found in the database.")
 
     header_obj = safe_get(proj, "header")
     header: Optional[Dict[str, Any]] = None
@@ -769,32 +877,32 @@ def project_to_dict(db: A2LDatabase, module_name: Optional[str] = None) -> Dict[
 
 
 def parse_args(argv: Optional[List[str]] = None) -> ExporterConfig:
-    """Argumente parsen und ExporterConfig erzeugen."""
+    """Parse CLI arguments and build ExporterConfig."""
     parser = argparse.ArgumentParser(description="Export a2ldb -> JSON (pyA2L).")
     parser.add_argument(
         "database",
         type=Path,
-        help="Pfad zur a2ldb-Datei (oder basename ohne .a2ldb).",
+        help="Path to the a2ldb file (or basename without .a2ldb).",
     )
     parser.add_argument(
         "-o",
         "--output",
         type=Path,
-        help="Ausgabedatei (.json). Standard: <db>.json",
+        help="Output file (.json). Default: <db>.json",
     )
     parser.add_argument(
         "-m",
         "--module",
         type=str,
-        help="Optional: nur dieses Modul exportieren.",
+        help="Optional: export only this module.",
         default=None,
     )
-    parser.add_argument("--pretty", action="store_true", help="Schreibe formatiertes JSON.")
+    parser.add_argument("--pretty", action="store_true", help="Write formatted JSON.")
     parser.add_argument(
         "-l",
         "--loglevel",
         type=str,
-        help="Log-Level (DEBUG, INFO, WARNING).",
+        help="Log level (DEBUG, INFO, WARNING).",
         default="INFO",
     )
     args = parser.parse_args(argv)
@@ -822,12 +930,12 @@ def main(argv: Optional[List[str]] = None) -> None:
     cfg = parse_args(argv)
     setup_logging(cfg.loglevel)
     logger = logging.getLogger(__name__)
-    logger.info("Starte JSON-Export...")
+    logger.info("Starting JSON export...")
 
     db = open_database(cfg.db_path, cfg.loglevel)
     try:
         data = project_to_dict(db, cfg.module_name)
-        logger.info("Schreibe JSON nach %s", cfg.out_path)
+        logger.info("Writing JSON to %s", cfg.out_path)
         with cfg.out_path.open("w", encoding="utf-8") as fh:
             if cfg.pretty:
                 json.dump(data, fh, ensure_ascii=False, indent=4)
@@ -837,9 +945,9 @@ def main(argv: Optional[List[str]] = None) -> None:
         try:
             db.close()
         except Exception:
-            logger.debug("Fehler beim Schließen der Datenbank.", exc_info=True)
+        logger.debug("Error while closing the database.", exc_info=True)
 
-    logger.info("Export beendet. Datei: %s", cfg.out_path)
+    logger.info("Export finished. File: %s", cfg.out_path)
 
 
 if __name__ == "__main__":
