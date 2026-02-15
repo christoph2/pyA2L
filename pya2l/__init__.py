@@ -26,6 +26,7 @@ __copyright__ = """
 __author__ = "Christoph Schueler"
 __version__ = "0.10.2"
 
+import re
 import sys
 import typing
 from io import TextIOWrapper
@@ -66,6 +67,18 @@ else:
 
     with (importlib.resources.files("pya2l.cgen.templates") / "a2l.tmpl").open(encoding="utf8") as data:
         A2L_TEMPLATE = data.read()
+
+
+_BLANK_BLOCKS = re.compile(r"(\r?\n)[ \t]*(\r?\n){2,}")
+
+
+def _render_a2l(session: model.SessionProxy, encoding: str) -> str:
+    """Render the in-memory session as A2L text with minimal blank blocks."""
+
+    namespace = dict(session=session, model=model)
+    rendered = doTemplateFromText(A2L_TEMPLATE, namespace, formatExceptions=False, encoding=encoding)
+    # Collapse runs of >=2 empty lines (with optional whitespace) to a single blank line.
+    return _BLANK_BLOCKS.sub(r"\1\1", rendered)
 
 
 def import_a2l(
@@ -221,8 +234,7 @@ def export_a2l(
         File encoding like "latin-1" or "utf-8".
     """
     session = open_existing(db_name)
-    namespace = dict(session=session, model=model)
-    data = doTemplateFromText(A2L_TEMPLATE, namespace, formatExceptions=False, encoding=encoding)
+    data = _render_a2l(session, encoding)
     if isinstance(output, TextIOWrapper):
         output.write(data)
     else:

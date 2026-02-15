@@ -375,10 +375,11 @@ class IfDataParser:
                 elem = self.syntax_tos.members.get(tk_value)
 
                 # Handle flag values with no further definition
+                definition_member = getattr(elem.definition, "member", None)
                 if (
                     isinstance(elem, TaggedStructMember)
                     and not isinstance(elem.definition, Block)
-                    and elem.definition.member is None
+                    and (definition_member is None or isinstance(definition_member, NullObject))
                 ):
                     result[tk_value].append(True)
                     self.consume()
