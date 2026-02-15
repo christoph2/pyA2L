@@ -406,6 +406,14 @@ class Alignment:
         """
         return align_as(offset, self.get(data_type))
 
+    def to_dict(self) -> Dict[str, int]:
+        """Return the alignment values as a dictionary."""
+        return asdict(self)
+
+    def items(self):
+        """Dictionary-style items iterator for compatibility."""
+        return self.to_dict().items()
+
 
 NATURAL_ALIGNMENTS = Alignment(byte=1, dword=4, float16=2, float32=4, float64=8, qword=8, word=2)
 

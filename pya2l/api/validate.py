@@ -158,7 +158,7 @@ class Validator:
                 Diagnostics.MISSING_EPK,
                 f"{module.name}::ModPar: Missing EPK.",
             )
-        elif not mod_par.adrEpk:
+        elif not mod_par.addrEpk:
             self.emit_diagnostic(
                 Level.WARNING,
                 Category.MISSING,

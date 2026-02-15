@@ -12,6 +12,7 @@ import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
+import sys
 
 from pya2l import import_a2l
 from pya2l.api.validate import Validator
@@ -123,18 +124,37 @@ def run_benchmark(
                     try:
                         def profiled(name: str, func):
                             pr = cProfile.Profile()
-                            pr.enable()
-                            start = time.perf_counter()
-                            res = func()
-                            duration = time.perf_counter() - start
-                            pr.disable()
-                            stats_path = out_dir / f"{name}.pstats"
-                            pr.dump_stats(stats_path)
+                            existing_profiler = sys.getprofile()
+                            if existing_profiler is not None:
+                                sys.setprofile(None)
+                            try:
+                                try:
+                                    pr.enable()
+                                    start = time.perf_counter()
+                                    res = func()
+                                    duration = time.perf_counter() - start
+                                    pr.disable()
+                                    profiling_available = True
+                                except ValueError as exc:
+                                    profiling_available = False
+                                    start = time.perf_counter()
+                                    res = func()
+                                    duration = time.perf_counter() - start
+                            finally:
+                                if existing_profiler is not None:
+                                    sys.setprofile(existing_profiler)
 
-                            text_path = out_dir / f"{name}.txt"
-                            with text_path.open("w", encoding="utf-8") as fh:
-                                ps = pstats.Stats(pr, stream=fh).sort_stats("cumulative")
-                                ps.print_stats(profile_top)
+                            if profiling_available:
+                                stats_path = out_dir / f"{name}.pstats"
+                                pr.dump_stats(stats_path)
+
+                                text_path = out_dir / f"{name}.txt"
+                                with text_path.open("w", encoding="utf-8") as fh:
+                                    ps = pstats.Stats(pr, stream=fh).sort_stats("cumulative")
+                                    ps.print_stats(profile_top)
+                            else:
+                                text_path = out_dir / f"{name}.txt"
+                                text_path.write_text("Profiling skipped: another profiler is active.\n", encoding="utf-8")
                             return res, duration
 
                         imp_res, imp_dur = profiled(
