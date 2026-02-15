@@ -16,6 +16,7 @@ from typing import Any, Iterable, List, Optional, TextIO, Tuple, Union
 import argparse
 import logging
 import re
+from sqlalchemy.orm import selectinload
 
 from pya2l.model import A2LDatabase
 import pya2l.model as model
@@ -855,7 +856,16 @@ def export_db(db: A2LDatabase, out_path: Union[Path, TextIO], module_name: Optio
                 out.write("    VERSION\n")
                 out.write(f'      "{version.versionIdentifier}"  /* versionIdentifier */\n')
             out.write("  /end HEADER\n")
-        modules_query = session.query(model.Module)
+        modules_query = session.query(model.Module).options(
+            selectinload(model.Module.mod_par).selectinload(model.ModPar.addr_epk),
+            selectinload(model.Module.mod_par)
+            .selectinload(model.ModPar.calibration_method)
+            .selectinload(model.CalibrationMethod.calibration_handle),
+            selectinload(model.Module.mod_par).selectinload(model.ModPar.memory_segment),
+            selectinload(model.Module.mod_common),
+            selectinload(model.Module.record_layout),
+            selectinload(model.Module.transformer),
+        )
         if module_name:
             modules_query = modules_query.filter(model.Module.name == module_name)
         modules = modules_query.all()

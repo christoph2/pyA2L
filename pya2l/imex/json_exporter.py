@@ -15,6 +15,7 @@ import argparse
 import json
 import logging
 import re
+from sqlalchemy.orm import selectinload
 
 from pya2l.model import A2LDatabase
 import pya2l.model as model
@@ -860,7 +861,16 @@ def project_to_dict(db: A2LDatabase, module_name: Optional[str] = None) -> Dict[
             "version": safe_get(safe_get(header_obj, "version"), "versionIdentifier"),
         }
 
-    modules_query = session.query(model.Module)
+    modules_query = session.query(model.Module).options(
+        selectinload(model.Module.mod_par).selectinload(model.ModPar.addr_epk),
+        selectinload(model.Module.mod_par)
+        .selectinload(model.ModPar.calibration_method)
+        .selectinload(model.CalibrationMethod.calibration_handle),
+        selectinload(model.Module.mod_par).selectinload(model.ModPar.memory_segment),
+        selectinload(model.Module.mod_common),
+        selectinload(model.Module.record_layout),
+        selectinload(model.Module.transformer),
+    )
     if module_name:
         modules_query = modules_query.filter(model.Module.name == module_name)
     modules = modules_query.all()
