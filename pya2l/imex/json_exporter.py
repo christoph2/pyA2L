@@ -945,7 +945,7 @@ def main(argv: Optional[List[str]] = None) -> None:
         try:
             db.close()
         except Exception:
-        logger.debug("Error while closing the database.", exc_info=True)
+            logger.debug("Error while closing the database.", exc_info=True)
 
     logger.info("Export finished. File: %s", cfg.out_path)
 
