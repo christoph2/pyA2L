@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import argparse
+import cProfile
+import pstats
 import json
 import os
 import statistics
@@ -101,13 +103,87 @@ def run_iteration(dataset: Path, module: Optional[str], loglevel: str) -> Iterat
 
 
 def run_benchmark(
-    datasets: List[Path], iterations: int, module: Optional[str], loglevel: str
+    datasets: List[Path],
+    iterations: int,
+    module: Optional[str],
+    loglevel: str,
+    profile_dir: Optional[Path] = None,
+    profile_top: int = 20,
 ) -> Dict[str, Dict[str, float]]:
     results: Dict[str, Dict[str, float]] = {}
     for ds in datasets:
         timings: List[IterationTimings] = []
         for _ in range(iterations):
-            timings.append(run_iteration(ds, module, loglevel))
+            if profile_dir:
+                out_dir = profile_dir / ds.stem
+                out_dir.mkdir(parents=True, exist_ok=True)
+                original_cwd = Path.cwd()
+                with tempfile.TemporaryDirectory() as tempdir:
+                    os.chdir(tempdir)
+                    try:
+                        def profiled(name: str, func):
+                            pr = cProfile.Profile()
+                            pr.enable()
+                            start = time.perf_counter()
+                            res = func()
+                            duration = time.perf_counter() - start
+                            pr.disable()
+                            stats_path = out_dir / f"{name}.pstats"
+                            pr.dump_stats(stats_path)
+
+                            text_path = out_dir / f"{name}.txt"
+                            with text_path.open("w", encoding="utf-8") as fh:
+                                ps = pstats.Stats(pr, stream=fh).sort_stats("cumulative")
+                                ps.print_stats(profile_top)
+                            return res, duration
+
+                        imp_res, imp_dur = profiled(
+                            "import",
+                            lambda: import_a2l(str(ds), loglevel=loglevel, progress_bar=False, local=True),
+                        )
+                        imp_res.close()
+                        try:
+                            bind = imp_res.bind
+                        except Exception:
+                            bind = None
+                        if bind is not None:
+                            try:
+                                bind.dispose()
+                            except Exception:
+                                pass
+
+                        db_path = Path(tempdir) / ds.with_suffix(".a2ldb").name
+                        db = open_a2l_database(db_path, loglevel)
+                        try:
+                            _, exp_a2l_dur = profiled(
+                                "export_a2l",
+                                lambda: export_a2l_db(db, out_dir / "out.a2l", module),
+                            )
+                            _, json_to_dict_dur = profiled(
+                                "export_json_dict",
+                                lambda: export_json_dict(db, module),
+                            )
+                            validate_dur: Optional[float]
+                            try:
+                                _, validate_dur = profiled("validate", lambda: Validator(db.session)())
+                            except Exception:
+                                validate_dur = None
+                            json_serialize_dur = 0.0
+                        finally:
+                            db.close()
+                    finally:
+                        os.chdir(original_cwd)
+
+                timings.append(
+                    IterationTimings(
+                        import_seconds=imp_dur,
+                        export_a2l_seconds=exp_a2l_dur,
+                        export_json_seconds=json_to_dict_dur + json_serialize_dur,
+                        validate_seconds=validate_dur,
+                    )
+                )
+            else:
+                timings.append(run_iteration(ds, module, loglevel))
 
         results[str(ds)] = {
             "iterations": iterations,
@@ -160,6 +236,19 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         type=Path,
         help="Optional JSON file to store benchmark results.",
     )
+    parser.add_argument(
+        "--profile-dir",
+        dest="profile_dir",
+        type=Path,
+        help="Optional directory to store cProfile stats per dataset/step.",
+    )
+    parser.add_argument(
+        "--profile-top",
+        dest="profile_top",
+        type=int,
+        default=20,
+        help="Number of lines to print in profile text output (default: 20).",
+    )
     return parser.parse_args(argv)
 
 
@@ -168,7 +257,11 @@ def main(argv: Optional[List[str]] = None) -> None:
     datasets = args.datasets or DEFAULT_DATASETS
     resolved = [d.resolve() for d in datasets]
 
-    results = run_benchmark(resolved, args.iterations, args.module, args.loglevel)
+    profile_dir = args.profile_dir.resolve() if args.profile_dir else None
+    if profile_dir:
+        profile_dir.mkdir(parents=True, exist_ok=True)
+
+    results = run_benchmark(resolved, args.iterations, args.module, args.loglevel, profile_dir, args.profile_top)
 
     def _fmt(value: Optional[float]) -> str:
         return "n/a" if value is None else f"{value:.4f}s"
