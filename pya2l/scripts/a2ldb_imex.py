@@ -22,10 +22,12 @@ __copyright__ = """
 """
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
 from pya2l import DB
+from pya2l.imex import export_a2l_db, export_json_dict, open_a2l_database, open_json_database
 from pya2l.version import __version__
 
 
@@ -36,10 +38,18 @@ def main():
     group.add_argument(
         "-o",
         "--output",
-        help="output file when exporting",
+        help="output file when exporting (defaults to stdout)",
         dest="output",
         type=str,
         metavar="output_file",
+    )
+    parser.add_argument(
+        "-m",
+        "--module",
+        help="Optional: export only this module",
+        dest="module",
+        type=str,
+        metavar="module_name",
     )
 
     parser.add_argument(
@@ -97,6 +107,18 @@ def main():
         type=str,
         metavar="DB_file",
     )
+    parser.add_argument(
+        "--json",
+        help="Export to JSON instead of A2L",
+        action="store_true",
+        dest="json_export",
+    )
+    parser.add_argument(
+        "--pretty",
+        help="Pretty-print JSON export",
+        action="store_true",
+        dest="pretty",
+    )
 
     # parser.add_argument("-f", "--force-overwrite", help = "Force overwrite of existing file",
     # default = False, action = "store_true")
@@ -111,8 +133,39 @@ def main():
     db = DB()
 
     if args.efn:
-        efn = Path(args.efn)
-        db.export_a2l(efn, args.output or sys.stdout)
+        db_path = Path(args.efn)
+        if args.json_export:
+            db_json = open_json_database(db_path, args.loglevel)
+            try:
+                payload = export_json_dict(db_json, args.module)
+            finally:
+                try:
+                    db_json.close()
+                except Exception:
+                    pass
+
+            out = args.output
+            json_kwargs = {"ensure_ascii": False}
+            if args.pretty:
+                json_kwargs["indent"] = 4
+            else:
+                json_kwargs["separators"] = (",", ":")
+            if out:
+                with Path(out).open("w", encoding="utf-8") as fh:
+                    json.dump(payload, fh, **json_kwargs)
+            else:
+                json.dump(payload, sys.stdout, **json_kwargs)
+                sys.stdout.write("\n")
+        else:
+            db_export = open_a2l_database(db_path, args.loglevel)
+            try:
+                target = sys.stdout if not args.output else Path(args.output)
+                export_a2l_db(db_export, target, args.module)
+            finally:
+                try:
+                    db_export.close()
+                except Exception:
+                    pass
     else:
         ifn = Path(args.ifn)
         session = db.import_a2l(
