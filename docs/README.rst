@@ -196,7 +196,8 @@ Tips
 - Default import encoding is latin-1; override ``encoding=`` if your file differs.
 - Silence the progress meter via ``progress_bar=False`` or ``loglevel="ERROR"``.
 - Python package name is ``pya2ldb`` (not ``pya2l``).
-- See :doc:`howto` for Excel export and other short recipes.
+- See `howto <./howto.rst>`__ for Excel export and other short recipes.
+
 
 Examples
 --------
