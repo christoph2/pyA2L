@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Exporter: a2ldb -> JSON.
 
 Full JSON exporter matching exporter_new.py coverage.
@@ -8,25 +7,27 @@ Robust implementation with dataclasses, type hints, and logging.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence
 import argparse
 import json
 import logging
 import re
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Sequence
+
 from sqlalchemy.orm import selectinload
 
-from pya2l.model import A2LDatabase
 import pya2l.model as model
+from pya2l.model import A2LDatabase
 
 
 @dataclass
 class ExporterConfig:
     """Configuration for the JSON exporter."""
+
     db_path: Path
     out_path: Path
-    module_name: Optional[str]
+    module_name: str | None
     pretty: bool
     loglevel: str = "INFO"
 
@@ -58,7 +59,7 @@ def safe_get(obj: Any, attr: str) -> Any:
         return None
 
 
-def as_list(value: Any) -> List[Any]:
+def as_list(value: Any) -> list[Any]:
     """Normalize iterable ORM fields to Python lists."""
     if not value:
         return []
@@ -75,7 +76,7 @@ def _bool_flag(obj: Any) -> bool:
     return bool(obj)
 
 
-def matrix_dim_to_list(matrix_dim_obj: Any) -> Optional[List[int]]:
+def matrix_dim_to_list(matrix_dim_obj: Any) -> list[int] | None:
     """Return MATRIX_DIM as a list of ints."""
     if not matrix_dim_obj:
         return None
@@ -88,7 +89,7 @@ def matrix_dim_to_list(matrix_dim_obj: Any) -> Optional[List[int]]:
         return [int(x) for x in list(nums)]
 
 
-def function_list_to_list(function_list_obj: Any) -> List[str]:
+def function_list_to_list(function_list_obj: Any) -> list[str]:
     """FUNCTION_LIST as a list of names (strings)."""
     if not function_list_obj:
         return []
@@ -98,7 +99,7 @@ def function_list_to_list(function_list_obj: Any) -> List[str]:
     return [str(x) for x in names]
 
 
-def symbol_link_to_dict(symbol_link_obj: Any) -> Optional[Dict[str, Any]]:
+def symbol_link_to_dict(symbol_link_obj: Any) -> dict[str, Any] | None:
     """SYMBOL_LINK as dict."""
     if not symbol_link_obj:
         return None
@@ -108,7 +109,7 @@ def symbol_link_to_dict(symbol_link_obj: Any) -> Optional[Dict[str, Any]]:
     }
 
 
-def max_refresh_to_dict(max_refresh_obj: Any) -> Optional[Dict[str, Any]]:
+def max_refresh_to_dict(max_refresh_obj: Any) -> dict[str, Any] | None:
     """MAX_REFRESH as dict."""
     if not max_refresh_obj:
         return None
@@ -118,9 +119,9 @@ def max_refresh_to_dict(max_refresh_obj: Any) -> Optional[Dict[str, Any]]:
     }
 
 
-def ifdata_raw_list(sections: Optional[Iterable[Any]]) -> List[str]:
+def ifdata_raw_list(sections: Iterable[Any] | None) -> list[str]:
     """Collect raw text of IF_DATA sections if present."""
-    raws: List[str] = []
+    raws: list[str] = []
     for s in as_list(sections):
         raw = safe_get(s, "raw")
         if raw and str(raw).strip():
@@ -128,7 +129,7 @@ def ifdata_raw_list(sections: Optional[Iterable[Any]]) -> List[str]:
     return raws
 
 
-def ifdata_parsed_list(session: Any, sections: Optional[Sequence[Any]]) -> List[Any]:
+def ifdata_parsed_list(session: Any, sections: Sequence[Any] | None) -> list[Any]:
     """Parse IF_DATA (best effort)."""
     if not sections:
         return []
@@ -140,15 +141,15 @@ def ifdata_parsed_list(session: Any, sections: Optional[Sequence[Any]]) -> List[
         return []
 
 
-def annotation_to_list(annos: Optional[Iterable[Any]]) -> List[Dict[str, Any]]:
+def annotation_to_list(annos: Iterable[Any] | None) -> list[dict[str, Any]]:
     """Convert annotations to simple dicts."""
-    result: List[Dict[str, Any]] = []
+    result: list[dict[str, Any]] = []
     for a in as_list(annos):
         label = safe_get(a, "annotation_label")
         origin = safe_get(a, "annotation_origin")
         text = safe_get(a, "annotation_text")
 
-        lines: List[str] = []
+        lines: list[str] = []
         if text and getattr(text, "_text", None):
             for ln in text._text:
                 t = safe_get(ln, "text")
@@ -165,9 +166,9 @@ def annotation_to_list(annos: Optional[Iterable[Any]]) -> List[Dict[str, Any]]:
     return result
 
 
-def axis_descr_to_dict(session: Any, ad: Any) -> Dict[str, Any]:
+def axis_descr_to_dict(session: Any, ad: Any) -> dict[str, Any]:
     """AXIS_DESCR to dict."""
-    out: Dict[str, Any] = {
+    out: dict[str, Any] = {
         "attribute": safe_get(ad, "attribute"),
         "inputQuantity": safe_get(ad, "inputQuantity"),
         "conversion": safe_get(ad, "conversion"),
@@ -182,9 +183,9 @@ def axis_descr_to_dict(session: Any, ad: Any) -> Dict[str, Any]:
     return out
 
 
-def axis_pts_to_dict(session: Any, ap: Any) -> Dict[str, Any]:
+def axis_pts_to_dict(session: Any, ap: Any) -> dict[str, Any]:
     """AXIS_PTS to dict."""
-    out: Dict[str, Any] = {
+    out: dict[str, Any] = {
         "name": safe_get(ap, "name"),
         "longIdentifier": safe_get(ap, "longIdentifier"),
         "address": safe_get(ap, "address"),
@@ -213,9 +214,9 @@ def axis_pts_to_dict(session: Any, ap: Any) -> Dict[str, Any]:
     return out
 
 
-def characteristic_to_dict(session: Any, ch: Any) -> Dict[str, Any]:
+def characteristic_to_dict(session: Any, ch: Any) -> dict[str, Any]:
     """CHARACTERISTIC to dict."""
-    out: Dict[str, Any] = {
+    out: dict[str, Any] = {
         "name": safe_get(ch, "name"),
         "longIdentifier": safe_get(ch, "longIdentifier"),
         "type": safe_get(ch, "type"),
@@ -242,9 +243,9 @@ def characteristic_to_dict(session: Any, ch: Any) -> Dict[str, Any]:
     return out
 
 
-def compu_method_to_dict(cm: Any) -> Dict[str, Any]:
+def compu_method_to_dict(cm: Any) -> dict[str, Any]:
     """COMPU_METHOD to dict."""
-    out: Dict[str, Any] = {
+    out: dict[str, Any] = {
         "name": safe_get(cm, "name"),
         "longIdentifier": safe_get(cm, "longIdentifier"),
         "conversionType": safe_get(cm, "conversionType"),
@@ -296,8 +297,8 @@ def compu_method_to_dict(cm: Any) -> Dict[str, Any]:
     return out
 
 
-def _compu_tab_common(t: Any) -> Dict[str, Any]:
-    base: Dict[str, Any] = {
+def _compu_tab_common(t: Any) -> dict[str, Any]:
+    base: dict[str, Any] = {
         "name": safe_get(t, "name"),
         "longIdentifier": safe_get(t, "longIdentifier"),
         "default_value": None,
@@ -312,7 +313,7 @@ def _compu_tab_common(t: Any) -> Dict[str, Any]:
     return base
 
 
-def compu_tab_to_dict(t: Any) -> Dict[str, Any]:
+def compu_tab_to_dict(t: Any) -> dict[str, Any]:
     out = _compu_tab_common(t)
     out.update(
         {
@@ -324,7 +325,7 @@ def compu_tab_to_dict(t: Any) -> Dict[str, Any]:
     return out
 
 
-def compu_vtab_to_dict(t: Any) -> Dict[str, Any]:
+def compu_vtab_to_dict(t: Any) -> dict[str, Any]:
     out = _compu_tab_common(t)
     out.update(
         {
@@ -336,7 +337,7 @@ def compu_vtab_to_dict(t: Any) -> Dict[str, Any]:
     return out
 
 
-def compu_vtab_range_to_dict(t: Any) -> Dict[str, Any]:
+def compu_vtab_range_to_dict(t: Any) -> dict[str, Any]:
     out = _compu_tab_common(t)
     out.update(
         {
@@ -347,13 +348,13 @@ def compu_vtab_range_to_dict(t: Any) -> Dict[str, Any]:
     return out
 
 
-def frame_to_dict(session: Any, fr: Any) -> Dict[str, Any]:
+def frame_to_dict(session: Any, fr: Any) -> dict[str, Any]:
     fm = safe_get(fr, "frame_measurement")
-    identifiers: Optional[List[str]] = None
+    identifiers: list[str] | None = None
     if fm and safe_get(fm, "identifier"):
         identifiers = [str(x) for x in fm.identifier]
 
-    out: Dict[str, Any] = {
+    out: dict[str, Any] = {
         "name": safe_get(fr, "name"),
         "longIdentifier": safe_get(fr, "longIdentifier"),
         "scalingUnit": safe_get(fr, "scalingUnit"),
@@ -365,8 +366,8 @@ def frame_to_dict(session: Any, fr: Any) -> Dict[str, Any]:
     return out
 
 
-def function_to_dict(session: Any, fn: Any) -> Dict[str, Any]:
-    out: Dict[str, Any] = {
+def function_to_dict(session: Any, fn: Any) -> dict[str, Any]:
+    out: dict[str, Any] = {
         "name": safe_get(fn, "name"),
         "longIdentifier": safe_get(fn, "longIdentifier"),
         "annotation": annotation_to_list(safe_get(fn, "annotation")),
@@ -404,8 +405,8 @@ def function_to_dict(session: Any, fn: Any) -> Dict[str, Any]:
     return out
 
 
-def group_to_dict(session: Any, g: Any) -> Dict[str, Any]:
-    out: Dict[str, Any] = {
+def group_to_dict(session: Any, g: Any) -> dict[str, Any]:
+    out: dict[str, Any] = {
         "groupName": safe_get(g, "groupName"),
         "groupLongIdentifier": safe_get(g, "groupLongIdentifier"),
         "annotation": annotation_to_list(safe_get(g, "annotation")),
@@ -433,9 +434,9 @@ def group_to_dict(session: Any, g: Any) -> Dict[str, Any]:
     return out
 
 
-def instance_to_dict(session: Any, inst: Any) -> Dict[str, Any]:
+def instance_to_dict(session: Any, inst: Any) -> dict[str, Any]:
     num = safe_get(inst, "number")
-    out: Dict[str, Any] = {
+    out: dict[str, Any] = {
         "name": safe_get(inst, "name"),
         "longIdentifier": safe_get(inst, "longIdentifier"),
         "typeName": safe_get(inst, "typeName"),
@@ -449,17 +450,17 @@ def instance_to_dict(session: Any, inst: Any) -> Dict[str, Any]:
     return out
 
 
-def measurement_to_dict(session: Any, m: Any) -> Dict[str, Any]:
+def measurement_to_dict(session: Any, m: Any) -> dict[str, Any]:
     arr = safe_get(m, "array_size")
     bm = safe_get(m, "bit_mask")
     layout = safe_get(m, "layout")
 
     virtual = safe_get(m, "virtual")
-    virtual_list: Optional[List[str]] = None
+    virtual_list: list[str] | None = None
     if virtual and safe_get(virtual, "measuringChannel"):
         virtual_list = [str(x) for x in virtual.measuringChannel]
 
-    out: Dict[str, Any] = {
+    out: dict[str, Any] = {
         "name": safe_get(m, "name"),
         "longIdentifier": safe_get(m, "longIdentifier"),
         "datatype": safe_get(m, "datatype"),
@@ -485,11 +486,11 @@ def measurement_to_dict(session: Any, m: Any) -> Dict[str, Any]:
     return out
 
 
-def mod_common_to_dict(mc: Any) -> Optional[Dict[str, Any]]:
+def mod_common_to_dict(mc: Any) -> dict[str, Any] | None:
     if not mc:
         return None
 
-    out: Dict[str, Any] = {"comment": safe_get(mc, "comment")}
+    out: dict[str, Any] = {"comment": safe_get(mc, "comment")}
 
     for attr_name in (
         "alignment_byte",
@@ -509,8 +510,8 @@ def mod_common_to_dict(mc: Any) -> Optional[Dict[str, Any]]:
     return out
 
 
-def memory_layout_to_dict(session: Any, ml: Any) -> Dict[str, Any]:
-    out: Dict[str, Any] = {
+def memory_layout_to_dict(session: Any, ml: Any) -> dict[str, Any]:
+    out: dict[str, Any] = {
         "prgType": safe_get(ml, "prgType"),
         "address": safe_get(ml, "address"),
         "size": safe_get(ml, "size"),
@@ -525,8 +526,8 @@ def memory_layout_to_dict(session: Any, ml: Any) -> Dict[str, Any]:
     return out
 
 
-def memory_segment_to_dict(session: Any, ms: Any) -> Dict[str, Any]:
-    out: Dict[str, Any] = {
+def memory_segment_to_dict(session: Any, ms: Any) -> dict[str, Any]:
+    out: dict[str, Any] = {
         "name": safe_get(ms, "name"),
         "longIdentifier": safe_get(ms, "longIdentifier"),
         "prgType": safe_get(ms, "prgType"),
@@ -545,11 +546,11 @@ def memory_segment_to_dict(session: Any, ms: Any) -> Dict[str, Any]:
     return out
 
 
-def mod_par_to_dict(session: Any, mp: Any) -> Optional[Dict[str, Any]]:
+def mod_par_to_dict(session: Any, mp: Any) -> dict[str, Any] | None:
     if not mp:
         return None
 
-    out: Dict[str, Any] = {
+    out: dict[str, Any] = {
         "comment": safe_get(mp, "comment"),
         "addr_epk": [safe_get(a, "address") for a in as_list(safe_get(mp, "addr_epk"))],
         "calibration_method": [],
@@ -570,7 +571,7 @@ def mod_par_to_dict(session: Any, mp: Any) -> Optional[Dict[str, Any]]:
     }
 
     for cm in as_list(safe_get(mp, "calibration_method")):
-        cm_entry: Dict[str, Any] = {
+        cm_entry: dict[str, Any] = {
             "method": safe_get(cm, "method"),
             "version": safe_get(cm, "version"),
             "calibration_handle": [],
@@ -590,7 +591,7 @@ def mod_par_to_dict(session: Any, mp: Any) -> Optional[Dict[str, Any]]:
     return out
 
 
-def structure_component_to_dict(sc: Any) -> Dict[str, Any]:
+def structure_component_to_dict(sc: Any) -> dict[str, Any]:
     num = safe_get(sc, "number")
     stl = safe_get(sc, "symbol_type_link")
     return {
@@ -603,7 +604,7 @@ def structure_component_to_dict(sc: Any) -> Dict[str, Any]:
     }
 
 
-def typedef_characteristic_to_dict(tc: Any) -> Dict[str, Any]:
+def typedef_characteristic_to_dict(tc: Any) -> dict[str, Any]:
     return {
         "name": safe_get(tc, "name"),
         "longIdentifier": safe_get(tc, "longIdentifier"),
@@ -618,7 +619,7 @@ def typedef_characteristic_to_dict(tc: Any) -> Dict[str, Any]:
     }
 
 
-def typedef_measurement_to_dict(tm: Any) -> Dict[str, Any]:
+def typedef_measurement_to_dict(tm: Any) -> dict[str, Any]:
     return {
         "name": safe_get(tm, "name"),
         "longIdentifier": safe_get(tm, "longIdentifier"),
@@ -631,7 +632,7 @@ def typedef_measurement_to_dict(tm: Any) -> Dict[str, Any]:
     }
 
 
-def blob_to_dict(b: Any) -> Dict[str, Any]:
+def blob_to_dict(b: Any) -> dict[str, Any]:
     return {
         "name": safe_get(b, "name"),
         "longIdentifier": safe_get(b, "longIdentifier"),
@@ -641,7 +642,7 @@ def blob_to_dict(b: Any) -> Dict[str, Any]:
     }
 
 
-def typedef_axis_to_dict(ta: Any) -> Dict[str, Any]:
+def typedef_axis_to_dict(ta: Any) -> dict[str, Any]:
     return {
         "name": safe_get(ta, "name"),
         "longIdentifier": safe_get(ta, "longIdentifier"),
@@ -656,12 +657,14 @@ def typedef_axis_to_dict(ta: Any) -> Dict[str, Any]:
         "byte_order": safe_get(safe_get(ta, "byte_order"), "byteOrder"),
         "calibration_access": safe_get(safe_get(ta, "calibration_access"), "type"),
         "deposit": safe_get(safe_get(ta, "deposit"), "mode"),
-        "extended_limits": None
-        if not safe_get(ta, "extended_limits")
-        else {
-            "lowerLimit": safe_get(ta.extended_limits, "lowerLimit"),
-            "upperLimit": safe_get(ta.extended_limits, "upperLimit"),
-        },
+        "extended_limits": (
+            None
+            if not safe_get(ta, "extended_limits")
+            else {
+                "lowerLimit": safe_get(ta.extended_limits, "lowerLimit"),
+                "upperLimit": safe_get(ta.extended_limits, "upperLimit"),
+            }
+        ),
         "format": safe_get(safe_get(ta, "format"), "format"),
         "guard_rails": _bool_flag(safe_get(ta, "guard_rails")),
         "monotony": safe_get(safe_get(ta, "monotony"), "monotony"),
@@ -672,7 +675,7 @@ def typedef_axis_to_dict(ta: Any) -> Dict[str, Any]:
     }
 
 
-def transformer_to_dict(tr: Any) -> Dict[str, Any]:
+def transformer_to_dict(tr: Any) -> dict[str, Any]:
     return {
         "name": safe_get(tr, "name"),
         "version": safe_get(tr, "version"),
@@ -686,19 +689,15 @@ def transformer_to_dict(tr: Any) -> Dict[str, Any]:
     }
 
 
-def _column_dict(obj: Any) -> Dict[str, Any]:
+def _column_dict(obj: Any) -> dict[str, Any]:
     if obj is None:
         return {}
-    cols = [
-        c.name
-        for c in getattr(obj, "__table__").columns
-        if not c.name.endswith("_rid") and c.name not in ("rid",)
-    ]
+    cols = [c.name for c in getattr(obj, "__table__").columns if not c.name.endswith("_rid") and c.name not in ("rid",)]
     return {col: safe_get(obj, col) for col in cols}
 
 
-def record_layout_to_dict(rl: Any) -> Dict[str, Any]:
-    out: Dict[str, Any] = {"name": safe_get(rl, "name"), "entries": []}
+def record_layout_to_dict(rl: Any) -> dict[str, Any]:
+    out: dict[str, Any] = {"name": safe_get(rl, "name"), "entries": []}
     for elem in getattr(rl, "__optional_elements__", ()):
         attr = re.sub(r"(?<!^)(?=[A-Z])", "_", elem.name).lower()
         data = safe_get(rl, attr)
@@ -709,25 +708,23 @@ def record_layout_to_dict(rl: Any) -> Dict[str, Any]:
     return out
 
 
-def typedef_structure_to_dict(ts: Any) -> Dict[str, Any]:
+def typedef_structure_to_dict(ts: Any) -> dict[str, Any]:
     stl = safe_get(ts, "symbol_type_link")
     return {
         "name": safe_get(ts, "name"),
         "longIdentifier": safe_get(ts, "longIdentifier"),
         "size": safe_get(ts, "size"),
-        "structure_component": [
-            structure_component_to_dict(sc) for sc in as_list(safe_get(ts, "structure_component"))
-        ],
+        "structure_component": [structure_component_to_dict(sc) for sc in as_list(safe_get(ts, "structure_component"))],
         "symbol_type_link": safe_get(stl, "link") if stl else None,
     }
 
 
-def unit_to_dict(u: Any) -> Dict[str, Any]:
+def unit_to_dict(u: Any) -> dict[str, Any]:
     si = safe_get(u, "si_exponents")
     uc = safe_get(u, "unit_conversion")
     ru = safe_get(u, "ref_unit")
 
-    out: Dict[str, Any] = {
+    out: dict[str, Any] = {
         "name": safe_get(u, "name"),
         "longIdentifier": safe_get(u, "longIdentifier"),
         "display": safe_get(u, "display"),
@@ -754,8 +751,8 @@ def unit_to_dict(u: Any) -> Dict[str, Any]:
     return out
 
 
-def user_rights_to_dict(ur: Any) -> Dict[str, Any]:
-    ref_groups: List[Dict[str, Any]] = []
+def user_rights_to_dict(ur: Any) -> dict[str, Any]:
+    ref_groups: list[dict[str, Any]] = []
     for r in as_list(safe_get(ur, "ref_group")):
         ref_groups.append({"identifier": safe_get(r, "identifier")})
 
@@ -766,14 +763,14 @@ def user_rights_to_dict(ur: Any) -> Dict[str, Any]:
     }
 
 
-def variant_coding_to_dict(vc: Any) -> Optional[Dict[str, Any]]:
+def variant_coding_to_dict(vc: Any) -> dict[str, Any] | None:
     if not vc:
         return None
 
-    var_characteristic: List[Dict[str, Any]] = []
+    var_characteristic: list[dict[str, Any]] = []
     for v in as_list(safe_get(vc, "var_characteristic")):
         va = safe_get(v, "var_address")
-        addr: Optional[List[Any]] = None
+        addr: list[Any] | None = None
         if va and safe_get(va, "address"):
             addr = [x for x in va.address]
 
@@ -785,7 +782,7 @@ def variant_coding_to_dict(vc: Any) -> Optional[Dict[str, Any]]:
             }
         )
 
-    var_criterion: List[Dict[str, Any]] = []
+    var_criterion: list[dict[str, Any]] = []
     for c in as_list(safe_get(vc, "var_criterion")):
         vm = safe_get(c, "var_measurement")
         vsc = safe_get(c, "var_selection_characteristic")
@@ -802,11 +799,11 @@ def variant_coding_to_dict(vc: Any) -> Optional[Dict[str, Any]]:
     return {"var_characteristic": var_characteristic, "var_criterion": var_criterion}
 
 
-def module_to_dict(session: Any, mod: Any) -> Dict[str, Any]:
+def module_to_dict(session: Any, mod: Any) -> dict[str, Any]:
     """MODULE to dict (matching exporter_new.py coverage)."""
     aml_section = session.query(model.AMLSection).first()
 
-    out: Dict[str, Any] = {
+    out: dict[str, Any] = {
         "name": safe_get(mod, "name"),
         "longIdentifier": safe_get(mod, "longIdentifier"),
         "aml_section_text": safe_get(aml_section, "text") if aml_section else None,
@@ -823,15 +820,9 @@ def module_to_dict(session: Any, mod: Any) -> Dict[str, Any]:
         "measurement": [measurement_to_dict(session, m) for m in as_list(safe_get(mod, "measurement"))],
         "mod_common": mod_common_to_dict(safe_get(mod, "mod_common")),
         "mod_par": mod_par_to_dict(session, safe_get(mod, "mod_par")),
-        "typedef_characteristic": [
-            typedef_characteristic_to_dict(tc) for tc in as_list(safe_get(mod, "typedef_characteristic"))
-        ],
-        "typedef_measurement": [
-            typedef_measurement_to_dict(tm) for tm in as_list(safe_get(mod, "typedef_measurement"))
-        ],
-        "typedef_structure": [
-            typedef_structure_to_dict(ts) for ts in as_list(safe_get(mod, "typedef_structure"))
-        ],
+        "typedef_characteristic": [typedef_characteristic_to_dict(tc) for tc in as_list(safe_get(mod, "typedef_characteristic"))],
+        "typedef_measurement": [typedef_measurement_to_dict(tm) for tm in as_list(safe_get(mod, "typedef_measurement"))],
+        "typedef_structure": [typedef_structure_to_dict(ts) for ts in as_list(safe_get(mod, "typedef_structure"))],
         "typedef_axis": [typedef_axis_to_dict(ta) for ta in as_list(safe_get(mod, "typedef_axis"))],
         "unit": [unit_to_dict(u) for u in as_list(safe_get(mod, "unit"))],
         "user_rights": [user_rights_to_dict(ur) for ur in as_list(safe_get(mod, "user_rights"))],
@@ -845,7 +836,7 @@ def module_to_dict(session: Any, mod: Any) -> Dict[str, Any]:
     return out
 
 
-def project_to_dict(db: A2LDatabase, module_name: Optional[str] = None) -> Dict[str, Any]:
+def project_to_dict(db: A2LDatabase, module_name: str | None = None) -> dict[str, Any]:
     """Create a serializable dict for the entire project."""
     session = db.session
     proj = session.query(model.Project).first()
@@ -853,7 +844,7 @@ def project_to_dict(db: A2LDatabase, module_name: Optional[str] = None) -> Dict[
         raise RuntimeError("No Project row found in the database.")
 
     header_obj = safe_get(proj, "header")
-    header: Optional[Dict[str, Any]] = None
+    header: dict[str, Any] | None = None
     if header_obj:
         header = {
             "comment": safe_get(header_obj, "comment"),
@@ -875,7 +866,7 @@ def project_to_dict(db: A2LDatabase, module_name: Optional[str] = None) -> Dict[
         modules_query = modules_query.filter(model.Module.name == module_name)
     modules = modules_query.all()
 
-    out: Dict[str, Any] = {
+    out: dict[str, Any] = {
         "name": safe_get(proj, "name"),
         "longIdentifier": safe_get(proj, "longIdentifier"),
         "header": header,
@@ -886,7 +877,7 @@ def project_to_dict(db: A2LDatabase, module_name: Optional[str] = None) -> Dict[
     return out
 
 
-def parse_args(argv: Optional[List[str]] = None) -> ExporterConfig:
+def parse_args(argv: list[str] | None = None) -> ExporterConfig:
     """Parse CLI arguments and build ExporterConfig."""
     parser = argparse.ArgumentParser(description="Export a2ldb -> JSON (pyA2L).")
     parser.add_argument(
@@ -935,7 +926,7 @@ def parse_args(argv: Optional[List[str]] = None) -> ExporterConfig:
     )
 
 
-def main(argv: Optional[List[str]] = None) -> None:
+def main(argv: list[str] | None = None) -> None:
     """CLI entry point."""
     cfg = parse_args(argv)
     setup_logging(cfg.loglevel)

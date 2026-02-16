@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from pya2l import A2L_TEMPLATE, model, _render_a2l
+from pya2l import A2L_TEMPLATE, _render_a2l, model
 from pya2l.a2lparser import A2LParser
 from pya2l.templates import doTemplateFromText
 
@@ -494,8 +494,8 @@ def test_export_roundtrip_ifdata_section(parser, tmp_path):
     snippet = repo_root / "examples" / "ASAP2_Demo_V161_ifdata_section.a2l"
     wrapped = (
         "ASAP2_VERSION 1 71\n"
-        "/begin PROJECT IfDataWrap \"\"\n"
-        "  /begin MODULE IfDataMod \"\"\n"
+        '/begin PROJECT IfDataWrap ""\n'
+        '  /begin MODULE IfDataMod ""\n'
         + "\n".join(("  " + line if line.strip() else "") for line in snippet.read_text(encoding="latin-1").splitlines())
         + "\n  /end MODULE\n"
         "/end PROJECT\n"

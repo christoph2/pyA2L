@@ -27,7 +27,12 @@ import sys
 from pathlib import Path
 
 from pya2l import DB
-from pya2l.imex import export_a2l_db, export_json_dict, open_a2l_database, open_json_database
+from pya2l.imex import (
+    export_a2l_db,
+    export_json_dict,
+    open_a2l_database,
+    open_json_database,
+)
 from pya2l.version import __version__
 
 

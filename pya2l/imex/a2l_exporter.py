@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 A2L exporter: standalone implementation.
@@ -10,23 +9,24 @@ Robust against missing/empty IF_DATA sections.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Iterable, List, Optional, TextIO, Tuple, Union
 import argparse
 import logging
 import re
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Iterable, List, Optional, TextIO, Tuple, Union
+
 from sqlalchemy.orm import selectinload
 
-from pya2l.model import A2LDatabase
 import pya2l.model as model
+from pya2l.model import A2LDatabase
 
 
 @dataclass
 class ExporterConfig:
     db_path: Path
     out_path: Path
-    module_name: Optional[str]
+    module_name: str | None
     loglevel: str = "INFO"
 
 
@@ -57,7 +57,7 @@ def write_lines(out, lines: Iterable[str]) -> None:
         out.write(f"{ln}\n")
 
 
-def write_raw_ifdata(out, ifdata_list: Optional[List[Any]]) -> None:
+def write_raw_ifdata(out, ifdata_list: list[Any] | None) -> None:
     """Append existing IF_DATA raw blocks unchanged."""
     if not ifdata_list:
         return
@@ -69,7 +69,7 @@ def write_raw_ifdata(out, ifdata_list: Optional[List[Any]]) -> None:
             out.write("\n")
 
 
-def write_annotation(out, annotation_assoc: Optional[List[Any]]) -> None:
+def write_annotation(out, annotation_assoc: list[Any] | None) -> None:
     if not annotation_assoc:
         return
     for a in annotation_assoc:
@@ -90,7 +90,7 @@ def write_annotation(out, annotation_assoc: Optional[List[Any]]) -> None:
         out.write("    /end ANNOTATION\n")
 
 
-def write_function_list(out, function_list_obj: Optional[Any]) -> None:
+def write_function_list(out, function_list_obj: Any | None) -> None:
     if not function_list_obj:
         return
     names = getattr(function_list_obj, "name", None)
@@ -101,7 +101,7 @@ def write_function_list(out, function_list_obj: Optional[Any]) -> None:
     out.write("    /end FUNCTION_LIST\n")
 
 
-def write_matrix_dim(out, matrix_dim_obj: Optional[Any]) -> None:
+def write_matrix_dim(out, matrix_dim_obj: Any | None) -> None:
     if not matrix_dim_obj:
         return
     nums = getattr(matrix_dim_obj, "numbers", None)
@@ -112,7 +112,7 @@ def write_matrix_dim(out, matrix_dim_obj: Optional[Any]) -> None:
 
 
 # Block writer: AxisPts
-def write_axis_pts(out, axis_pts_list: Optional[List[Any]]) -> None:
+def write_axis_pts(out, axis_pts_list: list[Any] | None) -> None:
     if not axis_pts_list:
         return
     for ap in axis_pts_list:
@@ -168,7 +168,7 @@ def write_axis_pts(out, axis_pts_list: Optional[List[Any]]) -> None:
         out.write("    /end AXIS_PTS\n\n")
 
 
-def write_characteristics(out, char_list: Optional[List[Any]]) -> None:
+def write_characteristics(out, char_list: list[Any] | None) -> None:
     if not char_list:
         return
     for ch in char_list:
@@ -229,7 +229,7 @@ def write_characteristics(out, char_list: Optional[List[Any]]) -> None:
         out.write("    /end CHARACTERISTIC\n\n")
 
 
-def write_compu_methods(out, compu_list: Optional[List[Any]]) -> None:
+def write_compu_methods(out, compu_list: list[Any] | None) -> None:
     if not compu_list:
         return
     for cm in compu_list:
@@ -276,7 +276,7 @@ def write_compu_methods(out, compu_list: Optional[List[Any]]) -> None:
         out.write("    /end COMPU_METHOD\n\n")
 
 
-def write_compu_tabs(out, tabs: Optional[List[Any]]) -> None:
+def write_compu_tabs(out, tabs: list[Any] | None) -> None:
     if not tabs:
         return
     for t in tabs:
@@ -319,7 +319,7 @@ def write_compu_tabs(out, tabs: Optional[List[Any]]) -> None:
             out.write("    /end COMPU_VTAB\n\n")
 
 
-def write_frames(out, frame_list: Optional[List[Any]]) -> None:
+def write_frames(out, frame_list: list[Any] | None) -> None:
     if not frame_list:
         return
     for f in frame_list:
@@ -336,7 +336,7 @@ def write_frames(out, frame_list: Optional[List[Any]]) -> None:
         out.write("    /end FRAME\n\n")
 
 
-def write_functions(out, func_list: Optional[List[Any]]) -> None:
+def write_functions(out, func_list: list[Any] | None) -> None:
     if not func_list:
         return
     for fn in func_list:
@@ -354,7 +354,11 @@ def write_functions(out, func_list: Optional[List[Any]]) -> None:
             out.write("      FUNCTION_VERSION\n")
             out.write(f'        "{fv.versionIdentifier}"  /* versionIdentifier */\n')
         write_raw_ifdata(out, safe_get(fn, "if_data"))
-        for tag, attr in (("IN_MEASUREMENT", "in_measurement"), ("LOC_MEASUREMENT", "loc_measurement"), ("OUT_MEASUREMENT", "out_measurement")):
+        for tag, attr in (
+            ("IN_MEASUREMENT", "in_measurement"),
+            ("LOC_MEASUREMENT", "loc_measurement"),
+            ("OUT_MEASUREMENT", "out_measurement"),
+        ):
             ent = safe_get(fn, attr)
             if ent and safe_get(ent, "identifier"):
                 out.write(f"      /begin {tag}\n")
@@ -368,7 +372,7 @@ def write_functions(out, func_list: Optional[List[Any]]) -> None:
         out.write("    /end FUNCTION\n\n")
 
 
-def write_groups(out, group_list: Optional[List[Any]]) -> None:
+def write_groups(out, group_list: list[Any] | None) -> None:
     if not group_list:
         return
     for g in group_list:
@@ -398,7 +402,7 @@ def write_groups(out, group_list: Optional[List[Any]]) -> None:
         out.write("    /end GROUP\n\n")
 
 
-def write_instances(out, instance_list: Optional[List[Any]]) -> None:
+def write_instances(out, instance_list: list[Any] | None) -> None:
     if not instance_list:
         return
     for inst in instance_list:
@@ -421,7 +425,7 @@ def write_instances(out, instance_list: Optional[List[Any]]) -> None:
         out.write("    /end INSTANCE\n\n")
 
 
-def write_measurements(out, measurement_list: Optional[List[Any]]) -> None:
+def write_measurements(out, measurement_list: list[Any] | None) -> None:
     if not measurement_list:
         return
     for m in measurement_list:
@@ -474,7 +478,7 @@ def write_measurements(out, measurement_list: Optional[List[Any]]) -> None:
         out.write("    /end MEASUREMENT\n\n")
 
 
-def write_blobs(out, blobs: Optional[List[Any]]) -> None:
+def write_blobs(out, blobs: list[Any] | None) -> None:
     if not blobs:
         return
     for b in blobs:
@@ -490,7 +494,7 @@ def write_blobs(out, blobs: Optional[List[Any]]) -> None:
         out.write("    /end BLOB\n\n")
 
 
-def write_mod_common(out, mod_common_obj: Optional[Any]) -> None:
+def write_mod_common(out, mod_common_obj: Any | None) -> None:
     if not mod_common_obj:
         return
     # NoModCommon may be used; try attribute access safe
@@ -522,7 +526,7 @@ def write_mod_common(out, mod_common_obj: Optional[Any]) -> None:
     out.write("    /end MOD_COMMON\n\n")
 
 
-def write_memory_layouts(out, mem_layouts: Optional[List[Any]]) -> None:
+def write_memory_layouts(out, mem_layouts: list[Any] | None) -> None:
     if not mem_layouts:
         return
     for ml in mem_layouts:
@@ -539,7 +543,7 @@ def write_memory_layouts(out, mem_layouts: Optional[List[Any]]) -> None:
         out.write("      /end MEMORY_LAYOUT\n\n")
 
 
-def write_memory_segments(out, mem_segments: Optional[List[Any]]) -> None:
+def write_memory_segments(out, mem_segments: list[Any] | None) -> None:
     if not mem_segments:
         return
     for ms in mem_segments:
@@ -560,7 +564,9 @@ def write_memory_segments(out, mem_segments: Optional[List[Any]]) -> None:
         out.write("      /end MEMORY_SEGMENT\n\n")
 
 
-def write_typedefs(out, typedef_chars: Optional[List[Any]], typedef_meas: Optional[List[Any]], typedef_structs: Optional[List[Any]]) -> None:
+def write_typedefs(
+    out, typedef_chars: list[Any] | None, typedef_meas: list[Any] | None, typedef_structs: list[Any] | None
+) -> None:
     if typedef_chars:
         for tc in typedef_chars:
             out.write("    /begin TYPEDEF_CHARACTERISTIC\n")
@@ -625,7 +631,7 @@ def write_typedefs(out, typedef_chars: Optional[List[Any]], typedef_meas: Option
             out.write("    /end TYPEDEF_STRUCTURE\n\n")
 
 
-def write_typedef_axes(out, typedef_axes: Optional[List[Any]]) -> None:
+def write_typedef_axes(out, typedef_axes: list[Any] | None) -> None:
     if not typedef_axes:
         return
     for ta in typedef_axes:
@@ -680,7 +686,7 @@ def write_typedef_axes(out, typedef_axes: Optional[List[Any]]) -> None:
         out.write("    /end TYPEDEF_AXIS\n\n")
 
 
-def write_units(out, unit_list: Optional[List[Any]]) -> None:
+def write_units(out, unit_list: list[Any] | None) -> None:
     if not unit_list:
         return
     for u in unit_list:
@@ -710,7 +716,7 @@ def write_units(out, unit_list: Optional[List[Any]]) -> None:
         out.write("    /end UNIT\n\n")
 
 
-def write_user_rights(out, ur_list: Optional[List[Any]]) -> None:
+def write_user_rights(out, ur_list: list[Any] | None) -> None:
     if not ur_list:
         return
     for ur in ur_list:
@@ -728,7 +734,7 @@ def write_user_rights(out, ur_list: Optional[List[Any]]) -> None:
         out.write("    /end USER_RIGHTS\n\n")
 
 
-def write_variant_coding(out, vc: Optional[Any]) -> None:
+def write_variant_coding(out, vc: Any | None) -> None:
     if not vc:
         return
     out.write("    /begin VARIANT_CODING\n")
@@ -765,11 +771,11 @@ def _camel_to_snake(name: str) -> str:
     return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
 
 
-def _iter_columns(obj: Any) -> List[str]:
+def _iter_columns(obj: Any) -> list[str]:
     return [c.name for c in getattr(obj, "__table__").columns if not c.name.endswith("_rid") and c.name != "rid"]
 
 
-def write_record_layout_entries(out, keyword: str, entries: Union[Any, List[Any]]) -> None:
+def write_record_layout_entries(out, keyword: str, entries: Any | list[Any]) -> None:
     if entries is None:
         return
     if not isinstance(entries, list):
@@ -781,7 +787,7 @@ def write_record_layout_entries(out, keyword: str, entries: Union[Any, List[Any]
         out.write("        " + " ".join("" if v is None else str(v) for v in values) + "\n")
 
 
-def write_record_layouts(out, layouts: Optional[List[Any]]) -> None:
+def write_record_layouts(out, layouts: list[Any] | None) -> None:
     if not layouts:
         return
     for rl in layouts:
@@ -796,7 +802,7 @@ def write_record_layouts(out, layouts: Optional[List[Any]]) -> None:
         out.write("    /end RECORD_LAYOUT\n\n")
 
 
-def write_transformers(out, transformers: Optional[List[Any]]) -> None:
+def write_transformers(out, transformers: list[Any] | None) -> None:
     if not transformers:
         return
     for tr in transformers:
@@ -821,14 +827,14 @@ def write_transformers(out, transformers: Optional[List[Any]]) -> None:
         out.write("    /end TRANSFORMER\n\n")
 
 
-def _prepare_output(out_target: Union[Path, TextIO]) -> tuple[TextIO, bool]:
+def _prepare_output(out_target: Path | TextIO) -> tuple[TextIO, bool]:
     if hasattr(out_target, "write"):
         return out_target, False
     out_path = Path(out_target)
     return out_path.open("w", encoding="utf-8"), True
 
 
-def export_db(db: A2LDatabase, out_path: Union[Path, TextIO], module_name: Optional[str] = None) -> None:
+def export_db(db: A2LDatabase, out_path: Path | TextIO, module_name: str | None = None) -> None:
     session = db.session
     logger = logging.getLogger(__name__)
     project = session.query(model.Project).first()
@@ -958,7 +964,12 @@ def export_db(db: A2LDatabase, out_path: Union[Path, TextIO], module_name: Optio
                     out.write("      VERSION\n")
                     out.write(f'        "{mp.version.versionIdentifier}"\n')
                 out.write("    /end MOD_PAR\n\n")
-            write_typedefs(out, safe_get(mod, "typedef_characteristic"), safe_get(mod, "typedef_measurement"), safe_get(mod, "typedef_structure"))
+            write_typedefs(
+                out,
+                safe_get(mod, "typedef_characteristic"),
+                safe_get(mod, "typedef_measurement"),
+                safe_get(mod, "typedef_structure"),
+            )
             write_typedef_axes(out, safe_get(mod, "typedef_axis"))
             write_units(out, safe_get(mod, "unit"))
             write_user_rights(out, safe_get(mod, "user_rights"))
@@ -973,7 +984,7 @@ def export_db(db: A2LDatabase, out_path: Union[Path, TextIO], module_name: Optio
             out.close()
 
 
-def parse_args(argv: Optional[List[str]] = None) -> ExporterConfig:
+def parse_args(argv: list[str] | None = None) -> ExporterConfig:
     parser = argparse.ArgumentParser(description="A2L exporter from pyA2L a2ldb.")
     parser.add_argument("database", type=Path, help="Path to the a2ldb file (or basename without .a2ldb).")
     parser.add_argument("-o", "--output", type=Path, help="Output file (.a2l). Default: <db>.a2l")
@@ -991,7 +1002,7 @@ def parse_args(argv: Optional[List[str]] = None) -> ExporterConfig:
     return ExporterConfig(db_path=db_path, out_path=out_path, module_name=args.module, loglevel=args.loglevel)
 
 
-def main(argv: Optional[List[str]] = None) -> None:
+def main(argv: list[str] | None = None) -> None:
     cfg = parse_args(argv)
     setup_logging(cfg.loglevel)
     logger = logging.getLogger(__name__)

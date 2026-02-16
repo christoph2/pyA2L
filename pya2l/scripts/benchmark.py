@@ -3,16 +3,16 @@ from __future__ import annotations
 
 import argparse
 import cProfile
-import pstats
 import json
 import os
+import pstats
 import statistics
+import sys
 import tempfile
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
-import sys
 
 from pya2l import import_a2l
 from pya2l.api.validate import Validator
@@ -20,7 +20,7 @@ from pya2l.imex import export_a2l_db, export_json_dict, open_a2l_database
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_DATASETS: List[Path] = [
+DEFAULT_DATASETS: list[Path] = [
     PROJECT_ROOT / "examples" / "example-a2l-file.a2l",
 ]
 
@@ -30,10 +30,10 @@ class IterationTimings:
     import_seconds: float
     export_a2l_seconds: float
     export_json_seconds: float
-    validate_seconds: Optional[float]
+    validate_seconds: float | None
 
 
-def _aggregate(values: Iterable[Optional[float]]) -> Dict[str, Optional[float]]:
+def _aggregate(values: Iterable[float | None]) -> dict[str, float | None]:
     filtered = [v for v in values if v is not None]
     if not filtered:
         return {"mean": None, "median": None, "min": None, "max": None}
@@ -45,7 +45,7 @@ def _aggregate(values: Iterable[Optional[float]]) -> Dict[str, Optional[float]]:
     }
 
 
-def run_iteration(dataset: Path, module: Optional[str], loglevel: str) -> IterationTimings:
+def run_iteration(dataset: Path, module: str | None, loglevel: str) -> IterationTimings:
     if not dataset.exists():
         raise FileNotFoundError(f"Dataset not found: {dataset}")
 
@@ -104,16 +104,16 @@ def run_iteration(dataset: Path, module: Optional[str], loglevel: str) -> Iterat
 
 
 def run_benchmark(
-    datasets: List[Path],
+    datasets: list[Path],
     iterations: int,
-    module: Optional[str],
+    module: str | None,
     loglevel: str,
-    profile_dir: Optional[Path] = None,
+    profile_dir: Path | None = None,
     profile_top: int = 20,
-) -> Dict[str, Dict[str, float]]:
-    results: Dict[str, Dict[str, float]] = {}
+) -> dict[str, dict[str, float]]:
+    results: dict[str, dict[str, float]] = {}
     for ds in datasets:
-        timings: List[IterationTimings] = []
+        timings: list[IterationTimings] = []
         for _ in range(iterations):
             if profile_dir:
                 out_dir = profile_dir / ds.stem
@@ -122,6 +122,7 @@ def run_benchmark(
                 with tempfile.TemporaryDirectory() as tempdir:
                     os.chdir(tempdir)
                     try:
+
                         def profiled(name: str, func):
                             pr = cProfile.Profile()
                             existing_profiler = sys.getprofile()
@@ -183,7 +184,7 @@ def run_benchmark(
                                 "export_json_dict",
                                 lambda: export_json_dict(db, module),
                             )
-                            validate_dur: Optional[float]
+                            validate_dur: float | None
                             try:
                                 _, validate_dur = profiled("validate", lambda: Validator(db.session)())
                             except Exception:
@@ -215,7 +216,7 @@ def run_benchmark(
     return results
 
 
-def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Benchmark import/export/validation flows.")
     parser.add_argument(
         "-d",
@@ -272,7 +273,7 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def main(argv: Optional[List[str]] = None) -> None:
+def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
     datasets = args.datasets or DEFAULT_DATASETS
     resolved = [d.resolve() for d in datasets]
@@ -283,7 +284,7 @@ def main(argv: Optional[List[str]] = None) -> None:
 
     results = run_benchmark(resolved, args.iterations, args.module, args.loglevel, profile_dir, args.profile_top)
 
-    def _fmt(value: Optional[float]) -> str:
+    def _fmt(value: float | None) -> str:
         return "n/a" if value is None else f"{value:.4f}s"
 
     for path_str, data in results.items():
@@ -291,8 +292,7 @@ def main(argv: Optional[List[str]] = None) -> None:
         for key in ("import", "export_a2l", "export_json", "validate"):
             agg = data[key]
             print(
-                f"  {key}: mean={_fmt(agg['mean'])} median={_fmt(agg['median'])} "
-                f"min={_fmt(agg['min'])} max={_fmt(agg['max'])}"
+                f"  {key}: mean={_fmt(agg['mean'])} median={_fmt(agg['median'])} " f"min={_fmt(agg['min'])} max={_fmt(agg['max'])}"
             )
 
     if args.output:
