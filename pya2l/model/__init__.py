@@ -25,12 +25,12 @@ __copyright__ = """
   """
 
 import datetime
+import logging
 import mmap
 import pickle
 import re
 import sqlite3
 from typing import Any, List, Optional, Sequence
-import logging
 
 from sqlalchemy import Column, ForeignKey, Index, create_engine, event, orm, types
 from sqlalchemy.engine import Engine
