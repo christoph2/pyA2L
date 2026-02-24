@@ -28,6 +28,7 @@ KW_MAP = {
     "A2ml": model.A2ml,
     "A2mlVersion": model.A2mlVersion,
     "AddrEpk": model.AddrEpk,
+    "AddressType": model.AddressType,
     "AlignmentByte": model.AlignmentByte,
     "AlignmentFloat16Ieee": model.AlignmentFloat16Ieee,
     "AlignmentFloat32Ieee": model.AlignmentFloat32Ieee,
@@ -39,6 +40,8 @@ KW_MAP = {
     "AnnotationLabel": model.AnnotationLabel,
     "AnnotationOrigin": model.AnnotationOrigin,
     "AnnotationText": model.AnnotationText,
+    "ArComponent": model.ArComponent,
+    "ArPrototypeOf": model.ArPrototypeOf,
     "ArraySize": model.ArraySize,
     "Asap2Version": model.Asap2Version,
     "AxisDescr": model.AxisDescr,
@@ -71,6 +74,8 @@ KW_MAP = {
     "CompuTabRef": model.CompuTabRef,
     "CompuVtab": model.CompuVtab,
     "CompuVtabRange": model.CompuVtabRange,
+    "ConsistentExchange": model.ConsistentExchange,
+    "Conversion": model.Conversion,
     "CpuType": model.CpuType,
     "CurveAxisRef": model.CurveAxisRef,
     "Customer": model.Customer,
@@ -88,6 +93,7 @@ KW_MAP = {
     "DistOpZ": model.DistOpZ,
     "DistOp4": model.DistOp4,
     "DistOp5": model.DistOp5,
+    "Encoding": model.Encoding,
     "Ecu": model.Ecu,
     "EcuAddress": model.EcuAddress,
     "EcuAddressExtension": model.EcuAddressExtension,
@@ -118,9 +124,11 @@ KW_MAP = {
     "Identification": model.Identification,
     "IfData": model.IfData,
     "InMeasurement": model.InMeasurement,
+    "InputQuantity": model.InputQuantity,
     "Instance": model.Instance,
     "Layout": model.Layout,
     "LeftShift": model.LeftShift,
+    "Limits": model.Limits,
     "LocMeasurement": model.LocMeasurement,
     "MapList": model.MapList,
     "MatrixDim": model.MatrixDim,
@@ -152,6 +160,7 @@ KW_MAP = {
     "Offset4": model.Offset4,
     "Offset5": model.Offset5,
     "OutMeasurement": model.OutMeasurement,
+    "Overwrite": model.Overwrite,
     "PhoneNo": model.PhoneNo,
     "PhysUnit": model.PhysUnit,
     "Project": model.Project,
@@ -186,6 +195,7 @@ KW_MAP = {
     "SrcAddr4": model.SrcAddr4,
     "SrcAddr5": model.SrcAddr5,
     "StaticRecordLayout": model.StaticRecordLayout,
+    "StaticAddressOffsets": model.StaticAddressOffsets,
     "StatusStringRef": model.StatusStringRef,
     "StepSize": model.StepSize,
     "SubFunction": model.SubFunction,
@@ -200,6 +210,7 @@ KW_MAP = {
     "TransformerOutObjects": model.TransformerOutObjects,
     "Transformer": model.Transformer,
     "TypedefAxis": model.TypedefAxis,
+    "TypedefBlob": model.TypedefBlob,
     "TypedefCharacteristic": model.TypedefCharacteristic,
     "TypedefMeasurement": model.TypedefMeasurement,
     "TypedefStructure": model.TypedefStructure,
@@ -340,19 +351,6 @@ def update_tables(session, tables):
             session.add(inst)
 
 
-"""
-    def parse_aml(file_name: str) -> bytes:
-        from pya2l import amlparser_ext
-
-        text: bytes = open(file_name, "rb").read()
-        result: bytes = amlparser_ext.parse_aml(text)
-        return text, result
-
-    aml_text, aml_parsed = parse_aml(filenames.aml)
-    self.session.add(model.AMLSection(text=aml_text, parsed=aml_parsed))
-"""
-
-
 class A2LParser:
     def __init__(self) -> None:
         self.debug: bool = False
@@ -455,7 +453,15 @@ class A2LParser:
             if_data = tree.if_data
 
             values = zipper(params, mult)
-            if name not in ("ReadOnly", "GuardRails", "Discrete"):
+            if name not in {
+                "ReadOnly",
+                "GuardRails",
+                "Discrete",
+                "ReadWrite",
+                "ConsistentExchange",
+                "StaticRecordLayout",
+                "StaticAddressOffsets",
+            }:
                 inst = table(**values)
                 if if_data:
                     # print(parent, table, params, if_data)

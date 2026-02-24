@@ -1,7 +1,7 @@
 Readme
 ======
 
-|PyPI| |Python Versions| |License: LGPL v3+| |Code style: black|
+|PyPI| |Python Versions| |License: LGPL v3+| |Code style: black| |Ask DeepWiki|
 
 .. image:: pya2l_social.jpg
     :align: center
@@ -327,3 +327,5 @@ See GitHub Releases: https://github.com/christoph2/pyA2L/releases
    :target: https://www.gnu.org/licenses/lgpl-3.0
 .. |Code style: black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/psf/black
+.. |Ask DeepWiki| image:: https://deepwiki.com/badge.svg
+   :target: https://deepwiki.com/christoph2/pyA2L

@@ -3,7 +3,7 @@
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2025 by Christoph Schueler <github.com/Christoph2,
+   (C) 2009-2026 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -108,7 +108,7 @@ class Datasize(SingletonBase):
 
 
 class Addrtype(SingletonBase):
-    enum_values = ("PBYTE", "PWORD", "PLONG", "DIRECT")
+    enum_values = ("PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT")
 
 
 class Byteorder(SingletonBase):
@@ -121,6 +121,14 @@ class Indexorder(SingletonBase):
 
 class Linktype(SingletonBase):
     enum_values = ("SYMBOL_TYPE_LINK",)
+
+
+class EncodingType(SingletonBase):
+    enum_values = ("UTF8", "UTF16", "UTF32")
+
+
+class TriggerType(SingletonBase):
+    enum_values = ("ON_CHANGE", "ON_USER_REQUEST")
 
 
 class Parameter:
@@ -215,7 +223,6 @@ def set_sqlite3_pragmas(dbapi_connection: Any, connection_record: Any) -> None:
 
 @as_declarative()
 class Base:
-
     rid = Column("rid", types.Integer, primary_key=True)
 
     @declared_attr
@@ -303,8 +310,35 @@ def StdIdent(default=0, primary_key=False, unique=False, index=False):
     )
 
 
-class DefCharacteristicIdentifiers(Base, CompareByPositionMixIn):
+class ArComponent(Base):
+    """"""
 
+    __tablename__ = "ar_component"
+
+    component_type = StdString()
+    __required_parameters__ = (Parameter("label", component_type, False),)
+
+    __optional_elements__ = (Element("ArPrototypeOf", "AR_PROTOTYPE_OF", False),)
+    ar_prototype_of = relationship("ArPrototypeOf", back_populates="ar_component", uselist=False)
+    _function_rid = Column(types.Integer, ForeignKey("function.rid"))
+    function = relationship("Function", back_populates="ar_component", uselist=False)
+
+
+class ArPrototypeOf(Base):
+    """"""
+
+    __tablename__ = "ar_prototype_of"
+
+    name = StdString()
+
+    __required_parameters__ = (Parameter("name", String, False),)
+
+    __optional_elements__ = ()
+    _ar_component_rid = Column(types.Integer, ForeignKey("ar_component.rid"))
+    ar_component = relationship("ArComponent", back_populates="ar_prototype_of", uselist=False)
+
+
+class DefCharacteristicIdentifiers(Base, CompareByPositionMixIn):
     __tablename__ = "def_characteristic_identifiers"
 
     dci_rid = Column(types.Integer, ForeignKey("def_characteristic.rid"))
@@ -316,7 +350,6 @@ class DefCharacteristicIdentifiers(Base, CompareByPositionMixIn):
 
 
 class OutMeasurementIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "out_measurement_identifiers"
 
     om_rid = Column(types.Integer, ForeignKey("out_measurement.rid"))
@@ -328,7 +361,6 @@ class OutMeasurementIdentifiers(Base, CompareByPositionMixIn):
 
 
 class InMeasurementIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "in_measurement_identifiers"
 
     im_rid = Column(types.Integer, ForeignKey("in_measurement.rid"))
@@ -340,7 +372,6 @@ class InMeasurementIdentifiers(Base, CompareByPositionMixIn):
 
 
 class LocMeasurementIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "loc_measurement_identifiers"
 
     lm_rid = Column(types.Integer, ForeignKey("loc_measurement.rid"))
@@ -352,7 +383,6 @@ class LocMeasurementIdentifiers(Base, CompareByPositionMixIn):
 
 
 class RefMeasurementIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "ref_measurement_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("ref_measurement.rid"))
@@ -364,7 +394,6 @@ class RefMeasurementIdentifiers(Base, CompareByPositionMixIn):
 
 
 class FrameMeasurementIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "frame_measurement_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("frame_measurement.rid"))
@@ -376,7 +405,6 @@ class FrameMeasurementIdentifiers(Base, CompareByPositionMixIn):
 
 
 class SubGroupIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "sub_group_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("sub_group.rid"))
@@ -388,7 +416,6 @@ class SubGroupIdentifiers(Base, CompareByPositionMixIn):
 
 
 class SubFunctionIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "sub_function_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("sub_function.rid"))
@@ -400,7 +427,6 @@ class SubFunctionIdentifiers(Base, CompareByPositionMixIn):
 
 
 class RefGroupIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "ref_group_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("ref_group.rid"))
@@ -412,7 +438,6 @@ class RefGroupIdentifiers(Base, CompareByPositionMixIn):
 
 
 class MapListIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "map_list_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("map_list.rid"))
@@ -424,7 +449,6 @@ class MapListIdentifiers(Base, CompareByPositionMixIn):
 
 
 class VarCharacteristicIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "var_characteristic_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("var_characteristic.rid"))
@@ -436,7 +460,6 @@ class VarCharacteristicIdentifiers(Base, CompareByPositionMixIn):
 
 
 class VarCriterionIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "var_criterion_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("var_criterion.rid"))
@@ -448,7 +471,6 @@ class VarCriterionIdentifiers(Base, CompareByPositionMixIn):
 
 
 class FunctionListIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "function_list_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("function_list.rid"))
@@ -460,7 +482,6 @@ class FunctionListIdentifiers(Base, CompareByPositionMixIn):
 
 
 class RefCharacteristicIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "ref_characteristic_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("ref_characteristic.rid"))
@@ -472,7 +493,6 @@ class RefCharacteristicIdentifiers(Base, CompareByPositionMixIn):
 
 
 class DependentCharacteristicIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "dependent_characteristic_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("dependent_characteristic.rid"))
@@ -484,7 +504,6 @@ class DependentCharacteristicIdentifiers(Base, CompareByPositionMixIn):
 
 
 class VirtualCharacteristicIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "virtual_characteristic_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("virtual_characteristic.rid"))
@@ -496,7 +515,6 @@ class VirtualCharacteristicIdentifiers(Base, CompareByPositionMixIn):
 
 
 class TransformerInObjectsIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "transformer_in_objects_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("transformer_in_objects.rid"))
@@ -508,7 +526,6 @@ class TransformerInObjectsIdentifiers(Base, CompareByPositionMixIn):
 
 
 class TransformerOutObjectsIdentifiers(Base, CompareByPositionMixIn):
-
     __tablename__ = "transformer_out_objects_identifiers"
 
     rm_rid = Column(types.Integer, ForeignKey("transformer_out_objects.rid"))
@@ -520,7 +537,6 @@ class TransformerOutObjectsIdentifiers(Base, CompareByPositionMixIn):
 
 
 class CompuTabPair(Base, CompareByPositionMixIn):
-
     __tablename__ = "compu_tab_pair"
 
     ct_rid = Column(types.Integer, ForeignKey("compu_tab.rid"))
@@ -531,7 +547,6 @@ class CompuTabPair(Base, CompareByPositionMixIn):
 
 
 class CompuVtabPair(Base, CompareByPositionMixIn):
-
     __tablename__ = "compu_vtab_pair"
 
     ct_rid = Column(types.Integer, ForeignKey("compu_vtab.rid"))
@@ -542,7 +557,6 @@ class CompuVtabPair(Base, CompareByPositionMixIn):
 
 
 class CompuVtabRangeTriple(Base, CompareByPositionMixIn):
-
     __tablename__ = "compu_vtab_range_triple"
 
     ct_rid = Column(types.Integer, ForeignKey("compu_vtab_range.rid"))
@@ -554,7 +568,6 @@ class CompuVtabRangeTriple(Base, CompareByPositionMixIn):
 
 
 class CalHandles(Base, CompareByPositionMixIn):
-
     __tablename__ = "calhandles"
 
     ch_rid = Column(types.Integer, ForeignKey("calibration_handle.rid"))
@@ -566,7 +579,6 @@ class CalHandles(Base, CompareByPositionMixIn):
 
 
 class VirtualMeasuringChannels(Base, CompareByPositionMixIn):
-
     __tablename__ = "virtual_measuring_channel"
 
     vmc_rid = Column(types.Integer, ForeignKey("virtual.rid"))
@@ -578,7 +590,6 @@ class VirtualMeasuringChannels(Base, CompareByPositionMixIn):
 
 
 class FixAxisParListValues(Base, CompareByPositionMixIn):
-
     __tablename__ = "fix_axis_par_list_value"
 
     faplv_rid = Column(types.Integer, ForeignKey("fix_axis_par_list.rid"))
@@ -590,7 +601,6 @@ class FixAxisParListValues(Base, CompareByPositionMixIn):
 
 
 class VarAddressValues(Base, CompareByPositionMixIn):
-
     __tablename__ = "var_address_values"
 
     va_rid = Column(types.Integer, ForeignKey("var_address.rid"))
@@ -602,7 +612,6 @@ class VarAddressValues(Base, CompareByPositionMixIn):
 
 
 class AnnotationTextValues(Base, CompareByPositionMixIn):
-
     __tablename__ = "annotation_text_values"
 
     at_rid = Column(types.Integer, ForeignKey("annotation_text.rid"))
@@ -614,7 +623,6 @@ class AnnotationTextValues(Base, CompareByPositionMixIn):
 
 
 class FunctionListValues(Base, CompareByPositionMixIn):
-
     __tablename__ = "function_list_values"
 
     flv_rid = Column(types.Integer, ForeignKey("function_list.rid"))
@@ -626,7 +634,6 @@ class FunctionListValues(Base, CompareByPositionMixIn):
 
 
 class VarForbiddedCombPair(Base, CompareByPositionMixIn):
-
     __tablename__ = "var_forbidden_comb_pair"
 
     vfc_rid = Column(types.Integer, ForeignKey("var_forbidden_comb.rid"))
@@ -636,7 +643,6 @@ class VarForbiddedCombPair(Base, CompareByPositionMixIn):
 
 
 class MetaData(Base):
-
     schema_version = StdShort()
     created = Column(types.DateTime, default=datetime.datetime.now)
 
@@ -659,6 +665,26 @@ class HasAlignmentBytes:
     @declared_attr
     def alignment_byte(self):
         return relationship("AlignmentByte")
+
+
+class ErrorMask(Base):
+    """"""
+
+    __tablename__ = "error_mask"
+
+    mask = StdULong()
+
+    __required_parameters__ = (Parameter("mask", Ulong, False),)
+
+
+class HasErrorMasks:
+    @declared_attr
+    def error_mask_id(self):
+        return Column(types.Integer, ForeignKey("error_mask.rid"), nullable=True)
+
+    @declared_attr
+    def error_mask(self):
+        return relationship("ErrorMask")
 
 
 class AlignmentFloat16Ieee(Base):
@@ -782,7 +808,6 @@ class HasAlignmentWords:
 
 
 class AnnotationAssociation(Base):
-
     __tablename__ = "annotation_association"
 
     position = StdLong()
@@ -899,6 +924,73 @@ class HasBitMasks:
         return relationship("BitMask")
 
 
+class BitOperation(Base):
+    """"""
+
+    __tablename__ = "bit_operation"
+
+    __required_parameters__ = ()
+
+    __optional_elements__ = (
+        Element("LeftShift", "LEFT_SHIFT", False),
+        Element("RightShift", "RIGHT_SHIFT", False),
+        Element("SignExtend", "SIGN_EXTEND", False),
+    )
+    left_shift = relationship("LeftShift", back_populates="bit_operation", uselist=False)
+    right_shift = relationship("RightShift", back_populates="bit_operation", uselist=False)
+    sign_extend = relationship("SignExtend", back_populates="bit_operation", uselist=False)
+
+
+class HasBitOperations:
+    @declared_attr
+    def bit_operation_id(self):
+        return Column(types.Integer, ForeignKey("bit_operation.rid"), nullable=True)
+
+    @declared_attr
+    def bit_operation(self):
+        return relationship("BitOperation")
+
+
+class LeftShift(Base):
+    """"""
+
+    __tablename__ = "left_shift"
+
+    bitcount = StdULong()
+
+    __required_parameters__ = (Parameter("bitcount", Ulong, False),)
+
+    __optional_elements__ = ()
+    _bit_operation_rid = Column(types.Integer, ForeignKey("bit_operation.rid"))
+    bit_operation = relationship("BitOperation", back_populates="left_shift", uselist=False)
+
+
+class RightShift(Base):
+    """"""
+
+    __tablename__ = "right_shift"
+
+    bitcount = StdULong()
+
+    __required_parameters__ = (Parameter("bitcount", Ulong, False),)
+
+    __optional_elements__ = ()
+    _bit_operation_rid = Column(types.Integer, ForeignKey("bit_operation.rid"))
+    bit_operation = relationship("BitOperation", back_populates="right_shift", uselist=False)
+
+
+class SignExtend(Base):
+    """"""
+
+    __tablename__ = "sign_extend"
+
+    __required_parameters__ = ()
+
+    __optional_elements__ = ()
+    _bit_operation_rid = Column(types.Integer, ForeignKey("bit_operation.rid"))
+    bit_operation = relationship("BitOperation", back_populates="sign_extend", uselist=False)
+
+
 class ByteOrder(Base):
     """"""
 
@@ -937,6 +1029,16 @@ class HasCalibrationAccess:
     @declared_attr
     def calibration_access(self):
         return relationship("CalibrationAccess")
+
+
+class ConsistentExchange:
+    pass
+
+
+class HasConsistentExchanges:
+    @declared_attr
+    def consistent_exchange(self):
+        return Column(types.Boolean, default=False)
 
 
 class DefaultValue(Base):
@@ -1053,6 +1155,47 @@ class HasExtendedLimits:
         return relationship("ExtendedLimits")
 
 
+class AddressType(Base):
+    """"""
+
+    __tablename__ = "address_type"
+
+    addressType = StdIdent()
+
+    __required_parameters__ = (Parameter("addressType", Ident, False),)
+
+
+class HasAddressTypes:
+    @declared_attr
+    def address_type_id(self):
+        return Column(types.Integer, ForeignKey("address_type.rid"), nullable=True)
+
+    @declared_attr
+    def address_type(self):
+        return relationship("AddressType")
+
+
+class Encoding(Base):
+    """"""
+
+    __tablename__ = "encoding"
+
+    encoding = StdIdent()
+
+    __required_parameters__ = (Parameter("encoding", Ident, False),)
+
+
+class HasEncodings:
+
+    @declared_attr
+    def encoding_id(self):
+        return Column(types.Integer, ForeignKey("encoding.rid"), nullable=True)
+
+    @declared_attr
+    def encoding(self):
+        return relationship("Encoding")
+
+
 class Format(Base):
     """"""
 
@@ -1105,7 +1248,6 @@ class HasGuardRails:
 
 
 class IfDataAssociation(Base):
-
     __tablename__ = "if_data_association"
 
     position = StdLong()
@@ -1167,8 +1309,27 @@ class HasIfDatas:
         return relationship(assoc_cls, backref=backref("parent", uselist=False, collection_class=ordering_list("position")))
 
 
-class MatrixDimNumbers(Base, CompareByPositionMixIn):
+class Layout(Base):
+    """"""
 
+    __tablename__ = "layout"
+
+    indexMode = StdString()
+
+    __required_parameters__ = (Parameter("indexMode", Enum, False),)
+
+
+class HasLayouts:
+    @declared_attr
+    def layout_id(self):
+        return Column(types.Integer, ForeignKey("layout.rid"), nullable=True)
+
+    @declared_attr
+    def layout(self):
+        return relationship("Layout")
+
+
+class MatrixDimNumbers(Base, CompareByPositionMixIn):
     __tablename__ = "matrix_dim_numbers"
 
     rm_rid = Column(types.Integer, ForeignKey("matrix_dim.rid"))
@@ -1201,6 +1362,26 @@ class HasMatrixDims:
         return relationship("MatrixDim")
 
 
+class Number(Base):
+    """"""
+
+    __tablename__ = "number"
+
+    number = StdUShort()
+
+    __required_parameters__ = (Parameter("number", Uint, False),)
+
+
+class HasNumbers:
+    @declared_attr
+    def number_id(self):
+        return Column(types.Integer, ForeignKey("number.rid"), nullable=True)
+
+    @declared_attr
+    def number(self):
+        return relationship("Number")
+
+
 class MaxRefresh(Base):
     """"""
 
@@ -1223,6 +1404,26 @@ class HasMaxRefreshs:
     @declared_attr
     def max_refresh(self):
         return relationship("MaxRefresh")
+
+
+class ModelLink(Base):
+    """"""
+
+    __tablename__ = "model_link"
+
+    link = StdString()
+
+    __required_parameters__ = (Parameter("link", String, False),)
+
+
+class HasModelLinks:
+    @declared_attr
+    def model_link_id(self):
+        return Column(types.Integer, ForeignKey("model_link.rid"), nullable=True)
+
+    @declared_attr
+    def model_link(self):
+        return relationship("ModelLink")
 
 
 class Monotony(Base):
@@ -1272,6 +1473,37 @@ class ReadOnly:
 class HasReadOnlys:
     @declared_attr
     def read_only(self):
+        return Column(types.Boolean, default=False)
+
+
+class ReadWrite:
+    pass
+
+
+class HasReadWrites:
+    @declared_attr
+    def read_write(self):
+        return Column(types.Boolean, default=False)
+
+
+class StaticRecordLayout(Base):
+    pass
+
+
+class HasStaticRecordLayouts:
+    @declared_attr
+    def static_record_layout(self):
+
+        return Column(types.Boolean, default=False)
+
+
+class StaticAddressOffsets(Base):
+    pass
+
+
+class HasStaticAddressOffsets:
+    @declared_attr
+    def static_record_offsets(self):
         return Column(types.Boolean, default=False)
 
 
@@ -1564,6 +1796,7 @@ class Module(Base, HasIfDatas):
         Element("RecordLayout", "RECORD_LAYOUT", True),
         Element("Transformer", "TRANSFORMER", True),
         Element("TypedefAxis", "TYPEDEF_AXIS", True),
+        Element("TypedefBlob", "TYPEDEF_BLOB", True),
         Element("TypedefCharacteristic", "TYPEDEF_CHARACTERISTIC", True),
         Element("TypedefMeasurement", "TYPEDEF_MEASUREMENT", True),
         Element("TypedefStructure", "TYPEDEF_STRUCTURE", True),
@@ -1589,6 +1822,7 @@ class Module(Base, HasIfDatas):
     record_layout = relationship("RecordLayout", back_populates="module", uselist=True)
     transformer = relationship("Transformer", back_populates="module", uselist=True)
     typedef_axis = relationship("TypedefAxis", back_populates="module", uselist=True)
+    typedef_blob = relationship("TypedefBlob", back_populates="module", uselist=True)
     typedef_characteristic = relationship("TypedefCharacteristic", back_populates="module", uselist=True)
     typedef_measurement = relationship("TypedefMeasurement", back_populates="module", uselist=True)
     typedef_structure = relationship("TypedefStructure", back_populates="module", uselist=True)
@@ -1624,6 +1858,8 @@ class AxisPts(
     HasFunctionLists,
     HasGuardRails,
     HasIfDatas,
+    HasMaxRefreshs,
+    HasModelLinks,
     HasMonotonys,
     HasPhysUnits,
     HasReadOnlys,
@@ -1680,6 +1916,8 @@ class AxisPts(
         Element("FunctionList", "FUNCTION_LIST", False),
         Element("GuardRails", "GUARD_RAILS", False),
         Element("IfData", "IF_DATA", True),
+        Element("MaxRefresh", "MAX_REFRESH", False),
+        Element("ModelLink", "MODEL_LINK", False),
         Element("Monotony", "MONOTONY", False),
         Element("PhysUnit", "PHYS_UNIT", False),
         Element("ReadOnly", "READ_ONLY", False),
@@ -1700,6 +1938,7 @@ class Characteristic(
     HasDiscretes,
     HasDisplayIdentifiers,
     HasEcuAddressExtensions,
+    HasEncodings,
     HasExtendedLimits,
     HasFormats,
     HasFunctionLists,
@@ -1707,6 +1946,8 @@ class Characteristic(
     HasIfDatas,
     HasMatrixDims,
     HasMaxRefreshs,
+    HasModelLinks,
+    HasNumbers,
     HasPhysUnits,
     HasReadOnlys,
     HasRefMemorySegments,
@@ -1758,6 +1999,7 @@ class Characteristic(
         Element("Discrete", "DISCRETE", False),
         Element("DisplayIdentifier", "DISPLAY_IDENTIFIER", False),
         Element("EcuAddressExtension", "ECU_ADDRESS_EXTENSION", False),
+        Element("Encoding", "ENCODING", False),
         Element("ExtendedLimits", "EXTENDED_LIMITS", False),
         Element("Format", "FORMAT", False),
         Element("FunctionList", "FUNCTION_LIST", False),
@@ -1766,8 +2008,8 @@ class Characteristic(
         Element("MapList", "MAP_LIST", False),
         Element("MatrixDim", "MATRIX_DIM", False),
         Element("MaxRefresh", "MAX_REFRESH", False),
-        Element("Number", "NUMBER", False),
         Element("ModelLink", "MODEL_LINK", False),
+        Element("Number", "NUMBER", False),
         Element("PhysUnit", "PHYS_UNIT", False),
         Element("ReadOnly", "READ_ONLY", False),
         Element("RefMemorySegment", "REF_MEMORY_SEGMENT", False),
@@ -1779,8 +2021,6 @@ class Characteristic(
     comparison_quantity = relationship("ComparisonQuantity", back_populates="characteristic", uselist=False)
     dependent_characteristic = relationship("DependentCharacteristic", back_populates="characteristic", uselist=False)
     map_list = relationship("MapList", back_populates="characteristic", uselist=False)
-    number = relationship("Number", back_populates="characteristic", uselist=False)
-    model_link = relationship("ModelLink", back_populates="characteristic", uselist=False)
     virtual_characteristic = relationship("VirtualCharacteristic", back_populates="characteristic", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
     module = relationship("Module", back_populates="characteristic", uselist=False)
@@ -1853,7 +2093,18 @@ class AxisDescr(
     typedef_characteristic = relationship("TypedefCharacteristic", back_populates="axis_descr", uselist=True)
 
 
-class Blob(Base, HasCalibrationAccess):
+class Blob(
+    Base,
+    HasAddressTypes,
+    HasAnnotations,
+    HasCalibrationAccess,
+    HasDisplayIdentifiers,
+    HasEcuAddressExtensions,
+    HasIfDatas,
+    HasMaxRefreshs,
+    HasModelLinks,
+    HasSymbolLinks,
+):
     """"""
 
     __tablename__ = "blob"
@@ -1864,16 +2115,26 @@ class Blob(Base, HasCalibrationAccess):
 
     address = StdULong()
 
-    length = StdULong()
+    size = StdULong()
 
     __required_parameters__ = (
         Parameter("name", Ident, False),
         Parameter("longIdentifier", String, False),
         Parameter("address", Ulong, False),
-        Parameter("length", Ulong, False),
+        Parameter("size", Ulong, False),
     )
 
-    __optional_elements__ = (Element("CalibrationAccess", "CALIBRATION_ACCESS", False),)
+    __optional_elements__ = (
+        Element("AddressType", "ADDRESS_TYPE", False),
+        Element("Annotation", "ANNOTATION", True),
+        Element("CalibrationAccess", "CALIBRATION_ACCESS", False),
+        Element("DisplayIdentifier", "DISPLAY_IDENTIFIER", False),
+        Element("EcuAddressExtension", "ECU_ADDRESS_EXTENSION", False),
+        Element("IfData", "IF_DATA", True),
+        Element("MaxRefresh", "MAX_REFRESH", False),
+        Element("ModelLink", "MODEL_LINK", False),
+        Element("SymbolLink", "SYMBOL_LINK", False),
+    )
 
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
     module = relationship("Module", back_populates="blob", uselist=False)
@@ -2028,34 +2289,6 @@ class MapList(Base):
     __optional_elements__ = ()
     _characteristic_rid = Column(types.Integer, ForeignKey("characteristic.rid"))
     characteristic = relationship("Characteristic", back_populates="map_list", uselist=False)
-
-
-class ModelLink(Base):
-    """"""
-
-    __tablename__ = "model_link"
-
-    link = StdString()
-
-    __required_parameters__ = (Parameter("link", String, False),)
-
-    __optional_elements__ = ()
-    _characteristic_rid = Column(types.Integer, ForeignKey("characteristic.rid"))
-    characteristic = relationship("Characteristic", back_populates="model_link", uselist=False)
-
-
-class Number(Base):
-    """"""
-
-    __tablename__ = "number"
-
-    number = StdUShort()
-
-    __required_parameters__ = (Parameter("number", Uint, False),)
-
-    __optional_elements__ = ()
-    _characteristic_rid = Column(types.Integer, ForeignKey("characteristic.rid"))
-    characteristic = relationship("Characteristic", back_populates="number", uselist=False)
 
 
 class VirtualCharacteristic(Base):
@@ -2380,6 +2613,7 @@ class Function(Base, HasAnnotations, HasIfDatas, HasRefCharacteristics):
 
     __optional_elements__ = (
         Element("Annotation", "ANNOTATION", True),
+        Element("ArComponent", "AR_COMPONENT", False),
         Element("DefCharacteristic", "DEF_CHARACTERISTIC", False),
         Element("FunctionVersion", "FUNCTION_VERSION", False),
         Element("IfData", "IF_DATA", True),
@@ -2389,6 +2623,7 @@ class Function(Base, HasAnnotations, HasIfDatas, HasRefCharacteristics):
         Element("RefCharacteristic", "REF_CHARACTERISTIC", False),
         Element("SubFunction", "SUB_FUNCTION", False),
     )
+    ar_component = relationship("ArComponent", back_populates="function", uselist=False)
     def_characteristic = relationship("DefCharacteristic", back_populates="function", uselist=False)
     function_version = relationship("FunctionVersion", back_populates="function", uselist=False)
     in_measurement = relationship("InMeasurement", back_populates="function", uselist=False)
@@ -2560,7 +2795,21 @@ class SubGroup(Base):
     group = relationship("Group", back_populates="sub_group", uselist=False)
 
 
-class Instance(Base, HasIfDatas, HasEcuAddressExtensions, HasDisplayIdentifiers, HasMatrixDims, HasSymbolLinks):
+class Instance(
+    Base,
+    HasAddressTypes,
+    HasAnnotations,
+    HasCalibrationAccess,
+    HasDisplayIdentifiers,
+    HasEcuAddressExtensions,
+    HasIfDatas,
+    HasLayouts,
+    HasMatrixDims,
+    HasMaxRefreshs,
+    HasModelLinks,
+    HasReadWrites,
+    HasSymbolLinks,
+):
     """"""
 
     __tablename__ = "instance"
@@ -2569,45 +2818,131 @@ class Instance(Base, HasIfDatas, HasEcuAddressExtensions, HasDisplayIdentifiers,
 
     longIdentifier = StdString()
 
-    typeName = StdIdent()
+    typedefName = StdIdent()
 
     address = StdULong()
 
     __required_parameters__ = (
         Parameter("name", Ident, False),
         Parameter("longIdentifier", String, False),
-        Parameter("typeName", Ident, False),
+        Parameter("typedefName", Ident, False),
         Parameter("address", Ulong, False),
     )
 
     __optional_elements__ = (
-        Element("ComparisonQuantity", "COMPARISON_QUANTITY", False),
-        Element("DependentCharacteristic", "DEPENDENT_CHARACTERISTIC", False),
+        Element("AddressType", "ADDRESS_TYPE", False),
+        Element("Annotation", "ANNOTATION", True),
+        Element("CalibrationAccess", "CALIBRATION_ACCESS", False),
         Element("DisplayIdentifier", "DISPLAY_IDENTIFIER", False),
         Element("EcuAddressExtension", "ECU_ADDRESS_EXTENSION", False),
         Element("IfData", "IF_DATA", True),
-        Element("Number", "NUMBER", False),
+        Element("Layout", "LAYOUT", False),
         Element("MatrixDim", "MATRIX_DIM", False),
+        Element("MaxRefresh", "MAX_REFRESH", False),
+        Element("ModelLink", "MODEL_LINK", False),
+        Element("Overwrite", "OVERWRITE", False),
+        Element("ReadWrite", "READ_WRITE", False),
         Element("SymbolLink", "SYMBOL_LINK", False),
     )
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
     module = relationship("Module", back_populates="instance", uselist=False)
+    overwrite_id = Column(types.Integer, ForeignKey("overwrite.rid"), nullable=True)
+    overwrite = relationship("Overwrite", back_populates="instance", uselist=False)
+
+
+class Overwrite(Base, HasExtendedLimits, HasFormats, HasMonotonys, HasPhysUnits):
+    __tablename__ = "overwrite"
+
+    name = StdIdent()
+
+    axisNumber = StdUShort()
+
+    __required_parameters__ = (
+        Parameter("name", Ident, False),
+        Parameter("axisNumber", Uint, False),
+    )
+    __optional_elements__ = (
+        Element("Conversion", "CONVERSION", False),
+        Element("ExtendedLimits", "EXTENDED_LIMITS", False),
+        Element("Format", "FORMAT", False),
+        Element("InputQuantity", "INPUT_QUANTITY", False),
+        Element("Limits", "LIMITS", False),
+        Element("Monotony", "MONOTONY", False),
+        Element("PhysUnit", "PHYS_UNIT", False),
+    )
+
+    instance = relationship("Instance", back_populates="overwrite", uselist=False)
+    conversion = relationship("Conversion", back_populates="overwrite", uselist=False)
+    input_quantity = relationship("InputQuantity", back_populates="overwrite", uselist=False)
+    limits = relationship("Limits", back_populates="overwrite", uselist=False)
+
+
+class InputQuantity(Base):
+    """"""
+
+    __tablename__ = "input_quantity"
+
+    inputQuantity = StdIdent()
+
+    __required_parameters__ = (Parameter("inputQuantity", Ident, False),)
+
+    __optional_elements__ = ()
+    _overwrite_rid = Column(types.Integer, ForeignKey("overwrite.rid"))
+    overwrite = relationship("Overwrite", back_populates="input_quantity", uselist=False)
+
+
+class Conversion(Base):
+    """"""
+
+    __tablename__ = "conversion"
+
+    conversionMethod = StdIdent()
+
+    __required_parameters__ = (Parameter("conversionMethod", Ident, False),)
+
+    __optional_elements__ = ()
+    _overwrite_rid = Column(types.Integer, ForeignKey("overwrite.rid"))
+    overwrite = relationship("Overwrite", back_populates="conversion", uselist=False)
+
+
+class Limits(Base):
+    """"""
+
+    __tablename__ = "limits"
+
+    lowerLimit = StdFloat()
+
+    upperLimit = StdFloat()
+
+    __required_parameters__ = (
+        Parameter("lowerLimit", Float, False),
+        Parameter("upperLimit", Float, False),
+    )
+    __optional_elements__ = ()
+    _overwrite_rid = Column(types.Integer, ForeignKey("overwrite.rid"))
+    overwrite = relationship("Overwrite", back_populates="limits", uselist=False)
 
 
 class Measurement(
     Base,
+    HasAddressTypes,
     HasAnnotations,
     HasBitMasks,
+    HasBitOperations,
     HasByteOrders,
     HasDiscretes,
     HasDisplayIdentifiers,
     HasEcuAddressExtensions,
+    HasErrorMasks,
     HasFormats,
     HasFunctionLists,
     HasIfDatas,
+    HasLayouts,
     HasMatrixDims,
     HasMaxRefreshs,
+    HasModelLinks,
     HasPhysUnits,
+    HasReadWrites,
     HasRefMemorySegments,
     HasSymbolLinks,
 ):
@@ -2643,6 +2978,7 @@ class Measurement(
     )
 
     __optional_elements__ = (
+        Element("AddressType", "ADDRESS_TYPE", False),
         Element("Annotation", "ANNOTATION", True),
         Element("ArraySize", "ARRAY_SIZE", False),
         Element("BitMask", "BIT_MASK", False),
@@ -2659,6 +2995,7 @@ class Measurement(
         Element("Layout", "LAYOUT", False),
         Element("MatrixDim", "MATRIX_DIM", False),
         Element("MaxRefresh", "MAX_REFRESH", False),
+        Element("ModelLink", "MODEL_LINK", False),
         Element("PhysUnit", "PHYS_UNIT", False),
         Element("ReadWrite", "READ_WRITE", False),
         Element("RefMemorySegment", "REF_MEMORY_SEGMENT", False),
@@ -2666,11 +3003,7 @@ class Measurement(
         Element("Virtual", "VIRTUAL", False),
     )
     array_size = relationship("ArraySize", back_populates="measurement", uselist=False)
-    bit_operation = relationship("BitOperation", back_populates="measurement", uselist=False)
     ecu_address = relationship("EcuAddress", back_populates="measurement", uselist=False)
-    error_mask = relationship("ErrorMask", back_populates="measurement", uselist=False)
-    layout = relationship("Layout", back_populates="measurement", uselist=False)
-    read_write = relationship("ReadWrite", back_populates="measurement", uselist=False)
     virtual = relationship("Virtual", back_populates="measurement", uselist=False)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
     module = relationship("Module", back_populates="measurement", uselist=False)
@@ -2690,65 +3023,6 @@ class ArraySize(Base):
     measurement = relationship("Measurement", back_populates="array_size", uselist=False)
 
 
-class BitOperation(Base):
-    """"""
-
-    __tablename__ = "bit_operation"
-
-    __required_parameters__ = ()
-
-    __optional_elements__ = (
-        Element("LeftShift", "LEFT_SHIFT", False),
-        Element("RightShift", "RIGHT_SHIFT", False),
-        Element("SignExtend", "SIGN_EXTEND", False),
-    )
-    left_shift = relationship("LeftShift", back_populates="bit_operation", uselist=False)
-    right_shift = relationship("RightShift", back_populates="bit_operation", uselist=False)
-    sign_extend = relationship("SignExtend", back_populates="bit_operation", uselist=False)
-    _measurement_rid = Column(types.Integer, ForeignKey("measurement.rid"))
-    measurement = relationship("Measurement", back_populates="bit_operation", uselist=False)
-
-
-class LeftShift(Base):
-    """"""
-
-    __tablename__ = "left_shift"
-
-    bitcount = StdULong()
-
-    __required_parameters__ = (Parameter("bitcount", Ulong, False),)
-
-    __optional_elements__ = ()
-    _bit_operation_rid = Column(types.Integer, ForeignKey("bit_operation.rid"))
-    bit_operation = relationship("BitOperation", back_populates="left_shift", uselist=False)
-
-
-class RightShift(Base):
-    """"""
-
-    __tablename__ = "right_shift"
-
-    bitcount = StdULong()
-
-    __required_parameters__ = (Parameter("bitcount", Ulong, False),)
-
-    __optional_elements__ = ()
-    _bit_operation_rid = Column(types.Integer, ForeignKey("bit_operation.rid"))
-    bit_operation = relationship("BitOperation", back_populates="right_shift", uselist=False)
-
-
-class SignExtend(Base):
-    """"""
-
-    __tablename__ = "sign_extend"
-
-    __required_parameters__ = ()
-
-    __optional_elements__ = ()
-    _bit_operation_rid = Column(types.Integer, ForeignKey("bit_operation.rid"))
-    bit_operation = relationship("BitOperation", back_populates="sign_extend", uselist=False)
-
-
 class EcuAddress(Base):
     """"""
 
@@ -2761,46 +3035,6 @@ class EcuAddress(Base):
     __optional_elements__ = ()
     _measurement_rid = Column(types.Integer, ForeignKey("measurement.rid"))
     measurement = relationship("Measurement", back_populates="ecu_address", uselist=False)
-
-
-class ErrorMask(Base):
-    """"""
-
-    __tablename__ = "error_mask"
-
-    mask = StdULong()
-
-    __required_parameters__ = (Parameter("mask", Ulong, False),)
-
-    __optional_elements__ = ()
-    _measurement_rid = Column(types.Integer, ForeignKey("measurement.rid"))
-    measurement = relationship("Measurement", back_populates="error_mask", uselist=False)
-
-
-class Layout(Base):
-    """"""
-
-    __tablename__ = "layout"
-
-    indexMode = StdString()
-
-    __required_parameters__ = (Parameter("indexMode", Enum, False),)
-
-    __optional_elements__ = ()
-    _measurement_rid = Column(types.Integer, ForeignKey("measurement.rid"))
-    measurement = relationship("Measurement", back_populates="layout", uselist=False)
-
-
-class ReadWrite(Base):
-    """"""
-
-    __tablename__ = "read_write"
-
-    __required_parameters__ = ()
-
-    __optional_elements__ = ()
-    _measurement_rid = Column(types.Integer, ForeignKey("measurement.rid"))
-    measurement = relationship("Measurement", back_populates="read_write", uselist=False)
 
 
 class Virtual(Base):
@@ -3268,6 +3502,8 @@ class RecordLayout(
     HasAlignmentInt64s,
     HasAlignmentLongs,
     HasAlignmentWords,
+    HasStaticAddressOffsets,
+    HasStaticRecordLayouts,
 ):
     """"""
 
@@ -3313,6 +3549,7 @@ class RecordLayout(
         Element("NoAxisPts4", "NO_AXIS_PTS_4", False),
         Element("NoAxisPts5", "NO_AXIS_PTS_5", False),
         Element("StaticRecordLayout", "STATIC_RECORD_LAYOUT", False),
+        Element("StaticAddressOffsets", "STATIC_ADDRESS_OFFSETS", False),
         Element("NoRescaleX", "NO_RESCALE_X", False),
         Element("NoRescaleY", "NO_RESCALE_Y", False),
         Element("NoRescaleZ", "NO_RESCALE_Z", False),
@@ -3368,7 +3605,6 @@ class RecordLayout(
     no_axis_pts_z = relationship("NoAxisPtsZ", back_populates="record_layout", uselist=False)
     no_axis_pts_4 = relationship("NoAxisPts4", back_populates="record_layout", uselist=False)
     no_axis_pts_5 = relationship("NoAxisPts5", back_populates="record_layout", uselist=False)
-    static_record_layout = relationship("StaticRecordLayout", back_populates="record_layout", uselist=False)
     no_rescale_x = relationship("NoRescaleX", back_populates="record_layout", uselist=False)
     no_rescale_y = relationship("NoRescaleY", back_populates="record_layout", uselist=False)
     no_rescale_z = relationship("NoRescaleZ", back_populates="record_layout", uselist=False)
@@ -3969,18 +4205,6 @@ class NoAxisPts5(Base):
     record_layout = relationship("RecordLayout", back_populates="no_axis_pts_5", uselist=False)
 
 
-class StaticRecordLayout(Base):
-    """"""
-
-    __tablename__ = "static_record_layout"
-
-    __required_parameters__ = ()
-
-    __optional_elements__ = ()
-    _record_layout_rid = Column(types.Integer, ForeignKey("record_layout.rid"))
-    record_layout = relationship("RecordLayout", back_populates="static_record_layout", uselist=False)
-
-
 class NoRescaleX(Base):
     """"""
 
@@ -4501,24 +4725,24 @@ class Transformer(Base, HasTransformerInObjects, HasTransformerOutObjects):
 
     version = StdString()
 
-    dllname32 = StdString()
+    executable32 = StdString()
 
-    dllname64 = StdString()
+    executable64 = StdString()
 
     timeout = StdULong()
 
     trigger = StdIdent()
 
-    reverse = StdIdent()
+    inverseTransformer = StdIdent()
 
     __required_parameters__ = (
         Parameter("name", Ident, False),
         Parameter("version", String, False),
-        Parameter("dllname32", String, False),
-        Parameter("dllname64", String, False),
+        Parameter("executable32", String, False),
+        Parameter("executable64", String, False),
         Parameter("timeout", Ulong, False),
         Parameter("trigger", Ident, False),
-        Parameter("reverse", Ident, False),
+        Parameter("inverseTransformer", Ident, False),
     )
 
     __optional_elements__ = (
@@ -4532,17 +4756,12 @@ class Transformer(Base, HasTransformerInObjects, HasTransformerOutObjects):
 
 class TypedefAxis(
     Base,
-    HasAnnotations,
     HasByteOrders,
-    HasCalibrationAccess,
     HasDeposits,
     HasExtendedLimits,
     HasFormats,
-    HasGuardRails,
     HasMonotonys,
     HasPhysUnits,
-    HasReadOnlys,
-    HasRefMemorySegments,
     HasStepSizes,
 ):
     """"""
@@ -4580,37 +4799,51 @@ class TypedefAxis(
     )
 
     __optional_elements__ = (
-        Element("Annotation", "ANNOTATION", True),
         Element("ByteOrder", "BYTE_ORDER", False),
-        Element("CalibrationAccess", "CALIBRATION_ACCESS", False),
         Element("Deposit", "DEPOSIT", False),
         Element("ExtendedLimits", "EXTENDED_LIMITS", False),
         Element("Format", "FORMAT", False),
-        Element("GuardRails", "GUARD_RAILS", False),
         Element("Monotony", "MONOTONY", False),
         Element("PhysUnit", "PHYS_UNIT", False),
-        Element("ReadOnly", "READ_ONLY", False),
-        Element("RefMemorySegment", "REF_MEMORY_SEGMENT", False),
         Element("StepSize", "STEP_SIZE", False),
     )
+
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
     module = relationship("Module", back_populates="typedef_axis", uselist=False)
 
 
+class TypedefBlob(Base, HasAddressTypes):
+    __tablename__ = "typedef_blob"
+
+    name = StdIdent(index=True)
+
+    longIdentifier = StdString()
+
+    size = StdULong()
+
+    __required_parameters__ = (
+        Parameter("name", Ident, False),
+        Parameter("longIdentifier", String, False),
+        Parameter("size", Ulong, False),
+    )
+
+    __optional_elements__ = (Element("AddressType", "ADDRESS_TYPE", False),)
+
+    _module_rid = Column(types.Integer, ForeignKey("module.rid"))
+    module = relationship("Module", back_populates="typedef_blob", uselist=False)
+
+
 class TypedefCharacteristic(
     Base,
-    HasAnnotations,
     HasBitMasks,
     HasByteOrders,
-    HasCalibrationAccess,
     HasDiscretes,
+    HasEncodings,
     HasExtendedLimits,
     HasFormats,
-    HasGuardRails,
-    HasMaxRefreshs,
+    HasMatrixDims,
+    HasNumbers,
     HasPhysUnits,
-    HasReadOnlys,
-    HasRefMemorySegments,
     HasStepSizes,
 ):
     """"""
@@ -4645,29 +4878,37 @@ class TypedefCharacteristic(
     )
 
     __optional_elements__ = (
-        Element("Annotation", "ANNOTATION", True),
         Element("AxisDescr", "AXIS_DESCR", True),
         Element("BitMask", "BIT_MASK", False),
         Element("ByteOrder", "BYTE_ORDER", False),
-        Element("CalibrationAccess", "CALIBRATION_ACCESS", False),
         Element("Discrete", "DISCRETE", False),
+        Element("Encoding", "ENCODING", False),
         Element("ExtendedLimits", "EXTENDED_LIMITS", False),
         Element("Format", "FORMAT", False),
-        Element("GuardRails", "GUARD_RAILS", False),
-        Element("MaxRefresh", "MAX_REFRESH", False),
+        Element("MatrixDim", "MATRIX_DIM", False),
         Element("Number", "NUMBER", False),
         Element("PhysUnit", "PHYS_UNIT", False),
-        Element("ReadOnly", "READ_ONLY", False),
-        Element("RefMemorySegment", "REF_MEMORY_SEGMENT", False),
         Element("StepSize", "STEP_SIZE", False),
-        Element("VirtualCharacteristic", "VIRTUAL_CHARACTERISTIC", False),
     )
+
     axis_descr = relationship("AxisDescr", back_populates="typedef_characteristic", uselist=True)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
     module = relationship("Module", back_populates="typedef_characteristic", uselist=False)
 
 
-class TypedefMeasurement(Base):
+class TypedefMeasurement(
+    Base,
+    HasAddressTypes,
+    HasBitMasks,
+    HasBitOperations,
+    HasByteOrders,
+    HasDiscretes,
+    HasErrorMasks,
+    HasFormats,
+    HasLayouts,
+    HasMatrixDims,
+    HasPhysUnits,
+):
     """"""
 
     __tablename__ = "typedef_measurement"
@@ -4699,12 +4940,24 @@ class TypedefMeasurement(Base):
         Parameter("upperLimit", Float, False),
     )
 
-    __optional_elements__ = ()
+    __optional_elements__ = (
+        Element("AddressType", "ADDRESS_TYPE", False),
+        Element("BitMask", "BIT_MASK", False),
+        Element("BitOperation", "BIT_OPERATION", False),
+        Element("ByteOrder", "BYTE_ORDER", False),
+        Element("Discrete", "DISCRETE", False),
+        Element("ErrorMask", "ERROR_MASK", False),
+        Element("Format", "FORMAT", False),
+        Element("Layout", "LAYOUT", False),
+        Element("MatrixDim", "MATRIX_DIM", False),
+        Element("PhysUnit", "PHYS_UNIT", False),
+    )
+
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
     module = relationship("Module", back_populates="typedef_measurement", uselist=False)
 
 
-class TypedefStructure(Base, HasSymbolTypeLink):
+class TypedefStructure(Base, HasAddressTypes, HasSymbolTypeLink):
     """"""
 
     __tablename__ = "typedef_structure"
@@ -4722,40 +4975,40 @@ class TypedefStructure(Base, HasSymbolTypeLink):
     )
 
     __optional_elements__ = (
+        Element("AddressType", "ADDRESS_TYPE", False),
         Element("StructureComponent", "STRUCTURE_COMPONENT", True),
         Element("SymbolTypeLink", "SYMBOL_TYPE_LINK", False),
     )
     structure_component = relationship("StructureComponent", back_populates="typedef_structure", uselist=True)
     _module_rid = Column(types.Integer, ForeignKey("module.rid"))
     module = relationship("Module", back_populates="typedef_structure", uselist=False)
-    # symbol_type_link = relationship("SymbolTypeLink", back_populates="structure_component", uselist=False)
 
 
-class StructureComponent(Base, HasMatrixDims, HasSymbolTypeLink):
+class StructureComponent(Base, HasAddressTypes, HasLayouts, HasMatrixDims, HasSymbolTypeLink):
     """"""
 
     __tablename__ = "structure_component"
 
     name = StdIdent()
 
-    type_ref = StdIdent()
+    typedefName = StdIdent()
 
-    offset = StdULong()
+    addressOffset = StdULong()
 
     __required_parameters__ = (
         Parameter("name", Ident, False),
-        Parameter("type_ref", Ident, False),
-        Parameter("offset", Ulong, False),
+        Parameter("typedefName", Ident, False),
+        Parameter("addressOffset", Ulong, False),
     )
 
     __optional_elements__ = (
+        Element("AddressType", "ADDRESS_TYPE", False),
+        Element("Layout", "LAYOUT", False),
         Element("MatrixDim", "MATRIX_DIM", False),
-        Element("Number", "NUMBER", False),
         Element("SymbolTypeLink", "SYMBOL_TYPE_LINK", False),
     )
     _typedef_structure_rid = Column(types.Integer, ForeignKey("typedef_structure.rid"))
     typedef_structure = relationship("TypedefStructure", back_populates="structure_component", uselist=True)
-    # symbol_type_link = relationship("SymbolTypeLink", back_populates="structure_component", uselist=False)
 
 
 class Unit(Base, HasRefUnits):
@@ -5352,6 +5605,7 @@ KEYWORD_MAP = {
     "A2ML": A2ml,
     "A2ML_VERSION": A2mlVersion,
     "ADDR_EPK": AddrEpk,
+    "ADDRESS_TYPE": AddressType,
     "ALIGNMENT_BYTE": AlignmentByte,
     "ALIGNMENT_FLOAT16_IEEE": AlignmentFloat16Ieee,
     "ALIGNMENT_FLOAT32_IEEE": AlignmentFloat32Ieee,
@@ -5363,6 +5617,8 @@ KEYWORD_MAP = {
     "ANNOTATION_LABEL": AnnotationLabel,
     "ANNOTATION_ORIGIN": AnnotationOrigin,
     "ANNOTATION_TEXT": AnnotationText,
+    "AR_COMPONENT": ArComponent,
+    "AR_PROTOTYPE_OF": ArPrototypeOf,
     "ARRAY_SIZE": ArraySize,
     "ASAP2_VERSION": Asap2Version,
     "AXIS_DESCR": AxisDescr,
@@ -5394,6 +5650,7 @@ KEYWORD_MAP = {
     "COMPU_TAB_REF": CompuTabRef,
     "COMPU_VTAB": CompuVtab,
     "COMPU_VTAB_RANGE": CompuVtabRange,
+    "CONSISTENT_EXCHANGE": ConsistentExchange,
     "CPU_TYPE": CpuType,
     "CURVE_AXIS_REF": CurveAxisRef,
     "CUSTOMER": Customer,
@@ -5412,6 +5669,7 @@ KEYWORD_MAP = {
     "DIST_OP_Z": DistOpZ,
     "DIST_OP_4": DistOp4,
     "DIST_OP_5": DistOp5,
+    "ENCODING": Encoding,
     "ECU": Ecu,
     "ECU_ADDRESS": EcuAddress,
     "ECU_ADDRESS_EXTENSION": EcuAddressExtension,
@@ -5442,9 +5700,11 @@ KEYWORD_MAP = {
     "IDENTIFICATION": Identification,
     "IF_DATA": IfData,
     "IN_MEASUREMENT": InMeasurement,
+    "INPUT_QUANTITY": InputQuantity,
     "INSTANCE": Instance,
     "LAYOUT": Layout,
     "LEFT_SHIFT": LeftShift,
+    "LIMITS": Limits,
     "LOC_MEASUREMENT": LocMeasurement,
     "MAP_LIST": MapList,
     "MATRIX_DIM": MatrixDim,
@@ -5455,6 +5715,7 @@ KEYWORD_MAP = {
     "MEMORY_SEGMENT": MemorySegment,
     "MOD_COMMON": ModCommon,
     "MOD_PAR": ModPar,
+    "MODEL_LINK": ModelLink,
     "MODULE": Module,
     "MONOTONY": Monotony,
     "NO_AXIS_PTS_X": NoAxisPtsX,
@@ -5475,6 +5736,7 @@ KEYWORD_MAP = {
     "OFFSET_4": Offset4,
     "OFFSET_5": Offset5,
     "OUT_MEASUREMENT": OutMeasurement,
+    "OVERWRITE": Overwrite,
     "PHONE_NO": PhoneNo,
     "PHYS_UNIT": PhysUnit,
     "PROJECT": Project,
@@ -5509,6 +5771,7 @@ KEYWORD_MAP = {
     "SRC_ADDR_4": SrcAddr4,
     "SRC_ADDR_5": SrcAddr5,
     "STATIC_RECORD_LAYOUT": StaticRecordLayout,
+    "STATIC_ADDRESS_OFFSETS": StaticAddressOffsets,
     "STATUS_STRING_REF": StatusStringRef,
     "STEP_SIZE": StepSize,
     "SUB_FUNCTION": SubFunction,
@@ -5521,6 +5784,7 @@ KEYWORD_MAP = {
     "S_REC_LAYOUT": SRecLayout,
     "TRANSFORMER": Transformer,
     "TYPEDEF_AXIS": TypedefAxis,
+    "TYPEDEF_BLOB": TypedefBlob,
     "TYPEDEF_CHARACTERISTIC": TypedefCharacteristic,
     "TYPEDEF_MEASUREMENT": TypedefMeasurement,
     "TYPEDEF_STRUCTURE": TypedefStructure,
