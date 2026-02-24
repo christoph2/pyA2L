@@ -71,7 +71,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                 Parameter(PredefinedType::Float, "UpperLimit"),
                             },
                             {
-                                Keyword(
+                                 Keyword(
                                     A2LTokenType::ANNOTATION, "ANNOTATION", "Annotation", true, true, {},
                                     {
                                         Keyword(
@@ -98,11 +98,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     }
                                 ),
                                 Keyword(
-                                    A2LTokenType::_BYTE_ORDER, "_BYTE_ORDER", "ByteOrder", false, false,
+                                    A2LTokenType::_BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
                                     {
                                         Parameter(
                                             PredefinedType::Enum, "Byteorder",
-                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST", "MSB_FIRST_MSW_LAST", "MSB_LAST_MSW_FIRST" }
                                         ),
                                     },
                                     {}
@@ -170,6 +170,21 @@ inline Keyword PARSER_TABLE = Keyword(
                                     {}
                                 ),
                                 Keyword(
+                                    A2LTokenType::MAX_REFRESH, "MAX_REFRESH", "MaxRefresh", false, false,
+                                    {
+                                        Parameter(PredefinedType::Uint, "ScalingUnit"),
+                                        Parameter(PredefinedType::Ulong, "Rate"),
+                                    },
+                                    {}
+                                ),
+        Keyword(
+                                    A2LTokenType::MODEL_LINK, "MODEL_LINK", "ModelLink", false, false,
+                                    {
+                                        Parameter(PredefinedType::String, "link"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
                                     A2LTokenType::MONOTONY, "MONOTONY", "Monotony", false, false,
                                     {
                                         Parameter(
@@ -196,6 +211,13 @@ inline Keyword PARSER_TABLE = Keyword(
                                     {}
                                 ),
                                 Keyword(
+                                    A2LTokenType::REF_MEMORY_SEGMENT, "REF_MEMORY_SEGMENT", "RefMemorySegment", false, false,
+                                    {
+                                        Parameter(PredefinedType::Ident, "Name"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
                                     A2LTokenType::STEP_SIZE, "STEP_SIZE", "StepSize", false, false,
                                     {
                                         Parameter(PredefinedType::Float, "StepSize"),
@@ -212,6 +234,109 @@ inline Keyword PARSER_TABLE = Keyword(
                                 ),
                             }
                         ),
+						Keyword(
+							A2LTokenType::BLOB, "BLOB", "Blob", true, true,
+							{
+								Parameter(PredefinedType::Ident, "Name"),
+								Parameter(PredefinedType::String, "LongIdentifier"),
+								Parameter(PredefinedType::Ulong, "Address"),
+                                Parameter(PredefinedType::Ulong, "Size"),
+							},
+							{
+							Keyword(
+                                A2LTokenType::ADDRESS_TYPE, "ADDRESS_TYPE", "AddressType", false, false,
+                                {
+                                    Parameter(
+                                        PredefinedType::Enum, "AddressType",
+                                        { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }
+                                    ),
+                                },
+                                {}
+                            ),
+                            Keyword(
+                                    A2LTokenType::ANNOTATION, "ANNOTATION", "Annotation", true, true, {},
+                                    {
+                                        Keyword(
+                                            A2LTokenType::ANNOTATION_LABEL, "ANNOTATION_LABEL", "AnnotationLabel", false, false,
+                                            {
+                                                Parameter(PredefinedType::String, "Label"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::ANNOTATION_ORIGIN, "ANNOTATION_ORIGIN", "AnnotationOrigin", false, false,
+                                            {
+                                                Parameter(PredefinedType::String, "Origin"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::ANNOTATION_TEXT, "ANNOTATION_TEXT", "AnnotationText", true, false,
+                                            {
+                                                Parameter(PredefinedType::String, "Text", true),
+                                            },
+                                            {}
+                                        ),
+                                    }
+                                ),
+                            Keyword(
+                                A2LTokenType::CALIBRATION_ACCESS, "CALIBRATION_ACCESS", "CalibrationAccess", false, false,
+                                {
+                                    Parameter(
+                                        PredefinedType::Enum, "Type",
+                                        { "CALIBRATION", "NO_CALIBRATION", "NOT_IN_MCD_SYSTEM", "OFFLINE_CALIBRATION" }
+                                    ),
+                                },
+                                {}
+                            ),
+                            Keyword(
+                                A2LTokenType::DISPLAY_IDENTIFIER, "DISPLAY_IDENTIFIER", "DisplayIdentifier", false, false,
+                                {
+                                    Parameter(PredefinedType::Ident, "display_name"),
+                                },
+                                {}
+                            ),
+                            Keyword(
+                                A2LTokenType::ECU_ADDRESS_EXTENSION, "ECU_ADDRESS_EXTENSION", "EcuAddressExtension", false,
+                                false,
+                                {
+                                    Parameter(PredefinedType::Int, "Extension"),
+                                },
+                                {}
+                            ),
+                            Keyword(
+                                A2LTokenType::IF_DATA, "IF_DATA", "IfData", true, true,
+                                {
+                                    Parameter(PredefinedType::Ident, "name"),
+                                },
+                                {}
+                            ),
+                            Keyword(
+                                A2LTokenType::MAX_REFRESH, "MAX_REFRESH", "MaxRefresh", false, false,
+                                {
+                                    Parameter(PredefinedType::Uint, "ScalingUnit"),
+                                    Parameter(PredefinedType::Ulong, "Rate"),
+                                },
+                                {}
+                            ),
+							Keyword(
+									A2LTokenType::MODEL_LINK, "MODEL_LINK", "ModelLink", false, false,
+									{
+										Parameter(PredefinedType::String, "link"),
+									},
+									{}
+								),
+                            Keyword(
+                                    A2LTokenType::SYMBOL_LINK, "SYMBOL_LINK", "SymbolLink", false, false,
+                                    {
+                                        Parameter(PredefinedType::String, "SymbolName"),
+                                        Parameter(PredefinedType::Long, "Offset"),
+                                    },
+                                    {}
+                                ),
+							}
+                        ),
+
                         Keyword(
                             A2LTokenType::CHARACTERISTIC, "CHARACTERISTIC", "Characteristic", true, true,
                             {
@@ -305,11 +430,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                             {}
                                         ),
                                         Keyword(
-                                            A2LTokenType::_BYTE_ORDER, "_BYTE_ORDER", "ByteOrder", false, false,
+                                            A2LTokenType::_BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
                                             {
                                                 Parameter(
                                                     PredefinedType::Enum, "Byteorder",
-                                                    { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                                    { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST", "MSB_FIRST_MSW_LAST", "MSB_LAST_MSW_FIRST" }
                                                 ),
                                             },
                                             {}
@@ -411,11 +536,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     {}
                                 ),
                                 Keyword(
-                                    A2LTokenType::_BYTE_ORDER, "_BYTE_ORDER", "ByteOrder", false, false,
+                                    A2LTokenType::_BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
                                     {
                                         Parameter(
                                             PredefinedType::Enum, "Byteorder",
-                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST", "MSB_FIRST_MSW_LAST", "MSB_LAST_MSW_FIRST" }
                                         ),
                                     },
                                     {}
@@ -462,6 +587,16 @@ inline Keyword PARSER_TABLE = Keyword(
                                     },
                                     {}
                                 ),
+								Keyword(
+									A2LTokenType::ENCODING, "ENCODING", "Encoding", false, false,
+									{
+										Parameter(
+											PredefinedType::Enum, "Encoding",
+											{ "UTF8", "UTF16", "UTF32" }
+										),
+									},
+									{}
+								),
                                 Keyword(
                                     A2LTokenType::EXTENDED_LIMITS, "EXTENDED_LIMITS", "ExtendedLimits", false, false,
                                     {
@@ -767,6 +902,21 @@ inline Keyword PARSER_TABLE = Keyword(
                                     }
                                 ),
                                 Keyword(
+                                    A2LTokenType::AR_COMPONENT, "AR_COMPONENT", "ArComponent", false, false,
+                                    {
+                                        Parameter(PredefinedType::String, "ComponentType"),
+                                    },
+                                    {
+                                        Keyword(
+                                            A2LTokenType::AR_PROTOTYPE_OF, "AR_PROTOTYPE_OF", "ArPrototypeOf", false, false,
+                                            {
+                                                Parameter(PredefinedType::String, "Name"),
+                                            },
+                                            {}
+                                        ),
+                                    }
+                                ),
+                                Keyword(
                                     A2LTokenType::DEF_CHARACTERISTIC, "DEF_CHARACTERISTIC", "DefCharacteristic", true, false,
                                     {
                                         Parameter(PredefinedType::Ident, "Identifier", true),
@@ -907,23 +1057,53 @@ inline Keyword PARSER_TABLE = Keyword(
                             {
                                 Parameter(PredefinedType::Ident, "Name"),
                                 Parameter(PredefinedType::String, "LongIdentifier"),
-                                Parameter(PredefinedType::Ident, "TypeName"),
+                                Parameter(PredefinedType::Ident, "TypedefName"),
                                 Parameter(PredefinedType::Ulong, "Address"),
                             },
                             {
                                 Keyword(
-                                    A2LTokenType::COMPARISON_QUANTITY, "COMPARISON_QUANTITY", "ComparisonQuantity", false, false,
+                                    A2LTokenType::ADDRESS_TYPE, "ADDRESS_TYPE", "AddressType", false, false,
                                     {
-                                        Parameter(PredefinedType::Ident, "Name"),
+                                        Parameter(
+                                            PredefinedType::Enum, "AddressType",
+                                            { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }
+                                        ),
                                     },
                                     {}
                                 ),
                                 Keyword(
-                                    A2LTokenType::DEPENDENT_CHARACTERISTIC, "DEPENDENT_CHARACTERISTIC", "DependentCharacteristic",
-                                    true, false,
+                                    A2LTokenType::ANNOTATION, "ANNOTATION", "Annotation", true, true, {},
                                     {
-                                        Parameter(PredefinedType::String, "Formula"),
-                                        Parameter(PredefinedType::Ident, "Characteristic", true),
+                                        Keyword(
+                                            A2LTokenType::ANNOTATION_LABEL, "ANNOTATION_LABEL", "AnnotationLabel", false, false,
+                                            {
+                                                Parameter(PredefinedType::String, "Label"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::ANNOTATION_ORIGIN, "ANNOTATION_ORIGIN", "AnnotationOrigin", false, false,
+                                            {
+                                                Parameter(PredefinedType::String, "Origin"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::ANNOTATION_TEXT, "ANNOTATION_TEXT", "AnnotationText", true, false,
+                                            {
+                                                Parameter(PredefinedType::String, "Text", true),
+                                            },
+                                            {}
+                                        ),
+                                    }
+                                ),
+                                Keyword(
+                                    A2LTokenType::CALIBRATION_ACCESS, "CALIBRATION_ACCESS", "CalibrationAccess", false, false,
+                                    {
+                                        Parameter(
+                                            PredefinedType::Enum, "Type",
+                                            { "CALIBRATION", "NO_CALIBRATION", "NOT_IN_MCD_SYSTEM", "OFFLINE_CALIBRATION" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -950,6 +1130,13 @@ inline Keyword PARSER_TABLE = Keyword(
                                     {}
                                 ),
                                 Keyword(
+                                    A2LTokenType::LAYOUT, "LAYOUT", "Layout", false, false,
+                                    {
+                                        Parameter(PredefinedType::Enum, "IndexMode", { "ROW_DIR", "COLUMN_DIR" }),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
                                     A2LTokenType::MATRIX_DIM, "MATRIX_DIM", "MatrixDim", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Numbers", true),
@@ -957,12 +1144,85 @@ inline Keyword PARSER_TABLE = Keyword(
                                     {}
                                 ),
                                 Keyword(
-                                    A2LTokenType::NUMBER, "NUMBER", "Number", false, false,
+                                    A2LTokenType::MAX_REFRESH, "MAX_REFRESH", "MaxRefresh", false, false,
                                     {
-                                        Parameter(PredefinedType::Uint, "Number"),
+                                        Parameter(PredefinedType::Uint, "ScalingUnit"),
+                                        Parameter(PredefinedType::Ulong, "Rate"),
                                     },
                                     {}
                                 ),
+                                Keyword(
+                                    A2LTokenType::MODEL_LINK, "MODEL_LINK", "ModelLink", false, false,
+                                    {
+                                        Parameter(PredefinedType::String, "link"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::OVERWRITE, "OVERWRITE", "Overwrite", false, true,
+                                    {
+                                        Parameter(PredefinedType::Ident, "Name"),
+                                        Parameter(PredefinedType::Uint, "AxisNumber"),
+                                    },
+                                    {
+                                        Keyword(
+                                            A2LTokenType::CONVERSION, "CONVERSION", "Conversion", false, false,
+                                            {
+                                                Parameter(PredefinedType::Ident, "ConversionMethod"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::EXTENDED_LIMITS, "EXTENDED_LIMITS", "ExtendedLimits", false, false,
+                                            {
+                                                Parameter(PredefinedType::Float, "LowerLimit"),
+                                                Parameter(PredefinedType::Float, "UpperLimit"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::FORMAT, "FORMAT", "Format", false, false,
+                                            {
+                                                Parameter(PredefinedType::String, "FormatString"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::INPUT_QUANTITY, "INPUT_QUANTITY", "InputQuantity", false, false,
+                                            {
+                                                Parameter(PredefinedType::Ident, "InputQuantity"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::LIMITS, "LIMITS", "Limits", false, false,
+                                            {
+                                                Parameter(PredefinedType::Float, "LowerLimit"),
+                                                Parameter(PredefinedType::Float, "UpperLimit"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::MONOTONY, "MONOTONY", "Monotony", false, false,
+                                            {
+                                                Parameter(
+                                                    PredefinedType::Enum, "Monotony",
+                                                    { "MON_DECREASE", "MON_INCREASE", "STRICT_DECREASE", "STRICT_INCREASE",
+                                                      "MONOTONOUS", "STRICT_MON", "NOT_MON" }
+                                                ),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::PHYS_UNIT, "PHYS_UNIT", "PhysUnit", false, false,
+                                            {
+                                                Parameter(PredefinedType::String, "Unit"),
+                                            },
+                                            {}
+                                        ),
+                                    }
+                                ),
+                                Keyword(A2LTokenType::READ_WRITE, "READ_WRITE", "ReadWrite", false, false, {}, {}),
                                 Keyword(
                                     A2LTokenType::SYMBOL_LINK, "SYMBOL_LINK", "SymbolLink", false, false,
                                     {
@@ -1017,6 +1277,16 @@ inline Keyword PARSER_TABLE = Keyword(
                                     }
                                 ),
                                 Keyword(
+                                    A2LTokenType::ADDRESS_TYPE, "ADDRESS_TYPE", "AddressType", false, false,
+                                    {
+                                        Parameter(
+                                            PredefinedType::Enum, "AddressType",
+                                            { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }
+                                        ),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
                                     A2LTokenType::ARRAY_SIZE, "ARRAY_SIZE", "ArraySize", false, false,
                                     {
                                         Parameter(PredefinedType::Uint, "Number"),
@@ -1051,11 +1321,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     }
                                 ),
                                 Keyword(
-                                    A2LTokenType::_BYTE_ORDER, "_BYTE_ORDER", "ByteOrder", false, false,
+                                    A2LTokenType::_BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
                                     {
                                         Parameter(
                                             PredefinedType::Enum, "Byteorder",
-                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST", "MSB_FIRST_MSW_LAST", "MSB_LAST_MSW_FIRST" }
                                         ),
                                     },
                                     {}
@@ -1133,6 +1403,13 @@ inline Keyword PARSER_TABLE = Keyword(
                                     },
                                     {}
                                 ),
+                                Keyword(
+									A2LTokenType::MODEL_LINK, "MODEL_LINK", "ModelLink", false, false,
+									{
+										Parameter(PredefinedType::String, "link"),
+									},
+									{}
+								),
                                 Keyword(
                                     A2LTokenType::PHYS_UNIT, "PHYS_UNIT", "PhysUnit", false, false,
                                     {
@@ -1224,11 +1501,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                     {}
                                 ),
                                 Keyword(
-                                    A2LTokenType::_BYTE_ORDER, "_BYTE_ORDER", "ByteOrder", false, false,
+                                    A2LTokenType::_BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
                                     {
                                         Parameter(
                                             PredefinedType::Enum, "Byteorder",
-                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST", "MSB_FIRST_MSW_LAST", "MSB_LAST_MSW_FIRST" }
                                         ),
                                     },
                                     {}
@@ -1505,7 +1782,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                               "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
                                         ),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
-                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
+                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }),
                                     },
                                     {}
                                 ),
@@ -1519,7 +1796,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                               "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
                                         ),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
-                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
+                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }),
                                     },
                                     {}
                                 ),
@@ -1533,7 +1810,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                               "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
                                         ),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
-                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
+                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }),
                                     },
                                     {}
                                 ),
@@ -1547,7 +1824,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                               "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
                                         ),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
-                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
+                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }),
                                     },
                                     {}
                                 ),
@@ -1561,7 +1838,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                               "FLOAT16_IEEE", "FLOAT32_IEEE", "FLOAT64_IEEE" }
                                         ),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
-                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
+                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }),
                                     },
                                     {}
                                 ),
@@ -1576,7 +1853,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                         ),
                                         Parameter(PredefinedType::Uint, "MaxNumberOfRescalePairs"),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
-                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
+                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }),
                                     },
                                     {}
                                 ),
@@ -1591,7 +1868,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                         ),
                                         Parameter(PredefinedType::Uint, "MaxNumberOfRescalePairs"),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
-                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
+                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }),
                                     },
                                     {}
                                 ),
@@ -1606,7 +1883,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                         ),
                                         Parameter(PredefinedType::Uint, "MaxNumberOfRescalePairs"),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
-                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
+                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }),
                                     },
                                     {}
                                 ),
@@ -1621,7 +1898,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                         ),
                                         Parameter(PredefinedType::Uint, "MaxNumberOfRescalePairs"),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
-                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
+                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }),
                                     },
                                     {}
                                 ),
@@ -1636,7 +1913,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                         ),
                                         Parameter(PredefinedType::Uint, "MaxNumberOfRescalePairs"),
                                         Parameter(PredefinedType::Enum, "Indexorder", { "INDEX_INCR", "INDEX_DECR" }),
-                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
+                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }),
                                     },
                                     {}
                                 ),
@@ -1748,7 +2025,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                             PredefinedType::Enum, "IndexMode",
                                             { "ALTERNATE_CURVES", "ALTERNATE_WITH_X", "ALTERNATE_WITH_Y", "COLUMN_DIR", "ROW_DIR" }
                                         ),
-                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "DIRECT" }),
+                                        Parameter(PredefinedType::Enum, "Addresstype", { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }),
                                     },
                                     {}
                                 ),
@@ -1823,10 +2100,6 @@ inline Keyword PARSER_TABLE = Keyword(
                                         ),
                                     },
                                     {}
-                                ),
-                                Keyword(
-                                    A2LTokenType::STATIC_RECORD_LAYOUT, "STATIC_RECORD_LAYOUT", "StaticRecordLayout", false, false,
-                                    {}, {}
                                 ),
                                 Keyword(
                                     A2LTokenType::NO_RESCALE_X, "NO_RESCALE_X", "NoRescaleX", false, false,
@@ -2148,8 +2421,46 @@ inline Keyword PARSER_TABLE = Keyword(
                                     },
                                     {}
                                 ),
+                                Keyword(
+                                    A2LTokenType::STATIC_RECORD_LAYOUT, "STATIC_RECORD_LAYOUT", "StaticRecordLayout", false, false,
+                                    {}, {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::STATIC_ADDRESS_OFFSETS, "STATIC_ADDRESS_OFFSETS", "StaticAddressOffsets", false, false,
+                                    {}, {}
+                                ),
                             }
                         ),
+						Keyword(
+							A2LTokenType::TRANSFORMER, "TRANSFORMER", "Transformer", true, true,
+							{
+								Parameter(PredefinedType::Ident, "Name"),
+								Parameter(PredefinedType::String, "Version"),
+								Parameter(PredefinedType::String, "Executable32"),
+								Parameter(PredefinedType::String, "Executable64"),
+								Parameter(PredefinedType::Ulong, "Timeout"),
+								Parameter(
+                                    PredefinedType::Enum, "Trigger", { "ON_CHANGE", "ON_USER_REQUEST" }
+                                ),
+								Parameter(PredefinedType::Ident, "InverseTransformer"),
+							},
+							{
+                                Keyword(
+                                    A2LTokenType::TRANSFORMER_IN_OBJECTS, "TRANSFORMER_IN_OBJECTS", "TransformerInObjects", true, false,
+                                    {
+                                        Parameter(PredefinedType::Ident, "Identifier", true),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::TRANSFORMER_OUT_OBJECTS, "TRANSFORMER_OUT_OBJECTS", "TransformerOutObjects", true, false,
+                                    {
+                                        Parameter(PredefinedType::Ident, "Identifier", true),
+                                    },
+                                    {}
+                                ),
+							}
+						),
 						Keyword(
                             A2LTokenType::TYPEDEF_AXIS, "TYPEDEF_AXIS", "TypedefAxis", true, true,
                             {
@@ -2165,47 +2476,11 @@ inline Keyword PARSER_TABLE = Keyword(
                             },
                             {
                                 Keyword(
-                                    A2LTokenType::ANNOTATION, "ANNOTATION", "Annotation", true, true, {},
-                                    {
-                                        Keyword(
-                                            A2LTokenType::ANNOTATION_LABEL, "ANNOTATION_LABEL", "AnnotationLabel", false, false,
-                                            {
-                                                Parameter(PredefinedType::String, "Label"),
-                                            },
-                                            {}
-                                        ),
-                                        Keyword(
-                                            A2LTokenType::ANNOTATION_ORIGIN, "ANNOTATION_ORIGIN", "AnnotationOrigin", false, false,
-                                            {
-                                                Parameter(PredefinedType::String, "Origin"),
-                                            },
-                                            {}
-                                        ),
-                                        Keyword(
-                                            A2LTokenType::ANNOTATION_TEXT, "ANNOTATION_TEXT", "AnnotationText", true, false,
-                                            {
-                                                Parameter(PredefinedType::String, "Text", true),
-                                            },
-                                            {}
-                                        ),
-                                    }
-                                ),
-                                Keyword(
-                                    A2LTokenType::_BYTE_ORDER, "_BYTE_ORDER", "ByteOrder", false, false,
+                                    A2LTokenType::_BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
                                     {
                                         Parameter(
                                             PredefinedType::Enum, "Byteorder",
-                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
-                                        ),
-                                    },
-                                    {}
-                                ),
-                                Keyword(
-                                    A2LTokenType::CALIBRATION_ACCESS, "CALIBRATION_ACCESS", "CalibrationAccess", false, false,
-                                    {
-                                        Parameter(
-                                            PredefinedType::Enum, "Type",
-                                            { "CALIBRATION", "NO_CALIBRATION", "NOT_IN_MCD_SYSTEM", "OFFLINE_CALIBRATION" }
+                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST", "MSB_FIRST_MSW_LAST", "MSB_LAST_MSW_FIRST" }
                                         ),
                                     },
                                     {}
@@ -2232,7 +2507,6 @@ inline Keyword PARSER_TABLE = Keyword(
                                     },
                                     {}
                                 ),
-                                Keyword(A2LTokenType::GUARD_RAILS, "GUARD_RAILS", "GuardRails", false, false, {}, {}),
                                 Keyword(
                                     A2LTokenType::MONOTONY, "MONOTONY", "Monotony", false, false,
                                     {
@@ -2251,18 +2525,30 @@ inline Keyword PARSER_TABLE = Keyword(
                                     },
                                     {}
                                 ),
-                                Keyword(A2LTokenType::READ_ONLY, "READ_ONLY", "ReadOnly", false, false, {}, {}),
-                                Keyword(
-                                    A2LTokenType::REF_MEMORY_SEGMENT, "REF_MEMORY_SEGMENT", "RefMemorySegment", false, false,
-                                    {
-                                        Parameter(PredefinedType::Ident, "Name"),
-                                    },
-                                    {}
-                                ),
                                 Keyword(
                                     A2LTokenType::STEP_SIZE, "STEP_SIZE", "StepSize", false, false,
                                     {
                                         Parameter(PredefinedType::Float, "StepSize"),
+                                    },
+                                    {}
+                                ),
+                            }
+                        ),
+                        Keyword(
+                            A2LTokenType::TYPEDEF_BLOB, "TYPEDEF_BLOB", "TypedefBlob", true, true,
+                            {
+                                Parameter(PredefinedType::Ident, "Name"),
+                                Parameter(PredefinedType::String, "LongIdentifier"),
+                                Parameter(PredefinedType::Ulong, "Size"),
+                            },
+                            {
+                                Keyword(
+                                    A2LTokenType::ADDRESS_TYPE, "ADDRESS_TYPE", "AddressType", false, false,
+                                    {
+                                        Parameter(
+                                            PredefinedType::Enum, "AddressType",
+                                            { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }
+                                        ),
                                     },
                                     {}
                                 ),
@@ -2283,33 +2569,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                 Parameter(PredefinedType::Float, "LowerLimit"),
                                 Parameter(PredefinedType::Float, "UpperLimit"),
                             },
-                                                        {
-                                Keyword(
-                                    A2LTokenType::ANNOTATION, "ANNOTATION", "Annotation", true, true, {},
-                                    {
-                                        Keyword(
-                                            A2LTokenType::ANNOTATION_LABEL, "ANNOTATION_LABEL", "AnnotationLabel", false, false,
-                                            {
-                                                Parameter(PredefinedType::String, "Label"),
-                                            },
-                                            {}
-                                        ),
-                                        Keyword(
-                                            A2LTokenType::ANNOTATION_ORIGIN, "ANNOTATION_ORIGIN", "AnnotationOrigin", false, false,
-                                            {
-                                                Parameter(PredefinedType::String, "Origin"),
-                                            },
-                                            {}
-                                        ),
-                                        Keyword(
-                                            A2LTokenType::ANNOTATION_TEXT, "ANNOTATION_TEXT", "AnnotationText", true, false,
-                                            {
-                                                Parameter(PredefinedType::String, "Text", true),
-                                            },
-                                            {}
-                                        ),
-                                    }
-                                ),
+                            {
                                 Keyword(
                                     A2LTokenType::AXIS_DESCR, "AXIS_DESCR", "AxisDescr", true, true,
                                     {
@@ -2360,11 +2620,11 @@ inline Keyword PARSER_TABLE = Keyword(
                                             {}
                                         ),
                                         Keyword(
-                                            A2LTokenType::_BYTE_ORDER, "_BYTE_ORDER", "ByteOrder", false, false,
+                                            A2LTokenType::_BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
                                             {
                                                 Parameter(
                                                     PredefinedType::Enum, "Byteorder",
-                                                    { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
+                                                    { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST", "MSB_FIRST_MSW_LAST", "MSB_LAST_MSW_FIRST" }
                                                 ),
                                             },
                                             {}
@@ -2466,33 +2726,26 @@ inline Keyword PARSER_TABLE = Keyword(
                                     {}
                                 ),
                                 Keyword(
-                                    A2LTokenType::_BYTE_ORDER, "_BYTE_ORDER", "ByteOrder", false, false,
+                                    A2LTokenType::_BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
                                     {
                                         Parameter(
                                             PredefinedType::Enum, "Byteorder",
-                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST" }
-                                        ),
-                                    },
-                                    {}
-                                ),
-                                Keyword(
-                                    A2LTokenType::CALIBRATION_ACCESS, "CALIBRATION_ACCESS", "CalibrationAccess", false, false,
-                                    {
-                                        Parameter(
-                                            PredefinedType::Enum, "Type",
-                                            { "CALIBRATION", "NO_CALIBRATION", "NOT_IN_MCD_SYSTEM", "OFFLINE_CALIBRATION" }
+                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST", "MSB_FIRST_MSW_LAST", "MSB_LAST_MSW_FIRST" }
                                         ),
                                     },
                                     {}
                                 ),
                                 Keyword(A2LTokenType::DISCRETE, "DISCRETE", "Discrete", false, false, {}, {}),
-                                Keyword(
-                                    A2LTokenType::DISPLAY_IDENTIFIER, "DISPLAY_IDENTIFIER", "DisplayIdentifier", false, false,
-                                    {
-                                        Parameter(PredefinedType::Ident, "display_name"),
-                                    },
-                                    {}
-                                ),
+								Keyword(
+									A2LTokenType::ENCODING, "ENCODING", "Encoding", false, false,
+									{
+										Parameter(
+											PredefinedType::Enum, "Encoding",
+											{ "UTF8", "UTF16", "UTF32" }
+										),
+									},
+									{}
+								),
                                 Keyword(
                                     A2LTokenType::EXTENDED_LIMITS, "EXTENDED_LIMITS", "ExtendedLimits", false, false,
                                     {
@@ -2508,19 +2761,10 @@ inline Keyword PARSER_TABLE = Keyword(
                                     },
                                     {}
                                 ),
-                                Keyword(A2LTokenType::GUARD_RAILS, "GUARD_RAILS", "GuardRails", false, false, {}, {}),
                                 Keyword(
-                                    A2LTokenType::IF_DATA, "IF_DATA", "IfData", true, true,
+                                    A2LTokenType::MATRIX_DIM, "MATRIX_DIM", "MatrixDim", false, false,
                                     {
-                                        Parameter(PredefinedType::Ident, "name"),
-                                    },
-                                    {}
-                                ),
-                                Keyword(
-                                    A2LTokenType::MAX_REFRESH, "MAX_REFRESH", "MaxRefresh", false, false,
-                                    {
-                                        Parameter(PredefinedType::Uint, "ScalingUnit"),
-                                        Parameter(PredefinedType::Ulong, "Rate"),
+                                        Parameter(PredefinedType::Uint, "Numbers", true),
                                     },
                                     {}
                                 ),
@@ -2538,14 +2782,6 @@ inline Keyword PARSER_TABLE = Keyword(
                                     },
                                     {}
                                 ),
-                                Keyword(A2LTokenType::READ_ONLY, "READ_ONLY", "ReadOnly", false, false, {}, {}),
-                                Keyword(
-                                    A2LTokenType::REF_MEMORY_SEGMENT, "REF_MEMORY_SEGMENT", "RefMemorySegment", false, false,
-                                    {
-                                        Parameter(PredefinedType::Ident, "Name"),
-                                    },
-                                    {}
-                                ),
                                 Keyword(
                                     A2LTokenType::STEP_SIZE, "STEP_SIZE", "StepSize", false, false,
                                     {
@@ -2553,68 +2789,8 @@ inline Keyword PARSER_TABLE = Keyword(
                                     },
                                     {}
                                 ),
-                                Keyword(
-                                    A2LTokenType::VIRTUAL_CHARACTERISTIC, "VIRTUAL_CHARACTERISTIC", "VirtualCharacteristic", true,
-                                    false,
-                                    {
-                                        Parameter(PredefinedType::String, "Formula"),
-                                        Parameter(PredefinedType::Ident, "Characteristic", true),
-                                    },
-                                    {}
-                                ),
                             }
                         ),
-						Keyword(
-							A2LTokenType::BLOB, "BLOB", "Blob", true, true,
-							{
-								Parameter(PredefinedType::Ident, "Name"),
-								Parameter(PredefinedType::String, "LongIdentifier"),
-								Parameter(PredefinedType::Ulong, "Address"),
-                                Parameter(PredefinedType::Ulong, "Length"),
-							},
-							{
-//#if 0
-                                Keyword(
-                                    A2LTokenType::CALIBRATION_ACCESS, "CALIBRATION_ACCESS", "CalibrationAccess", false, false,
-                                    {
-                                        Parameter(
-                                            PredefinedType::Enum, "Type",
-                                            { "CALIBRATION", "NO_CALIBRATION", "NOT_IN_MCD_SYSTEM", "OFFLINE_CALIBRATION" }
-                                        ),
-                                    },
-                                    {}
-                                ),
-//#endif
-							}
-                        ),
-						Keyword(
-							A2LTokenType::TRANSFORMER, "TRANSFORMER", "Transformer", true, true,
-							{
-								Parameter(PredefinedType::Ident, "Name"),
-								Parameter(PredefinedType::String, "Version"),
-								Parameter(PredefinedType::String, "Dllname32"),
-								Parameter(PredefinedType::String, "Dllname64"),
-								Parameter(PredefinedType::Ulong, "Timeout"),
-								Parameter(PredefinedType::Ident, "Trigger"),
-								Parameter(PredefinedType::Ident, "Reverse"),
-							},
-							{
-                                Keyword(
-                                    A2LTokenType::TRANSFORMER_IN_OBJECTS, "TRANSFORMER_IN_OBJECTS", "TransformerInObjects", true, false,
-                                    {
-                                        Parameter(PredefinedType::Ident, "Identifier", true),
-                                    },
-                                    {}
-                                ),
-                                Keyword(
-                                    A2LTokenType::TRANSFORMER_OUT_OBJECTS, "TRANSFORMER_OUT_OBJECTS", "TransformerOutObjects", true, false,
-                                    {
-                                        Parameter(PredefinedType::Ident, "Identifier", true),
-                                    },
-                                    {}
-                                ),
-							}
-						),
                         Keyword(
                             A2LTokenType::TYPEDEF_MEASUREMENT, "TYPEDEF_MEASUREMENT", "TypedefMeasurement", true, true,
                             {
@@ -2631,7 +2807,91 @@ inline Keyword PARSER_TABLE = Keyword(
                                 Parameter(PredefinedType::Float, "LowerLimit"),
                                 Parameter(PredefinedType::Float, "UpperLimit"),
                             },
-                            {}
+                            {
+                                Keyword(
+                                    A2LTokenType::ADDRESS_TYPE, "ADDRESS_TYPE", "AddressType", false, false,
+                                    {
+                                        Parameter(
+                                            PredefinedType::Enum, "AddressType",
+                                            { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }
+                                        ),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::BIT_MASK, "BIT_MASK", "BitMask", false, false,
+                                    {
+                                        Parameter(PredefinedType::Ulong, "Mask"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::BIT_OPERATION, "BIT_OPERATION", "BitOperation", true, false, {},
+                                    {
+                                        Keyword(
+                                            A2LTokenType::LEFT_SHIFT, "LEFT_SHIFT", "LeftShift", false, false,
+                                            {
+                                                Parameter(PredefinedType::Ulong, "Bitcount"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::RIGHT_SHIFT, "RIGHT_SHIFT", "RightShift", false, false,
+                                            {
+                                                Parameter(PredefinedType::Ulong, "Bitcount"),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(A2LTokenType::SIGN_EXTEND, "SIGN_EXTEND", "SignExtend", false, false, {}, {}),
+                                    }
+                                ),
+                                Keyword(
+                                    A2LTokenType::_BYTE_ORDER, "BYTE_ORDER", "ByteOrder", false, false,
+                                    {
+                                        Parameter(
+                                            PredefinedType::Enum, "Byteorder",
+                                            { "_LITTLE_ENDIAN", "_BIG_ENDIAN", "MSB_LAST", "MSB_FIRST", "MSB_FIRST_MSW_LAST", "MSB_LAST_MSW_FIRST" }
+                                        ),
+                                    },
+                                    {}
+                                ),
+                                Keyword(A2LTokenType::DISCRETE, "DISCRETE", "Discrete", false, false, {}, {}),
+                                Keyword(
+                                    A2LTokenType::ERROR_MASK, "ERROR_MASK", "ErrorMask", false, false,
+                                    {
+                                        Parameter(PredefinedType::Ulong, "Mask"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::FORMAT, "FORMAT", "Format", false, false,
+                                    {
+                                        Parameter(PredefinedType::String, "FormatString"),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::LAYOUT, "LAYOUT", "Layout", false, false,
+                                    {
+                                        Parameter(PredefinedType::Enum, "IndexMode", { "ROW_DIR", "COLUMN_DIR" }),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::MATRIX_DIM, "MATRIX_DIM", "MatrixDim", false, false,
+                                    {
+                                        Parameter(PredefinedType::Uint, "Numbers", true),
+                                    },
+                                    {}
+                                ),
+                                Keyword(
+                                    A2LTokenType::PHYS_UNIT, "PHYS_UNIT", "PhysUnit", false, false,
+                                    {
+                                        Parameter(PredefinedType::String, "Unit"),
+                                    },
+                                    {}
+                                ),
+                            }
                         ),
                         Keyword(
                             A2LTokenType::TYPEDEF_STRUCTURE, "TYPEDEF_STRUCTURE", "TypedefStructure", true, true,
@@ -2641,25 +2901,46 @@ inline Keyword PARSER_TABLE = Keyword(
                                 Parameter(PredefinedType::Ulong, "Size"),
                             },
                             {
+                                Keyword(
+                                    A2LTokenType::ADDRESS_TYPE, "ADDRESS_TYPE", "AddressType", false, false,
+                                    {
+                                        Parameter(
+                                            PredefinedType::Enum, "AddressType",
+                                            { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }
+                                        ),
+                                    },
+                                    {}
+                                ),
+                                Keyword(A2LTokenType::CONSISTENT_EXCHANGE, "CONSISTENT_EXCHANGE", "ConsistentExchange", false, false, {}, {}),
 								Keyword(
 									A2LTokenType::STRUCTURE_COMPONENT, "STRUCTURE_COMPONENT", "StructureComponent", true, true,
 									{
 										Parameter(PredefinedType::Ident, "Name"),
-										Parameter(PredefinedType::Ident, "Type_Ref"),
-										Parameter(PredefinedType::Ulong, "Offset"),
+										Parameter(PredefinedType::Ident, "TypedefName"),
+										Parameter(PredefinedType::Ulong, "AddressOffset"),
 									},
 									{
+                                        Keyword(
+                                            A2LTokenType::ADDRESS_TYPE, "ADDRESS_TYPE", "AddressType", false, false,
+                                            {
+                                                Parameter(
+                                                    PredefinedType::Enum, "AddressType",
+                                                    { "PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT" }
+                                                ),
+                                            },
+                                            {}
+                                        ),
+                                        Keyword(
+                                            A2LTokenType::LAYOUT, "LAYOUT", "Layout", false, false,
+                                            {
+                                                Parameter(PredefinedType::Enum, "IndexMode", { "ROW_DIR", "COLUMN_DIR" }),
+                                            },
+                                            {}
+                                        ),
 										Keyword(
 											A2LTokenType::MATRIX_DIM, "MATRIX_DIM", "MatrixDim", false, false,
 											{
 												Parameter(PredefinedType::Uint, "Numbers", true),
-											},
-											{}
-										),
-										Keyword(
-											A2LTokenType::NUMBER, "NUMBER", "Number", false, false,
-											{
-												Parameter(PredefinedType::Uint, "Number"),
 											},
 											{}
 										),

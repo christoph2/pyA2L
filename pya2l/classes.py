@@ -3,7 +3,7 @@
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2022 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2026 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -23,6 +23,7 @@ __copyright__ = """
 """
 
 from collections import namedtuple
+from dataclasses import dataclass, field, make_dataclass
 
 from pya2l.utils import SingletonBase
 
@@ -98,11 +99,11 @@ class Datasize(SingletonBase):
 
 
 class Addrtype(SingletonBase):
-    enumValues = ("PBYTE", "PWORD", "PLONG", "DIRECT")
+    enumValues = ("PBYTE", "PWORD", "PLONG", "PLONGLONG", "DIRECT")
 
 
 class Byteorder(SingletonBase):
-    enumValues = ("LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST")
+    enumValues = ("LITTLE_ENDIAN", "BIG_ENDIAN", "MSB_LAST", "MSB_FIRST", "MSB_FIRST_MSW_LAST", "MSB_LAST_MSW_FIRST")
 
 
 class Indexorder(SingletonBase):
@@ -163,7 +164,6 @@ class KeywordType(type):
 
 
 class Keyword(metaclass=KeywordType):
-
     multiple = False
     block = False
     optional = True
@@ -224,6 +224,10 @@ class A2ML_VERSION(Keyword):
 class ADDR_EPK(Keyword):
     multiple = True
     attrs = [(Ulong, "Address")]  # Address of the EPROM identifier.
+
+
+class ADDRESS_TYPE(Keyword):
+    attrs = [(Ident, "AddressType")]
 
 
 class ALIGNMENT_BYTE(Keyword):
@@ -317,6 +321,17 @@ class ANNOTATION_TEXT(Keyword):
     attrs = [(String, "Text", MULTIPLE)]
 
 
+class AR_COMPONENT(Keyword):
+    multiple = True
+    block = True
+    attrs = [(String, "ComponentType")]
+    children = ["AR_PROTOTYPE_OF"]
+
+
+class AR_PROTOTYPE_OF(Keyword):
+    attrs = [(String, "Name")]
+
+
 class ARRAY_SIZE(Keyword):
     attrs = [
         (
@@ -384,6 +399,8 @@ class AXIS_PTS(Keyword):
         "FUNCTION_LIST",
         "GUARD_RAILS",
         "IF_DATA",
+        "MAX_REFRESH",
+        "MODEL_LINK",
         "MONOTONY",
         "PHYS_UNIT",
         "READ_ONLY",
@@ -526,10 +543,18 @@ class BLOB(Keyword):
         (Ident, "Name"),
         (String, "LongIdentifier"),
         (Ulong, "Address"),
-        (Ulong, "Length"),
+        (Ulong, "Size"),
     ]
     children = [
+        "ADDRESS_TYPE",
+        "ANNOTATION",
         "CALIBRATION_ACCESS",
+        "DISPLAY_IDENTIFIER",
+        "ECU_ADDRESS_EXTENSION",
+        "IF_DATA",
+        "MAX_REFRESH",
+        "MODEL_LINK",
+        "SYMBOL_LINK",
     ]
 
 
@@ -590,6 +615,7 @@ class CHARACTERISTIC(Keyword):
         "DISCRETE",
         "DISPLAY_IDENTIFIER",
         "ECU_ADDRESS_EXTENSION",
+        "ENCODING",
         "EXTENDED_LIMITS",
         "FORMAT",
         "FUNCTION_LIST",
@@ -598,6 +624,7 @@ class CHARACTERISTIC(Keyword):
         "MAP_LIST",
         "MATRIX_DIM",
         "MAX_REFRESH",
+        "MODEL_LINK",
         "NUMBER",
         "PHYS_UNIT",
         "READ_ONLY",
@@ -722,6 +749,14 @@ class COMPU_VTAB_RANGE(Keyword):
     ]
 
 
+class CONSISTENT_EXCHANGE(Keyword):
+    pass
+
+
+class CONVERSION(Keyword):
+    attrs = [(Ident, "conversionMethod")]
+
+
 class CPU_TYPE(Keyword):
     attrs = [(String, "CPU")]
 
@@ -772,7 +807,7 @@ class DISCRETE(Keyword):
 
 
 class DISPLAY_IDENTIFIER(Keyword):
-    attrs = [(Ident, "display_name")]
+    attrs = [(Ident, "DisplayName")]
 
 
 class DIST_OP_X(Keyword):
@@ -793,6 +828,10 @@ class DIST_OP_4(Keyword):
 
 class DIST_OP_5(Keyword):
     attrs = [(Uint, "Position"), (Datatype, "Datatype")]
+
+
+class ENCODING(Keyword):
+    attrs = [(Ident, "Encoding")]
 
 
 class ECU(Keyword):
@@ -922,6 +961,7 @@ class FUNCTION(Keyword):
     block = True
     children = [
         "ANNOTATION",
+        "AR_COMPONENT",
         "DEF_CHARACTERISTIC",
         "FUNCTION_VERSION",
         "IF_DATA",
@@ -999,6 +1039,10 @@ class IN_MEASUREMENT(Keyword):
     attrs = [(Ident, "Identifier", MULTIPLE)]
 
 
+class INPUT_QUANTITY(Keyword):
+    attrs = [(Ident, "InputQuantity")]
+
+
 class INSTANCE(Keyword):
     block = True
     multiple = True
@@ -1009,13 +1053,18 @@ class INSTANCE(Keyword):
         (Ulong, "Address"),
     ]
     children = [
-        "COMPARISON_QUANTITY",
-        "DEPENDENT_CHARACTERISTIC",
+        "ADDRESS_TYPE",
+        "ANNOTATION",
+        "CALIBRATION_ACCESS",
         "DISPLAY_IDENTIFIER",
         "ECU_ADDRESS_EXTENSION",
         "IF_DATA",
-        "NUMBER",
+        "LAYOUT",
         "MATRIX_DIM",
+        "MAX_REFRESH",
+        "MODEL_LINK",
+        "OVERWRITE",
+        "READ_WRITE",
         "SYMBOL_LINK",
     ]
 
@@ -1026,6 +1075,13 @@ class LAYOUT(Keyword):
 
 class LEFT_SHIFT(Keyword):
     attrs = [(Ulong, "Bitcount")]
+
+
+class LIMITS(Keyword):
+    attrs = [
+        (Float, "LowerLimit"),
+        (Float, "UpperLimit"),
+    ]
 
 
 class LOC_MEASUREMENT(Keyword):
@@ -1063,6 +1119,7 @@ class MEASUREMENT(Keyword):
     multiple = True
     block = True
     children = [
+        "ADDRESS_TYPE",
         "ANNOTATION",
         "ARRAY_SIZE",
         "BIT_MASK",
@@ -1079,6 +1136,7 @@ class MEASUREMENT(Keyword):
         "LAYOUT",
         "MATRIX_DIM",
         "MAX_REFRESH",
+        "MODEL_LINK",
         "PHYS_UNIT",
         "READ_WRITE",
         "REF_MEMORY_SEGMENT",
@@ -1197,6 +1255,7 @@ class MODULE(Keyword):
     children = [
         "A2ML",
         "AXIS_PTS",
+        "BLOB",
         "CHARACTERISTIC",
         "COMPU_METHOD",
         "COMPU_TAB",
@@ -1211,6 +1270,9 @@ class MODULE(Keyword):
         "MOD_COMMON",
         "MOD_PAR",
         "RECORD_LAYOUT",
+        "TRANSFORMER",
+        "TYPEDEF_AXIS",
+        "TYPEDEF_BLOB",
         "TYPEDEF_CHARACTERISTIC",
         "TYPEDEF_MEASUREMENT",
         "TYPEDEF_STRUCTURE",
@@ -1364,6 +1426,23 @@ class OUT_MEASUREMENT(Keyword):
     ]
 
 
+class OVERWRITE(Keyword):
+    block = True
+    children = [
+        "CONVERSION",
+        "EXTENDED_LIMITS",
+        "FORMAT",
+        "INPUT_QUANTITY",
+        "LIMITS",
+        "MONOTONY",
+        "PHYS_UNIT",
+    ]
+    attrs = [
+        (Ident, "Name"),
+        (Uint, "AxisNumber"),
+    ]
+
+
 class PHONE_NO(Keyword):
     attrs = [
         (String, "Telnum"),
@@ -1465,23 +1544,11 @@ class RECORD_LAYOUT(Keyword):
         "SRC_ADDR_Z",
         "SRC_ADDR_4",
         "SRC_ADDR_5",
+        "STATIC_RECORD_LAYOUT",
+        "STATIC_ADDRESS_OFFSETS",
     ]
     attrs = [
         (Ident, "Name"),
-    ]
-
-
-class TRANSFORMER_IN_OBJECTS(Keyword):
-    block = True
-    attrs = [
-        (Ident, "Identifier", MULTIPLE),
-    ]
-
-
-class TRANSFORMER_OUT_OBJECTS(Keyword):
-    block = True
-    attrs = [
-        (Ident, "Identifier", MULTIPLE),
     ]
 
 
@@ -1665,6 +1732,10 @@ class SRC_ADDR_5(Keyword):
     ]
 
 
+class STATIC_ADDRESS_OFFSETS(Keyword):
+    pass
+
+
 class STATIC_RECORD_LAYOUT(Keyword):
     pass
 
@@ -1678,6 +1749,22 @@ class STATUS_STRING_REF(Keyword):
 class STEP_SIZE(Keyword):
     attrs = [
         (Float, "StepSize"),
+    ]
+
+
+class STRUCTURE_COMPONENT(Keyword):
+    multiple = True
+    block = True
+    attrs = [
+        (Ident, "Name"),
+        (Ident, "TypedefName"),
+        (Ulong, "AddressOffset"),
+    ]
+    children = [
+        "ADDRESS_TYPE",
+        "LAYOUT",
+        "MATRIX_DIM",
+        "SYMBOL_TYPE_LINK",
     ]
 
 
@@ -1728,21 +1815,6 @@ class S_REC_LAYOUT(Keyword):
     ]
 
 
-class STRUCTURE_COMPONENT(Keyword):
-    multiple = True
-    block = True
-    attrs = [
-        (Ident, "Name"),
-        (Ident, "Type_Ref"),
-        (Ulong, "Offset"),
-    ]
-    children = [
-        "MATRIX_DIM",
-        "NUMBER",
-        "SYMBOL_TYPE_LINK",
-    ]
-
-
 class TRANSFORMER(Keyword):
     multiple = True
     block = True
@@ -1750,11 +1822,11 @@ class TRANSFORMER(Keyword):
     attrs = [
         (Ident, "Name"),
         (String, "Version"),
-        (String, "DllName32"),
-        (String, "DllName64"),
+        (String, "Executable32"),
+        (String, "Executable64"),
         (Ulong, "Timeout"),
-        (Ident, "Trigger"),
-        (Ident, "Reverse"),
+        (Enum, "Trigger", ("ON_CHANGE", "ON_USER_REQUEST")),
+        (Ident, "InverseTransformer"),
     ]
 
     children = [
@@ -1763,21 +1835,30 @@ class TRANSFORMER(Keyword):
     ]
 
 
+class TRANSFORMER_IN_OBJECTS(Keyword):
+    block = True
+    attrs = [
+        (Ident, "Identifier", MULTIPLE),
+    ]
+
+
+class TRANSFORMER_OUT_OBJECTS(Keyword):
+    block = True
+    attrs = [
+        (Ident, "Identifier", MULTIPLE),
+    ]
+
+
 class TYPEDEF_AXIS(Keyword):
     multiple = True
     block = True
     children = [
-        "ANNOTATION",
         "BYTE_ORDER",
-        "CALIBRATION_ACCESS",
         "DEPOSIT",
         "EXTENDED_LIMITS",
         "FORMAT",
-        "GUARD_RAILS",
         "MONOTONY",
         "PHYS_UNIT",
-        "READ_ONLY",
-        "REF_MEMORY_SEGMENT",
         "STEP_SIZE",
     ]
     attrs = [
@@ -1793,26 +1874,32 @@ class TYPEDEF_AXIS(Keyword):
     ]
 
 
+class TYPEDEF_BLOB(Keyword):
+    multiple = True
+    block = True
+    children = ["ADDRESS_TYPE"]
+    attrs = [
+        (Ident, "Name"),
+        (String, "LongIdentifier"),
+        (Ulong, "Size"),
+    ]
+
+
 class TYPEDEF_CHARACTERISTIC(Keyword):
     multiple = True
     block = True
     children = [
-        "ANNOTATION",
         "AXIS_DESCR",
         "BIT_MASK",
         "BYTE_ORDER",
-        "CALIBRATION_ACCESS",
         "DISCRETE",
+        "ENCODING",
         "EXTENDED_LIMITS",
         "FORMAT",
-        "GUARD_RAILS",
-        "MAX_REFRESH",
+        "MATRIX_DIM",
         "NUMBER",
         "PHYS_UNIT",
-        "READ_ONLY",
-        "REF_MEMORY_SEGMENT",
         "STEP_SIZE",
-        "VIRTUAL_CHARACTERISTIC",
     ]
     attrs = [
         (Ident, "Name"),
@@ -1843,6 +1930,18 @@ class TYPEDEF_MEASUREMENT(Keyword):
         (Float, "LowerLimit"),
         (Float, "UpperLimit"),
     ]
+    children = [
+        "ADDRESS_TYPE",
+        "BIT_MASK",
+        "BIT_OPERATION",
+        "BYTE_ORDER",
+        "DISCRETE",
+        "ERROR_MASK",
+        "FORMAT",
+        "LAYOUT",
+        "MATRIX_DIM",
+        "PHYS_UNIT",
+    ]
 
 
 class TYPEDEF_STRUCTURE(Keyword):
@@ -1854,6 +1953,8 @@ class TYPEDEF_STRUCTURE(Keyword):
         (Ulong, "Size"),
     ]
     children = [
+        "ADDRESS_TYPE",
+        "CONSISTENT_EXCHANGE",
         "STRUCTURE_COMPONENT",
         "SYMBOL_TYPE_LINK",
     ]
@@ -1994,6 +2095,7 @@ KEYWORD_MAP = {
     "A2ML": A2ML,
     "A2ML_VERSION": A2ML_VERSION,
     "ADDR_EPK": ADDR_EPK,
+    "ADDRESS_TYPE": ADDRESS_TYPE,
     "ALIGNMENT_BYTE": ALIGNMENT_BYTE,
     "ALIGNMENT_FLOAT16_IEEE": ALIGNMENT_FLOAT16_IEEE,
     "ALIGNMENT_FLOAT32_IEEE": ALIGNMENT_FLOAT32_IEEE,
@@ -2005,6 +2107,8 @@ KEYWORD_MAP = {
     "ANNOTATION_LABEL": ANNOTATION_LABEL,
     "ANNOTATION_ORIGIN": ANNOTATION_ORIGIN,
     "ANNOTATION_TEXT": ANNOTATION_TEXT,
+    "AR_COMPONENT": AR_COMPONENT,
+    "AR_PROTOTYPE_OF": AR_PROTOTYPE_OF,
     "ARRAY_SIZE": ARRAY_SIZE,
     "ASAP2_VERSION": ASAP2_VERSION,
     "AXIS_DESCR": AXIS_DESCR,
@@ -2037,6 +2141,8 @@ KEYWORD_MAP = {
     "COMPU_TAB_REF": COMPU_TAB_REF,
     "COMPU_VTAB": COMPU_VTAB,
     "COMPU_VTAB_RANGE": COMPU_VTAB_RANGE,
+    "CONSISTENT_EXCHANGE": CONSISTENT_EXCHANGE,
+    "CONVERSION": CONVERSION,
     "CPU_TYPE": CPU_TYPE,
     "CURVE_AXIS_REF": CURVE_AXIS_REF,
     "CUSTOMER": CUSTOMER,
@@ -2054,6 +2160,7 @@ KEYWORD_MAP = {
     "DIST_OP_Z": DIST_OP_Z,
     "DIST_OP_4": DIST_OP_4,
     "DIST_OP_5": DIST_OP_5,
+    "ENCODING": ENCODING,
     "ECU": ECU,
     "ECU_ADDRESS": ECU_ADDRESS,
     "ECU_ADDRESS_EXTENSION": ECU_ADDRESS_EXTENSION,
@@ -2084,9 +2191,11 @@ KEYWORD_MAP = {
     "IDENTIFICATION": IDENTIFICATION,
     "IF_DATA": IF_DATA,
     "IN_MEASUREMENT": IN_MEASUREMENT,
+    "INPUT_QUANTITY": INPUT_QUANTITY,
     "INSTANCE": INSTANCE,
     "LAYOUT": LAYOUT,
     "LEFT_SHIFT": LEFT_SHIFT,
+    "LIMITS": LIMITS,
     "LOC_MEASUREMENT": LOC_MEASUREMENT,
     "MAP_LIST": MAP_LIST,
     "MATRIX_DIM": MATRIX_DIM,
@@ -2118,6 +2227,7 @@ KEYWORD_MAP = {
     "OFFSET_4": OFFSET_4,
     "OFFSET_5": OFFSET_5,
     "OUT_MEASUREMENT": OUT_MEASUREMENT,
+    "OVERWRITE": OVERWRITE,
     "PHONE_NO": PHONE_NO,
     "PHYS_UNIT": PHYS_UNIT,
     "PROJECT": PROJECT,
@@ -2152,6 +2262,7 @@ KEYWORD_MAP = {
     "SRC_ADDR_4": SRC_ADDR_4,
     "SRC_ADDR_5": SRC_ADDR_5,
     "STATIC_RECORD_LAYOUT": STATIC_RECORD_LAYOUT,
+    "STATIC_ADDRESS_OFFSETS": STATIC_ADDRESS_OFFSETS,
     "STATUS_STRING_REF": STATUS_STRING_REF,
     "STEP_SIZE": STEP_SIZE,
     "STRUCTURE_COMPONENT": STRUCTURE_COMPONENT,
@@ -2166,6 +2277,7 @@ KEYWORD_MAP = {
     "TRANSFORMER_OUT_OBJECTS": TRANSFORMER_OUT_OBJECTS,
     "TRANSFORMER": TRANSFORMER,
     "TYPEDEF_AXIS": TYPEDEF_AXIS,
+    "TYPEDEF_BLOB": TYPEDEF_BLOB,
     "TYPEDEF_CHARACTERISTIC": TYPEDEF_CHARACTERISTIC,
     "TYPEDEF_MEASUREMENT": TYPEDEF_MEASUREMENT,
     "TYPEDEF_STRUCTURE": TYPEDEF_STRUCTURE,
@@ -2188,7 +2300,11 @@ KEYWORD_MAP = {
 }
 
 
+@dataclass
 class A2LElement:
+    attrs: list[str] = field(default_factory=list)
+    children: list[str] = field(default_factory=list)
+
     def __str__(self):
         result = []
         result.append("%s {" % self.__class__.__name__)
@@ -2203,11 +2319,12 @@ class A2LElement:
 
 def instanceFactory(className, **kws):
     """Create an instance of a given class."""
-    klass = type(str(className), (A2LElement,), {})
+    klass = make_dataclass(
+        str(className),
+        [(k, type(v), field(default=v)) for k, v in kws.items()],
+        bases=(A2LElement,),
+    )
     inst = klass()
-    inst.attrs = []
-    for k, v in kws.items():
-        setattr(inst, k, v)
-        inst.attrs.append(k)
+    inst.attrs = list(kws.keys())
     inst.children = []
     return inst
