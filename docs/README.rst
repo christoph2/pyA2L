@@ -63,7 +63,7 @@ What pyA2L offers
 - Building blocks for automation: reporting, quality gates, CI checks,
   and integration with CCP/XCP workflows.
 
-Supported ASAP2 version: 1.6.
+Supported ASAP2 version: 1.7.1
 
 Why pyA2L?
 ----------

@@ -323,7 +323,6 @@ enum class A2LTokenType : uint16_t {
 	MSB_FIRST_MSW_LAST           = 313,
     MSB_LAST_MSW_FIRST           = 314,
     CONSISTENT_EXCHANGE          = 315,
-    THIS                         = 316,
 };
 
 #endif  // __A2LTOKEN_HPP

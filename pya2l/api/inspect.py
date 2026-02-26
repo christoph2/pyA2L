@@ -71,7 +71,6 @@ from pya2l.functions import (
 )
 from pya2l.utils import SingletonBase, align_as, enum_from_str, ffs
 
-
 T = TypeVar("T")
 
 DB_CACHE_SIZE = 4096  # Completly arbitrary, could be configurable.
@@ -766,6 +765,25 @@ class ExtendedLimits:
 
 
 @dataclass
+class Limits(ExtendedLimits):
+    pass
+
+
+def _create_extended_limits(limits) -> Optional[ExtendedLimits]:
+    if limits is not None:
+        return ExtendedLimits(limits.lowerLimit, limits.upperLimit)
+    else:
+        return None
+
+
+def _create_limits(limits) -> Optional[Limits]:
+    if limits is not None:
+        return Limits(limits.lowerLimit, limits.upperLimit)
+    else:
+        return None
+
+
+@dataclass
 class MatrixDim:
     """Matrix dimensions for multi-dimensional data.
 
@@ -915,6 +933,13 @@ class MaxRefresh:
     rate: Optional[int] = field(default=None)
 
 
+def _dissect_max_refresh(max_ref) -> Optional[MaxRefresh]:
+    if max_ref is not None:
+        return MaxRefresh(max_ref.scalingUnit, max_ref.rate)
+    else:
+        None
+
+
 @dataclass
 class SymbolLink:
     """Symbol link information.
@@ -932,6 +957,13 @@ class SymbolLink:
 
     symbolLink: Optional[str] = field(default=None)
     offset: Optional[int] = field(default=None)
+
+
+def _dissect_symbol_link(sym_link) -> Optional[SymbolLink]:
+    if sym_link is not None:
+        return SymbolLink(sym_link.symbolName, sym_link.offset)
+    else:
+        return None
 
 
 @dataclass
@@ -970,6 +1002,28 @@ class AxisInfo:
     elements: Dict = field(default_factory=dict)
     adjustable: bool = field(default=False)
     actual_element_count: Optional[int] = field(default=None)
+
+
+@dataclass
+class BitOperation:
+    left: Optional[int]
+    right: Optional[int]
+    sign_extend: bool
+
+
+def _dissect_bit_operation(bit_op) -> Optional[BitOperation]:
+    if bit_op is not None:
+        left = None
+        right = None
+        sign_extend = None
+        if bit_op.left_shift is not None:
+            left = bit_op.left_shift.bitcount
+        elif bit_op.right_shift is not None:
+            right = bit_op.right_shift.bitcount
+        sign_extend = False if bit_op.sign_extend is None else True
+        return BitOperation(left, right, sign_extend)
+    else:
+        return None
 
 
 def asam_type_size(datatype: str) -> int:
@@ -1666,7 +1720,8 @@ class CompuMethod(CachedBase):
                 f=self.compu_method.coeffs.f,
             )
         elif cm_type in ("TAB_INTP", "TAB_NOINTP"):
-            self.tab = CompuTab.get(self.session, name=self.compu_method.compu_tab_ref.conversionTable, module_name=module_name)
+            self.tab = CompuTab.get(self.session, name=self.compu_method.compu_tab_ref.conversionTable,
+                                    module_name=module_name)
         elif cm_type == "TAB_VERB":
             has_compu_vtab = self.session.query(
                 self.session.query(model.CompuVtab)
@@ -1751,7 +1806,7 @@ class CompuMethod(CachedBase):
 
     @classmethod
     def get(
-        cls, session: Any, name: Optional[str] = None, module_name: Optional[str] = None
+            cls, session: Any, name: Optional[str] = None, module_name: Optional[str] = None
     ) -> Union["CompuMethod", NoCompuMethod]:
         """Get a CompuMethod instance, using cache if available.
 
@@ -2149,6 +2204,8 @@ class RecordLayout(CachedBase):
     fncValues: RecordLayoutFncValues
     identification: RecordLayoutIdentification
     reserved: List[RecordLayoutReserved]
+    staticAddressOffsets: bool
+    staticRecordLayout: bool
 
     def __init__(self, session, name: str, module_name: str = None):
         layout = session.query(model.RecordLayout).filter(model.RecordLayout.name == name)
@@ -2213,6 +2270,8 @@ class RecordLayout(CachedBase):
         if self.reserved:
             elements.extend(self.reserved)
         self.elements = sorted(elements, key=lambda x: x.position)
+        self.staticRecordLayout = self.layout.static_record_layout
+        self.staticAddressOffsets = self.layout.static_address_offsets
 
     @staticmethod
     def create_axis_pts(axis_name, axis) -> RecordLayoutAxisPts:
@@ -2491,17 +2550,19 @@ class AxisPts(CachedBase):
     calibrationAccess: Optional[str]
     displayIdentifier: Optional[str]
     ecuAddressExtension: int
-    extendedLimits: ExtendedLimits
+    extendedLimits: Optional[ExtendedLimits]
     format: Optional[str]
-    if_data: List[Dict]
     functionList: List[str]
     guardRails: bool
+    if_data: List[Dict]
+    maxRefresh: Optional[MaxRefresh]
+    modelLink: Optional[str]
     monotony: Optional[str]
     physUnit: Optional[str]
     readOnly: bool
     refMemorySegment: Optional[str]
     stepSize: Optional[float]
-    symbolLink: SymbolLink
+    symbolLink: Optional[SymbolLink]
     depositAttr: RecordLayout
     record_layout_components: Dict
 
@@ -2529,16 +2590,18 @@ class AxisPts(CachedBase):
         self.calibrationAccess = self.axis.calibration_access
         self.displayIdentifier = self.axis.display_identifier.display_name if self.axis.display_identifier else None
         self.ecuAddressExtension = self.axis.ecu_address_extension.extension if self.axis.ecu_address_extension else 0
-        self.extendedLimits = self._create_extended_limits(self.axis.extended_limits)
+        self.extendedLimits = _create_extended_limits(self.axis.extended_limits)
         self.format = self.axis.format.formatString if self.axis.format else None
         self.functionList = [f.name for f in self.axis.function_list] if self.axis.function_list else []
         self.guardRails = self.axis.guard_rails
+        self.maxRefresh = _dissect_max_refresh(self.axis.max_refresh)
+        self.modelLink = self.axis.model_link.link if self.axis.model_link else None
         self.monotony = self.axis.monotony.monotony if self.axis.monotony else None
         self.physUnit = self.axis.phys_unit.unit if self.axis.phys_unit else None
         self.readOnly = self.axis.read_only
         self.refMemorySegment = self.axis.ref_memory_segment.name if self.axis.ref_memory_segment else None
         self.stepSize = self.axis.step_size
-        self.symbolLink = self._dissect_symbol_link(self.axis.symbol_link)
+        self.symbolLink = _dissect_symbol_link(self.axis.symbol_link)
         self.record_layout_components = create_record_layout_components(self) if self.depositAttr else None
         self.if_data = session.parse_ifdata(self.axis.if_data)
 
@@ -2556,20 +2619,6 @@ class AxisPts(CachedBase):
     def total_allocated_memory(self):
         """Total amount of statically allocated memory by AxisPts."""
         return self.record_layout_components.sizeof
-
-    @staticmethod
-    def _create_extended_limits(limits):
-        if limits is not None:
-            return ExtendedLimits(limits.lowerLimit, limits.upperLimit)
-        else:
-            return ExtendedLimits()
-
-    @staticmethod
-    def _dissect_symbol_link(sym_link):
-        if sym_link is not None:
-            return SymbolLink(sym_link.symbolName, sym_link.offset)
-        else:
-            return SymbolLink()
 
     @property
     def fnc_asam_dtype(self):
@@ -2610,7 +2659,7 @@ class AxisDescr(CachedBase):
     annotations: List[Annotation]
     curveAxisRef: Optional[str]
     deposit: Optional[Any]
-    extendedLimits: Dict
+    extendedLimits: Optional[ExtendedLimits]
     fixAxisPar: FixAxisPar
     fixAxisParDist: FixAxisParDist
     fixAxisParList: Dict
@@ -2635,13 +2684,14 @@ class AxisDescr(CachedBase):
         self.upperLimit = axis.upperLimit
 
         self.compuMethod = (
-            CompuMethod.get(session, self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
+            CompuMethod.get(session,
+                            self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
         )
         self.annotations = _annotations(session, axis.annotation)
         self.byteOrder = axis.byte_order.byteOrder if axis.byte_order else None
         self.curveAxisRef = Characteristic.get(session, axis.curve_axis_ref.curveAxis) if axis.curve_axis_ref else None
         self.deposit = axis.deposit.mode if axis.deposit else None
-        self.extendedLimits = self._create_extended_limits(axis.extended_limits)
+        self.extendedLimits = _create_extended_limits(axis.extended_limits)
         self.fixAxisPar = self._create_fix_axis_par(axis.fix_axis_par)
         self.fixAxisParDist = self._create_fix_axis_par_dist(axis.fix_axis_par_dist)
         self.fixAxisParList = axis.fix_axis_par_list.axisPts_Value if axis.fix_axis_par_list else []
@@ -2651,13 +2701,6 @@ class AxisDescr(CachedBase):
         self.physUnit = axis.phys_unit.unit if axis.phys_unit else None
         self.readOnly = axis.read_only
         self.stepSize = axis.step_size.stepSize if axis.step_size else None
-
-    @staticmethod
-    def _create_extended_limits(limits):
-        if limits is not None:
-            return ExtendedLimits(limits.lowerLimit, limits.upperLimit)
-        else:
-            return ExtendedLimits()
 
     @staticmethod
     def _create_fix_axis_par(axis):
@@ -2713,34 +2756,36 @@ class Characteristic(CachedBase):
     _conversionRef: str = field(repr=False)
     lowerLimit: float
     upperLimit: float
+    compuMethod: CompuMethod
     annotations: List[Annotation]
     axisDescriptions: List[AxisDescr]
     bitMask: Optional[int]
     byteOrder: Optional[str]
-    compuMethod: CompuMethod
     calibrationAccess: Optional[str]
     comparisonQuantity: Optional[str]
     dependent_characteristic: DependentCharacteristic
     discrete: bool
     displayIdentifier: Optional[str]
     ecuAddressExtension: int
-    extendedLimits: ExtendedLimits
+    encoding: Optional[str]
+    extendedLimits: Optional[ExtendedLimits]
     format: Optional[str]
     functionList: List[str]
     guardRails: bool
+    if_data: List[Dict]
     mapList: List
     matrixDim: MatrixDim
-    maxRefresh: MaxRefresh
+    maxRefresh: Optional[MaxRefresh]
+    modelLink: Optional[str]
     number: Optional[int]
     physUnit: Optional[str]
     readOnly: bool
     refMemorySegment: Optional[str]
     stepSize: Optional[float]
-    symbolLink: Optional[str]
+    symbolLink: Optional[SymbolLink]
     virtual_characteristic: VirtualCharacteristic
     fnc_np_shape: tuple
     record_layout_components: Dict
-    if_data: List[Dict]
 
     def __init__(self, session, name: str, module_name: str = None):
         characteristic = session.query(model.Characteristic).filter(model.Characteristic.name == name)
@@ -2757,7 +2802,8 @@ class Characteristic(CachedBase):
         self.maxDiff = self.characteristic.maxDiff
         self._conversionRef = self.characteristic.conversion
         self.compuMethod = (
-            CompuMethod.get(session, self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
+            CompuMethod.get(session,
+                            self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
         )
         self.lowerLimit = self.characteristic.lowerLimit
         self.upperLimit = self.characteristic.upperLimit
@@ -2782,19 +2828,22 @@ class Characteristic(CachedBase):
         self.ecuAddressExtension = (
             self.characteristic.ecu_address_extension.extension if self.characteristic.ecu_address_extension else 0
         )
-        self.extendedLimits = self._create_extended_limits(self.characteristic.extended_limits)
+        self.encoding = self.characteristic.encoding.encoding if self.characteristic.encoding else None
+        self.extendedLimits = _create_extended_limits(self.characteristic.extended_limits)
         self.format = self.characteristic.format.formatString if self.characteristic.format else None
-        self.functionList = [f.name for f in self.characteristic.function_list] if self.characteristic.function_list else []
+        self.functionList = [f.name for f in
+                             self.characteristic.function_list] if self.characteristic.function_list else []
         self.guardRails = self.characteristic.guard_rails
         self.mapList = [f.name for f in self.characteristic.map_list] if self.characteristic.map_list else []
-        self.matrixDim = self._create_matrix_dim(self.characteristic.matrix_dim)
-        self.maxRefresh = self._dissect_max_refresh(self.characteristic.max_refresh)
+        self.matrixDim = MatrixDim.from_model(self.characteristic.matrix_dim)
+        self.maxRefresh = _dissect_max_refresh(self.characteristic.max_refresh)
+        self.modelLink = self.characteristic.model_link.link if self.characteristic.model_link else None
         self.number = self.characteristic.number.number if self.characteristic.number else None
         self.physUnit = self.characteristic.phys_unit.unit if self.characteristic.phys_unit else None
         self.readOnly = self.characteristic.read_only
         self.refMemorySegment = self.characteristic.ref_memory_segment.name if self.characteristic.ref_memory_segment else None
         self.stepSize = self.characteristic.step_size
-        self.symbolLink = self._dissect_symbol_link(self.characteristic.symbol_link)
+        self.symbolLink = _dissect_symbol_link(self.characteristic.symbol_link)
         if self.characteristic.virtual_characteristic:
             self.virtual_characteristic = VirtualCharacteristic(
                 self.characteristic.virtual_characteristic.formula,
@@ -2895,8 +2944,8 @@ class Characteristic(CachedBase):
         else:
             for axis, deposit in zip(self.axisDescriptions, self.deposit.axes.values()):
                 if axis.attribute not in (
-                    "RES_AXIS",
-                    "STD_AXIS",
+                        "RES_AXIS",
+                        "STD_AXIS",
                 ):
                     continue
                 element_count = axis.maxAxisPoints
@@ -2967,31 +3016,6 @@ class Characteristic(CachedBase):
             return l0
         else:
             return None
-
-    @staticmethod
-    def _create_extended_limits(limits):
-        if limits is not None:
-            return ExtendedLimits(limits.lowerLimit, limits.upperLimit)
-        else:
-            return ExtendedLimits()
-
-    @staticmethod
-    def _create_matrix_dim(matrix_dim):
-        return MatrixDim.from_model(matrix_dim)
-
-    @staticmethod
-    def _dissect_max_refresh(max_ref):
-        if max_ref is not None:
-            return MaxRefresh(max_ref.scalingUnit, max_ref.rate)
-        else:
-            return MaxRefresh()
-
-    @staticmethod
-    def _dissect_symbol_link(sym_link):
-        if sym_link is not None:
-            return SymbolLink(sym_link.symbolName, sym_link.offset)
-        else:
-            return SymbolLink()
 
 
 def axispts_or_characteristic(session, name: str) -> Union[AxisPts, Characteristic]:
@@ -3225,11 +3249,11 @@ class Measurement(CachedBase):
     functionList: List[Dict]
     layout: Optional[str]
     matrixDim: MatrixDim
-    maxRefresh: MaxRefresh
+    maxRefresh: Optional[MaxRefresh]
     physUnit: Optional[str]
     readWrite: bool
     refMemorySegment: Optional[str]
-    symbolLink: SymbolLink
+    symbolLink: Optional[SymbolLink]
     virtual: List[str]
     compuMethod: CompuMethod
     fnc_np_shape: tuple
@@ -3253,7 +3277,7 @@ class Measurement(CachedBase):
         self.annotations = _annotations(session, self.measurement.annotation)
         self.arraySize = self.measurement.array_size.number if self.measurement.array_size else None
         self.bitMask = self.measurement.bit_mask.mask if self.measurement.bit_mask else None
-        self.bitOperation = self._dissect_bit_operation(self, self.measurement.bit_operation)
+        self.bitOperation = _dissect_bit_operation(self.measurement.bit_operation)
         self.byteOrder = self.measurement.byte_order.byteOrder if self.measurement.byte_order else None
         self.discrete = self.measurement.discrete
         self.displayIdentifier = self.measurement.display_identifier.display_name if self.measurement.display_identifier else None
@@ -3263,12 +3287,12 @@ class Measurement(CachedBase):
         self.format = self.measurement.format.formatString if self.measurement.format else None
         self.functionList = self.measurement.function_list.name if self.measurement.function_list else []
         self.layout = self.measurement.layout.indexMode if self.measurement.layout else None
-        self.matrixDim = self._create_matrix_dim(self.measurement.matrix_dim)
-        self.maxRefresh = self._dissect_max_refresh(self.measurement.max_refresh)
+        self.matrixDim = MatrixDim.from_model(self.measurement.matrix_dim)
+        self.maxRefresh = _dissect_max_refresh(self.measurement.max_refresh)
         self.physUnit = self.measurement.phys_unit.unit if self.measurement.phys_unit else None
         self.readWrite = False if self.measurement.read_write is None else True
         self.refMemorySegment = self.measurement.ref_memory_segment.name if self.measurement.ref_memory_segment else None
-        self.symbolLink = self._dissect_symbol_link(self.measurement.symbol_link)
+        self.symbolLink = _dissect_symbol_link(self.measurement.symbol_link)
         self.virtual = self.measurement.virtual.measuringChannel if self.measurement.virtual else []
         self.compuMethod = CompuMethod.get(session, self._conversionRef)
         self.fnc_np_shape = fnc_np_shape(self.matrixDim)
@@ -3277,42 +3301,6 @@ class Measurement(CachedBase):
     @property
     def is_virtual(self):
         return self.virtual != []
-
-    @staticmethod
-    def _dissect_bit_operation(obj, bit_op):
-        result = {}
-        if bit_op is not None:
-            if bit_op.left_shift is not None:
-                result["direction"] = "L"
-                result["amount"] = bit_op.left_shift.bitcount
-            elif bit_op.right_shift is not None:
-                result["direction"] = "R"
-                result["amount"] = bit_op.right_shift.bitcount
-            result["sign_extend"] = False if bit_op.sign_extend is None else True
-        elif obj.bitMask is not None:
-            result["direction"] = "R"
-            result["amount"] = ffs(obj.bitMask)
-        else:
-            result = None
-        return result
-
-    @staticmethod
-    def _create_matrix_dim(matrix_dim):
-        return MatrixDim.from_model(matrix_dim)
-
-    @staticmethod
-    def _dissect_max_refresh(max_ref):
-        if max_ref is not None:
-            return MaxRefresh(max_ref.scalingUnit, max_ref.rate)
-        else:
-            MaxRefresh()
-
-    @staticmethod
-    def _dissect_symbol_link(sym_link):
-        if sym_link is not None:
-            return SymbolLink(sym_link.symbolName, sym_link.offset)
-        else:
-            return SymbolLink()
 
 
 def get_characteristic_or_axispts(session, name):
@@ -3351,14 +3339,15 @@ class Function(CachedBase):
     name: str
     longIdentifier: Optional[str]
     annotations: List[Annotation]
-    functionVersion: str
-    if_data: List[Dict]
-    inMeasurements: List[str]
-    locMeasurements: List[str]
-    outMeasurements: List[str]
-    defCharacteristics: List[str]
-    refCharacteristics: List[str]
-    subFunctions: List[str]
+    ar_component: Dict
+    defCharacteristics: List[str] = field(default_factory=list)
+    functionVersion: Optional[str] = field(default=None)
+    if_data: List[Dict] = field(default_factory=list)
+    inMeasurements: List[str] = field(default_factory=list)
+    locMeasurements: List[str] = field(default_factory=list)
+    outMeasurements: List[str] = field(default_factory=list)
+    refCharacteristics: List[str] = field(default_factory=list)
+    subFunctions: List[str] = field(default_factory=list)
 
     def __init__(self, session, name=None, module_name: str = None):
         self.session = session
@@ -3371,72 +3360,29 @@ class Function(CachedBase):
         self.name = self.function.name
         self.longIdentifier = self.function.longIdentifier
         self.annotations = _annotations(session, self.function.annotation)
+        self.ar_component = self._dissect_ar_component(self.function.ar_component)
         self.functionVersion = self.function.function_version.versionIdentifier if self.function.function_version else None
         self.if_data = session.parse_ifdata(self.function.if_data)
-        self._inMeasurements = None
-        self._locMeasurements = None
-        self._outMeasurements = None
-        self._defCharacteristics = None
-        self._refCharacteristics = None
-        self._subFunctions = None
+        self.inMeasurements = [Measurement.get(self.session, m) for m in
+                               self.function.in_measurement.identifier] if self.function.in_measurement else []
+        self.locMeasurements = [Measurement.get(self.session, m) for m in
+                                self.function.loc_measurement.identifier] if self.function.loc_measurement else []
+        self.outMeasurements = [Measurement.get(self.session, m) for m in
+                                self.function.out_measurement.identifier] if self.function.out_measurement else []
+        self.defCharacteristics = [get_characteristic_or_axispts(self.session, r) for r in
+                                   self.function.def_characteristic.identifier] if self.function.def_characteristic else []
+        self.refCharacteristics = [get_characteristic_or_axispts(self.session, r) for r in
+                                   self.function.ref_characteristic.identifier] if self.function.ref_characteristic else []
+        self.subFunctions = [Function.get(self.session, g) for g in
+                             self.function.sub_function.identifier] if self.function.sub_function else []
 
-    @property
-    def inMeasurements(self):
-        if self._inMeasurements is None:
-            self._inMeasurements = (
-                [Measurement.get(self.session, m) for m in self.function.in_measurement.identifier]
-                if self.function.in_measurement
-                else []
-            )
-        return self._inMeasurements
-
-    @property
-    def locMeasurements(self):
-        if self._locMeasurements is None:
-            self._locMeasurements = (
-                [Measurement.get(self.session, m) for m in self.function.loc_measurement.identifier]
-                if self.function.loc_measurement
-                else []
-            )
-        return self._locMeasurements
-
-    @property
-    def outMeasurements(self):
-        if self._outMeasurements is None:
-            self._outMeasurements = (
-                [Measurement.get(self.session, m) for m in self.function.out_measurement.identifier]
-                if self.function.out_measurement
-                else []
-            )
-        return self._outMeasurements
-
-    @property
-    def defCharacteristics(self):
-        if self._defCharacteristics is None:
-            self._defCharacteristics = (
-                [get_characteristic_or_axispts(self.session, r) for r in self.function.def_characteristic.identifier]
-                if self.function.def_characteristic
-                else []
-            )
-        return self._defCharacteristics
-
-    @property
-    def refCharacteristics(self):
-        if self._refCharacteristics is None:
-            self._refCharacteristics = (
-                [get_characteristic_or_axispts(self.session, r) for r in self.function.ref_characteristic.identifier]
-                if self.function.ref_characteristic
-                else []
-            )
-        return self._refCharacteristics
-
-    @property
-    def subFunctions(self):
-        if self._subFunctions is None:
-            self._subFunctions = (
-                [Function.get(self.session, g) for g in self.function.sub_function.identifier] if self.function.sub_function else []
-            )
-        return self._subFunctions
+    def _dissect_ar_component(self, component) -> Dict:
+        result: Dict = {"component_type": None, "ar_prototype_of": None}
+        if component is not None:
+            result["component_type"] = component.component_type
+            if component.ar_prototype_of is not None:
+                result["ar_prototype_of"] = component.ar_prototype_of.name
+        return result
 
     @classmethod
     def get_root_functions(klass, session, ordered=False):
@@ -3461,7 +3407,8 @@ class Function(CachedBase):
             names = s.name
             if names:
                 excluded_funcs.update(names)
-        func_names = [f[0] for f in session.query(model.Function.name).filter(not_(model.Function.name.in_(excluded_funcs))).all()]
+        func_names = [f[0] for f in
+                      session.query(model.Function.name).filter(not_(model.Function.name.in_(excluded_funcs))).all()]
         if ordered:
             func_names = sorted(func_names)
         result = []
@@ -3531,44 +3478,14 @@ class Group(CachedBase):
         self.annotations = _annotations(session, self.group.annotation)
         self.root = False if self.group.root is None else True
         self.if_data = session.parse_ifdata(self.group.if_data)
-        self._characteristics = None
-        self._measurements = None
-        self._functions = None
-        self._subgroups = None
-
-    @property
-    def characteristics(self):
-        if self._characteristics is None:
-            self._characteristics = (
-                [get_characteristic_or_axispts(self.session, r) for r in self.group.ref_characteristic.identifier]
-                if self.group.ref_characteristic
-                else []
-            )
-        return self._characteristics
-
-    @property
-    def measurements(self):
-        if self._measurements is None:
-            self._measurements = (
-                [Measurement.get(self.session, m) for m in self.group.ref_measurement.identifier]
-                if self.group.ref_measurement
-                else []
-            )
-        return self._measurements
-
-    @property
-    def functions(self):
-        if self._functions is None:
-            self._functions = (
-                [Function.get(self.session, f) for f in self.group.function_list.name] if self.group.function_list else []
-            )
-        return self._functions
-
-    @property
-    def subgroups(self):
-        if self._subgroups is None:
-            self._subgroups = [Group.get(self.session, g) for g in self.group.sub_group.identifier] if self.group.sub_group else []
-        return self._subgroups
+        self.characteristics = [get_characteristic_or_axispts(self.session, r) for r in
+                                self.group.ref_characteristic.identifier] if self.group.ref_characteristic else []
+        self.measurements = [Measurement.get(self.session, m) for m in
+                             self.group.ref_measurement.identifier] if self.group.ref_measurement else []
+        self.functions = [Function.get(self.session, f) for f in
+                          self.group.function_list.name] if self.group.function_list else []
+        self.subgroups = [Group.get(self.session, g) for g in
+                          self.group.sub_group.identifier] if self.group.sub_group else []
 
     @classmethod
     def get_root_groups(klass, session, ordered=False):
@@ -3615,8 +3532,12 @@ class StructureComponent(CachedBase):
     session: Any = field(repr=False)
     component: model.StructureComponent = field(repr=False)
     name: str
-    type_ref: Any
-    offset: int
+    typedefName: Any
+    addressOffset: int
+    addressType: Optional[str]
+    layout: Optional[str]
+    matrixDim: MatrixDim
+    symbolLink: Optional[SymbolLink]
 
     def __init__(self, session, name=None, module_name: str = None, parent=None, *args):
         self.session = session
@@ -3627,10 +3548,15 @@ class StructureComponent(CachedBase):
         if self.component is None:
             raise ValueError(f"STRUCTURE_COMPONENT {name!r} does not exist.")
         self.name = self.component.name
-        self.type_ref = self.component.type_ref
-        self.offset = self.component.offset
-        self.component.matrix_dim
-        # self.component.symbol_type_link
+        self.typedefName = self.component.typedefName
+        self.addressOffset = self.component.addressOffset
+        if self.component.address_type is not None:
+            self.addressType = self.component.address_type.addressType
+        else:
+            self.addressType = None
+            self.layout = self.component.layout.indexMode if self.component.layout else None
+        self.matrixDim = MatrixDim.from_model(self.component.matrix_dim)
+        self.symbolLink = _dissect_symbol_link(self.component.symbol_link)
 
 
 @dataclass
@@ -3660,6 +3586,9 @@ class TypedefStructure(CachedBase):
     name: str
     longIdentifier: Optional[str]
     size: int
+    addressType: Optional[str]
+    consistentExchange: bool
+    symbolLink: Optional[SymbolLink]
     components: List[StructureComponent]
 
     def __init__(self, session, name=None, module_name: str = None):
@@ -3670,13 +3599,15 @@ class TypedefStructure(CachedBase):
         self.typedef = typedef.first()
         if self.typedef is None:
             raise ValueError(f"TYPEDEF_STRUCTURE {name!r} does not exist.")
-        print("TS", self.typedef, self.typedef.symbol_type_link_id, dir(self.typedef))
         self.name = self.typedef.name
         self.longIdentifier = self.typedef.longIdentifier
         self.size = self.typedef.size
-        # symbol_type_link
-        instance_names = session.query(model.Instance.name).filter(model.Instance.typeName == self.name).all()
-        self._instances = [Instance.get(session, name[0]) for name in instance_names]
+        if self.typedef.address_type is not None:
+            self.addressType = self.typedef.address_type.addressType
+        else:
+            self.addressType = None
+        self.consistentExchange = self.typedef.consistent_exchange
+        self.symbolLink = _dissect_symbol_link(self.typedef.symbol_link)
         self._components = [
             StructureComponent.get(session, c.name, module_name, self.typedef) for c in self.typedef.structure_component
         ]
@@ -3688,6 +3619,49 @@ class TypedefStructure(CachedBase):
     @property
     def components(self):
         return self._components
+
+
+@dataclass
+class Overwrite:
+    name: str
+    axisNumber: int
+    conversion: str
+    extendedLimits: Optional[ExtendedLimits]
+    format: str
+    inputQuantity: str
+    limits: Optional[Limits]
+    monotony: str
+    physUnit: str
+
+
+def create_overwrite(overwrite) -> Optional[Overwrite]:
+    if overwrite is not None:
+        name = overwrite.name
+        axisNumber = overwrite.axisNumber
+        conversion = None
+        extended_limits = None
+        format = None
+        input_quantity = None
+        limits = None
+        monotony = None
+        phys_unit = None
+        if overwrite.conversion:
+            conversion = overwrite.conversion.conversionMethod
+        if overwrite.extended_limits:
+            extended_limits = _create_extended_limits(overwrite.extended_limits)
+        if overwrite.format:
+            format = overwrite.format.formatString
+        if overwrite.input_quantity:
+            input_quantity = overwrite.input_quantity.inputQuantity
+        if overwrite.limits:
+            limits = _create_limits(overwrite.limits)
+        if overwrite.monotony:
+            monotony = overwrite.monotony.monotony
+        if overwrite.phys_unit:
+            phys_unit = overwrite.phys_unit.unit
+        return Overwrite(name, axisNumber, conversion, extended_limits, format, input_quantity, limits, monotony,
+                         phys_unit)
+    return None
 
 
 @dataclass
@@ -3722,8 +3696,21 @@ class Instance(CachedBase):
     instance: model.Instance = field(repr=False)
     name: str
     longIdentifier: Optional[str]
-    typeName: str
+    typedefName: str
     address: int
+    addressType: Optional[str]
+    annotations = List[Annotation]
+    calibration_access: Optional[str]
+    displayIdentifier: Optional[str]
+    ecuAddressExtension: int
+    if_data: List[Dict[str, Any]]
+    layout: Optional[str]
+    matrixDim: MatrixDim
+    maxRefresh: Optional[MaxRefresh]
+    modelLink: Optional[str]
+    overwrite: Optional[Overwrite]
+    readWrite: bool
+    symbolLink: Optional[SymbolLink]
 
     def __init__(self, session, name=None, module_name: str = None):
         self.session = session
@@ -3735,15 +3722,27 @@ class Instance(CachedBase):
             raise ValueError(f"INSTANCE {name!r} does not exist.")
         self.name = self.instance.name
         self.longIdentifier = self.instance.longIdentifier
-        self.typeName = self.instance.typeName
+        self.typedefName = self.instance.typedefName
         self.address = self.instance.address
-        # self._defined_by = TypedefStructure.get(session, self.typeName, module_name)
-
-    """
-    @property
-    def defined_by(self):
-        return self._defined_by
-    """
+        if self.instance.address_type is not None:
+            self.addressType = self.instance.address_type.addressType
+        else:
+            self.addressType = None
+        self.annotations = _annotations(session, self.instance.annotation)
+        if self.instance.calibration_access is not None:
+            self.calibration_access = self.instance.calibration_access.type
+        else:
+            self.calibration_access = None
+        self.displayIdentifier = self.instance.display_identifier.display_name if self.instance.display_identifier else None
+        self.ecuAddressExtension = self.instance.ecu_address_extension.extension if self.instance.ecu_address_extension else 0
+        self.if_data = self.session.parse_ifdata(self.instance.if_data)
+        self.layout = self.instance.layout.indexMode if self.instance.layout else None
+        self.matrixDim = MatrixDim.from_model(self.instance.matrix_dim)
+        self.maxRefresh = _dissect_max_refresh(self.instance.max_refresh)
+        self.modelLink = self.instance.model_link.link if self.instance.model_link else None
+        self.overwrite = create_overwrite(self.instance.overwrite)
+        self.readWrite = False if self.instance.read_write is None else True
+        self.symbolLink = _dissect_symbol_link(self.instance.symbol_link)
 
 
 @dataclass
@@ -3794,6 +3793,16 @@ class TypedefMeasurement(CachedBase):
     upperLimit: Optional[float]
     lowerLimit: Optional[float]
     compuMethod: CompuMethod
+    addressType: Optional[str]
+    bitMask: Optional[int]
+    bitOperation: Dict
+    byteOrder: Optional[str]
+    discrete: bool
+    errorMask: Optional[int]
+    format: Optional[str]
+    layout: Optional[str]
+    matrixDim: MatrixDim
+    physUnit: Optional[str]
 
     def __init__(self, session, name: str, module_name: str = None):
         typedef = session.query(model.TypedefMeasurement).filter(model.TypedefMeasurement.name == name)
@@ -3811,8 +3820,94 @@ class TypedefMeasurement(CachedBase):
         self.lowerLimit = self.typedef.lowerLimit
         self.upperLimit = self.typedef.upperLimit
         self.compuMethod = (
-            CompuMethod.get(session, self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
+            CompuMethod.get(session,
+                            self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
         )
+        if self.typedef.address_type is not None:
+            self.addressType = self.typedef.address_type.addressType
+        else:
+            self.addressType = None
+        self.bitMask = self.typedef.bit_mask.mask if self.typedef.bit_mask else None
+        self.bitOperation = _dissect_bit_operation(self.typedef.bit_operation)
+        self.byteOrder = self.typedef.byte_order.byteOrder if self.typedef.byte_order else None
+        self.discrete = self.typedef.discrete
+        self.errorMask = self.typedef.error_mask.mask if self.typedef.error_mask else None
+        self.format = self.typedef.format.formatString if self.typedef.format else None
+        self.layout = self.typedef.layout.indexMode if self.typedef.layout else None
+        self.matrixDim = MatrixDim.from_model(self.typedef.matrix_dim)
+        self.physUnit = self.typedef.phys_unit.unit if self.typedef.phys_unit else None
+
+
+@dataclass
+class TypedefAxis(CachedBase):
+    typedef: model.TypedefAxis = field(repr=False)
+    name: str
+    longIdentifier: Optional[str]
+    inputQuantity: Optional[str]
+    _conversionRef: Optional[str] = field(repr=False)
+    lowerLimit: float
+    upperLimit: float
+    compuMethod: Union[CompuMethod, str]
+    maxAxisPoints: int
+    byteOrder: Optional[str]
+    deposit: Optional[Any]
+    extendedLimits: Optional[ExtendedLimits]
+    format: Optional[str]
+    monotony: Optional[str]
+    physUnit: Optional[str]
+    stepSize: Optional[float]
+
+    def __init__(self, session, name: str, module_name: str = None):
+        typedef = session.query(model.TypedefAxis).filter(model.TypedefAxis.name == name)
+        if module_name is not None:
+            typedef.join(model.Module).filter(model.Module.name == module_name)
+        self.typedef = typedef.first()
+        if self.typedef is None:
+            raise ValueError(f"TYPEDEF_AXIS {name!r} does not exist.")
+        self.name = name
+        self.longIdentifier = self.typedef.longIdentifier
+        #
+        self.inputQuantity = self.typedef.inputQuantity
+        self._conversionRef = self.typedef.conversion
+        self.maxAxisPoints = self.typedef.maxAxisPoints
+        self.lowerLimit = self.typedef.lowerLimit
+        self.upperLimit = self.typedef.upperLimit
+
+        self.compuMethod = (
+            CompuMethod.get(session,
+                            self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
+        )
+        self.byteOrder = self.typedef.byte_order.byteOrder if self.typedef.byte_order else None
+        self.deposit = self.typedef.deposit.mode if self.typedef.deposit else None
+        self.extendedLimits = _create_extended_limits(self.typedef.extended_limits)
+        self.format = self.typedef.format.formatString if self.typedef.format else None
+        self.monotony = self.typedef.monotony.monotony if self.typedef.monotony else None
+        self.physUnit = self.typedef.phys_unit.unit if self.typedef.phys_unit else None
+        self.stepSize = self.typedef.step_size.stepSize if self.typedef.step_size else None
+
+
+@dataclass
+class TypedefBlob(CachedBase):
+    typedef: model.TypedefBlob = field(repr=False)
+    name: str
+    longIdentifier: Optional[str]
+    size: int
+    addressType: Optional[str]
+
+    def __init__(self, session, name: str, module_name: str = None):
+        typedef = session.query(model.TypedefBlob).filter(model.TypedefBlob.name == name)
+        if module_name is not None:
+            typedef.join(model.Module).filter(model.Module.name == module_name)
+        self.typedef = typedef.first()
+        if self.typedef is None:
+            raise ValueError(f"TYPEDEF_AXIS {name!r} does not exist.")
+        self.name = name
+        self.longIdentifier = self.typedef.longIdentifier
+        self.size = self.typedef.size
+        if self.typedef.address_type is not None:
+            self.addressType = self.typedef.address_type.addressType
+        else:
+            self.addressType = None
 
 
 @dataclass
@@ -3862,6 +3957,17 @@ class TypedefCharacteristic(CachedBase):
     lowerLimit: Optional[float]
     upperLimit: Optional[float]
     compuMethod: CompuMethod
+    axisDescriptions: List[AxisDescr]
+    bitMask: Optional[int]
+    byteOrder: Optional[str]
+    discrete: bool
+    encoding: Optional[str]
+    extendedLimits: Optional[ExtendedLimits]
+    format: Optional[str]
+    matrixDim: MatrixDim
+    number: Optional[int]
+    physUnit: Optional[str]
+    stepSize: Optional[float]
 
     def __init__(self, session, name: str, module_name: str = None):
         typedef = session.query(model.TypedefCharacteristic).filter(model.TypedefCharacteristic.name == name)
@@ -3879,8 +3985,20 @@ class TypedefCharacteristic(CachedBase):
         self.lowerLimit = self.typedef.lowerLimit
         self.upperLimit = self.typedef.upperLimit
         self.compuMethod = (
-            CompuMethod.get(session, self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
+            CompuMethod.get(session,
+                            self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
         )
+        self.axisDescriptions = [AxisDescr.get(session, a) for a in self.typedef.axis_descr]
+        self.bitMask = self.typedef.bit_mask.mask if self.typedef.bit_mask else None
+        self.byteOrder = self.typedef.byte_order.byteOrder if self.typedef.byte_order else None
+        self.discrete = self.typedef.discrete
+        self.encoding = self.typedef.encoding.encoding if self.typedef.encoding else None
+        self.extendedLimits = _create_extended_limits(self.typedef.extended_limits)
+        self.format = self.typedef.format.formatString if self.typedef.format else None
+        self.matrixDim = MatrixDim.from_model(self.typedef.matrix_dim)
+        self.number = self.typedef.number.number if self.typedef.number else None
+        self.physUnit = self.typedef.phys_unit.unit if self.typedef.phys_unit else None
+        self.stepSize = self.typedef.step_size
 
 
 @dataclass
@@ -4124,8 +4242,16 @@ class Blob(CachedBase):
     name: str
     longIdentifier: str
     address: int
-    length: int
+    size: int
+    addressType: Optional[str]
+    annotations = List[Annotation]
     calibration_access: Optional[str]
+    displayIdentifier: Optional[str]
+    ecuAddressExtension: int
+    if_data: List[Dict[str, Any]]
+    maxRefresh: Optional[MaxRefresh]
+    modelLink: Optional[str]
+    symbolLink: Optional[SymbolLink]
 
     def __init__(self, session, name: str, module_name: Optional[str] = None):
         self.session = session
@@ -4138,11 +4264,22 @@ class Blob(CachedBase):
         self.name = self.blob.name
         self.longIdentifier = self.blob.longIdentifier
         self.address = self.blob.address
-        self.length = self.blob.length
+        self.size = self.blob.size
+        if self.blob.address_type is not None:
+            self.addressType = self.blob.address_type.addressType
+        else:
+            self.addressType = None
+        self.annotations = _annotations(session, self.blob.annotation)
         if self.blob.calibration_access is not None:
             self.calibration_access = self.blob.calibration_access.type
         else:
             self.calibration_access = None
+        self.displayIdentifier = self.blob.display_identifier.display_name if self.blob.display_identifier else None
+        self.ecuAddressExtension = self.blob.ecu_address_extension.extension if self.blob.ecu_address_extension else 0
+        self.if_data = self.session.parse_ifdata(self.blob.if_data)
+        self.maxRefresh = _dissect_max_refresh(self.blob.max_refresh)
+        self.modelLink = self.blob.model_link.link if self.blob.model_link else None
+        self.symbolLink = _dissect_symbol_link(self.blob.symbol_link)
 
 
 @dataclass
@@ -4151,11 +4288,11 @@ class Transformer(CachedBase):
     transformer: model.Transformer = field(repr=False)
     name: str
     version: str
-    dllname32: str
-    dllname64: str
+    executable32: str
+    executable64: str
     timeout: int
     trigger: str
-    reverse: str
+    inverseTransformer: str
     transformer_in_objects: List[str]
     transformer_out_objects: List[str]
 
@@ -4169,11 +4306,11 @@ class Transformer(CachedBase):
             raise ValueError(f"TRANSFORMER {name!r} does not exist.")
         self.name = self.transformer.name
         self.version = self.transformer.version
-        self.dllname32 = self.transformer.dllname32
-        self.dllname64 = self.transformer.dllname64
+        self.executable32 = self.transformer.executable32
+        self.executable64 = self.transformer.executable64
         self.timeout = self.transformer.timeout
         self.trigger = self.transformer.trigger
-        self.reverse = self.transformer.reverse
+        self.inverseTransformer = self.transformer.inverseTransformer
         self.transformer_in_objects = self.transformer.transformer_in_objects.identifier
         self.transformer_out_objects = self.transformer.transformer_out_objects.identifier
 

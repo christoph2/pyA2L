@@ -316,7 +316,7 @@ class ArComponent(Base):
     __tablename__ = "ar_component"
 
     component_type = StdString()
-    __required_parameters__ = (Parameter("label", component_type, False),)
+    __required_parameters__ = (Parameter("component_type", component_type, False),)
 
     __optional_elements__ = (Element("ArPrototypeOf", "AR_PROTOTYPE_OF", False),)
     ar_prototype_of = relationship("ArPrototypeOf", back_populates="ar_component", uselist=False)
@@ -1503,7 +1503,7 @@ class StaticAddressOffsets(Base):
 
 class HasStaticAddressOffsets:
     @declared_attr
-    def static_record_offsets(self):
+    def static_address_offsets(self):
         return Column(types.Boolean, default=False)
 
 
@@ -4957,7 +4957,7 @@ class TypedefMeasurement(
     module = relationship("Module", back_populates="typedef_measurement", uselist=False)
 
 
-class TypedefStructure(Base, HasAddressTypes, HasSymbolTypeLink):
+class TypedefStructure(Base, HasAddressTypes, HasConsistentExchanges, HasSymbolTypeLink):
     """"""
 
     __tablename__ = "typedef_structure"
@@ -4977,6 +4977,7 @@ class TypedefStructure(Base, HasAddressTypes, HasSymbolTypeLink):
     __optional_elements__ = (
         Element("AddressType", "ADDRESS_TYPE", False),
         Element("StructureComponent", "STRUCTURE_COMPONENT", True),
+        Element("ConsistentExchange", "CONSISTENT_EXCHANGE", False),
         Element("SymbolTypeLink", "SYMBOL_TYPE_LINK", False),
     )
     structure_component = relationship("StructureComponent", back_populates="typedef_structure", uselist=True)

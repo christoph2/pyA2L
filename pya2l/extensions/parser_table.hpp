@@ -902,7 +902,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                     }
                                 ),
                                 Keyword(
-                                    A2LTokenType::AR_COMPONENT, "AR_COMPONENT", "ArComponent", false, false,
+                                    A2LTokenType::AR_COMPONENT, "AR_COMPONENT", "ArComponent", true, false,
                                     {
                                         Parameter(PredefinedType::String, "ComponentType"),
                                     },
@@ -1159,7 +1159,7 @@ inline Keyword PARSER_TABLE = Keyword(
                                     {}
                                 ),
                                 Keyword(
-                                    A2LTokenType::OVERWRITE, "OVERWRITE", "Overwrite", false, true,
+                                    A2LTokenType::OVERWRITE, "OVERWRITE", "Overwrite", true, false,
                                     {
                                         Parameter(PredefinedType::Ident, "Name"),
                                         Parameter(PredefinedType::Uint, "AxisNumber"),

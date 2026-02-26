@@ -315,8 +315,6 @@ const std::map<std::string, int, std::less<>> A2L_KEYWORDS{
 	{ "MSB_FIRST_MSW_LAST",           313 },
 	{ "MSB_LAST_MSW_FIRST",           314 },
 	{ "CONSISTENT_EXCHANGE",          315 },
-	{ "THIS",                         316 },
-
 };
 
 enum class TokenType : uint16_t {
@@ -632,7 +630,6 @@ enum class TokenType : uint16_t {
     T_313   = 313,
     T_314   = 314,
     T_315   = 315,
-    T_316   = 316,
 };
 
 constexpr uint16_t DATA_TYPE_MIN = static_cast<uint16_t>(TokenType::IDENT);
