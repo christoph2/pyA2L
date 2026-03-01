@@ -211,13 +211,14 @@ def regexer(value: str, expr: str) -> bool:
 def set_sqlite3_pragmas(dbapi_connection: Any, connection_record: Any) -> None:
     dbapi_connection.create_function("REGEXP", 2, regexer)
     cursor = dbapi_connection.cursor()
-    # cursor.execute("PRAGMA jornal_mode=WAL")
+    cursor.execute("PRAGMA journal_mode=WAL")
     cursor.execute("PRAGMA FOREIGN_KEYS=ON")
     cursor.execute(f"PRAGMA PAGE_SIZE={PAGE_SIZE}")
     cursor.execute(f"PRAGMA CACHE_SIZE={calculateCacheSize(CACHE_SIZE * 1024 * 1024)}")
     cursor.execute("PRAGMA SYNCHRONOUS=OFF")  # FULL
-    cursor.execute("PRAGMA LOCKING_MODE=EXCLUSIVE")  # NORMAL
+    cursor.execute("PRAGMA LOCKING_MODE=NORMAL")  # EXCLUSIVE
     cursor.execute("PRAGMA TEMP_STORE=MEMORY")  # FILE
+    cursor.execute("PRAGMA busy_timeout=5000")
     cursor.close()
 
 
@@ -5548,7 +5549,10 @@ class A2LDatabase:
         self._engine = create_engine(
             f"sqlite:///{self.dbname}",
             echo=debug,
-            connect_args={"detect_types": sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES},
+            connect_args={
+                "detect_types": sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
+                "timeout": 30,
+            },
             native_datetime=True,
             pool_pre_ping=True,
         )

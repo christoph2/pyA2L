@@ -880,6 +880,10 @@ def _prepare_output(out_target: Path | TextIO) -> tuple[TextIO, bool]:
 def export_db(db: A2LDatabase, out_path: Path | TextIO, module_name: str | None = None) -> None:
     session = db.session
     logger = logging.getLogger(__name__)
+    try:
+        session.execute("PRAGMA query_only=ON")
+    except Exception:
+        logger.debug("Unable to switch SQLite connection to query_only mode.", exc_info=True)
     project = session.query(model.Project).first()
     if project is None:
         logger.error("No Project row found in the database.")
