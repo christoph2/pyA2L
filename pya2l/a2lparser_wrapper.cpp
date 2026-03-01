@@ -137,22 +137,12 @@ PYBIND11_MODULE(a2lparser_ext, m) {
         .def_property_readonly(
             "if_data",
             [](const ValueContainer& self) {
-                auto        encoding = ValueContainer::get_encoding().c_str();
-				py::handle py_s;
-                std::string value;
-				std::vector<std::string> result;
-
-                auto& if_data = self.get_if_data();
-				for (auto& section: if_data) {
-					py_s = PyUnicode_Decode(section.data(), std::size(section), encoding, "strict");
-
-					if (!py_s) {
-						throw py::error_already_set();
-					}
-
-					result.emplace_back(py::reinterpret_steal<py::str>(py_s));
-				}
-				return result;
+                py::list result;
+                const auto& if_data = self.get_if_data();
+                for (const auto& section : if_data) {
+                    result.append(py::bytes(section));
+                }
+                return result;
             }
         )
         .def_property_readonly("parameters", [](const ValueContainer& self) {

@@ -181,6 +181,24 @@ ASAP2_VERSION 1 71
 /end PROJECT
 """
 
+NON_UTF8_IFDATA_A2L = """
+ASAP2_VERSION 1 71
+/begin PROJECT IfDataNonUtfProject "IfData Non UTF"
+  /begin MODULE IfDataNonUtfModule "Module with Non-UTF IF_DATA"
+    /begin CHARACTERISTIC
+      CharNonUtfIfData
+      "Char with Non-UTF IF_DATA"
+      VALUE 0x1000 RL 0 CM 0 100
+      /begin IF_DATA XCP
+        RAW ª
+      /end IF_DATA
+    /end CHARACTERISTIC
+    /begin RECORD_LAYOUT RL FNC_VALUES 1 Int16_Intel COLUMN_DIR DIRECT /end RECORD_LAYOUT
+    /begin COMPU_METHOD CM "desc" IDENTICAL "%6.3" "unit" /end COMPU_METHOD
+  /end MODULE
+/end PROJECT
+"""
+
 COMPU_METHOD_COMMENT_A2L = """
 ASAP2_VERSION 1 71
 /begin PROJECT CommentProject "CompuMethod comment Test"
@@ -424,6 +442,20 @@ def test_parse_nested_if_data(parser, tmp_path):
     assert "0x100" in raw
     assert "IF_DATA CAN" in raw
     assert "0x200" in raw
+
+
+def test_parse_if_data_with_non_utf_bytes(parser, tmp_path):
+    a2l_file = tmp_path / "ifdata_non_utf8.a2l"
+    a2l_file.write_bytes(NON_UTF8_IFDATA_A2L.encode("latin-1"))
+
+    db = parser.parse(str(a2l_file), in_memory=True, encoding="utf-8", progress_bar=False, loglevel="ERROR")
+
+    char = db.session.query(model.Characteristic).filter_by(name="CharNonUtfIfData").first()
+    assert char is not None
+    assert len(char.if_data) == 1
+    raw = char.if_data[0].raw
+    assert "RAW" in raw
+    assert "�" in raw
 
 
 def test_parse_and_export_xcp_on_can(parser, tmp_path):

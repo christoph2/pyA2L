@@ -387,6 +387,7 @@ class A2LParser:
         if not encoding:
             self.logger.info("Detecting encoding...")
             encoding = detect_encoding(file_name=a2l_fn)
+        self.encoding = encoding
         start_time = perf_counter()
         self.db: model.A2LDatabase = model.A2LDatabase(str(db_fn), debug=self.debug)
         # self.db.session.commit()
@@ -444,13 +445,16 @@ class A2LParser:
             zipper = ZIPPER_MAP[name]
             try:
                 params = tree.parameters
-
             except UnicodeDecodeError as e:
                 print(e, "***", tree, name, table, file=sys.stderr)
                 params = {}
-                # if_data = []
             mult = tree.multiple_values
-            if_data = tree.if_data
+            try:
+                raw_if_data = tree.if_data
+            except UnicodeDecodeError as exc:
+                self.logger.warn(f"Failed to decode IF_DATA using UTF-8: {exc}")
+                raw_if_data = []
+            if_data = self._decode_if_data_sections(raw_if_data)
 
             values = zipper(params, mult)
             if name not in {
@@ -491,6 +495,23 @@ class A2LParser:
             self.traverse(kw, inst, attr, mult, level + 1)
         if name not in ("root", "IfData") and not isinstance(inst, bool):
             self.db.session.add(inst)
+
+    def _decode_if_data_sections(self, sections: typing.Any) -> list[str]:
+        if not sections:
+            return []
+        encoding = getattr(self, "encoding", "latin-1")
+        decoded = []
+        for section in sections:
+            if section is None:
+                continue
+            if isinstance(section, bytes):
+                try:
+                    decoded.append(section.decode(encoding))
+                except UnicodeDecodeError:
+                    decoded.append(section.decode(encoding, errors="replace"))
+            else:
+                decoded.append(section)
+        return decoded
 
 
 def enforce_suffix(pth: Path, suffix: str):
