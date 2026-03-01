@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, List, Optional, TextIO, Tuple, Union
 
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import selectinload
 
 import pya2l.model as model
@@ -425,9 +426,47 @@ def write_instances(out, instance_list: list[Any] | None) -> None:
         out.write("    /end INSTANCE\n\n")
 
 
-def write_measurements(out, measurement_list: list[Any] | None) -> None:
+def _min_passthrough_lookup(module: Any) -> dict[str, float]:
+    """Build lookup of conversion name -> min passthrough (from table inVals)."""
+    tables: dict[str, Any] = {}
+    for collection_name in ("compu_tab", "compu_vtab", "compu_vtab_range"):
+        for tbl in safe_get(module, collection_name) or []:
+            name = safe_get(tbl, "name")
+            if name:
+                tables[name] = tbl
+
+    def _min_from_table(tbl: Any | None) -> float | None:
+        if tbl is None:
+            return None
+        values: list[float] = []
+        entries = safe_get(tbl, "pairs") or safe_get(tbl, "triples") or []
+        for entry in entries:
+            candidate = safe_get(entry, "inValMin")
+            if candidate is None:
+                candidate = safe_get(entry, "inVal")
+            if candidate is not None:
+                try:
+                    values.append(float(candidate))
+                except Exception:
+                    continue
+        return min(values) if values else None
+
+    lookup: dict[str, float] = {}
+    for cm in safe_get(module, "compu_method") or []:
+        ref = safe_get(cm, "compu_tab_ref")
+        tab_name = safe_get(ref, "conversionTable") if ref else None
+        if not tab_name:
+            continue
+        min_val = _min_from_table(tables.get(tab_name))
+        if min_val is not None and safe_get(cm, "name"):
+            lookup[cm.name] = min_val
+    return lookup
+
+
+def write_measurements(out, measurement_list: list[Any] | None, min_passthrough: dict[str, float] | None = None) -> None:
     if not measurement_list:
         return
+    min_passthrough = min_passthrough or {}
     for m in measurement_list:
         out.write("    /begin MEASUREMENT\n")
         out.write(f"      {m.name}  /* name */\n")
@@ -447,6 +486,10 @@ def write_measurements(out, measurement_list: list[Any] | None) -> None:
         if bm:
             out.write("      BIT_MASK\n")
             out.write(f"        {bm.mask}  /* mask */\n")
+        min_pass = min_passthrough.get(safe_get(m, "conversion"))
+        if min_pass is not None:
+            out.write("      MIN_PASSTHROUGH\n")
+            out.write(f"        {min_pass}  /* minPassThrough */\n")
         write_raw_ifdata(out, safe_get(m, "if_data"))
         layout = safe_get(m, "layout")
         if layout and safe_get(layout, "indexMode"):
@@ -862,19 +905,36 @@ def export_db(db: A2LDatabase, out_path: Path | TextIO, module_name: str | None 
                 out.write("    VERSION\n")
                 out.write(f'      "{version.versionIdentifier}"  /* versionIdentifier */\n')
             out.write("  /end HEADER\n")
-        modules_query = session.query(model.Module).options(
+        record_layout_opt = selectinload(model.Module.record_layout)
+        transformer_opt = selectinload(model.Module.transformer)
+        base_options = [
             selectinload(model.Module.mod_par).selectinload(model.ModPar.addr_epk),
             selectinload(model.Module.mod_par)
             .selectinload(model.ModPar.calibration_method)
             .selectinload(model.CalibrationMethod.calibration_handle),
             selectinload(model.Module.mod_par).selectinload(model.ModPar.memory_segment),
+            selectinload(model.Module.compu_method).selectinload(model.CompuMethod.compu_tab_ref),
+            selectinload(model.Module.compu_tab).selectinload(model.CompuTab.pairs),
+            selectinload(model.Module.compu_vtab).selectinload(model.CompuVtab.pairs),
+            selectinload(model.Module.compu_vtab_range).selectinload(model.CompuVtabRange.triples),
             selectinload(model.Module.mod_common),
-            selectinload(model.Module.record_layout),
-            selectinload(model.Module.transformer),
-        )
+            record_layout_opt,
+            transformer_opt,
+        ]
+        modules_query = session.query(model.Module).options(*base_options)
         if module_name:
             modules_query = modules_query.filter(model.Module.name == module_name)
-        modules = modules_query.all()
+        try:
+            modules = modules_query.all()
+        except OperationalError as exc:
+            logger.warning(
+                "Module preload failed (schema mismatch?). Retrying without RECORD_LAYOUT/TRANSFORMER: %s", exc
+            )
+            fallback_opts = [opt for opt in base_options if opt not in (record_layout_opt, transformer_opt)]
+            modules_query = session.query(model.Module).options(*fallback_opts)
+            if module_name:
+                modules_query = modules_query.filter(model.Module.name == module_name)
+            modules = modules_query.all()
         if not modules:
             logger.warning("No modules found (or incorrect module name).")
         for mod in modules:
@@ -899,7 +959,7 @@ def export_db(db: A2LDatabase, out_path: Path | TextIO, module_name: str | None 
             write_groups(out, safe_get(mod, "group"))
             write_raw_ifdata(out, safe_get(mod, "if_data"))
             write_instances(out, safe_get(mod, "instance"))
-            write_measurements(out, safe_get(mod, "measurement"))
+            write_measurements(out, safe_get(mod, "measurement"), _min_passthrough_lookup(mod))
             write_mod_common(out, safe_get(mod, "mod_common"))
             mp = safe_get(mod, "mod_par")
             if mp:
@@ -974,8 +1034,14 @@ def export_db(db: A2LDatabase, out_path: Path | TextIO, module_name: str | None 
             write_units(out, safe_get(mod, "unit"))
             write_user_rights(out, safe_get(mod, "user_rights"))
             write_variant_coding(out, safe_get(mod, "variant_coding"))
-            write_record_layouts(out, safe_get(mod, "record_layout"))
-            write_transformers(out, safe_get(mod, "transformer"))
+            try:
+                write_record_layouts(out, safe_get(mod, "record_layout"))
+            except OperationalError as exc:
+                logger.warning("Skipping RECORD_LAYOUT export due to schema mismatch: %s", exc)
+            try:
+                write_transformers(out, safe_get(mod, "transformer"))
+            except OperationalError as exc:
+                logger.warning("Skipping TRANSFORMER export due to schema mismatch: %s", exc)
             out.write("  /end MODULE\n\n")
         write_raw_ifdata(out, safe_get(project, "if_data"))
         out.write("/end PROJECT\n")

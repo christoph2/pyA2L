@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import selectinload
 
 import pya2l.model as model
@@ -320,6 +321,10 @@ def compu_tab_to_dict(t: Any) -> dict[str, Any]:
             "kind": "COMPU_TAB",
             "conversionType": safe_get(t, "conversionType"),
             "numberValuePairs": safe_get(t, "numberValuePairs"),
+            "pairs": [
+                {"inVal": safe_get(p, "inVal"), "outVal": safe_get(p, "outVal")}
+                for p in as_list(safe_get(t, "pairs"))
+            ],
         }
     )
     return out
@@ -332,6 +337,10 @@ def compu_vtab_to_dict(t: Any) -> dict[str, Any]:
             "kind": "COMPU_VTAB",
             "conversionType": safe_get(t, "conversionType"),
             "numberValuePairs": safe_get(t, "numberValuePairs"),
+            "pairs": [
+                {"inVal": safe_get(p, "inVal"), "outVal": safe_get(p, "outVal")}
+                for p in as_list(safe_get(t, "pairs"))
+            ],
         }
     )
     return out
@@ -343,6 +352,14 @@ def compu_vtab_range_to_dict(t: Any) -> dict[str, Any]:
         {
             "kind": "COMPU_VTAB_RANGE",
             "numberValueTriples": safe_get(t, "numberValueTriples"),
+            "triples": [
+                {
+                    "inValMin": safe_get(p, "inValMin"),
+                    "inValMax": safe_get(p, "inValMax"),
+                    "outVal": safe_get(p, "outVal"),
+                }
+                for p in as_list(safe_get(t, "triples"))
+            ],
         }
     )
     return out
@@ -450,7 +467,7 @@ def instance_to_dict(session: Any, inst: Any) -> dict[str, Any]:
     return out
 
 
-def measurement_to_dict(session: Any, m: Any) -> dict[str, Any]:
+def measurement_to_dict(session: Any, m: Any, min_passthrough: dict[str, float] | None = None) -> dict[str, Any]:
     arr = safe_get(m, "array_size")
     bm = safe_get(m, "bit_mask")
     layout = safe_get(m, "layout")
@@ -482,8 +499,52 @@ def measurement_to_dict(session: Any, m: Any) -> dict[str, Any]:
         "virtual": virtual_list,
         "if_data_raw": ifdata_raw_list(safe_get(m, "if_data")),
         "if_data_parsed": ifdata_parsed_list(session, safe_get(m, "if_data")),
+        "byte_order": safe_get(safe_get(m, "byte_order"), "byteOrder"),
+        "display_identifier": safe_get(safe_get(m, "display_identifier"), "display_name"),
+        "function_list": function_list_to_list(safe_get(m, "function_list")),
+        "min_passthrough": None,
     }
+    if min_passthrough:
+        out["min_passthrough"] = min_passthrough.get(safe_get(m, "conversion"))
     return out
+
+
+def _min_passthrough_lookup(module: Any) -> dict[str, float]:
+    tables: dict[str, Any] = {}
+    for collection_name in ("compu_tab", "compu_vtab", "compu_vtab_range"):
+        for tbl in as_list(safe_get(module, collection_name)):
+            name = safe_get(tbl, "name")
+            if name:
+                tables[name] = tbl
+
+    def _min_from_table(tbl: Any | None) -> float | None:
+        if tbl is None:
+            return None
+        values: list[float] = []
+        entries = as_list(safe_get(tbl, "pairs")) + as_list(safe_get(tbl, "triples"))
+        for entry in entries:
+            candidate = safe_get(entry, "inValMin")
+            if candidate is None:
+                candidate = safe_get(entry, "inVal")
+            if candidate is None:
+                continue
+            try:
+                values.append(float(candidate))
+            except Exception:
+                continue
+        return min(values) if values else None
+
+    lookup: dict[str, float] = {}
+    for cm in as_list(safe_get(module, "compu_method")):
+        ref = safe_get(cm, "compu_tab_ref")
+        tab_name = safe_get(ref, "conversionTable") if ref else None
+        if not tab_name:
+            continue
+        min_val = _min_from_table(tables.get(tab_name))
+        name = safe_get(cm, "name")
+        if min_val is not None and name:
+            lookup[name] = min_val
+    return lookup
 
 
 def mod_common_to_dict(mc: Any) -> dict[str, Any] | None:
@@ -802,6 +863,19 @@ def variant_coding_to_dict(vc: Any) -> dict[str, Any] | None:
 def module_to_dict(session: Any, mod: Any) -> dict[str, Any]:
     """MODULE to dict (matching exporter_new.py coverage)."""
     aml_section = session.query(model.AMLSection).first()
+    min_passthrough = _min_passthrough_lookup(mod)
+
+    try:
+        transformers = [transformer_to_dict(tr) for tr in as_list(safe_get(mod, "transformer"))]
+    except OperationalError as exc:
+        logging.getLogger(__name__).warning("Skipping TRANSFORMER export due to schema mismatch: %s", exc)
+        transformers = []
+
+    try:
+        record_layouts = [record_layout_to_dict(rl) for rl in as_list(safe_get(mod, "record_layout"))]
+    except OperationalError as exc:
+        logging.getLogger(__name__).warning("Skipping RECORD_LAYOUT export due to schema mismatch: %s", exc)
+        record_layouts = []
 
     out: dict[str, Any] = {
         "name": safe_get(mod, "name"),
@@ -817,7 +891,7 @@ def module_to_dict(session: Any, mod: Any) -> dict[str, Any]:
         "function": [function_to_dict(session, fn) for fn in as_list(safe_get(mod, "function"))],
         "group": [group_to_dict(session, g) for g in as_list(safe_get(mod, "group"))],
         "instance": [instance_to_dict(session, i) for i in as_list(safe_get(mod, "instance"))],
-        "measurement": [measurement_to_dict(session, m) for m in as_list(safe_get(mod, "measurement"))],
+        "measurement": [measurement_to_dict(session, m, min_passthrough) for m in as_list(safe_get(mod, "measurement"))],
         "mod_common": mod_common_to_dict(safe_get(mod, "mod_common")),
         "mod_par": mod_par_to_dict(session, safe_get(mod, "mod_par")),
         "typedef_characteristic": [typedef_characteristic_to_dict(tc) for tc in as_list(safe_get(mod, "typedef_characteristic"))],
@@ -830,8 +904,8 @@ def module_to_dict(session: Any, mod: Any) -> dict[str, Any]:
         "if_data_raw": ifdata_raw_list(safe_get(mod, "if_data")),
         "if_data_parsed": ifdata_parsed_list(session, safe_get(mod, "if_data")),
         "blob": [blob_to_dict(b) for b in as_list(safe_get(mod, "blob"))],
-        "record_layout": [record_layout_to_dict(rl) for rl in as_list(safe_get(mod, "record_layout"))],
-        "transformer": [transformer_to_dict(tr) for tr in as_list(safe_get(mod, "transformer"))],
+        "record_layout": record_layouts,
+        "transformer": transformers,
     }
     return out
 
@@ -852,19 +926,36 @@ def project_to_dict(db: A2LDatabase, module_name: str | None = None) -> dict[str
             "version": safe_get(safe_get(header_obj, "version"), "versionIdentifier"),
         }
 
-    modules_query = session.query(model.Module).options(
+    record_layout_opt = selectinload(model.Module.record_layout)
+    transformer_opt = selectinload(model.Module.transformer)
+    module_opts = [
         selectinload(model.Module.mod_par).selectinload(model.ModPar.addr_epk),
         selectinload(model.Module.mod_par)
         .selectinload(model.ModPar.calibration_method)
         .selectinload(model.CalibrationMethod.calibration_handle),
         selectinload(model.Module.mod_par).selectinload(model.ModPar.memory_segment),
+        selectinload(model.Module.compu_method).selectinload(model.CompuMethod.compu_tab_ref),
+        selectinload(model.Module.compu_tab).selectinload(model.CompuTab.pairs),
+        selectinload(model.Module.compu_vtab).selectinload(model.CompuVtab.pairs),
+        selectinload(model.Module.compu_vtab_range).selectinload(model.CompuVtabRange.triples),
         selectinload(model.Module.mod_common),
-        selectinload(model.Module.record_layout),
-        selectinload(model.Module.transformer),
-    )
+        record_layout_opt,
+        transformer_opt,
+    ]
+    modules_query = session.query(model.Module).options(*module_opts)
     if module_name:
         modules_query = modules_query.filter(model.Module.name == module_name)
-    modules = modules_query.all()
+    try:
+        modules = modules_query.all()
+    except OperationalError as exc:
+        logging.getLogger(__name__).warning(
+            "Module preload failed (schema mismatch?). Retrying without RECORD_LAYOUT/TRANSFORMER: %s", exc
+        )
+        fallback_opts = [opt for opt in module_opts if opt not in (record_layout_opt, transformer_opt)]
+        modules_query = session.query(model.Module).options(*fallback_opts)
+        if module_name:
+            modules_query = modules_query.filter(model.Module.name == module_name)
+        modules = modules_query.all()
 
     out: dict[str, Any] = {
         "name": safe_get(proj, "name"),
