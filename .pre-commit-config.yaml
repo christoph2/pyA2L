@@ -20,11 +20,11 @@ repos:
       - id: black
         language_version: python3
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.1
+    rev: v0.15.4
     hooks:
       - id: ruff
   - repo: https://github.com/PyCQA/isort
-    rev: 7.0.0
+    rev: 8.0.1
     hooks:
       - id: isort
         args: ["--filter-files"]
@@ -34,7 +34,7 @@ repos:
       - id: pyupgrade
         args: ["--py38-plus"]
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.9.3
+    rev: 1.9.4
     hooks:
       - id: bandit
         args: ["-c", "bandit.yml"]
