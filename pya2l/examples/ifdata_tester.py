@@ -9,7 +9,7 @@ from pya2l import DB
 from pya2l.aml.ifdata_parser import IfDataParser
 
 
-os.chdir(r"C:\csprojects\pyA2L\pya2l\examples")
+# os.chdir(r"C:\csprojects\pyA2L\pya2l\examples")
 
 db = DB()
 # session = db.open_create("XCPsim2")

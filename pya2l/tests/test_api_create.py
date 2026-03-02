@@ -324,6 +324,18 @@ class TestMeasurementCreator:
         assert sl.symbolName == "SYM"
         assert sl.measurement == meas
 
+    def test_add_symbol_link_allows_none_offset(self, session):
+        creator = MeasurementCreator(session)
+        meas = model.Measurement(
+            name="M", longIdentifier="L", datatype="UBYTE", conversion="CM", resolution=1, accuracy=0, lowerLimit=0, upperLimit=100
+        )
+        session.add(meas)
+        sl = creator.add_symbol_link(meas, "SYM", None)
+        creator.commit()
+        assert sl.symbolName == "SYM"
+        assert sl.offset is None
+        assert sl.measurement == meas
+
     def test_add_virtual(self, session):
         creator = MeasurementCreator(session)
         meas = model.Measurement(

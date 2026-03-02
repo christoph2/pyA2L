@@ -1637,11 +1637,10 @@ class SymbolLink(Base):
     __tablename__ = "symbol_link"
 
     symbolName = StdString()
-    offset = StdLong()
+    offset = Column(types.Integer, default=None, nullable=True)
 
     __required_parameters__ = (
         Parameter("symbolName", String, False),
-        Parameter("offset", Long, False),
     )
 
 

@@ -23,6 +23,9 @@ import pya2l.model as model
 from pya2l.model import A2LDatabase
 
 
+logger = logging.getLogger(__name__)
+
+
 @dataclass
 class ExporterConfig:
     db_path: Path
@@ -68,6 +71,21 @@ def write_raw_ifdata(out, ifdata_list: list[Any] | None) -> None:
             out.write("\n")
             out.write(raw.strip())
             out.write("\n")
+
+
+def write_symbol_link(out, symbol_link_obj: Any | None, logger: logging.Logger) -> None:
+    if not symbol_link_obj:
+        return
+    name = safe_get(symbol_link_obj, "symbolName")
+    offset = safe_get(symbol_link_obj, "offset")
+    if name is None and offset is None:
+        return
+    if offset is None:
+        logger.warning("SymbolLink %r missing offset; using 0 as fallback.", name)
+        offset = 0
+    out.write("      SYMBOL_LINK\n")
+    out.write(f'        "{name or ""}"  /* symbolName */\n')
+    out.write(f"        {offset}  /* offset */\n")
 
 
 def write_annotation(out, annotation_assoc: list[Any] | None) -> None:
@@ -161,11 +179,7 @@ def write_axis_pts(out, axis_pts_list: list[Any] | None) -> None:
         if safe_get(ap, "step_size"):
             out.write("      STEP_SIZE\n")
             out.write(f"        {ap.step_size.stepSize}  /* stepSize */\n")
-        sl = safe_get(ap, "symbol_link")
-        if sl and (safe_get(sl, "symbolName") or safe_get(sl, "offset") is not None):
-            out.write("      SYMBOL_LINK\n")
-            out.write(f'        "{sl.symbolName}"  /* symbolName */\n')
-            out.write(f"        {sl.offset}  /* offset */\n")
+        write_symbol_link(out, safe_get(ap, "symbol_link"), logger)
         out.write("    /end AXIS_PTS\n\n")
 
 
@@ -418,11 +432,7 @@ def write_instances(out, instance_list: list[Any] | None) -> None:
             out.write("      NUMBER\n")
             out.write(f"        {num.number}  /* number */\n")
         write_matrix_dim(out, safe_get(inst, "matrix_dim"))
-        sl = safe_get(inst, "symbol_link")
-        if sl and (safe_get(sl, "symbolName") or safe_get(sl, "offset") is not None):
-            out.write("      SYMBOL_LINK\n")
-            out.write(f'        "{sl.symbolName}"  /* symbolName */\n')
-            out.write(f"        {sl.offset}  /* offset */\n")
+        write_symbol_link(out, safe_get(inst, "symbol_link"), logger)
         out.write("    /end INSTANCE\n\n")
 
 
@@ -509,11 +519,7 @@ def write_measurements(out, measurement_list: list[Any] | None, min_passthrough:
         if safe_get(m, "ref_memory_segment") and safe_get(m.ref_memory_segment, "name"):
             out.write("      REF_MEMORY_SEGMENT\n")
             out.write(f"        {m.ref_memory_segment.name}  /* name */\n")
-        sl = safe_get(m, "symbol_link")
-        if sl and (safe_get(sl, "symbolName") or safe_get(sl, "offset") is not None):
-            out.write("      SYMBOL_LINK\n")
-            out.write(f'        "{sl.symbolName}"  /* symbolName */\n')
-            out.write(f"        {sl.offset}  /* offset */\n")
+        write_symbol_link(out, safe_get(m, "symbol_link"), logger)
         if safe_get(m, "virtual") and safe_get(m.virtual, "measuringChannel"):
             out.write("      /begin VIRTUAL\n")
             out.write("        " + " ".join(str(x) for x in m.virtual.measuringChannel) + "\n")
