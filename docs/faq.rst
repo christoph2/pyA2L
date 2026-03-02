@@ -183,6 +183,96 @@ results:
        lambda x: x.name.startswith("ENGINE_")
    ))
 
+Can SYMBOL_LINK have a missing offset?
+--------------------------------------
+
+**Yes**, as of v0.10.2+. The ``SymbolLink.offset`` attribute is **optional**
+and can be ``None``.
+
+**Why optional?** Some A2L files reference symbols without explicit offsets,
+relying on the symbol table alone. pyA2L now tolerates this pattern.
+
+**Behavior**:
+
+- **Creator API**: ``add_symbol_link()`` accepts ``offset=None``
+- **Exporter**: Issues a warning if offset is ``None`` and uses ``0`` as
+  fallback to ensure valid A2L syntax
+- **Inspector API**: ``SymbolLink.offset`` may return ``None``
+
+**Example** (creating a measurement with symbol link but no offset):
+
+.. code:: python
+
+   from pya2l import DB
+   from pya2l.api.create import MeasurementCreator
+
+   db = DB()
+   session = db.open_create("MyProject.a2ldb")
+
+   mc = MeasurementCreator(session)
+   meas = mc.create_measurement(
+       "SignalName", "Signal via symbol only",
+       "FLOAT32_IEEE", "NO_COMPU_METHOD", 1, 0.01,
+       0.0, 100.0, module_name="MyModule"
+   )
+   # Add symbol link WITHOUT offset
+   mc.add_symbol_link(meas, symbol_name="g_my_signal", offset=None)
+   mc.commit()
+   db.close()
+
+**Export behavior**: When exporting, pyA2L logs a warning and uses ``0`` as
+the offset value to produce syntactically valid A2L:
+
+.. code:: text
+
+   WARNING: SymbolLink 'g_my_signal' missing offset; using 0 as fallback.
+
+**Recommendation**: Provide explicit offsets when known; use ``None`` only
+when the symbol table alone is sufficient for your toolchain.
+
+Does the exporter preserve all A2L attributes during roundtrip?
+---------------------------------------------------------------
+
+**Yes**, as of v0.10.2+. The A2L and JSON exporters have been systematically
+audited to export **all** model attributes with no data loss.
+
+**Comprehensive coverage includes**:
+
+- All optional keywords (ECU_ADDRESS_EXTENSION, EXTENDED_LIMITS, FORMAT,
+  GUARD_RAILS, MAX_REFRESH, MODEL_LINK, SYMBOL_LINK, etc.)
+- Boolean flags (DISCRETE, GUARD_RAILS, READ_ONLY, etc.)
+- Complex relationships (DEPENDENT_CHARACTERISTIC, VIRTUAL_CHARACTERISTIC,
+  COMPARISON_QUANTITY)
+- Nested structures (BIT_OPERATION with left/right shifts, AXIS_DESCR,
+  structure components)
+- Annotations, IF_DATA sections, and comments
+
+**Roundtrip guarantee**: ``original.a2l`` → import → export → ``output.a2l``
+preserves all semantic content (whitespace and comment formatting may differ).
+
+**Testing**: Use the validator to compare before/after:
+
+.. code:: python
+
+   from pya2l import DB
+   from pya2l.api.validate import Validator
+
+   # Import and export
+   db = DB()
+   session = db.import_a2l("original.a2l")
+   db.close()
+   from pya2l import export_a2l
+   export_a2l("original", "roundtrip.a2l")
+
+   # Validate both
+   session1 = DB().open_existing("original")
+   session2 = DB().import_a2l("roundtrip.a2l")
+
+   for sess in [session1, session2]:
+       vd = Validator(sess)
+       issues = list(vd())
+       print(f"Issues found: {len(issues)}")
+
 Any missing questions and answers?
 ----------------------------------
 

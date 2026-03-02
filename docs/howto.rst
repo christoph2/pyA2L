@@ -27,39 +27,259 @@ Later, open the database without reparsing:
 Export back to A2L or JSON
 --------------------------
 
-Round‑trip a database back to A2L text:
+Export preserves **all** model attributes (measurements, characteristics,
+conversions, metadata, IF_DATA, annotations, etc.) with no data loss.
+
+Basic A2L export
+~~~~~~~~~~~~~~~~
+
+Round‑trip a database back to A2L text format:
 
 .. code-block:: python
 
    from pya2l import export_a2l
 
+   # Export with implicit .a2ldb extension
    export_a2l("ASAP2_Demo_V161", "exported.a2l")
 
-Or export to JSON for further processing:
+   # Or provide full database path
+   export_a2l("path/to/MyProject.a2ldb", "exported.a2l")
+
+   # Export to stdout (useful for piping)
+   import sys
+   from pya2l.imex.a2l_exporter import export_a2l_to_stream
+
+   with open("MyProject.a2ldb", "rb"):
+       pass  # ensure DB exists
+   export_a2l_to_stream("MyProject.a2ldb", sys.stdout)
+
+JSON export
+~~~~~~~~~~~
+
+Export to JSON for external tools, scripts, or analysis:
 
 .. code-block:: python
 
    from pya2l.imex.json_exporter import export_json
 
+   # Export entire database to JSON
    export_json("ASAP2_Demo_V161.a2ldb", "exported.json")
+
+   # JSON structure mirrors A2L hierarchy:
+   # {
+   #   "project": { ... },
+   #   "modules": [
+   #     {
+   #       "name": "ModuleName",
+   #       "measurements": [ ... ],
+   #       "characteristics": [ ... ],
+   #       "compu_methods": [ ... ],
+   #       ...
+   #     }
+   #   ]
+   # }
+
+Export after modifications
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Typical workflow: import, modify, export:
+
+.. code-block:: python
+
+   from pya2l import DB, export_a2l
+   from pya2l.api.create import MeasurementCreator
+
+   # Import existing A2L
+   db = DB()
+   session = db.import_a2l("original.a2l")
+
+   # Add new measurement
+   mc = MeasurementCreator(session)
+   meas = mc.create_measurement(
+       "NewSignal", "Added programmatically",
+       "UWORD", "NO_COMPU_METHOD", 1, 0.1,
+       0.0, 65535.0, module_name="MyModule"
+   )
+   mc.add_ecu_address(meas, 0x50000)
+   mc.commit()
+
+   db.close()
+
+   # Export modified database
+   export_a2l("original", "modified.a2l")
+
+Export completeness guarantees
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The exporters (as of v0.10.2+) export **all** optional model elements:
+
+- **AXIS_PTS**: ECU_ADDRESS_EXTENSION, EXTENDED_LIMITS, FORMAT, GUARD_RAILS,
+  MAX_REFRESH, MODEL_LINK, MONOTONY, PHYS_UNIT, SYMBOL_LINK, etc.
+- **BLOB**: ADDRESS_TYPE, ANNOTATION, DISPLAY_IDENTIFIER, ECU_ADDRESS_EXTENSION,
+  IF_DATA, MAX_REFRESH, MODEL_LINK, SYMBOL_LINK, CALIBRATION_ACCESS
+- **CHARACTERISTIC**: All 20+ optional elements including CALIBRATION_ACCESS,
+  COMPARISON_QUANTITY, DEPENDENT_CHARACTERISTIC, DISCRETE, DISPLAY_IDENTIFIER,
+  ECU_ADDRESS_EXTENSION, ENCODING, EXTENDED_LIMITS, FORMAT, GUARD_RAILS,
+  MODEL_LINK, NUMBER, SYMBOL_LINK, VIRTUAL_CHARACTERISTIC, axis descriptors
+- **MEASUREMENT**: ADDRESS_TYPE, BIT_OPERATION (with shifts), BYTE_ORDER,
+  DISCRETE, DISPLAY_IDENTIFIER, ECU_ADDRESS, ECU_ADDRESS_EXTENSION,
+  ERROR_MASK, FORMAT, FUNCTION_LIST, LAYOUT, MATRIX_DIM, MAX_REFRESH,
+  MODEL_LINK, PHYS_UNIT, SYMBOL_LINK, VIRTUAL
+- **IF_DATA**: Preserved as raw blocks; custom AML parsing supported
+- **Annotations**: Preserved with labels, origins, and text blocks
+
+This ensures lossless roundtrips: ``original.a2l`` → import → export → ``output.a2l``
+will preserve all content (modulo whitespace/formatting).
 
 CLI import/export (``a2ldb-imex``)
 ----------------------------------
 
-Use the bundled console script instead of writing Python:
+Use the bundled console script for quick import/export tasks:
+
+Basic usage
+~~~~~~~~~~~
 
 .. code-block:: console
 
-   # Show help/version
+   # Show help and available options
    a2ldb-imex -h
+
+   # Show version
    a2ldb-imex -V
 
-   # Import with explicit encoding, write DB in current directory, silence progress
+Import examples
+~~~~~~~~~~~~~~~
+
+.. code-block:: console
+
+   # Import A2L (creates .a2ldb next to input file)
+   a2ldb-imex -i path/to/file.a2l
+
+   # Import with explicit encoding
+   a2ldb-imex -i file.a2l -E utf-8
+
+   # Create .a2ldb in current working directory instead of next to input
+   a2ldb-imex -i path/to/file.a2l -L
+
+   # Silence progress bar
+   a2ldb-imex -i file.a2l -p
+
+   # Combine options: UTF-8 encoding, local DB, silent mode
    a2ldb-imex -i examples\\ASAP2_Demo_V161.a2l -E utf-8 -L -p
 
-   # Export an existing DB back to A2L (file or stdout)
+Export examples
+~~~~~~~~~~~~~~~
+
+.. code-block:: console
+
+   # Export .a2ldb back to A2L text (writes to file)
    a2ldb-imex -e ASAP2_Demo_V161.a2ldb -o exported.a2l
-   a2ldb-imex -e ASAP2_Demo_V161.a2ldb > exported.a2l
+
+   # Export to stdout (useful for piping or inspection)
+   a2ldb-imex -e file.a2ldb > exported.a2l
+
+   # Export specific module (if database contains multiple)
+   a2ldb-imex -e file.a2ldb -m ModuleName -o module_only.a2l
+
+Typical workflows
+~~~~~~~~~~~~~~~~~
+
+**Validation pipeline** (import, validate, re-export):
+
+.. code-block:: console
+
+   # Import
+   a2ldb-imex -i original.a2l
+
+   # (Use Python API or other tools to inspect/validate the .a2ldb)
+
+   # Re-export
+   a2ldb-imex -e original.a2ldb -o validated.a2l
+
+**Format conversion** (A2L ↔ JSON):
+
+.. code-block:: console
+
+   # Import A2L
+   a2ldb-imex -i input.a2l
+
+   # Export to JSON (use Python API)
+   python -c "from pya2l.imex.json_exporter import export_json; export_json('input.a2ldb', 'output.json')"
+
+**Batch processing**:
+
+.. code-block:: console
+
+   # Windows batch
+   for %%f in (*.a2l) do a2ldb-imex -i "%%f" -L
+
+   # Linux/macOS shell
+   for f in *.a2l; do a2ldb-imex -i "$f" -L; done
+
+Concurrent access and export safety
+------------------------------------
+
+The database uses SQLite's **WAL (Write-Ahead Logging)** mode to support
+concurrent readers during export operations.
+
+Safe concurrent export
+~~~~~~~~~~~~~~~~~~~~~~
+
+Multiple processes can **read/export** the same database simultaneously:
+
+.. code-block:: python
+
+   from pya2l import export_a2l
+   import multiprocessing
+
+   def export_worker(db_path, output_path):
+       """Worker function for parallel exports."""
+       export_a2l(db_path, output_path)
+
+   # Export the same DB to multiple formats concurrently
+   with multiprocessing.Pool(3) as pool:
+       pool.starmap(export_worker, [
+           ("project.a2ldb", "export1.a2l"),
+           ("project.a2ldb", "export2.a2l"),
+           ("project.a2ldb", "export3.a2l"),
+       ])
+
+Export while another process writes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Exports can run **while another process modifies** the database (though the
+export sees a snapshot from when it started):
+
+.. code-block:: python
+
+   import threading
+   from pya2l import DB, export_a2l
+   from pya2l.api.create import MeasurementCreator
+
+   def writer_task():
+       """Modify database in background."""
+       db = DB()
+       session = db.open_existing("project")
+       mc = MeasurementCreator(session)
+       # ... add measurements ...
+       mc.commit()
+       db.close()
+
+   def export_task():
+       """Export database concurrently."""
+       export_a2l("project", "concurrent_export.a2l")
+
+   # Start both tasks simultaneously
+   t1 = threading.Thread(target=writer_task)
+   t2 = threading.Thread(target=export_task)
+   t1.start()
+   t2.start()
+   t1.join()
+   t2.join()
+
+The exporter sets **query_only=ON** pragma and uses a 5-second busy timeout,
+ensuring robust operation under concurrent load without "database is locked"
+errors.
 
 Dump measurements to Excel
 --------------------------
