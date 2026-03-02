@@ -1258,8 +1258,54 @@ class CachedBase:
     meas = Measurement(session, "someMeasurement")      # Constructor directly called, no caching.
     """
 
-    _cache: weakref.WeakValueDictionary = weakref.WeakValueDictionary()
+    _cache: weakref.WeakKeyDictionary = weakref.WeakKeyDictionary()
+    _fallback_cache: Dict[int, Dict[Tuple[str, Optional[str], Tuple[Any, ...]], Any]] = {}
     _strong_ref: collections.deque = collections.deque(maxlen=DB_CACHE_SIZE)
+
+    @classmethod
+    def _get_session_cache(cls, session: Any) -> Dict[Tuple[str, Optional[str], Tuple[Any, ...]], Any]:
+        """Return (and create) the cache bucket for a given session."""
+        info = getattr(session, "info", None)
+        if isinstance(info, dict):
+            cache = info.get("pya2l_cached_base")
+            if cache is None:
+                cache = {}
+                info["pya2l_cached_base"] = cache
+            return cache
+
+        try:
+            cache = cls._cache.get(session)
+        except TypeError:
+            key = id(session)
+            cache = cls._fallback_cache.get(key)
+            if cache is None:
+                cache = {}
+                cls._fallback_cache[key] = cache
+            return cache
+
+        if cache is None:
+            cache = {}
+            cls._cache[session] = cache
+        return cache
+
+    @classmethod
+    def clear(cls) -> None:
+        """Clear all cached instances across all sessions."""
+        cls._cache.clear()
+        cls._fallback_cache.clear()
+        cls._strong_ref.clear()
+
+    @classmethod
+    def clear_session(cls, session: Any) -> None:
+        """Clear cached instances for a specific session."""
+        info = getattr(session, "info", None)
+        if isinstance(info, dict):
+            info.pop("pya2l_cached_base", None)
+        try:
+            cls._cache.pop(session, None)
+        except TypeError:
+            pass
+        cls._fallback_cache.pop(id(session), None)
 
     def __new__(cls, *args, **kwargs):
         """Create a new instance of the class.
@@ -1312,16 +1358,17 @@ class CachedBase:
             print(f"{cls.__name__}.get(): session cannot be None")
             return None
 
-        entry = (id(session), cls.__name__, name, module_name, args)
-        if entry not in cls._cache:
+        cache = cls._get_session_cache(session)
+        entry = (cls.__name__, name, module_name, args)
+        if entry not in cache:
             try:
                 inst = cls(session, name, module_name, *args)
-                cls._cache[entry] = inst
+                cache[entry] = inst
                 cls._strong_ref.append(inst)
             except Exception as e:
                 # print(f"{cls.__name__}.get({name!r}): {e!r}")
                 return None
-        return cls._cache[entry]
+        return cache[entry]
 
     @classmethod
     def inny(cls):
