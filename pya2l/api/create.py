@@ -1725,8 +1725,8 @@ class ModuleCreator(Creator, HasIfData):
         """Add STRUCTURE_COMPONENT to a TypedefStructure."""
         sc = model.StructureComponent(
             name=name,
-            type_ref=type_ref,
-            offset=offset,
+            typedefName=type_ref,
+            addressOffset=offset,
         )
         typedef_structure.structure_component.append(sc)
         self.session.add(sc)

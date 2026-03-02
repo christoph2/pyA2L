@@ -158,7 +158,9 @@ def test_measurement_full_featured(db):
     assert meas.annotations[0].label == "ASAM Workinggroup"
     assert meas.annotations[0].origin == "Python Universe"
     assert meas.annotations[0].text == ["Test the A2L annotation", "Another line"]
-    assert meas.bitOperation == {"amount": 4, "direction": "R", "sign_extend": True}
+    assert meas.bitOperation.left is None
+    assert meas.bitOperation.right == 4
+    assert meas.bitOperation.sign_extend is True
     assert meas.byteOrder == "MSB_FIRST"
     assert meas.discrete
     assert meas.displayIdentifier == "load_engine"
@@ -574,7 +576,7 @@ def test_blob(db):
     blob = Blob(db.session, "Blob1")
     assert blob.name == "Blob1"
     assert blob.address == 0x1000
-    assert blob.length == 100
+    assert blob.size == 100
     assert blob.calibration_access == "READ_ONLY"
 
 
@@ -599,7 +601,7 @@ def test_transformer(db):
     trans = Transformer(db.session, "Trans1")
     assert trans.name == "Trans1"
     assert trans.version == "1.0"
-    assert trans.dllname32 == "lib32.dll"
+    assert trans.executable32 == "lib32.dll"
     assert trans.timeout == 100
     assert trans.trigger == "ON_CHANGE"
     assert "Meas1" in trans.transformer_in_objects

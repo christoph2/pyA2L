@@ -1641,6 +1641,7 @@ class SymbolLink(Base):
 
     __required_parameters__ = (
         Parameter("symbolName", String, False),
+        Parameter("offset", Long, False),
     )
 
 
