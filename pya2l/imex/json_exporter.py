@@ -370,10 +370,7 @@ def compu_tab_to_dict(t: Any) -> dict[str, Any]:
             "kind": "COMPU_TAB",
             "conversionType": safe_get(t, "conversionType"),
             "numberValuePairs": safe_get(t, "numberValuePairs"),
-            "pairs": [
-                {"inVal": safe_get(p, "inVal"), "outVal": safe_get(p, "outVal")}
-                for p in as_list(safe_get(t, "pairs"))
-            ],
+            "pairs": [{"inVal": safe_get(p, "inVal"), "outVal": safe_get(p, "outVal")} for p in as_list(safe_get(t, "pairs"))],
         }
     )
     return out
@@ -386,10 +383,7 @@ def compu_vtab_to_dict(t: Any) -> dict[str, Any]:
             "kind": "COMPU_VTAB",
             "conversionType": safe_get(t, "conversionType"),
             "numberValuePairs": safe_get(t, "numberValuePairs"),
-            "pairs": [
-                {"inVal": safe_get(p, "inVal"), "outVal": safe_get(p, "outVal")}
-                for p in as_list(safe_get(t, "pairs"))
-            ],
+            "pairs": [{"inVal": safe_get(p, "inVal"), "outVal": safe_get(p, "outVal")} for p in as_list(safe_get(t, "pairs"))],
         }
     )
     return out

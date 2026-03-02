@@ -804,9 +804,7 @@ def write_memory_segments(out, mem_segments: list[Any] | None) -> None:
         out.write("      /end MEMORY_SEGMENT\n\n")
 
 
-def write_typedefs(
-    out, typedef_chars: list[Any] | None, typedef_meas: list[Any] | None, typedef_structs: list[Any] | None
-) -> None:
+def write_typedefs(out, typedef_chars: list[Any] | None, typedef_meas: list[Any] | None, typedef_structs: list[Any] | None) -> None:
     if typedef_chars:
         for tc in typedef_chars:
             out.write("    /begin TYPEDEF_CHARACTERISTIC\n")
@@ -1232,9 +1230,7 @@ def export_db(db: A2LDatabase, out_path: Path | TextIO, module_name: str | None 
         try:
             modules = modules_query.all()
         except OperationalError as exc:
-            logger.warning(
-                "Module preload failed (schema mismatch?). Retrying without RECORD_LAYOUT/TRANSFORMER: %s", exc
-            )
+            logger.warning("Module preload failed (schema mismatch?). Retrying without RECORD_LAYOUT/TRANSFORMER: %s", exc)
             fallback_opts = [opt for opt in base_options if opt not in (record_layout_opt, transformer_opt)]
             modules_query = session.query(model.Module).options(*fallback_opts)
             if module_name:

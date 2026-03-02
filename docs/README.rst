@@ -190,14 +190,14 @@ augment A2L databases:
    # Create project and module
    pc = ProjectCreator(session)
    project = pc.create_project("MyProject", "Demo ECU Project")
-   
+
    mc = ModuleCreator(session)
    module = mc.create_module("MyModule", "Demo Module", project=project)
 
    # Add a conversion method
    cmc = CompuMethodCreator(session)
    cm = cmc.create_compu_method(
-       "CM_Voltage", "Voltage conversion", "LINEAR", 
+       "CM_Voltage", "Voltage conversion", "LINEAR",
        "%6.3", "V", module_name="MyModule"
    )
    cmc.add_coeffs_linear(cm, offset=0.0, factor=0.01)  # y = 0.01*x + 0
@@ -245,7 +245,7 @@ Export back to A2L or JSON
 
    # Export to A2L text format
    export_a2l("ASAP2_Demo_V161", "exported.a2l")
-   
+
    # Or export to JSON for further processing
    from pya2l.imex.json_exporter import export_json
    export_json("ASAP2_Demo_V161.a2ldb", "exported.json")
