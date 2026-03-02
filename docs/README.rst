@@ -57,9 +57,12 @@ What pyA2L offers
 - Rich inspection helpers in pya2l.api.inspect (e.g., Characteristic,
   Measurement, AxisDescr, ModPar, ModCommon) to compute shapes, axis
   info, allocated memory, conversions, and more.
+- Creator API in pya2l.api.create to programmatically build or augment
+  A2L content (PROJECT, MODULE, MEASUREMENT, CHARACTERISTIC, COMPU_METHOD,
+  AXIS_PTS, RECORD_LAYOUT, GROUP, FUNCTION, etc.).
 - Validation utilities (pya2l.api.validate) to check common ASAP2 rules
   and project-specific consistency.
-- Export .a2ldb content back to A2L text when needed.
+- Export .a2ldb content back to A2L text or JSON when needed.
 - Building blocks for automation: reporting, quality gates, CI checks,
   and integration with CCP/XCP workflows.
 
@@ -81,9 +84,11 @@ Design highlights
 
 - SQLite-backed storage (.a2ldb) with SQLAlchemy models
 - High-level inspection helpers in ``pya2l.api.inspect``
+- Creator API in ``pya2l.api.create`` for programmatic A2L generation
 - Validator framework in ``pya2l.api.validate`` yielding structured
   diagnostics
-- Optional CLI for import/export tasks
+- Export to A2L text or JSON format
+- Optional CLI (``a2ldb-imex``) for import/export tasks
 
 Learn more about the standard at the ASAM website:
 https://www.asam.net/standards/detail/mcd-2-mc/wiki/
@@ -168,6 +173,56 @@ pya2l.api.inspect to access derived info:
    axis = ch.axisDescription("X")
    print("axis info:", axis.axisDescription("X"))
 
+Create A2L content programmatically - Use the Creator API to build or
+augment A2L databases:
+
+.. code:: python
+
+   from pya2l import DB
+   from pya2l.api.create import (
+       ProjectCreator, ModuleCreator, MeasurementCreator,
+       CharacteristicCreator, CompuMethodCreator
+   )
+
+   db = DB()
+   session = db.open_create("MyProject.a2ldb")
+
+   # Create project and module
+   pc = ProjectCreator(session)
+   project = pc.create_project("MyProject", "Demo ECU Project")
+   
+   mc = ModuleCreator(session)
+   module = mc.create_module("MyModule", "Demo Module", project=project)
+
+   # Add a conversion method
+   cmc = CompuMethodCreator(session)
+   cm = cmc.create_compu_method(
+       "CM_Voltage", "Voltage conversion", "LINEAR", 
+       "%6.3", "V", module_name="MyModule"
+   )
+   cmc.add_coeffs_linear(cm, offset=0.0, factor=0.01)  # y = 0.01*x + 0
+
+   # Add a measurement
+   mec = MeasurementCreator(session)
+   meas = mec.create_measurement(
+       "BatteryVoltage", "Battery voltage in Volts",
+       "UWORD", "CM_Voltage", resolution=1, accuracy=0.1,
+       lower_limit=0.0, upper_limit=20.0,
+       module_name="MyModule"
+   )
+   mec.add_ecu_address(meas, 0x1000)
+
+   # Add a characteristic (calibration parameter)
+   cc = CharacteristicCreator(session)
+   char = cc.create_characteristic(
+       "InjectionMap", "Fuel injection map",
+       "MAP", 0x2000, "RL_InjMap", 0.0, "CM_Voltage",
+       0.0, 100.0, module_name="MyModule"
+   )
+
+   mc.commit()
+   db.close()
+
 Validate your database
 
 .. code:: python
@@ -182,13 +237,18 @@ Validate your database
        # msg has fields: type (Level), category (Category), diag_code (Diagnostics), text (str)
        print(msg.type.name, msg.category.name, msg.diag_code.name, "-", msg.text)
 
-Export back to A2L (optional)
+Export back to A2L or JSON
 
 .. code:: python
 
    from pya2l import export_a2l
 
+   # Export to A2L text format
    export_a2l("ASAP2_Demo_V161", "exported.a2l")
+   
+   # Or export to JSON for further processing
+   from pya2l.imex.json_exporter import export_json
+   export_json("ASAP2_Demo_V161.a2ldb", "exported.json")
 
 Tips
 ----
@@ -239,14 +299,14 @@ Example: creating common entities
    fr = mc.add_frame(mod, name="FRAME1", long_identifier="Demo frame",
                      scaling_unit=1, rate=10, measurements=["ENGINE_SPEED"])
    tr = mc.add_transformer(mod, name="TR1", version="1.0",
-                           dllname32="tr32.dll", dllname64="tr64.dll",
-                           timeout=1000, trigger="ON_CHANGE", reverse="NONE",
+                           executable32="tr32.dll", executable64="tr64.dll",
+                           timeout=1000, trigger="ON_CHANGE", inverse="NONE",
                            in_objects=["ENGINE_SPEED"], out_objects=["SPEED_PHYS"])
 
    # Typedefs and instances
    ts = mc.add_typedef_structure(mod, name="TSig", long_identifier="Signal",
                                  size=8)
-   mc.add_structure_component(ts, name="raw", type_ref="UWORD", offset=0)
+   mc.add_structure_component(ts, name="raw", typedefName="UWORD", addressOffset=0)
    inst = mc.add_instance(mod, name="S1", long_identifier="Inst of TSig",
                           type_name="TSig", address=0x1000)
 
