@@ -13,7 +13,7 @@ pattern with a main creation method and additional methods to set optional attri
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2020-2025 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2020-2026 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -32,6 +32,7 @@ __copyright__ = """
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
+import json
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pya2l.model as model
@@ -55,6 +56,398 @@ from pya2l.api.inspect import (  # Project, Header, Annotation
     TypedefStructure,
     VariantCoding,
 )
+
+
+class HasAnnotation:
+    """Base class for entities that have annotations."""
+
+    def add_annotation(self, obj: Any, text: str, label: Optional[str] = None,
+                       origin: Optional[str] = None) -> model.Annotation:
+        """Add Annotation to a Measurement."""
+        annotation = model.Annotation(
+            annotation_label=model.AnnotationLabel(label=label),
+            annotation_origin=model.AnnotationOrigin(origin=origin),
+            annotation_text=model.AnnotationText(text=text.splitlines()),
+        )
+        self.session.add(annotation)
+        obj.annotation = [annotation]
+        return annotation
+
+
+class HasAddressType:
+    def add_address_type(self, obj: Any, type_name: str) -> model.AddressType:
+        """Add AddressType to a Measurement."""
+        address_type = model.AddressType(addressType=type_name)
+        address_type.measurement = obj
+        self.session.add(address_type)
+        return address_type
+
+
+class HasBitMask:
+    def add_bit_mask(self, obj: Any, mask: int) -> model.BitMask:
+        """Add BitMask to a Characteristic.
+
+        Parameters
+        ----------
+        obj : Any model object
+            The object to add BitMask to
+        mask : int
+            The bit mask
+
+        Returns
+        -------
+        model.BitMask
+            The newly created BitMask instance
+        """
+        bit_mask = model.BitMask(mask=mask)
+        bit_mask.characteristic = obj
+        self.session.add(bit_mask)
+        return bit_mask
+
+
+class HasBitOperation:
+    def add_bit_operation(
+            self,
+            obj: Any,
+            left_shift: Optional[int] = None,
+            right_shift: Optional[int] = None,
+            sign_extend: Optional[bool] = None,
+    ) -> model.BitOperation:
+        """Add BitOperation to a Measurement.
+
+        Parameters
+        ----------
+        obj : Any model object
+            The Object to add BitOperation to
+        left_shift : Optional[int], optional
+            Left shift value, by default None
+        right_shift : Optional[int], optional
+            Right shift value, by default None
+        sign_extend : Optional[bool], optional
+            Sign extend flag, by default None
+
+        Returns
+        -------
+        model.BitOperation
+            The newly created BitOperation instance
+        """
+        bit_operation = model.BitOperation()
+        bit_operation.measurement = obj
+        self.session.add(bit_operation)
+
+        # Add left shift if provided
+        if left_shift is not None:
+            left_shift_obj = model.LeftShift(bitcount=left_shift)
+            left_shift_obj.bit_operation = bit_operation
+            self.session.add(left_shift_obj)
+
+        # Add right shift if provided
+        if right_shift is not None:
+            right_shift_obj = model.RightShift(bitcount=right_shift)
+            right_shift_obj.bit_operation = bit_operation
+            self.session.add(right_shift_obj)
+
+        # Add sign extend if provided
+        if sign_extend is not None:
+            sign_extend_obj = model.SignExtend()
+            sign_extend_obj.bit_operation = bit_operation
+            self.session.add(sign_extend_obj)
+
+        return bit_operation
+
+
+class HasByteOrder:
+    def add_byte_order(self, obj: Any, byte_order: str) -> model.ByteOrder:
+        """Add ByteOrder to an object.
+
+        Parameters
+        ----------
+        obj : Any model object
+            The object to add ByteOrder to
+        byte_order : str
+            The byte order (e.g., "MSB_FIRST", "MSB_LAST")
+
+        Returns
+        -------
+        model.ByteOrder
+            The newly created ByteOrder instance
+        """
+        byte_order_obj = model.ByteOrder(byteOrder=byte_order)
+        obj.byte_order = byte_order_obj
+        self.session.add(byte_order_obj)
+        return byte_order_obj
+
+
+class HasCalibrationAccess:
+    def add_calibration_access(self, obj: Any, calibration_access: str) -> model.CalibrationAccess:
+        calibration_access_obj = model.CalibrationAccess(type=calibration_access)
+        obj.calibration_access = calibration_access_obj
+        self.session.add(calibration_access_obj)
+        return calibration_access_obj
+
+
+class HasDisplayIdentifier:
+    def add_display_identifier(self, obj: Any, text: str) -> model.DisplayIdentifier:
+        """Add DisplayIdentifier to an object."""
+        display_identifier = model.DisplayIdentifier(display_name=text)
+        obj.display_identifier = display_identifier
+        self.session.add(display_identifier)
+        return display_identifier
+
+
+class HasDeposit:
+    def add_deposit(self, obj: model.AxisPts, mode: str) -> model.Deposit:
+        deposit = model.Deposit(mode=mode)
+        obj.deposit = deposit
+        self.session.add(deposit)
+        return deposit
+
+
+class HasDiscrete:
+    def set_discrete(self, obj: Any, value: bool) -> bool:
+        """Add Discrete to a Measurement."""
+        obj.discrete = value
+        return value
+
+
+class HasEcuAddressExtension:
+    def add_ecu_address_extension(self, obj: Any, extension: int) -> model.EcuAddressExtension:
+        """Add EcuAddressExtension to a Measurement."""
+        address_extension = model.EcuAddressExtension(extension=extension)
+        obj.ecu_address_extension = address_extension
+        self.session.add(address_extension)
+        return address_extension
+
+class HasEncoding:
+    def add_encoding(self, obj: Any, encoding: str) -> model.Encoding:
+        """Add Encoding to an object."""
+        encoding_obj = model.Encoding(encoding=encoding)
+        obj.encoding = encoding_obj
+        self.session.add(encoding_obj)
+        return encoding_obj
+
+class HasErrorMask:
+    def add_error_mask(self, obj: Any, mask: int) -> model.ErrorMask:
+        """Add ErrorMask to an object."""
+        error_mask = model.ErrorMask(mask=mask)
+        obj.error_mask = error_mask
+        self.session.add(error_mask)
+        return error_mask
+
+
+class HasExtendedLimits:
+    def add_extended_limits(self, obj: Any, lower_limit: float, upper_limit: float) -> model.ExtendedLimits:
+        extended_limits = model.ExtendedLimits(lowerLimit=lower_limit, upperLimit=upper_limit)
+        obj.extended_limits = extended_limits
+        self.session.add(extended_limits)
+        return extended_limits
+
+
+class HasFormat:
+    def add_format(self, obj: Any, format_string: str) -> model.Format:
+        """Add Format to a Measurement.
+
+        Parameters
+        ----------
+        obj : Any model object
+            The object to add Format to
+        format_string : str
+            The format string
+
+        Returns
+        -------
+        model.Format
+            The newly created Format instance
+        """
+        format_obj = model.Format(formatString=format_string)
+        format_obj.measurement = obj
+        self.session.add(format_obj)
+        return format_obj
+
+
+class HasFunctionList:
+    def add_function_list(self, obj: Any, function_names: List[str]) -> model.FunctionList:
+        """Add FunctionList to a Group.
+
+        Parameters
+        ----------
+        obj : Any model object
+            The object to add FunctionList to
+        function_names : List[str]
+            List of function names
+
+        Returns
+        -------
+        model.FunctionList
+            The newly created FunctionList instance
+        """
+        function_list = model.FunctionList(name=function_names)
+        obj.function_list = function_list
+        self.session.add(function_list)
+        return function_list
+
+
+class HasGuardRails:
+    def set_discrete(self, obj: Any, value: bool) -> bool:
+        """Add GuardRails to a Measurement."""
+        obj.guard_rails = value
+        return value
+
+
+class HasIfData:
+    """Base class for entities that have IF_DATA."""
+
+    def add_if_data(self, obj: Any, if_data: Union[str, Dict[str, Any]]) -> model.IfData:
+        if isinstance(if_data, dict):
+            if_data = json.dumps(if_data)
+        entry = model.IfData(raw=if_data)
+        self.session.add(entry)
+        obj.if_data = [entry]
+        return entry
+
+
+class HasLayout:
+    def add_layout(self, obj: Any, indexMode: str) -> model.Layout:
+        """Add Layout to an object."""
+        layout = model.Layout(indexMode=indexMode)
+        obj.layout = layout
+        self.session.add(layout)
+        return layout
+
+
+class HasMatrixDim:
+    def add_matrix_dim(
+            self, obj: Any, x_dim: int, y_dim: Optional[int] = None, z_dim: Optional[int] = None
+    ) -> model.MatrixDim:
+        """Add MatrixDim to a Measurement.
+
+        Parameters
+        ----------
+        obj : Any model object
+            The object to add MatrixDim to
+        x_dim : int
+            X dimension
+        y_dim : Optional[int], optional
+            Y dimension, by default None
+        z_dim : Optional[int], optional
+            Z dimension, by default None
+
+        Returns
+        -------
+        model.MatrixDim
+            The newly created MatrixDim instance
+        """
+        numbers = [x_dim]
+        if y_dim is not None:
+            numbers.append(y_dim)
+        if z_dim is not None:
+            numbers.append(z_dim)
+
+        matrix_dim = model.MatrixDim(numbers=numbers)
+        matrix_dim.measurement = obj
+        self.session.add(matrix_dim)
+        return matrix_dim
+
+
+class HasMaxRefresh:
+    def add_max_refresh(self, obj: Any, scaling_unit: int, rate: int) -> model.MaxRefresh:
+        """Add MaxRefresh to an object."""
+        max_refresh = model.MaxRefresh(scalingUnit=scaling_unit, rate=rate)
+        obj.max_refresh = max_refresh
+        self.session.add(max_refresh)
+        return max_refresh
+
+
+class HasModelLink:
+    def add_model_link(self, obj: Any, link: str) -> model.ModelLink:
+        model_link = model.ModelLink(link=link)
+        obj.model_link = model_link
+        self.session.add(model_link)
+        return model_link
+
+
+class HasMonotony:
+    def add_monotony(self, obj: Any, monotony: str) -> model.Monotony:
+        monotony_obj = model.Monotony(monotony=monotony)
+        obj.monotony = monotony_obj
+        self.session.add(monotony_obj)
+        return monotony_obj
+
+
+class HasPhysUnit:
+    def add_phys_unit(self, obj: Any, unit: str) -> model.PhysUnit:
+        """Add PhysUnit to a object.
+
+        Parameters
+        ----------
+        obj : Any model object
+            The object to add PhysUnit to
+        unit : str
+            The physical unit
+
+        Returns
+        -------
+        model.PhysUnit
+            The newly created PhysUnit instance
+        """
+        phys_unit = model.PhysUnit(unit=unit)
+        phys_unit.measurement = obj
+        self.session.add(phys_unit)
+        return phys_unit
+
+
+class HasReadOnly:
+    def set_read_only(self, obj: Any, value: bool) -> bool:
+        """Add read_only to a Measurement."""
+        obj.read_only = value
+        return value
+
+
+class HasReadWrite:
+    def set_read_write(self, obj: Any, value: bool) -> bool:
+        """Add read_write to a Measurement."""
+        obj.read_write = value
+        return value
+
+
+class HasRefMemorySegment:
+    def add_ref_memory_segment(self, obj: Any, name: str) -> model.RefMemorySegment:
+        ref_memory_segment = model.RefMemorySegment(name=name)
+        obj.ref_memory_segment = ref_memory_segment
+        self.session.add(ref_memory_segment)
+        return ref_memory_segment
+
+
+class HasStepSize:
+    def add_step_size(self, obj: Any, step_size: float) -> model.StepSize:
+        step_size_obj = model.StepSize(stepSize=step_size)
+        obj.step_size = step_size_obj
+        self.session.add(step_size_obj)
+        return step_size_obj
+
+
+class HasSymbolLink:
+    def add_symbol_link(self, obj: Any, symbol_name: str, offset: Optional[int] = None) -> model.SymbolLink:
+        """Add SymbolLink to a Measurement.
+
+        Parameters
+        ----------
+        obj : Any model obj
+            The object to add SymbolLink to
+        symbol_name : str
+            The symbol name
+        offset : Optional[int], optional
+            The offset, by default None
+
+        Returns
+        -------
+        model.SymbolLink
+            The newly created SymbolLink instance
+        """
+        symbol_link = model.SymbolLink(symbolName=symbol_name, offset=offset)
+        symbol_link.measurement = obj
+        self.session.add(symbol_link)
+        return symbol_link
 
 
 class Creator:
@@ -88,6 +481,336 @@ class Creator:
         self.session.rollback()
 
 
+class AxisPtsCreator(Creator, HasAnnotation, HasByteOrder, HasCalibrationAccess, HasDeposit, HasDisplayIdentifier,
+                     HasEcuAddressExtension, HasExtendedLimits, HasFormat, HasFunctionList, HasGuardRails, HasIfData,
+                     HasMaxRefresh, HasModelLink, HasMonotony, HasPhysUnit, HasReadOnly, HasRefMemorySegment,
+                     HasStepSize):
+    """Creator class for AxisPts entities.
+
+    This class provides methods to create new AxisPts instances and
+    their related entities.
+
+    Attributes
+    ----------
+    session : Any
+        SQLAlchemy session object used to interact with the database
+    """
+
+    def create_axis_pts(
+            self,
+            name: str,
+            long_identifier: str,
+            address: int,
+            input_quantity: str,
+            deposit_attr: str,
+            max_diff: float,
+            conversion: str,
+            max_axis_points: int,
+            lower_limit: float,
+            upper_limit: float,
+            module_name: Optional[str] = None,
+    ) -> model.AxisPts:
+        """Create a new AxisPts instance.
+
+        Parameters
+        ----------
+        name : str
+            Name of the axis points
+        long_identifier : str
+            Description of the axis points
+        address : int
+            Address of the axis points
+        input_quantity : str
+            Input quantity of the axis points
+        deposit_attr : str
+            Deposit attribute of the axis points
+        max_diff : float
+            Maximum difference of the axis points
+        conversion : str
+            Name of the computation method for conversion
+        max_axis_points : int
+            Maximum number of axis points
+        lower_limit : float
+            Lower limit of the axis points
+        upper_limit : float
+            Upper limit of the axis points
+        module_name : Optional[str], optional
+            Name of the module to associate with this AxisPts, by default None
+
+        Returns
+        -------
+        model.AxisPts
+            The newly created AxisPts instance
+        """
+        # Find the module if module_name is provided
+        module = None
+        if module_name:
+            module = self.session.query(model.Module).filter(model.Module.name == module_name).first()
+            if not module:
+                raise exceptions.StructuralError(f"Module '{module_name}' not found")
+
+        # Create the AxisPts instance
+        axis_pts = model.AxisPts(
+            name=name,
+            longIdentifier=long_identifier,
+            address=address,
+            inputQuantity=input_quantity,
+            depositAttr=deposit_attr,
+            maxDiff=max_diff,
+            conversion=conversion,
+            maxAxisPoints=max_axis_points,
+            lowerLimit=lower_limit,
+            upperLimit=upper_limit,
+        )
+
+        # Associate with module if provided
+        if module:
+            module.axis_pts.append(axis_pts)
+
+        # Add to session
+        self.session.add(axis_pts)
+
+        return axis_pts
+
+
+class BlobCreator(Creator, HasAddressType, HasAnnotation, HasCalibrationAccess, HasDisplayIdentifier,
+                  HasEcuAddressExtension, HasIfData, HasMaxRefresh, HasModelLink, HasSymbolLink):
+    """Creator class for Blob entities.
+
+    This class provides methods to create new Blob instances and
+    their related entities.
+
+    Attributes
+    ----------
+    session : Any
+        SQLAlchemy session object used to interact with the database
+    """
+
+    def create_blob(self, name: str, long_identifier: str, address: int, size: int,
+                    module_name: Optional[str] = None) -> model.Blob:
+        """Create a new Blob instance.
+
+        Parameters
+        ----------
+        name : str
+            Name of the blob
+        long_identifier : str
+            Description of the blob
+        address : int
+            Address of the blob
+        size : int
+            Size of the blob
+        module_name : Optional[str], optional
+            Name of the module to associate with this Blob, by default None
+
+        Returns
+        -------
+        model.Blob
+            The newly created Blob instance
+        """
+        # Find the module if module_name is provided
+        module = None
+        if module_name:
+            module = self.session.query(model.Module).filter(model.Module.name == module_name).first()
+            if not module:
+                raise exceptions.StructuralError(f"Module '{module_name}' not found")
+
+        # Create the Blob instance
+        blob = model.Blob(name=name, longIdentifier=long_identifier, address=address, size=size)
+
+        # Associate with module if provided
+        if module:
+            module.blob.append(blob)
+
+        # Add to session
+        self.session.add(blob)
+
+        return blob
+
+
+class CharacteristicCreator(Creator, HasAnnotation, HasBitMask, HasByteOrder, HasCalibrationAccess, HasDiscrete,
+                            HasDisplayIdentifier, HasEcuAddressExtension, HasEncoding, HasExtendedLimits,
+                            HasFormat, HasFunctionList, HasGuardRails, HasIfData,
+                            HasMaxRefresh, HasModelLink):
+    """Creator class for Characteristic entities.
+
+    This class provides methods to create new Characteristic instances and
+    their related entities.
+
+    Attributes
+    ----------
+    session : Any
+        SQLAlchemy session object used to interact with the database
+    """
+
+    def create_characteristic(
+            self,
+            name: str,
+            long_identifier: str,
+            char_type: str,
+            address: int,
+            deposit: str,
+            max_diff: float,
+            conversion: str,
+            lower_limit: float,
+            upper_limit: float,
+            module_name: Optional[str] = None,
+    ) -> model.Characteristic:
+        """Create a new Characteristic instance.
+
+        Parameters
+        ----------
+        name : str
+            Name of the characteristic
+        long_identifier : str
+            Description of the characteristic
+        char_type : str
+            Type of the characteristic (e.g., "VALUE", "CURVE", "MAP", "CUBOID")
+        address : int
+            Address of the characteristic
+        deposit : str
+            Deposit attribute of the characteristic
+        max_diff : float
+            Maximum difference of the characteristic
+        conversion : str
+            Name of the computation method for conversion
+        lower_limit : float
+            Lower limit of the characteristic
+        upper_limit : float
+            Upper limit of the characteristic
+        module_name : Optional[str], optional
+            Name of the module to associate with this Characteristic, by default None
+
+        Returns
+        -------
+        model.Characteristic
+            The newly created Characteristic instance
+        """
+        # Find the module if module_name is provided
+        module = None
+        if module_name:
+            module = self.session.query(model.Module).filter(model.Module.name == module_name).first()
+            if not module:
+                raise exceptions.StructuralError(f"Module '{module_name}' not found")
+
+        # Create the Characteristic instance
+        characteristic = model.Characteristic(
+            name=name,
+            longIdentifier=long_identifier,
+            type=char_type,
+            address=address,
+            deposit=deposit,
+            maxDiff=max_diff,
+            conversion=conversion,
+            lowerLimit=lower_limit,
+            upperLimit=upper_limit,
+        )
+
+        # Associate with module if provided
+        if module:
+            module.characteristic.append(characteristic)
+
+        # Add to session
+        self.session.add(characteristic)
+
+        return characteristic
+
+    def add_axis_descr(
+            self,
+            characteristic: model.Characteristic,
+            attribute: str,
+            input_quantity: str,
+            conversion: str,
+            max_axis_points: int,
+            lower_limit: float,
+            upper_limit: float,
+    ) -> model.AxisDescr:
+        """Add AxisDescr to a Characteristic.
+
+        Parameters
+        ----------
+        characteristic : model.Characteristic
+            The Characteristic to add AxisDescr to
+        attribute : str
+            The attribute (e.g., "STD_AXIS", "FIX_AXIS", "COM_AXIS")
+        input_quantity : str
+            The input quantity
+        conversion : str
+            Name of the computation method for conversion
+        max_axis_points : int
+            Maximum number of axis points
+        lower_limit : float
+            Lower limit of the axis
+        upper_limit : float
+            Upper limit of the axis
+
+        Returns
+        -------
+        model.AxisDescr
+            The newly created AxisDescr instance
+        """
+        axis_descr = model.AxisDescr(
+            attribute=attribute,
+            inputQuantity=input_quantity,
+            conversion=conversion,
+            maxAxisPoints=max_axis_points,
+            lowerLimit=lower_limit,
+            upperLimit=upper_limit,
+        )
+        characteristic.axis_descr.append(axis_descr)
+        self.session.add(axis_descr)
+        return axis_descr
+
+    def add_dependent_characteristic(
+            self, characteristic: model.Characteristic, formula: str, characteristic_names: List[str]
+    ) -> model.DependentCharacteristic:
+        """Add DependentCharacteristic to a Characteristic.
+
+        Parameters
+        ----------
+        characteristic : model.Characteristic
+            The Characteristic to add DependentCharacteristic to
+        formula : str
+            The formula
+        characteristic_names : List[str]
+            List of characteristic names
+
+        Returns
+        -------
+        model.DependentCharacteristic
+            The newly created DependentCharacteristic instance
+        """
+        dependent_characteristic = model.DependentCharacteristic(formula=formula,
+                                                                 characteristic_id=characteristic_names)
+        dependent_characteristic.characteristic = characteristic
+        self.session.add(dependent_characteristic)
+        return dependent_characteristic
+
+    def add_virtual_characteristic(
+            self, characteristic: model.Characteristic, formula: str, characteristic_names: List[str]
+    ) -> model.VirtualCharacteristic:
+        """Add VirtualCharacteristic to a Characteristic.
+
+        Parameters
+        ----------
+        characteristic : model.Characteristic
+            The Characteristic to add VirtualCharacteristic to
+        formula : str
+            The formula
+        characteristic_names : List[str]
+            List of characteristic names
+
+        Returns
+        -------
+        model.VirtualCharacteristic
+            The newly created VirtualCharacteristic instance
+        """
+        virtual_characteristic = model.VirtualCharacteristic(formula=formula, characteristic_id=characteristic_names)
+        virtual_characteristic.characteristic = characteristic
+        self.session.add(virtual_characteristic)
+        return virtual_characteristic
+
+
 class CompuMethodCreator(Creator):
     """Creator class for CompuMethod entities.
 
@@ -101,7 +824,8 @@ class CompuMethodCreator(Creator):
     """
 
     def create_compu_method(
-        self, name: str, long_identifier: str, conversion_type: str, format_str: str, unit: str, module_name: Optional[str] = None
+            self, name: str, long_identifier: str, conversion_type: str, format_str: str, unit: str,
+            module_name: Optional[str] = None
     ) -> model.CompuMethod:
         """Create a new CompuMethod instance.
 
@@ -147,7 +871,7 @@ class CompuMethodCreator(Creator):
         return compu_method
 
     def add_coeffs(
-        self, compu_method: model.CompuMethod, a: float, b: float, c: float, d: float, e: float, f: float
+            self, compu_method: model.CompuMethod, a: float, b: float, c: float, d: float, e: float, f: float
     ) -> model.Coeffs:
         """Add Coeffs to a CompuMethod.
 
@@ -220,7 +944,8 @@ class CompuMethodCreator(Creator):
         self.session.add(compu_tab_ref)
         return compu_tab_ref
 
-    def add_formula(self, compu_method: model.CompuMethod, formula_str: str, formula_inv: Optional[str] = None) -> model.Formula:
+    def add_formula(self, compu_method: model.CompuMethod, formula_str: str,
+                    formula_inv: Optional[str] = None) -> model.Formula:
         """Add Formula to a CompuMethod.
 
         Parameters
@@ -290,7 +1015,11 @@ class CompuMethodCreator(Creator):
         return status_string_ref
 
 
-class MeasurementCreator(Creator):
+class MeasurementCreator(Creator, HasAddressType, HasAnnotation, HasBitMask, HasBitOperation, HasByteOrder,
+                         HasDisplayIdentifier, HasDiscrete, HasFormat, HasEcuAddressExtension, HasErrorMask,
+                         HasFunctionList, HasIfData,
+                         HasLayout, HasMatrixDim, HasMaxRefresh, HasModelLink, HasPhysUnit, HasReadWrite,
+                         HasRefMemorySegment, HasSymbolLink):
     """Creator class for Measurement entities.
 
     This class provides methods to create new Measurement instances and
@@ -303,16 +1032,16 @@ class MeasurementCreator(Creator):
     """
 
     def create_measurement(
-        self,
-        name: str,
-        long_identifier: str,
-        datatype: str,
-        conversion: str,
-        resolution: int,
-        accuracy: float,
-        lower_limit: float,
-        upper_limit: float,
-        module_name: Optional[str] = None,
+            self,
+            name: str,
+            long_identifier: str,
+            datatype: str,
+            conversion: str,
+            resolution: int,
+            accuracy: float,
+            lower_limit: float,
+            upper_limit: float,
+            module_name: Optional[str] = None,
     ) -> model.Measurement:
         """Create a new Measurement instance.
 
@@ -390,55 +1119,6 @@ class MeasurementCreator(Creator):
         self.session.add(array_size)
         return array_size
 
-    def add_bit_operation(
-        self,
-        measurement: model.Measurement,
-        left_shift: Optional[int] = None,
-        right_shift: Optional[int] = None,
-        sign_extend: Optional[bool] = None,
-    ) -> model.BitOperation:
-        """Add BitOperation to a Measurement.
-
-        Parameters
-        ----------
-        measurement : model.Measurement
-            The Measurement to add BitOperation to
-        left_shift : Optional[int], optional
-            Left shift value, by default None
-        right_shift : Optional[int], optional
-            Right shift value, by default None
-        sign_extend : Optional[bool], optional
-            Sign extend flag, by default None
-
-        Returns
-        -------
-        model.BitOperation
-            The newly created BitOperation instance
-        """
-        bit_operation = model.BitOperation()
-        bit_operation.measurement = measurement
-        self.session.add(bit_operation)
-
-        # Add left shift if provided
-        if left_shift is not None:
-            left_shift_obj = model.LeftShift(bitcount=left_shift)
-            left_shift_obj.bit_operation = bit_operation
-            self.session.add(left_shift_obj)
-
-        # Add right shift if provided
-        if right_shift is not None:
-            right_shift_obj = model.RightShift(bitcount=right_shift)
-            right_shift_obj.bit_operation = bit_operation
-            self.session.add(right_shift_obj)
-
-        # Add sign extend if provided
-        if sign_extend is not None:
-            sign_extend_obj = model.SignExtend()
-            sign_extend_obj.bit_operation = bit_operation
-            self.session.add(sign_extend_obj)
-
-        return bit_operation
-
     def add_ecu_address(self, measurement: model.Measurement, address: int) -> model.EcuAddress:
         """Add EcuAddress to a Measurement.
 
@@ -459,101 +1139,8 @@ class MeasurementCreator(Creator):
         self.session.add(ecu_address)
         return ecu_address
 
-    def add_matrix_dim(
-        self, measurement: model.Measurement, x_dim: int, y_dim: Optional[int] = None, z_dim: Optional[int] = None
-    ) -> model.MatrixDim:
-        """Add MatrixDim to a Measurement.
-
-        Parameters
-        ----------
-        measurement : model.Measurement
-            The Measurement to add MatrixDim to
-        x_dim : int
-            X dimension
-        y_dim : Optional[int], optional
-            Y dimension, by default None
-        z_dim : Optional[int], optional
-            Z dimension, by default None
-
-        Returns
-        -------
-        model.MatrixDim
-            The newly created MatrixDim instance
-        """
-        numbers = [x_dim]
-        if y_dim is not None:
-            numbers.append(y_dim)
-        if z_dim is not None:
-            numbers.append(z_dim)
-
-        matrix_dim = model.MatrixDim(numbers=numbers)
-        matrix_dim.measurement = measurement
-        self.session.add(matrix_dim)
-        return matrix_dim
-
-    def add_format(self, measurement: model.Measurement, format_string: str) -> model.Format:
-        """Add Format to a Measurement.
-
-        Parameters
-        ----------
-        measurement : model.Measurement
-            The Measurement to add Format to
-        format_string : str
-            The format string
-
-        Returns
-        -------
-        model.Format
-            The newly created Format instance
-        """
-        format_obj = model.Format(formatString=format_string)
-        format_obj.measurement = measurement
-        self.session.add(format_obj)
-        return format_obj
-
-    def add_phys_unit(self, measurement: model.Measurement, unit: str) -> model.PhysUnit:
-        """Add PhysUnit to a Measurement.
-
-        Parameters
-        ----------
-        measurement : model.Measurement
-            The Measurement to add PhysUnit to
-        unit : str
-            The physical unit
-
-        Returns
-        -------
-        model.PhysUnit
-            The newly created PhysUnit instance
-        """
-        phys_unit = model.PhysUnit(unit=unit)
-        phys_unit.measurement = measurement
-        self.session.add(phys_unit)
-        return phys_unit
-
-    def add_symbol_link(self, measurement: model.Measurement, symbol_name: str, offset: Optional[int] = None) -> model.SymbolLink:
-        """Add SymbolLink to a Measurement.
-
-        Parameters
-        ----------
-        measurement : model.Measurement
-            The Measurement to add SymbolLink to
-        symbol_name : str
-            The symbol name
-        offset : Optional[int], optional
-            The offset, by default None
-
-        Returns
-        -------
-        model.SymbolLink
-            The newly created SymbolLink instance
-        """
-        symbol_link = model.SymbolLink(symbolName=symbol_name, offset=offset if offset is not None else 0)
-        symbol_link.measurement = measurement
-        self.session.add(symbol_link)
-        return symbol_link
-
-    def add_virtual(self, measurement: model.Measurement, measuring_channel: Optional[List[str]] = None) -> model.Virtual:
+    def add_virtual(self, measurement: model.Measurement,
+                    measuring_channel: Optional[List[str]] = None) -> model.Virtual:
         """Add Virtual to a Measurement.
 
         Parameters
@@ -572,279 +1159,6 @@ class MeasurementCreator(Creator):
         virtual.measurement = measurement
         self.session.add(virtual)
         return virtual
-
-
-class AxisPtsCreator(Creator):
-    """Creator class for AxisPts entities.
-
-    This class provides methods to create new AxisPts instances and
-    their related entities.
-
-    Attributes
-    ----------
-    session : Any
-        SQLAlchemy session object used to interact with the database
-    """
-
-    def create_axis_pts(
-        self,
-        name: str,
-        long_identifier: str,
-        address: int,
-        input_quantity: str,
-        deposit_attr: str,
-        max_diff: float,
-        conversion: str,
-        max_axis_points: int,
-        lower_limit: float,
-        upper_limit: float,
-        module_name: Optional[str] = None,
-    ) -> model.AxisPts:
-        """Create a new AxisPts instance.
-
-        Parameters
-        ----------
-        name : str
-            Name of the axis points
-        long_identifier : str
-            Description of the axis points
-        address : int
-            Address of the axis points
-        input_quantity : str
-            Input quantity of the axis points
-        deposit_attr : str
-            Deposit attribute of the axis points
-        max_diff : float
-            Maximum difference of the axis points
-        conversion : str
-            Name of the computation method for conversion
-        max_axis_points : int
-            Maximum number of axis points
-        lower_limit : float
-            Lower limit of the axis points
-        upper_limit : float
-            Upper limit of the axis points
-        module_name : Optional[str], optional
-            Name of the module to associate with this AxisPts, by default None
-
-        Returns
-        -------
-        model.AxisPts
-            The newly created AxisPts instance
-        """
-        # Find the module if module_name is provided
-        module = None
-        if module_name:
-            module = self.session.query(model.Module).filter(model.Module.name == module_name).first()
-            if not module:
-                raise exceptions.StructuralError(f"Module '{module_name}' not found")
-
-        # Create the AxisPts instance
-        axis_pts = model.AxisPts(
-            name=name,
-            longIdentifier=long_identifier,
-            address=address,
-            inputQuantity=input_quantity,
-            depositAttr=deposit_attr,
-            maxDiff=max_diff,
-            conversion=conversion,
-            maxAxisPoints=max_axis_points,
-            lowerLimit=lower_limit,
-            upperLimit=upper_limit,
-        )
-
-        # Associate with module if provided
-        if module:
-            module.axis_pts.append(axis_pts)
-
-        # Add to session
-        self.session.add(axis_pts)
-
-        return axis_pts
-
-    def add_byte_order(self, axis_pts: model.AxisPts, byte_order: str) -> model.ByteOrder:
-        """Add ByteOrder to an AxisPts.
-
-        Parameters
-        ----------
-        axis_pts : model.AxisPts
-            The AxisPts to add ByteOrder to
-        byte_order : str
-            The byte order (e.g., "MSB_FIRST", "MSB_LAST")
-
-        Returns
-        -------
-        model.ByteOrder
-            The newly created ByteOrder instance
-        """
-        byte_order_obj = model.ByteOrder(byteOrder=byte_order)
-        axis_pts.byte_order = byte_order_obj
-        self.session.add(byte_order_obj)
-        return byte_order_obj
-
-    def add_calibration_access(self, axis_pts: model.AxisPts, calibration_access: str) -> model.CalibrationAccess:
-        """Add CalibrationAccess to an AxisPts.
-
-        Parameters
-        ----------
-        axis_pts : model.AxisPts
-            The AxisPts to add CalibrationAccess to
-        calibration_access : str
-            The calibration access (e.g., "CALIBRATION", "NO_CALIBRATION")
-
-        Returns
-        -------
-        model.CalibrationAccess
-            The newly created CalibrationAccess instance
-        """
-        calibration_access_obj = model.CalibrationAccess(type=calibration_access)
-        calibration_access_obj.axis_pts = axis_pts
-        self.session.add(calibration_access_obj)
-        return calibration_access_obj
-
-    def add_deposit(self, axis_pts: model.AxisPts, mode: str) -> model.Deposit:
-        """Add Deposit to an AxisPts.
-
-        Parameters
-        ----------
-        axis_pts : model.AxisPts
-            The AxisPts to add Deposit to
-        mode : str
-            The deposit mode (e.g., "ABSOLUTE", "DIFFERENCE")
-
-        Returns
-        -------
-        model.Deposit
-            The newly created Deposit instance
-        """
-        deposit = model.Deposit(mode=mode)
-        deposit.axis_pts = axis_pts
-        self.session.add(deposit)
-        return deposit
-
-    def add_extended_limits(self, axis_pts: model.AxisPts, lower_limit: float, upper_limit: float) -> model.ExtendedLimits:
-        """Add ExtendedLimits to an AxisPts.
-
-        Parameters
-        ----------
-        axis_pts : model.AxisPts
-            The AxisPts to add ExtendedLimits to
-        lower_limit : float
-            The lower limit
-        upper_limit : float
-            The upper limit
-
-        Returns
-        -------
-        model.ExtendedLimits
-            The newly created ExtendedLimits instance
-        """
-        extended_limits = model.ExtendedLimits(lowerLimit=lower_limit, upperLimit=upper_limit)
-        extended_limits.axis_pts = axis_pts
-        self.session.add(extended_limits)
-        return extended_limits
-
-    def add_format(self, axis_pts: model.AxisPts, format_string: str) -> model.Format:
-        """Add Format to an AxisPts.
-
-        Parameters
-        ----------
-        axis_pts : model.AxisPts
-            The AxisPts to add Format to
-        format_string : str
-            The format string
-
-        Returns
-        -------
-        model.Format
-            The newly created Format instance
-        """
-        format_obj = model.Format(formatString=format_string)
-        format_obj.axis_pts = axis_pts
-        self.session.add(format_obj)
-        return format_obj
-
-    def add_monotony(self, axis_pts: model.AxisPts, monotony: str) -> model.Monotony:
-        """Add Monotony to an AxisPts.
-
-        Parameters
-        ----------
-        axis_pts : model.AxisPts
-            The AxisPts to add Monotony to
-        monotony : str
-            The monotony (e.g., "MON_INCREASE", "MON_DECREASE", "STRICT_INCREASE", "STRICT_DECREASE")
-
-        Returns
-        -------
-        model.Monotony
-            The newly created Monotony instance
-        """
-        monotony_obj = model.Monotony(monotony=monotony)
-        axis_pts.monotony = monotony_obj
-        self.session.add(monotony_obj)
-        return monotony_obj
-
-    def add_phys_unit(self, axis_pts: model.AxisPts, unit: str) -> model.PhysUnit:
-        """Add PhysUnit to an AxisPts.
-
-        Parameters
-        ----------
-        axis_pts : model.AxisPts
-            The AxisPts to add PhysUnit to
-        unit : str
-            The physical unit
-
-        Returns
-        -------
-        model.PhysUnit
-            The newly created PhysUnit instance
-        """
-        phys_unit = model.PhysUnit(unit=unit)
-        phys_unit.axis_pts = axis_pts
-        self.session.add(phys_unit)
-        return phys_unit
-
-    def add_step_size(self, axis_pts: model.AxisPts, step_size: float) -> model.StepSize:
-        """Add StepSize to an AxisPts.
-
-        Parameters
-        ----------
-        axis_pts : model.AxisPts
-            The AxisPts to add StepSize to
-        step_size : float
-            The step size
-
-        Returns
-        -------
-        model.StepSize
-            The newly created StepSize instance
-        """
-        step_size_obj = model.StepSize(stepSize=step_size)
-        axis_pts.step_size = step_size_obj
-        self.session.add(step_size_obj)
-        return step_size_obj
-
-    def add_symbol_link(self, axis_pts: model.AxisPts, symbol_name: str, offset: Optional[int] = None) -> model.SymbolLink:
-        """Add SymbolLink to an AxisPts.
-
-        Parameters
-        ----------
-        axis_pts : model.AxisPts
-            The AxisPts to add SymbolLink to
-        symbol_name : str
-            The symbol name
-        offset : Optional[int], optional
-            The offset, by default None
-
-        Returns
-        -------
-        model.SymbolLink
-            The newly created SymbolLink instance
-        """
-        symbol_link = model.SymbolLink(symbolName=symbol_name, offset=offset if offset is not None else 0)
-        symbol_link.axis_pts = axis_pts
-        self.session.add(symbol_link)
-        return symbol_link
 
 
 class ProjectCreator(Creator):
@@ -923,7 +1237,7 @@ class ProjectCreator(Creator):
         return project_no
 
 
-class ModuleCreator(Creator):
+class ModuleCreator(Creator, HasIfData):
     """Creator class for Module entities.
 
     This class provides methods to create new Module instances and
@@ -966,29 +1280,11 @@ class ModuleCreator(Creator):
 
         return module
 
-    def add_if_data(self, module: model.Module, if_data_text: str) -> model.IfData:
-        """Add IF_DATA to a Module.
-
-        Parameters
-        ----------
-        module : model.Module
-            The Module to add IF_DATA to
-        if_data_text : str
-            The IF_DATA text content
-
-        Returns
-        -------
-        model.IfData
-            The newly created IfData instance
-        """
-        if_data = model.IfData()
-        if_data.ifDataText = if_data_text
-        if_data.module = module
-        self.session.add(if_data)
-        return if_data
+    def add_if_data(self, module: model.Module, if_data_text: Union[str, Dict[str, Any]]) -> model.IfData:
+        return super().add_if_data(module, if_data_text)
 
     def add_variant_coding(
-        self, module: model.Module, var_separator: Optional[str] = None, var_naming: Optional[str] = None
+            self, module: model.Module, var_separator: Optional[str] = None, var_naming: Optional[str] = None
     ) -> model.VariantCoding:
         """Add VariantCoding to a Module.
 
@@ -1025,7 +1321,7 @@ class ModuleCreator(Creator):
         return variant_coding
 
     def add_var_characteristic(
-        self, variant_coding: model.VariantCoding, name: str, criterion_name: str, criterion_value: str
+            self, variant_coding: model.VariantCoding, name: str, criterion_name: str, criterion_value: str
     ) -> model.VarCharacteristic:
         """Add VarCharacteristic to a VariantCoding.
 
@@ -1057,7 +1353,7 @@ class ModuleCreator(Creator):
         return var_characteristic
 
     def add_user_rights(
-        self, module: model.Module, user_level_id: str, read_only: bool = False, ref_group: Optional[str] = None
+            self, module: model.Module, user_level_id: str, read_only: bool = False, ref_group: Optional[str] = None
     ) -> model.UserRights:
         """Add UserRights to a Module.
 
@@ -1141,14 +1437,14 @@ class ModuleCreator(Creator):
         return sub_group
 
     def add_unit(
-        self,
-        module: model.Module,
-        name: str,
-        long_identifier: str,
-        display: str,
-        type_str: Optional[str] = None,
-        ref_unit: Optional[str] = None,
-        unit_conversion: Optional[Dict[str, float]] = None,
+            self,
+            module: model.Module,
+            name: str,
+            long_identifier: str,
+            display: str,
+            type_str: Optional[str] = None,
+            ref_unit: Optional[str] = None,
+            unit_conversion: Optional[Dict[str, float]] = None,
     ) -> model.Unit:
         """Add Unit to a Module.
 
@@ -1199,13 +1495,13 @@ class ModuleCreator(Creator):
         return unit
 
     def add_compu_tab(
-        self,
-        module: model.Module,
-        name: str,
-        long_identifier: str,
-        conversion_type: str,
-        pairs: List[Tuple[float, float]],
-        default_numeric: Optional[float] = None,
+            self,
+            module: model.Module,
+            name: str,
+            long_identifier: str,
+            conversion_type: str,
+            pairs: List[Tuple[float, float]],
+            default_numeric: Optional[float] = None,
     ) -> model.CompuTab:
         """Add a numeric COMPU_TAB to a Module.
 
@@ -1247,13 +1543,13 @@ class ModuleCreator(Creator):
         return ct
 
     def add_compu_vtab(
-        self,
-        module: model.Module,
-        name: str,
-        long_identifier: str,
-        conversion_type: str,
-        pairs: List[Tuple[float, str]],
-        default_value: Optional[str] = None,
+            self,
+            module: model.Module,
+            name: str,
+            long_identifier: str,
+            conversion_type: str,
+            pairs: List[Tuple[float, str]],
+            default_value: Optional[str] = None,
     ) -> model.CompuVtab:
         """Add a COMPU_VTAB (verbal table) to a Module."""
         vt = model.CompuVtab(
@@ -1278,12 +1574,12 @@ class ModuleCreator(Creator):
         return vt
 
     def add_compu_vtab_range(
-        self,
-        module: model.Module,
-        name: str,
-        long_identifier: str,
-        triples: List[Tuple[float, float, str]],
-        default_value: Optional[str] = None,
+            self,
+            module: model.Module,
+            name: str,
+            long_identifier: str,
+            triples: List[Tuple[float, float, str]],
+            default_value: Optional[str] = None,
     ) -> model.CompuVtabRange:
         """Add a COMPU_VTAB_RANGE (verbal ranges) to a Module."""
         vr = model.CompuVtabRange(
@@ -1308,13 +1604,13 @@ class ModuleCreator(Creator):
         return vr
 
     def add_blob(
-        self,
-        module: model.Module,
-        name: str,
-        long_identifier: str,
-        address: int,
-        length: int,
-        calibration_access: Optional[str] = None,
+            self,
+            module: model.Module,
+            name: str,
+            long_identifier: str,
+            address: int,
+            length: int,
+            calibration_access: Optional[str] = None,
     ) -> model.Blob:
         """Add BLOB to a Module."""
         blob = model.Blob(
@@ -1332,27 +1628,27 @@ class ModuleCreator(Creator):
         return blob
 
     def add_transformer(
-        self,
-        module: model.Module,
-        name: str,
-        version: str,
-        dllname32: str,
-        dllname64: str,
-        timeout: int,
-        trigger: str,
-        reverse: str,
-        in_objects: Optional[List[str]] = None,
-        out_objects: Optional[List[str]] = None,
+            self,
+            module: model.Module,
+            name: str,
+            version: str,
+            dllname32: str,
+            dllname64: str,
+            timeout: int,
+            trigger: str,
+            reverse: str,
+            in_objects: Optional[List[str]] = None,
+            out_objects: Optional[List[str]] = None,
     ) -> model.Transformer:
         """Add TRANSFORMER to a Module."""
         tr = model.Transformer(
             name=name,
             version=version,
-            dllname32=dllname32,
-            dllname64=dllname64,
+            executable32=dllname32,
+            executable64=dllname64,
             timeout=timeout,
             trigger=trigger,
-            reverse=reverse,
+            inverseTransformer=reverse,
         )
         tr.module = module
         self.session.add(tr)
@@ -1371,14 +1667,14 @@ class ModuleCreator(Creator):
         return tr
 
     def add_frame(
-        self,
-        module: model.Module,
-        name: str,
-        long_identifier: str,
-        scaling_unit: int,
-        rate: int,
-        measurements: Optional[List[str]] = None,
-        if_data_texts: Optional[List[str]] = None,
+            self,
+            module: model.Module,
+            name: str,
+            long_identifier: str,
+            scaling_unit: int,
+            rate: int,
+            measurements: Optional[List[str]] = None,
+            if_data_texts: Optional[List[str]] = None,
     ) -> model.Frame:
         """Add FRAME to a Module."""
         fr = model.Frame(
@@ -1397,17 +1693,17 @@ class ModuleCreator(Creator):
             fr.frame_measurement = fm
         if if_data_texts:
             for txt in if_data_texts:
-                idata = model.IfData(content=txt)
-                idata.frame = fr
-                self.session.add(idata)
+                entry = model.IfData(raw=txt)
+                entry.frame = fr
+                self.session.add(entry)
         return fr
 
     def add_typedef_structure(
-        self,
-        module: model.Module,
-        name: str,
-        long_identifier: str,
-        size: int,
+            self,
+            module: model.Module,
+            name: str,
+            long_identifier: str,
+            size: int,
     ) -> model.TypedefStructure:
         """Add TYPEDEF_STRUCTURE to a Module."""
         ts = model.TypedefStructure(
@@ -1420,11 +1716,11 @@ class ModuleCreator(Creator):
         return ts
 
     def add_structure_component(
-        self,
-        typedef_structure: model.TypedefStructure,
-        name: str,
-        type_ref: str,
-        offset: int,
+            self,
+            typedef_structure: model.TypedefStructure,
+            name: str,
+            type_ref: str,
+            offset: int,
     ) -> model.StructureComponent:
         """Add STRUCTURE_COMPONENT to a TypedefStructure."""
         sc = model.StructureComponent(
@@ -1436,17 +1732,112 @@ class ModuleCreator(Creator):
         self.session.add(sc)
         return sc
 
+    def add_typedef_axis(
+            self,
+            module: model.Module,
+            name: str,
+            long_identifier: str,
+            input_quantity: str,
+            deposit_attr: str,
+            max_diff: float,
+            conversion: str,
+            max_axis_points: int,
+            lower_limit: float,
+            upper_limit: float,
+            byte_order: Optional[str] = None,
+            deposit_mode: Optional[str] = None,
+            extended_limits: Optional[Tuple[float, float]] = None,
+            format_string: Optional[str] = None,
+            monotony: Optional[str] = None,
+            phys_unit: Optional[str] = None,
+            step_size: Optional[float] = None,
+    ) -> model.TypedefAxis:
+        """Add TYPEDEF_AXIS to a Module."""
+        axis = model.TypedefAxis(
+            name=name,
+            longIdentifier=long_identifier,
+            inputQuantity=input_quantity,
+            depositAttr=deposit_attr,
+            maxDiff=max_diff,
+            conversion=conversion,
+            maxAxisPoints=max_axis_points,
+            lowerLimit=lower_limit,
+            upperLimit=upper_limit,
+        )
+        axis.module = module
+        self.session.add(axis)
+
+        if byte_order:
+            bo = model.ByteOrder(byteOrder=byte_order)
+            axis.byte_order = bo
+            self.session.add(bo)
+        if deposit_mode:
+            dep = model.Deposit(mode=deposit_mode)
+            axis.deposit = dep
+            self.session.add(dep)
+        if extended_limits:
+            el = model.ExtendedLimits(lowerLimit=extended_limits[0], upperLimit=extended_limits[1])
+            axis.extended_limits = el
+            self.session.add(el)
+        if format_string:
+            fmt = model.Format(formatString=format_string)
+            axis.format = fmt
+            self.session.add(fmt)
+        if monotony:
+            mono = model.Monotony(monotony=monotony)
+            axis.monotony = mono
+            self.session.add(mono)
+        if phys_unit:
+            pu = model.PhysUnit(unit=phys_unit)
+            axis.phys_unit = pu
+            self.session.add(pu)
+        if step_size is not None:
+            ss = model.StepSize(step_size=step_size)
+            axis.step_size = ss
+            self.session.add(ss)
+
+        return axis
+
+    def add_typedef_blob(
+            self,
+            module: model.Module,
+            name: str,
+            long_identifier: str,
+            size: int,
+            address_type: Optional[str] = None,
+    ) -> model.TypedefBlob:
+        """Add TYPEDEF_BLOB to a Module."""
+        tb = model.TypedefBlob(
+            name=name,
+            longIdentifier=long_identifier,
+            size=size,
+        )
+        tb.module = module
+        self.session.add(tb)
+        if address_type:
+            at = model.AddressType(addressType=address_type)
+            tb.address_type = at
+            self.session.add(at)
+        return tb
+
+    def add_a2ml(self, module: model.Module) -> model.A2ml:
+        """Add A2ML block to a Module."""
+        a2ml = model.A2ml()
+        a2ml.module = module
+        self.session.add(a2ml)
+        return a2ml
+
     def add_typedef_measurement(
-        self,
-        module: model.Module,
-        name: str,
-        long_identifier: str,
-        datatype: str,
-        conversion: str,
-        resolution: int,
-        accuracy: float,
-        lower_limit: float,
-        upper_limit: float,
+            self,
+            module: model.Module,
+            name: str,
+            long_identifier: str,
+            datatype: str,
+            conversion: str,
+            resolution: int,
+            accuracy: float,
+            lower_limit: float,
+            upper_limit: float,
     ) -> model.TypedefMeasurement:
         """Add TYPEDEF_MEASUREMENT to a Module."""
         tm = model.TypedefMeasurement(
@@ -1464,16 +1855,16 @@ class ModuleCreator(Creator):
         return tm
 
     def add_typedef_characteristic(
-        self,
-        module: model.Module,
-        name: str,
-        long_identifier: str,
-        char_type: str,
-        deposit: str,
-        max_diff: float,
-        conversion: str,
-        lower_limit: float,
-        upper_limit: float,
+            self,
+            module: model.Module,
+            name: str,
+            long_identifier: str,
+            char_type: str,
+            deposit: str,
+            max_diff: float,
+            conversion: str,
+            lower_limit: float,
+            upper_limit: float,
     ) -> model.TypedefCharacteristic:
         """Add TYPEDEF_CHARACTERISTIC to a Module."""
         tc = model.TypedefCharacteristic(
@@ -1491,12 +1882,12 @@ class ModuleCreator(Creator):
         return tc
 
     def add_instance(
-        self,
-        module: model.Module,
-        name: str,
-        long_identifier: str,
-        type_name: str,
-        address: int,
+            self,
+            module: model.Module,
+            name: str,
+            long_identifier: str,
+            type_name: str,
+            address: int,
     ) -> model.Instance:
         """Add INSTANCE to a Module."""
         inst = model.Instance(
@@ -1510,13 +1901,13 @@ class ModuleCreator(Creator):
         return inst
 
     def add_mod_common(
-        self,
-        module: model.Module,
-        comment: Optional[str] = None,
-        byte_order: Optional[str] = None,
-        data_size: Optional[int] = None,
-        deposit: Optional[str] = None,
-        s_rec_layout: Optional[str] = None,
+            self,
+            module: model.Module,
+            comment: Optional[str] = None,
+            byte_order: Optional[str] = None,
+            data_size: Optional[int] = None,
+            deposit: Optional[str] = None,
+            s_rec_layout: Optional[str] = None,
     ) -> model.ModCommon:
         """Add ModCommon to a Module.
 
@@ -1571,19 +1962,20 @@ class ModuleCreator(Creator):
         return mod_common
 
     def add_mod_par(
-        self,
-        module: model.Module,
-        comment: Optional[str] = None,
-        cpu_type: Optional[str] = None,
-        customer: Optional[str] = None,
-        customer_no: Optional[str] = None,
-        ecu: Optional[str] = None,
-        ecu_calibration_offset: Optional[int] = None,
-        epk: Optional[str] = None,
-        phone_no: Optional[str] = None,
-        supplier: Optional[str] = None,
-        user: Optional[str] = None,
-        version: Optional[str] = None,
+            self,
+            module: model.Module,
+            comment: Optional[str] = None,
+            cpu_type: Optional[str] = None,
+            customer: Optional[str] = None,
+            customer_no: Optional[str] = None,
+            ecu: Optional[str] = None,
+            ecu_calibration_offset: Optional[int] = None,
+            epk: Optional[str] = None,
+            phone_no: Optional[str] = None,
+            supplier: Optional[str] = None,
+            user: Optional[str] = None,
+            version: Optional[str] = None,
+            no_of_interfaces: Optional[int] = None,
     ) -> model.ModPar:
         """Add ModPar to a Module.
 
@@ -1683,325 +2075,151 @@ class ModuleCreator(Creator):
             version_obj.mod_par = mod_par
             self.session.add(version_obj)
 
+        if no_of_interfaces is not None:
+            noi_obj = model.NoOfInterfaces(num=no_of_interfaces)
+            noi_obj.mod_par = mod_par
+            self.session.add(noi_obj)
+
         return mod_par
 
 
-class CharacteristicCreator(Creator):
-    """Creator class for Characteristic entities.
+class InstanceCreator(
+    Creator,
+    HasAddressType,
+    HasAnnotation,
+    HasCalibrationAccess,
+    HasDisplayIdentifier,
+    HasEcuAddressExtension,
+    HasIfData,
+    HasLayout,
+    HasMatrixDim,
+    HasMaxRefresh,
+    HasModelLink,
+    HasReadWrite,
+    HasSymbolLink,
+):
+    """Creator class for Instance entities."""
 
-    This class provides methods to create new Characteristic instances and
-    their related entities.
-
-    Attributes
-    ----------
-    session : Any
-        SQLAlchemy session object used to interact with the database
-    """
-
-    def create_characteristic(
-        self,
-        name: str,
-        long_identifier: str,
-        char_type: str,
-        address: int,
-        deposit: str,
-        max_diff: float,
-        conversion: str,
-        lower_limit: float,
-        upper_limit: float,
-        module_name: Optional[str] = None,
-    ) -> model.Characteristic:
-        """Create a new Characteristic instance.
-
-        Parameters
-        ----------
-        name : str
-            Name of the characteristic
-        long_identifier : str
-            Description of the characteristic
-        char_type : str
-            Type of the characteristic (e.g., "VALUE", "CURVE", "MAP", "CUBOID")
-        address : int
-            Address of the characteristic
-        deposit : str
-            Deposit attribute of the characteristic
-        max_diff : float
-            Maximum difference of the characteristic
-        conversion : str
-            Name of the computation method for conversion
-        lower_limit : float
-            Lower limit of the characteristic
-        upper_limit : float
-            Upper limit of the characteristic
-        module_name : Optional[str], optional
-            Name of the module to associate with this Characteristic, by default None
-
-        Returns
-        -------
-        model.Characteristic
-            The newly created Characteristic instance
-        """
-        # Find the module if module_name is provided
+    def create_instance(
+            self,
+            name: str,
+            long_identifier: str,
+            type_name: str,
+            address: int,
+            module_name: Optional[str] = None,
+    ) -> model.Instance:
         module = None
         if module_name:
             module = self.session.query(model.Module).filter(model.Module.name == module_name).first()
             if not module:
                 raise exceptions.StructuralError(f"Module '{module_name}' not found")
 
-        # Create the Characteristic instance
-        characteristic = model.Characteristic(
+        inst = model.Instance(
             name=name,
             longIdentifier=long_identifier,
-            type=char_type,
+            typeName=type_name,
             address=address,
-            deposit=deposit,
-            maxDiff=max_diff,
-            conversion=conversion,
-            lowerLimit=lower_limit,
-            upperLimit=upper_limit,
         )
-
-        # Associate with module if provided
         if module:
-            module.characteristic.append(characteristic)
+            module.instance.append(inst)
+        self.session.add(inst)
+        return inst
 
-        # Add to session
-        self.session.add(characteristic)
+    def add_addr_epk(self, mod_par: model.ModPar, address: int) -> model.AddrEpk:
+        addr = model.AddrEpk(address=address)
+        addr.mod_par = mod_par
+        self.session.add(addr)
+        return addr
 
-        return characteristic
-
-    def add_axis_descr(
-        self,
-        characteristic: model.Characteristic,
-        attribute: str,
-        input_quantity: str,
-        conversion: str,
-        max_axis_points: int,
-        lower_limit: float,
-        upper_limit: float,
-    ) -> model.AxisDescr:
-        """Add AxisDescr to a Characteristic.
-
-        Parameters
-        ----------
-        characteristic : model.Characteristic
-            The Characteristic to add AxisDescr to
-        attribute : str
-            The attribute (e.g., "STD_AXIS", "FIX_AXIS", "COM_AXIS")
-        input_quantity : str
-            The input quantity
-        conversion : str
-            Name of the computation method for conversion
-        max_axis_points : int
-            Maximum number of axis points
-        lower_limit : float
-            Lower limit of the axis
-        upper_limit : float
-            Upper limit of the axis
-
-        Returns
-        -------
-        model.AxisDescr
-            The newly created AxisDescr instance
-        """
-        axis_descr = model.AxisDescr(
-            attribute=attribute,
-            inputQuantity=input_quantity,
-            conversion=conversion,
-            maxAxisPoints=max_axis_points,
-            lowerLimit=lower_limit,
-            upperLimit=upper_limit,
+    def add_memory_layout(
+            self,
+            mod_par: model.ModPar,
+            prg_type: str,
+            address: int,
+            size: int,
+            offsets: Tuple[int, int, int, int, int],
+            if_data: Optional[Union[str, Dict[str, Any]]] = None,
+    ) -> model.MemoryLayout:
+        ml = model.MemoryLayout(
+            prgType=prg_type,
+            address=address,
+            size=size,
+            offset_0=offsets[0],
+            offset_1=offsets[1],
+            offset_2=offsets[2],
+            offset_3=offsets[3],
+            offset_4=offsets[4],
         )
-        characteristic.axis_descr.append(axis_descr)
-        self.session.add(axis_descr)
-        return axis_descr
+        ml.mod_par = mod_par
+        self.session.add(ml)
+        if if_data is not None:
+            self.add_if_data(ml, if_data)
+        return ml
 
-    def add_bit_mask(self, characteristic: model.Characteristic, mask: int) -> model.BitMask:
-        """Add BitMask to a Characteristic.
+    def add_memory_segment(
+            self,
+            mod_par: model.ModPar,
+            name: str,
+            long_identifier: str,
+            prg_type: str,
+            memory_type: str,
+            attribute: str,
+            address: int,
+            size: int,
+            offsets: Tuple[int, int, int, int, int],
+            if_data: Optional[Union[str, Dict[str, Any]]] = None,
+    ) -> model.MemorySegment:
+        ms = model.MemorySegment(
+            name=name,
+            longIdentifier=long_identifier,
+            prgType=prg_type,
+            memoryType=memory_type,
+            attribute=attribute,
+            address=address,
+            size=size,
+            offset_0=offsets[0],
+            offset_1=offsets[1],
+            offset_2=offsets[2],
+            offset_3=offsets[3],
+            offset_4=offsets[4],
+        )
+        ms.mod_par = mod_par
+        self.session.add(ms)
+        if if_data is not None:
+            self.add_if_data(ms, if_data)
+        return ms
 
-        Parameters
-        ----------
-        characteristic : model.Characteristic
-            The Characteristic to add BitMask to
-        mask : int
-            The bit mask
+    def add_system_constant(self, mod_par: model.ModPar, name: str, value: str) -> model.SystemConstant:
+        sc = model.SystemConstant(name=name, value=value)
+        sc.mod_par = mod_par
+        self.session.add(sc)
+        return sc
 
-        Returns
-        -------
-        model.BitMask
-            The newly created BitMask instance
-        """
-        bit_mask = model.BitMask(mask=mask)
-        bit_mask.characteristic = characteristic
-        self.session.add(bit_mask)
-        return bit_mask
-
-    def add_byte_order(self, characteristic: model.Characteristic, byte_order: str) -> model.ByteOrder:
-        """Add ByteOrder to a Characteristic.
-
-        Parameters
-        ----------
-        characteristic : model.Characteristic
-            The Characteristic to add ByteOrder to
-        byte_order : str
-            The byte order (e.g., "MSB_FIRST", "MSB_LAST")
-
-        Returns
-        -------
-        model.ByteOrder
-            The newly created ByteOrder instance
-        """
-        byte_order_obj = model.ByteOrder(byteOrder=byte_order)
-        characteristic.byte_order = byte_order_obj
-        self.session.add(byte_order_obj)
-        return byte_order_obj
-
-    def add_matrix_dim(
-        self, characteristic: model.Characteristic, x_dim: int, y_dim: Optional[int] = None, z_dim: Optional[int] = None
-    ) -> model.MatrixDim:
-        """Add MatrixDim to a Characteristic.
-
-        Parameters
-        ----------
-        characteristic : model.Characteristic
-            The Characteristic to add MatrixDim to
-        x_dim : int
-            X dimension
-        y_dim : Optional[int], optional
-            Y dimension, by default None
-        z_dim : Optional[int], optional
-            Z dimension, by default None
-
-        Returns
-        -------
-        model.MatrixDim
-            The newly created MatrixDim instance
-        """
-        numbers = [x_dim]
-        if y_dim is not None:
-            numbers.append(y_dim)
-        if z_dim is not None:
-            numbers.append(z_dim)
-
-        matrix_dim = model.MatrixDim(numbers=numbers)
-        matrix_dim.characteristic = characteristic
-        self.session.add(matrix_dim)
-        return matrix_dim
-
-    def add_dependent_characteristic(
-        self, characteristic: model.Characteristic, formula: str, characteristic_names: List[str]
-    ) -> model.DependentCharacteristic:
-        """Add DependentCharacteristic to a Characteristic.
-
-        Parameters
-        ----------
-        characteristic : model.Characteristic
-            The Characteristic to add DependentCharacteristic to
-        formula : str
-            The formula
-        characteristic_names : List[str]
-            List of characteristic names
-
-        Returns
-        -------
-        model.DependentCharacteristic
-            The newly created DependentCharacteristic instance
-        """
-        dependent_characteristic = model.DependentCharacteristic(formula=formula, characteristic_id=characteristic_names)
-        dependent_characteristic.characteristic = characteristic
-        self.session.add(dependent_characteristic)
-        return dependent_characteristic
-
-    def add_virtual_characteristic(
-        self, characteristic: model.Characteristic, formula: str, characteristic_names: List[str]
-    ) -> model.VirtualCharacteristic:
-        """Add VirtualCharacteristic to a Characteristic.
-
-        Parameters
-        ----------
-        characteristic : model.Characteristic
-            The Characteristic to add VirtualCharacteristic to
-        formula : str
-            The formula
-        characteristic_names : List[str]
-            List of characteristic names
-
-        Returns
-        -------
-        model.VirtualCharacteristic
-            The newly created VirtualCharacteristic instance
-        """
-        virtual_characteristic = model.VirtualCharacteristic(formula=formula, characteristic_id=characteristic_names)
-        virtual_characteristic.characteristic = characteristic
-        self.session.add(virtual_characteristic)
-        return virtual_characteristic
-
-    def add_format(self, characteristic: model.Characteristic, format_string: str) -> model.Format:
-        """Add Format to a Characteristic.
-
-        Parameters
-        ----------
-        characteristic : model.Characteristic
-            The Characteristic to add Format to
-        format_string : str
-            The format string
-
-        Returns
-        -------
-        model.Format
-            The newly created Format instance
-        """
-        format_obj = model.Format(formatString=format_string)
-        format_obj.characteristic = characteristic
-        self.session.add(format_obj)
-        return format_obj
-
-    def add_phys_unit(self, characteristic: model.Characteristic, unit: str) -> model.PhysUnit:
-        """Add PhysUnit to a Characteristic.
-
-        Parameters
-        ----------
-        characteristic : model.Characteristic
-            The Characteristic to add PhysUnit to
-        unit : str
-            The physical unit
-
-        Returns
-        -------
-        model.PhysUnit
-            The newly created PhysUnit instance
-        """
-        phys_unit = model.PhysUnit(unit=unit)
-        phys_unit.characteristic = characteristic
-        self.session.add(phys_unit)
-        return phys_unit
-
-    def add_symbol_link(
-        self, characteristic: model.Characteristic, symbol_name: str, offset: Optional[int] = None
-    ) -> model.SymbolLink:
-        """Add SymbolLink to a Characteristic.
-
-        Parameters
-        ----------
-        characteristic : model.Characteristic
-            The Characteristic to add SymbolLink to
-        symbol_name : str
-            The symbol name
-        offset : Optional[int], optional
-            The offset, by default None
-
-        Returns
-        -------
-        model.SymbolLink
-            The newly created SymbolLink instance
-        """
-        symbol_link = model.SymbolLink(symbolName=symbol_name, offset=offset if offset is not None else 0)
-        symbol_link.characteristic = characteristic
-        self.session.add(symbol_link)
-        return symbol_link
+    def add_calibration_method(
+            self,
+            mod_par: model.ModPar,
+            method: str,
+            version: int,
+            handles: Optional[List[int]] = None,
+            handle_text: Optional[str] = None,
+    ) -> model.CalibrationMethod:
+        cm = model.CalibrationMethod(method=method, version=version)
+        cm.mod_par = mod_par
+        self.session.add(cm)
+        if handles is not None:
+            ch = model.CalibrationHandle()
+            self.session.add(ch)
+            for handle in handles:
+                ch._handle.append(model.CalHandles(handle))
+            if handle_text is not None:
+                cht = model.CalibrationHandleText(text=handle_text)
+                cht.calibration_handle = ch
+                self.session.add(cht)
+            cm.calibration_handle.append(ch)
+        return cm
 
 
-class FunctionCreator(Creator):
+class FunctionCreator(Creator, HasAnnotation, HasIfData):
     """Creator class for Function entities.
 
     This class provides methods to create new Function instances and
@@ -2049,7 +2267,8 @@ class FunctionCreator(Creator):
 
         return function
 
-    def add_def_characteristic(self, function: model.Function, characteristic_names: List[str]) -> model.DefCharacteristic:
+    def add_def_characteristic(self, function: model.Function,
+                               characteristic_names: List[str]) -> model.DefCharacteristic:
         """Add DefCharacteristic to a Function.
 
         Parameters
@@ -2198,7 +2417,7 @@ class FunctionCreator(Creator):
         return sub_function
 
 
-class GroupCreator(Creator):
+class GroupCreator(Creator, HasAnnotation, HasFunctionList, HasIfData):
     """Creator class for Group entities.
 
     This class provides methods to create new Group instances and
@@ -2210,7 +2429,8 @@ class GroupCreator(Creator):
         SQLAlchemy session object used to interact with the database
     """
 
-    def create_group(self, group_name: str, group_long_identifier: str, module_name: Optional[str] = None) -> model.Group:
+    def create_group(self, group_name: str, group_long_identifier: str,
+                     module_name: Optional[str] = None) -> model.Group:
         """Create a new Group instance.
 
         Parameters
@@ -2285,26 +2505,6 @@ class GroupCreator(Creator):
         ref_characteristic.group = group
         self.session.add(ref_characteristic)
         return ref_characteristic
-
-    def add_function_list(self, group: model.Group, function_names: List[str]) -> model.FunctionList:
-        """Add FunctionList to a Group.
-
-        Parameters
-        ----------
-        group : model.Group
-            The Group to add FunctionList to
-        function_names : List[str]
-            List of function names
-
-        Returns
-        -------
-        model.FunctionList
-            The newly created FunctionList instance
-        """
-        function_list = model.FunctionList(name=function_names)
-        function_list.group = group
-        self.session.add(function_list)
-        return function_list
 
     def add_sub_group(self, group: model.Group, group_names: List[str]) -> model.SubGroup:
         """Add SubGroup to a Group.
@@ -2391,6 +2591,18 @@ class RecordLayoutCreator(Creator):
 
         return record_layout
 
+    @staticmethod
+    def _add_position_datatype(record_layout: model.RecordLayout, cls: Any, position: int,
+                               data_type: str) -> Any:
+        obj = cls(position=position, datatype=data_type)
+        obj.record_layout = record_layout
+        return obj
+
+    def _add_and_attach(self, record_layout: model.RecordLayout, obj: Any) -> Any:
+        obj.record_layout = record_layout
+        self.session.add(obj)
+        return obj
+
     def add_alignment_byte(self, record_layout: model.RecordLayout, alignment_border: int) -> model.AlignmentByte:
         """Add AlignmentByte to a RecordLayout.
 
@@ -2451,7 +2663,8 @@ class RecordLayoutCreator(Creator):
         self.session.add(alignment_long)
         return alignment_long
 
-    def add_alignment_float32_ieee(self, record_layout: model.RecordLayout, alignment_border: int) -> model.AlignmentFloat32Ieee:
+    def add_alignment_float32_ieee(self, record_layout: model.RecordLayout,
+                                   alignment_border: int) -> model.AlignmentFloat32Ieee:
         """Add AlignmentFloat32Ieee to a RecordLayout.
 
         Parameters
@@ -2471,7 +2684,8 @@ class RecordLayoutCreator(Creator):
         self.session.add(alignment_float32_ieee)
         return alignment_float32_ieee
 
-    def add_alignment_float64_ieee(self, record_layout: model.RecordLayout, alignment_border: int) -> model.AlignmentFloat64Ieee:
+    def add_alignment_float64_ieee(self, record_layout: model.RecordLayout,
+                                   alignment_border: int) -> model.AlignmentFloat64Ieee:
         """Add AlignmentFloat64Ieee to a RecordLayout.
 
         Parameters
@@ -2491,13 +2705,28 @@ class RecordLayoutCreator(Creator):
         self.session.add(alignment_float64_ieee)
         return alignment_float64_ieee
 
+    def add_alignment_float16_ieee(self, record_layout: model.RecordLayout,
+                                   alignment_border: int) -> model.AlignmentFloat16Ieee:
+        """Add AlignmentFloat16Ieee to a RecordLayout."""
+        obj = model.AlignmentFloat16Ieee(alignmentBorder=alignment_border)
+        obj.record_layout = record_layout
+        self.session.add(obj)
+        return obj
+
+    def add_alignment_int64(self, record_layout: model.RecordLayout, alignment_border: int) -> model.AlignmentInt64:
+        """Add AlignmentInt64 to a RecordLayout."""
+        obj = model.AlignmentInt64(alignmentBorder=alignment_border)
+        obj.record_layout = record_layout
+        self.session.add(obj)
+        return obj
+
     def add_fnc_values(
-        self,
-        record_layout: model.RecordLayout,
-        position: int,
-        data_type: str,
-        index_mode: Optional[str] = None,
-        address_type: Optional[str] = None,
+            self,
+            record_layout: model.RecordLayout,
+            position: int,
+            data_type: str,
+            index_mode: Optional[str] = None,
+            address_type: Optional[str] = None,
     ) -> model.FncValues:
         """Add FncValues to a RecordLayout.
 
@@ -2529,12 +2758,12 @@ class RecordLayoutCreator(Creator):
         return fnc_values
 
     def add_axis_pts_x(
-        self,
-        record_layout: model.RecordLayout,
-        position: int,
-        data_type: str,
-        index_incr: Optional[str] = None,
-        addressing: Optional[str] = None,
+            self,
+            record_layout: model.RecordLayout,
+            position: int,
+            data_type: str,
+            index_incr: Optional[str] = None,
+            addressing: Optional[str] = None,
     ) -> model.AxisPtsX:
         """Add AxisPtsX to a RecordLayout.
 
@@ -2602,3 +2831,399 @@ class RecordLayoutCreator(Creator):
         fix_no_axis_pts_x.record_layout = record_layout
         self.session.add(fix_no_axis_pts_x)
         return fix_no_axis_pts_x
+
+    def add_axis_pts_y(
+            self,
+            record_layout: model.RecordLayout,
+            position: int,
+            data_type: str,
+            index_incr: Optional[str] = None,
+            addressing: Optional[str] = None,
+    ) -> model.AxisPtsY:
+        """Add AxisPtsY to a RecordLayout."""
+        obj = model.AxisPtsY(position=position, datatype=data_type, indexIncr=index_incr, addressing=addressing)
+        return self._add_and_attach(record_layout, obj)
+
+    def add_axis_pts_z(
+            self,
+            record_layout: model.RecordLayout,
+            position: int,
+            data_type: str,
+            index_incr: Optional[str] = None,
+            addressing: Optional[str] = None,
+    ) -> model.AxisPtsZ:
+        """Add AxisPtsZ to a RecordLayout."""
+        obj = model.AxisPtsZ(position=position, datatype=data_type, indexIncr=index_incr, addressing=addressing)
+        return self._add_and_attach(record_layout, obj)
+
+    def add_axis_pts_4(
+            self,
+            record_layout: model.RecordLayout,
+            position: int,
+            data_type: str,
+            index_incr: Optional[str] = None,
+            addressing: Optional[str] = None,
+    ) -> model.AxisPts4:
+        """Add AxisPts4 to a RecordLayout."""
+        obj = model.AxisPts4(position=position, datatype=data_type, indexIncr=index_incr, addressing=addressing)
+        return self._add_and_attach(record_layout, obj)
+
+    def add_axis_pts_5(
+            self,
+            record_layout: model.RecordLayout,
+            position: int,
+            data_type: str,
+            index_incr: Optional[str] = None,
+            addressing: Optional[str] = None,
+    ) -> model.AxisPts5:
+        """Add AxisPts5 to a RecordLayout."""
+        obj = model.AxisPts5(position=position, datatype=data_type, indexIncr=index_incr, addressing=addressing)
+        return self._add_and_attach(record_layout, obj)
+
+    def add_axis_rescale_x(
+            self,
+            record_layout: model.RecordLayout,
+            position: int,
+            data_type: str,
+            max_pairs: int,
+            index_incr: Optional[str] = None,
+            addressing: Optional[str] = None,
+    ) -> model.AxisRescaleX:
+        """Add AxisRescaleX to a RecordLayout."""
+        obj = model.AxisRescaleX(
+            position=position,
+            datatype=data_type,
+            maxNumberOfRescalePairs=max_pairs,
+            indexIncr=index_incr,
+            addressing=addressing,
+        )
+        return self._add_and_attach(record_layout, obj)
+
+    def add_axis_rescale_y(
+            self,
+            record_layout: model.RecordLayout,
+            position: int,
+            data_type: str,
+            max_pairs: int,
+            index_incr: Optional[str] = None,
+            addressing: Optional[str] = None,
+    ) -> model.AxisRescaleY:
+        """Add AxisRescaleY to a RecordLayout."""
+        obj = model.AxisRescaleY(
+            position=position,
+            datatype=data_type,
+            maxNumberOfRescalePairs=max_pairs,
+            indexIncr=index_incr,
+            addressing=addressing,
+        )
+        return self._add_and_attach(record_layout, obj)
+
+    def add_axis_rescale_z(
+            self,
+            record_layout: model.RecordLayout,
+            position: int,
+            data_type: str,
+            max_pairs: int,
+            index_incr: Optional[str] = None,
+            addressing: Optional[str] = None,
+    ) -> model.AxisRescaleZ:
+        """Add AxisRescaleZ to a RecordLayout."""
+        obj = model.AxisRescaleZ(
+            position=position,
+            datatype=data_type,
+            maxNumberOfRescalePairs=max_pairs,
+            indexIncr=index_incr,
+            addressing=addressing,
+        )
+        return self._add_and_attach(record_layout, obj)
+
+    def add_axis_rescale_4(
+            self,
+            record_layout: model.RecordLayout,
+            position: int,
+            data_type: str,
+            max_pairs: int,
+            index_incr: Optional[str] = None,
+            addressing: Optional[str] = None,
+    ) -> model.AxisRescale4:
+        """Add AxisRescale4 to a RecordLayout."""
+        obj = model.AxisRescale4(
+            position=position,
+            datatype=data_type,
+            maxNumberOfRescalePairs=max_pairs,
+            indexIncr=index_incr,
+            addressing=addressing,
+        )
+        return self._add_and_attach(record_layout, obj)
+
+    def add_axis_rescale_5(
+            self,
+            record_layout: model.RecordLayout,
+            position: int,
+            data_type: str,
+            max_pairs: int,
+            index_incr: Optional[str] = None,
+            addressing: Optional[str] = None,
+    ) -> model.AxisRescale5:
+        """Add AxisRescale5 to a RecordLayout."""
+        obj = model.AxisRescale5(
+            position=position,
+            datatype=data_type,
+            maxNumberOfRescalePairs=max_pairs,
+            indexIncr=index_incr,
+            addressing=addressing,
+        )
+        return self._add_and_attach(record_layout, obj)
+
+    def add_dist_op_x(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.DistOpX:
+        """Add DistOpX to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.DistOpX, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_dist_op_y(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.DistOpY:
+        """Add DistOpY to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.DistOpY, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_dist_op_z(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.DistOpZ:
+        """Add DistOpZ to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.DistOpZ, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_dist_op_4(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.DistOp4:
+        """Add DistOp4 to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.DistOp4, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_dist_op_5(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.DistOp5:
+        """Add DistOp5 to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.DistOp5, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_fix_no_axis_pts_y(self, record_layout: model.RecordLayout, number: int) -> model.FixNoAxisPtsY:
+        """Add FixNoAxisPtsY to a RecordLayout."""
+        obj = model.FixNoAxisPtsY(numberOfAxisPoints=number)
+        return self._add_and_attach(record_layout, obj)
+
+    def add_fix_no_axis_pts_z(self, record_layout: model.RecordLayout, number: int) -> model.FixNoAxisPtsZ:
+        """Add FixNoAxisPtsZ to a RecordLayout."""
+        obj = model.FixNoAxisPtsZ(numberOfAxisPoints=number)
+        return self._add_and_attach(record_layout, obj)
+
+    def add_fix_no_axis_pts_4(self, record_layout: model.RecordLayout, number: int) -> model.FixNoAxisPts4:
+        """Add FixNoAxisPts4 to a RecordLayout."""
+        obj = model.FixNoAxisPts4(numberOfAxisPoints=number)
+        return self._add_and_attach(record_layout, obj)
+
+    def add_fix_no_axis_pts_5(self, record_layout: model.RecordLayout, number: int) -> model.FixNoAxisPts5:
+        """Add FixNoAxisPts5 to a RecordLayout."""
+        obj = model.FixNoAxisPts5(numberOfAxisPoints=number)
+        return self._add_and_attach(record_layout, obj)
+
+    def add_identification(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.Identification:
+        """Add Identification to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.Identification, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_no_axis_pts_y(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.NoAxisPtsY:
+        """Add NoAxisPtsY to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.NoAxisPtsY, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_no_axis_pts_z(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.NoAxisPtsZ:
+        """Add NoAxisPtsZ to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.NoAxisPtsZ, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_no_axis_pts_4(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.NoAxisPts4:
+        """Add NoAxisPts4 to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.NoAxisPts4, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_no_axis_pts_5(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.NoAxisPts5:
+        """Add NoAxisPts5 to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.NoAxisPts5, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_no_rescale_x(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.NoRescaleX:
+        """Add NoRescaleX to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.NoRescaleX, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_no_rescale_y(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.NoRescaleY:
+        """Add NoRescaleY to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.NoRescaleY, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_no_rescale_z(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.NoRescaleZ:
+        """Add NoRescaleZ to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.NoRescaleZ, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_no_rescale_4(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.NoRescale4:
+        """Add NoRescale4 to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.NoRescale4, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_no_rescale_5(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.NoRescale5:
+        """Add NoRescale5 to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.NoRescale5, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_offset_x(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.OffsetX:
+        """Add OffsetX to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.OffsetX, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_offset_y(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.OffsetY:
+        """Add OffsetY to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.OffsetY, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_offset_z(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.OffsetZ:
+        """Add OffsetZ to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.OffsetZ, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_offset_4(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.Offset4:
+        """Add Offset4 to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.Offset4, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_offset_5(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.Offset5:
+        """Add Offset5 to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.Offset5, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_reserved(self, record_layout: model.RecordLayout, position: int, data_size: str) -> model.Reserved:
+        """Add Reserved to a RecordLayout."""
+        obj = model.Reserved(position=position, dataSize=data_size)
+        record_layout.reserved.append(obj)
+        self.session.add(obj)
+        return obj
+
+    def add_rip_addr_w(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.RipAddrW:
+        """Add RipAddrW to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.RipAddrW, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_rip_addr_x(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.RipAddrX:
+        """Add RipAddrX to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.RipAddrX, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_rip_addr_y(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.RipAddrY:
+        """Add RipAddrY to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.RipAddrY, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_rip_addr_z(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.RipAddrZ:
+        """Add RipAddrZ to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.RipAddrZ, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_rip_addr_4(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.RipAddr4:
+        """Add RipAddr4 to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.RipAddr4, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_rip_addr_5(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.RipAddr5:
+        """Add RipAddr5 to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.RipAddr5, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_shift_op_x(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.ShiftOpX:
+        """Add ShiftOpX to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.ShiftOpX, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_shift_op_y(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.ShiftOpY:
+        """Add ShiftOpY to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.ShiftOpY, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_shift_op_z(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.ShiftOpZ:
+        """Add ShiftOpZ to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.ShiftOpZ, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_shift_op_4(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.ShiftOp4:
+        """Add ShiftOp4 to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.ShiftOp4, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_shift_op_5(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.ShiftOp5:
+        """Add ShiftOp5 to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.ShiftOp5, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_src_addr_x(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.SrcAddrX:
+        """Add SrcAddrX to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.SrcAddrX, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_src_addr_y(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.SrcAddrY:
+        """Add SrcAddrY to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.SrcAddrY, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_src_addr_z(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.SrcAddrZ:
+        """Add SrcAddrZ to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.SrcAddrZ, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_src_addr_4(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.SrcAddr4:
+        """Add SrcAddr4 to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.SrcAddr4, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def add_src_addr_5(self, record_layout: model.RecordLayout, position: int, data_type: str) -> model.SrcAddr5:
+        """Add SrcAddr5 to a RecordLayout."""
+        obj = self._add_position_datatype(record_layout, model.SrcAddr5, position, data_type)
+        self.session.add(obj)
+        return obj
+
+    def set_static_record_layout(self, record_layout: model.RecordLayout, enabled: bool = True) -> bool:
+        """Set STATIC_RECORD_LAYOUT flag on a RecordLayout."""
+        record_layout.static_record_layout = enabled
+        return enabled
+
+    def set_static_address_offsets(self, record_layout: model.RecordLayout, enabled: bool = True) -> bool:
+        """Set STATIC_ADDRESS_OFFSETS flag on a RecordLayout."""
+        record_layout.static_address_offsets = enabled
+        return enabled
