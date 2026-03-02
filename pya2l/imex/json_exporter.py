@@ -142,6 +142,20 @@ def ifdata_parsed_list(session: Any, sections: Sequence[Any] | None) -> list[Any
         return []
 
 
+def extended_limits_to_dict(ext_limits_obj: Any) -> dict[str, Any] | None:
+    """EXTENDED_LIMITS as dict."""
+    if not ext_limits_obj:
+        return None
+    lower = safe_get(ext_limits_obj, "lowerLimit")
+    upper = safe_get(ext_limits_obj, "upperLimit")
+    if lower is None and upper is None:
+        return None
+    return {
+        "lowerLimit": lower,
+        "upperLimit": upper,
+    }
+
+
 def annotation_to_list(annos: Iterable[Any] | None) -> list[dict[str, Any]]:
     """Convert annotations to simple dicts."""
     result: list[dict[str, Any]] = []
@@ -202,7 +216,13 @@ def axis_pts_to_dict(session: Any, ap: Any) -> dict[str, Any]:
         "calibration_access": safe_get(safe_get(ap, "calibration_access"), "type"),
         "deposit": safe_get(safe_get(ap, "deposit"), "mode"),
         "display_identifier": safe_get(safe_get(ap, "display_identifier"), "display_name"),
+        "ecu_address_extension": safe_get(safe_get(ap, "ecu_address_extension"), "extension"),
+        "extended_limits": extended_limits_to_dict(safe_get(ap, "extended_limits")),
+        "format": safe_get(safe_get(ap, "format"), "formatString"),
         "function_list": function_list_to_list(safe_get(ap, "function_list")),
+        "guard_rails": _bool_flag(safe_get(ap, "guard_rails")),
+        "max_refresh": max_refresh_to_dict(safe_get(ap, "max_refresh")),
+        "model_link": safe_get(safe_get(ap, "model_link"), "modelLink"),
         "monotony": safe_get(safe_get(ap, "monotony"), "monotony"),
         "phys_unit": safe_get(safe_get(ap, "phys_unit"), "unit"),
         "read_only": _bool_flag(safe_get(ap, "read_only")),
@@ -231,13 +251,42 @@ def characteristic_to_dict(session: Any, ch: Any) -> dict[str, Any]:
         "axis_descr": [axis_descr_to_dict(session, ad) for ad in as_list(safe_get(ch, "axis_descr"))],
         "bit_mask": safe_get(safe_get(ch, "bit_mask"), "mask"),
         "byte_order": safe_get(safe_get(ch, "byte_order"), "byteOrder"),
+        "calibration_access": safe_get(safe_get(ch, "calibration_access"), "type"),
+        "comparison_quantity": safe_get(safe_get(ch, "comparison_quantity"), "name"),
+        "dependent_characteristic": (
+            None
+            if not safe_get(ch, "dependent_characteristic")
+            else {
+                "formula": safe_get(ch.dependent_characteristic, "formula"),
+                "characteristic": as_list(safe_get(ch.dependent_characteristic, "characteristic")),
+            }
+        ),
+        "discrete": _bool_flag(safe_get(ch, "discrete")),
+        "display_identifier": safe_get(safe_get(ch, "display_identifier"), "display_name"),
+        "ecu_address_extension": safe_get(safe_get(ch, "ecu_address_extension"), "extension"),
+        "encoding": safe_get(safe_get(ch, "encoding"), "conversionType"),
+        "extended_limits": extended_limits_to_dict(safe_get(ch, "extended_limits")),
+        "format": safe_get(safe_get(ch, "format"), "formatString"),
         "function_list": function_list_to_list(safe_get(ch, "function_list")),
+        "guard_rails": _bool_flag(safe_get(ch, "guard_rails")),
+        "map_list": as_list(safe_get(safe_get(ch, "map_list"), "name")) if safe_get(ch, "map_list") else [],
         "matrix_dim": matrix_dim_to_list(safe_get(ch, "matrix_dim")),
         "max_refresh": max_refresh_to_dict(safe_get(ch, "max_refresh")),
+        "model_link": safe_get(safe_get(ch, "model_link"), "modelLink"),
+        "number": safe_get(safe_get(ch, "number"), "number"),
         "phys_unit": safe_get(safe_get(ch, "phys_unit"), "unit"),
         "read_only": _bool_flag(safe_get(ch, "read_only")),
         "ref_memory_segment": safe_get(safe_get(ch, "ref_memory_segment"), "name"),
         "step_size": safe_get(safe_get(ch, "step_size"), "stepSize"),
+        "symbol_link": symbol_link_to_dict(safe_get(ch, "symbol_link")),
+        "virtual_characteristic": (
+            None
+            if not safe_get(ch, "virtual_characteristic")
+            else {
+                "formula": safe_get(ch.virtual_characteristic, "formula"),
+                "characteristic": as_list(safe_get(ch.virtual_characteristic, "characteristic")),
+            }
+        ),
         "if_data_raw": ifdata_raw_list(safe_get(ch, "if_data")),
         "if_data_parsed": ifdata_parsed_list(session, safe_get(ch, "if_data")),
     }
@@ -394,6 +443,7 @@ def function_to_dict(session: Any, fn: Any) -> dict[str, Any]:
         "loc_measurement": None,
         "out_measurement": None,
         "ref_characteristic": None,
+        "sub_function": None,
         "if_data_raw": ifdata_raw_list(safe_get(fn, "if_data")),
         "if_data_parsed": ifdata_parsed_list(session, safe_get(fn, "if_data")),
     }
@@ -418,6 +468,10 @@ def function_to_dict(session: Any, fn: Any) -> dict[str, Any]:
     rc = safe_get(fn, "ref_characteristic")
     if rc and safe_get(rc, "identifier"):
         out["ref_characteristic"] = [str(x) for x in rc.identifier]
+
+    sf = safe_get(fn, "sub_function")
+    if sf and safe_get(sf, "identifier"):
+        out["sub_function"] = [str(x) for x in sf.identifier]
 
     return out
 
@@ -458,8 +512,16 @@ def instance_to_dict(session: Any, inst: Any) -> dict[str, Any]:
         "longIdentifier": safe_get(inst, "longIdentifier"),
         "typeName": safe_get(inst, "typeName"),
         "address": safe_get(inst, "address"),
-        "number": safe_get(num, "number") if num else None,
+        "address_type": safe_get(safe_get(inst, "address_type"), "addrType"),
+        "annotation": annotation_to_list(safe_get(inst, "annotation")),
+        "calibration_access": safe_get(safe_get(inst, "calibration_access"), "type"),
+        "display_identifier": safe_get(safe_get(inst, "display_identifier"), "display_name"),
+        "ecu_address_extension": safe_get(safe_get(inst, "ecu_address_extension"), "extension"),
         "matrix_dim": matrix_dim_to_list(safe_get(inst, "matrix_dim")),
+        "max_refresh": max_refresh_to_dict(safe_get(inst, "max_refresh")),
+        "model_link": safe_get(safe_get(inst, "model_link"), "modelLink"),
+        "number": safe_get(num, "number") if num else None,
+        "read_only": _bool_flag(safe_get(inst, "read_only")),
         "symbol_link": symbol_link_to_dict(safe_get(inst, "symbol_link")),
         "if_data_raw": ifdata_raw_list(safe_get(inst, "if_data")),
         "if_data_parsed": ifdata_parsed_list(session, safe_get(inst, "if_data")),
@@ -477,6 +539,19 @@ def measurement_to_dict(session: Any, m: Any, min_passthrough: dict[str, float] 
     if virtual and safe_get(virtual, "measuringChannel"):
         virtual_list = [str(x) for x in virtual.measuringChannel]
 
+    bit_op = safe_get(m, "bit_operation")
+    bit_operation_dict: dict[str, Any] | None = None
+    if bit_op:
+        bit_operation_dict = {}
+        ls = safe_get(bit_op, "left_shift")
+        if ls:
+            bit_operation_dict["left_shift"] = {"bitcount": safe_get(ls, "bitcount")}
+        rs = safe_get(bit_op, "right_shift")
+        if rs:
+            bit_operation_dict["right_shift"] = {"bitcount": safe_get(rs, "bitcount")}
+        if safe_get(bit_op, "sign_extend"):
+            bit_operation_dict["sign_extend"] = True
+
     out: dict[str, Any] = {
         "name": safe_get(m, "name"),
         "longIdentifier": safe_get(m, "longIdentifier"),
@@ -486,12 +561,23 @@ def measurement_to_dict(session: Any, m: Any, min_passthrough: dict[str, float] 
         "accuracy": safe_get(m, "accuracy"),
         "lowerLimit": safe_get(m, "lowerLimit"),
         "upperLimit": safe_get(m, "upperLimit"),
+        "address_type": safe_get(safe_get(m, "address_type"), "addrType"),
         "annotation": annotation_to_list(safe_get(m, "annotation")),
         "array_size": safe_get(arr, "number") if arr else None,
         "bit_mask": safe_get(bm, "mask") if bm else None,
+        "bit_operation": bit_operation_dict,
+        "byte_order": safe_get(safe_get(m, "byte_order"), "byteOrder"),
+        "discrete": _bool_flag(safe_get(m, "discrete")),
+        "display_identifier": safe_get(safe_get(m, "display_identifier"), "display_name"),
+        "ecu_address": safe_get(safe_get(m, "ecu_address"), "address"),
+        "ecu_address_extension": safe_get(safe_get(m, "ecu_address_extension"), "extension"),
+        "error_mask": safe_get(safe_get(m, "error_mask"), "mask"),
+        "format": safe_get(safe_get(m, "format"), "formatString"),
+        "function_list": function_list_to_list(safe_get(m, "function_list")),
         "layout": safe_get(layout, "indexMode") if layout else None,
         "matrix_dim": matrix_dim_to_list(safe_get(m, "matrix_dim")),
         "max_refresh": max_refresh_to_dict(safe_get(m, "max_refresh")),
+        "model_link": safe_get(safe_get(m, "model_link"), "modelLink"),
         "phys_unit": safe_get(safe_get(m, "phys_unit"), "unit"),
         "read_write": _bool_flag(safe_get(m, "read_write")),
         "ref_memory_segment": safe_get(safe_get(m, "ref_memory_segment"), "name"),
@@ -499,9 +585,6 @@ def measurement_to_dict(session: Any, m: Any, min_passthrough: dict[str, float] 
         "virtual": virtual_list,
         "if_data_raw": ifdata_raw_list(safe_get(m, "if_data")),
         "if_data_parsed": ifdata_parsed_list(session, safe_get(m, "if_data")),
-        "byte_order": safe_get(safe_get(m, "byte_order"), "byteOrder"),
-        "display_identifier": safe_get(safe_get(m, "display_identifier"), "display_name"),
-        "function_list": function_list_to_list(safe_get(m, "function_list")),
         "min_passthrough": None,
     }
     if min_passthrough:
@@ -693,13 +776,19 @@ def typedef_measurement_to_dict(tm: Any) -> dict[str, Any]:
     }
 
 
-def blob_to_dict(b: Any) -> dict[str, Any]:
+def blob_to_dict(session: Any, b: Any) -> dict[str, Any]:
     return {
         "name": safe_get(b, "name"),
         "longIdentifier": safe_get(b, "longIdentifier"),
         "address": safe_get(b, "address"),
         "length": safe_get(b, "length"),
+        "address_type": safe_get(safe_get(b, "address_type"), "addrType"),
+        "annotation": annotation_to_list(safe_get(b, "annotation")),
         "calibration_access": safe_get(safe_get(b, "calibration_access"), "type"),
+        "display_identifier": safe_get(safe_get(b, "display_identifier"), "display_name"),
+        "ecu_address_extension": safe_get(safe_get(b, "ecu_address_extension"), "extension"),
+        "max_refresh": max_refresh_to_dict(safe_get(b, "max_refresh")),
+        "symbol_link": symbol_link_to_dict(safe_get(b, "symbol_link")),
     }
 
 
@@ -903,7 +992,7 @@ def module_to_dict(session: Any, mod: Any) -> dict[str, Any]:
         "variant_coding": variant_coding_to_dict(safe_get(mod, "variant_coding")),
         "if_data_raw": ifdata_raw_list(safe_get(mod, "if_data")),
         "if_data_parsed": ifdata_parsed_list(session, safe_get(mod, "if_data")),
-        "blob": [blob_to_dict(b) for b in as_list(safe_get(mod, "blob"))],
+        "blob": [blob_to_dict(session, b) for b in as_list(safe_get(mod, "blob"))],
         "record_layout": record_layouts,
         "transformer": transformers,
     }

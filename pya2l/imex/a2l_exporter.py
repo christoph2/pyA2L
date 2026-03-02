@@ -163,8 +163,32 @@ def write_axis_pts(out, axis_pts_list: list[Any] | None) -> None:
         if di and safe_get(di, "display_name"):
             out.write("      DISPLAY_IDENTIFIER\n")
             out.write(f"        {di.display_name}  /* display_name */\n")
+        ecu_ext = safe_get(ap, "ecu_address_extension")
+        if ecu_ext and safe_get(ecu_ext, "extension") is not None:
+            out.write("      ECU_ADDRESS_EXTENSION\n")
+            out.write(f"        {ecu_ext.extension}  /* extension */\n")
+        ext_limits = safe_get(ap, "extended_limits")
+        if ext_limits and safe_get(ext_limits, "lowerLimit") is not None and safe_get(ext_limits, "upperLimit") is not None:
+            out.write("      EXTENDED_LIMITS\n")
+            out.write(f"        {ext_limits.lowerLimit}  /* lowerLimit */\n")
+            out.write(f"        {ext_limits.upperLimit}  /* upperLimit */\n")
+        fmt = safe_get(ap, "format")
+        if fmt and safe_get(fmt, "formatString"):
+            out.write("      FORMAT\n")
+            out.write(f'        "{fmt.formatString}"  /* formatString */\n')
         write_function_list(out, safe_get(ap, "function_list"))
+        if safe_get(ap, "guard_rails"):
+            out.write("      GUARD_RAILS\n")
         write_raw_ifdata(out, safe_get(ap, "if_data"))
+        mr = safe_get(ap, "max_refresh")
+        if mr and safe_get(mr, "scalingUnit") is not None and safe_get(mr, "rate") is not None:
+            out.write("      MAX_REFRESH\n")
+            out.write(f"        {mr.scalingUnit}  /* scalingUnit */\n")
+            out.write(f"        {mr.rate}  /* rate */\n")
+        ml = safe_get(ap, "model_link")
+        if ml and safe_get(ml, "modelLink"):
+            out.write("      MODEL_LINK\n")
+            out.write(f'        "{ml.modelLink}"  /* modelLink */\n')
         if safe_get(ap, "monotony"):
             out.write("      MONOTONY\n")
             out.write(f"        {ap.monotony.monotony}  /* monotony */\n")
@@ -222,7 +246,47 @@ def write_characteristics(out, char_list: list[Any] | None) -> None:
             bo = ch.byte_order
             out.write("      BYTE_ORDER\n")
             out.write(f"        {bo.byteOrder}  /* byteOrder */\n")
+        ca = safe_get(ch, "calibration_access")
+        if ca and safe_get(ca, "type"):
+            out.write("      CALIBRATION_ACCESS\n")
+            out.write(f"        {ca.type}  /* type */\n")
+        cq = safe_get(ch, "comparison_quantity")
+        if cq and safe_get(cq, "name"):
+            out.write("      COMPARISON_QUANTITY\n")
+            out.write(f"        {cq.name}  /* name */\n")
+        dc = safe_get(ch, "dependent_characteristic")
+        if dc and safe_get(dc, "characteristicList"):
+            out.write("      /begin DEPENDENT_CHARACTERISTIC\n")
+            out.write(f'        "{dc.formula}"  /* formula */\n')
+            for dep_ch in dc.characteristicList:
+                out.write(f"        {dep_ch}\n")
+            out.write("      /end DEPENDENT_CHARACTERISTIC\n")
+        if safe_get(ch, "discrete"):
+            out.write("      DISCRETE\n")
+        di = safe_get(ch, "display_identifier")
+        if di and safe_get(di, "display_name"):
+            out.write("      DISPLAY_IDENTIFIER\n")
+            out.write(f"        {di.display_name}  /* display_name */\n")
+        ecu_ext = safe_get(ch, "ecu_address_extension")
+        if ecu_ext and safe_get(ecu_ext, "extension") is not None:
+            out.write("      ECU_ADDRESS_EXTENSION\n")
+            out.write(f"        {ecu_ext.extension}  /* extension */\n")
+        enc = safe_get(ch, "encoding")
+        if enc and safe_get(enc, "encodingName"):
+            out.write("      ENCODING\n")
+            out.write(f'        "{enc.encodingName}"  /* encodingName */\n')
+        ext_limits = safe_get(ch, "extended_limits")
+        if ext_limits and safe_get(ext_limits, "lowerLimit") is not None and safe_get(ext_limits, "upperLimit") is not None:
+            out.write("      EXTENDED_LIMITS\n")
+            out.write(f"        {ext_limits.lowerLimit}  /* lowerLimit */\n")
+            out.write(f"        {ext_limits.upperLimit}  /* upperLimit */\n")
+        fmt = safe_get(ch, "format")
+        if fmt and safe_get(fmt, "formatString"):
+            out.write("      FORMAT\n")
+            out.write(f'        "{fmt.formatString}"  /* formatString */\n')
         write_function_list(out, safe_get(ch, "function_list"))
+        if safe_get(ch, "guard_rails"):
+            out.write("      GUARD_RAILS\n")
         write_raw_ifdata(out, safe_get(ch, "if_data"))
         write_matrix_dim(out, safe_get(ch, "matrix_dim"))
         if safe_get(ch, "max_refresh"):
@@ -230,6 +294,14 @@ def write_characteristics(out, char_list: list[Any] | None) -> None:
             out.write("      MAX_REFRESH\n")
             out.write(f"        {mr.scalingUnit}  /* scalingUnit */\n")
             out.write(f"        {mr.rate}  /* rate */\n")
+        ml = safe_get(ch, "model_link")
+        if ml and safe_get(ml, "modelLink"):
+            out.write("      MODEL_LINK\n")
+            out.write(f'        "{ml.modelLink}"  /* modelLink */\n')
+        num = safe_get(ch, "number")
+        if num and safe_get(num, "number") is not None:
+            out.write("      NUMBER\n")
+            out.write(f"        {num.number}  /* number */\n")
         if safe_get(ch, "phys_unit") and safe_get(ch.phys_unit, "unit"):
             out.write("      PHYS_UNIT\n")
             out.write(f'        "{ch.phys_unit.unit}"  /* unit */\n')
@@ -241,6 +313,15 @@ def write_characteristics(out, char_list: list[Any] | None) -> None:
         if safe_get(ch, "step_size"):
             out.write("      STEP_SIZE\n")
             out.write(f"        {ch.step_size.stepSize}  /* stepSize */\n")
+        write_symbol_link(out, safe_get(ch, "symbol_link"), logger)
+        vc = safe_get(ch, "virtual_characteristic")
+        if vc and safe_get(vc, "formula"):
+            out.write("      /begin VIRTUAL_CHARACTERISTIC\n")
+            out.write(f'        "{vc.formula}"  /* formula */\n')
+            if safe_get(vc, "characteristicList"):
+                for virt_ch in vc.characteristicList:
+                    out.write(f"        {virt_ch}\n")
+            out.write("      /end VIRTUAL_CHARACTERISTIC\n")
         out.write("    /end CHARACTERISTIC\n\n")
 
 
@@ -359,6 +440,10 @@ def write_functions(out, func_list: list[Any] | None) -> None:
         out.write(f"      {fn.name}  /* name */\n")
         out.write(f'      "{safe_get(fn, "longIdentifier") or ""}"  /* longIdentifier */\n')
         write_annotation(out, safe_get(fn, "annotation"))
+        ar_comp = safe_get(fn, "ar_component")
+        if ar_comp and safe_get(ar_comp, "componentType"):
+            out.write("      AR_COMPONENT\n")
+            out.write(f"        {ar_comp.componentType}  /* componentType */\n")
         def_char = safe_get(fn, "def_characteristic")
         if def_char and safe_get(def_char, "identifier"):
             out.write("      /begin DEF_CHARACTERISTIC\n")
@@ -384,6 +469,11 @@ def write_functions(out, func_list: list[Any] | None) -> None:
             out.write("      /begin REF_CHARACTERISTIC\n")
             out.write("        " + " ".join(str(x) for x in rc.identifier) + "\n")
             out.write("      /end REF_CHARACTERISTIC\n")
+        sf = safe_get(fn, "sub_function")
+        if sf and safe_get(sf, "identifier"):
+            out.write("      /begin SUB_FUNCTION\n")
+            out.write("        " + " ".join(str(x) for x in sf.identifier) + "\n")
+            out.write("      /end SUB_FUNCTION\n")
         out.write("    /end FUNCTION\n\n")
 
 
@@ -426,12 +516,40 @@ def write_instances(out, instance_list: list[Any] | None) -> None:
         out.write(f'      "{safe_get(inst, "longIdentifier") or ""}"  /* longIdentifier */\n')
         out.write(f"      {safe_get(inst, 'typeName') or '-'}  /* typeName */\n")
         out.write(f"      {safe_get(inst, 'address') or 0}  /* address */\n")
+        addr_type = safe_get(inst, "address_type")
+        if addr_type and safe_get(addr_type, "addrType"):
+            out.write("      ADDRESS_TYPE\n")
+            out.write(f"        {addr_type.addrType}  /* addrType */\n")
+        write_annotation(out, safe_get(inst, "annotation"))
+        ca = safe_get(inst, "calibration_access")
+        if ca and safe_get(ca, "type"):
+            out.write("      CALIBRATION_ACCESS\n")
+            out.write(f"        {ca.type}  /* type */\n")
+        di = safe_get(inst, "display_identifier")
+        if di and safe_get(di, "display_name"):
+            out.write("      DISPLAY_IDENTIFIER\n")
+            out.write(f"        {di.display_name}  /* display_name */\n")
+        ecu_ext = safe_get(inst, "ecu_address_extension")
+        if ecu_ext and safe_get(ecu_ext, "extension") is not None:
+            out.write("      ECU_ADDRESS_EXTENSION\n")
+            out.write(f"        {ecu_ext.extension}  /* extension */\n")
         write_raw_ifdata(out, safe_get(inst, "if_data"))
+        write_matrix_dim(out, safe_get(inst, "matrix_dim"))
+        mr = safe_get(inst, "max_refresh")
+        if mr and safe_get(mr, "scalingUnit") is not None and safe_get(mr, "rate") is not None:
+            out.write("      MAX_REFRESH\n")
+            out.write(f"        {mr.scalingUnit}  /* scalingUnit */\n")
+            out.write(f"        {mr.rate}  /* rate */\n")
+        ml = safe_get(inst, "model_link")
+        if ml and safe_get(ml, "modelLink"):
+            out.write("      MODEL_LINK\n")
+            out.write(f'        "{ml.modelLink}"  /* modelLink */\n')
         num = safe_get(inst, "number")
-        if num:
+        if num and safe_get(num, "number") is not None:
             out.write("      NUMBER\n")
             out.write(f"        {num.number}  /* number */\n")
-        write_matrix_dim(out, safe_get(inst, "matrix_dim"))
+        if safe_get(inst, "read_only"):
+            out.write("      READ_ONLY\n")
         write_symbol_link(out, safe_get(inst, "symbol_link"), logger)
         out.write("    /end INSTANCE\n\n")
 
@@ -487,19 +605,60 @@ def write_measurements(out, measurement_list: list[Any] | None, min_passthrough:
         out.write(f"      {safe_get(m, 'accuracy') or 0}  /* accuracy */\n")
         out.write(f"      {safe_get(m, 'lowerLimit') or 0}  /* lowerLimit */\n")
         out.write(f"      {safe_get(m, 'upperLimit') or 0}  /* upperLimit */\n")
+        addr_type = safe_get(m, "address_type")
+        if addr_type and safe_get(addr_type, "addrType"):
+            out.write("      ADDRESS_TYPE\n")
+            out.write(f"        {addr_type.addrType}  /* addrType */\n")
         write_annotation(out, safe_get(m, "annotation"))
         arr = safe_get(m, "array_size")
         if arr and safe_get(arr, "number"):
             out.write("      ARRAY_SIZE\n")
             out.write(f"        {arr.number}  /* number */\n")
         bm = safe_get(m, "bit_mask")
-        if bm:
+        if bm and safe_get(bm, "mask") is not None:
             out.write("      BIT_MASK\n")
             out.write(f"        {bm.mask}  /* mask */\n")
-        min_pass = min_passthrough.get(safe_get(m, "conversion"))
-        if min_pass is not None:
-            out.write("      MIN_PASSTHROUGH\n")
-            out.write(f"        {min_pass}  /* minPassThrough */\n")
+        bo_obj = safe_get(m, "bit_operation")
+        if bo_obj:
+            out.write("      /begin BIT_OPERATION\n")
+            if safe_get(bo_obj, "left_shift"):
+                ls = bo_obj.left_shift
+                out.write("        LEFT_SHIFT\n")
+                out.write(f"          {ls.bitcount}  /* bitcount */\n")
+            if safe_get(bo_obj, "right_shift"):
+                rs = bo_obj.right_shift
+                out.write("        RIGHT_SHIFT\n")
+                out.write(f"          {rs.bitcount}  /* bitcount */\n")
+            if safe_get(bo_obj, "sign_extend"):
+                out.write("        SIGN_EXTEND\n")
+            out.write("      /end BIT_OPERATION\n")
+        byte_order = safe_get(m, "byte_order")
+        if byte_order and safe_get(byte_order, "byteOrder"):
+            out.write("      BYTE_ORDER\n")
+            out.write(f"        {byte_order.byteOrder}  /* byteOrder */\n")
+        if safe_get(m, "discrete"):
+            out.write("      DISCRETE\n")
+        di = safe_get(m, "display_identifier")
+        if di and safe_get(di, "display_name"):
+            out.write("      DISPLAY_IDENTIFIER\n")
+            out.write(f"        {di.display_name}  /* display_name */\n")
+        ecu_addr = safe_get(m, "ecu_address")
+        if ecu_addr and safe_get(ecu_addr, "address") is not None:
+            out.write("      ECU_ADDRESS\n")
+            out.write(f"        {ecu_addr.address}  /* address */\n")
+        ecu_ext = safe_get(m, "ecu_address_extension")
+        if ecu_ext and safe_get(ecu_ext, "extension") is not None:
+            out.write("      ECU_ADDRESS_EXTENSION\n")
+            out.write(f"        {ecu_ext.extension}  /* extension */\n")
+        em = safe_get(m, "error_mask")
+        if em and safe_get(em, "mask") is not None:
+            out.write("      ERROR_MASK\n")
+            out.write(f"        {em.mask}  /* mask */\n")
+        fmt = safe_get(m, "format")
+        if fmt and safe_get(fmt, "formatString"):
+            out.write("      FORMAT\n")
+            out.write(f'        "{fmt.formatString}"  /* formatString */\n')
+        write_function_list(out, safe_get(m, "function_list"))
         write_raw_ifdata(out, safe_get(m, "if_data"))
         layout = safe_get(m, "layout")
         if layout and safe_get(layout, "indexMode"):
@@ -507,10 +666,18 @@ def write_measurements(out, measurement_list: list[Any] | None, min_passthrough:
             out.write(f"        {layout.indexMode}  /* indexMode */\n")
         write_matrix_dim(out, safe_get(m, "matrix_dim"))
         mr = safe_get(m, "max_refresh")
-        if mr:
+        if mr and safe_get(mr, "scalingUnit") is not None and safe_get(mr, "rate") is not None:
             out.write("      MAX_REFRESH\n")
             out.write(f"        {mr.scalingUnit}  /* scalingUnit */\n")
             out.write(f"        {mr.rate}  /* rate */\n")
+        min_pass = min_passthrough.get(safe_get(m, "conversion"))
+        if min_pass is not None:
+            out.write("      MIN_PASSTHROUGH\n")
+            out.write(f"        {min_pass}  /* minPassThrough */\n")
+        ml = safe_get(m, "model_link")
+        if ml and safe_get(ml, "modelLink"):
+            out.write("      MODEL_LINK\n")
+            out.write(f'        "{ml.modelLink}"  /* modelLink */\n')
         if safe_get(m, "phys_unit") and safe_get(m.phys_unit, "unit"):
             out.write("      PHYS_UNIT\n")
             out.write(f'        "{m.phys_unit.unit}"  /* unit */\n')
@@ -536,10 +703,34 @@ def write_blobs(out, blobs: list[Any] | None) -> None:
         out.write(f'      "{safe_get(b, "longIdentifier") or ""}"  /* longIdentifier */\n')
         out.write(f"      {safe_get(b, 'address') or 0}  /* address */\n")
         out.write(f"      {safe_get(b, 'length') or 0}  /* length */\n")
+        addr_type = safe_get(b, "address_type")
+        if addr_type and safe_get(addr_type, "addrType"):
+            out.write("      ADDRESS_TYPE\n")
+            out.write(f"        {addr_type.addrType}  /* addrType */\n")
+        write_annotation(out, safe_get(b, "annotation"))
         ca = safe_get(b, "calibration_access")
         if ca and safe_get(ca, "type"):
             out.write("      CALIBRATION_ACCESS\n")
             out.write(f"        {ca.type}  /* type */\n")
+        di = safe_get(b, "display_identifier")
+        if di and safe_get(di, "display_name"):
+            out.write("      DISPLAY_IDENTIFIER\n")
+            out.write(f"        {di.display_name}  /* display_name */\n")
+        ecu_ext = safe_get(b, "ecu_address_extension")
+        if ecu_ext and safe_get(ecu_ext, "extension") is not None:
+            out.write("      ECU_ADDRESS_EXTENSION\n")
+            out.write(f"        {ecu_ext.extension}  /* extension */\n")
+        write_raw_ifdata(out, safe_get(b, "if_data"))
+        mr = safe_get(b, "max_refresh")
+        if mr and safe_get(mr, "scalingUnit") is not None and safe_get(mr, "rate") is not None:
+            out.write("      MAX_REFRESH\n")
+            out.write(f"        {mr.scalingUnit}  /* scalingUnit */\n")
+            out.write(f"        {mr.rate}  /* rate */\n")
+        ml = safe_get(b, "model_link")
+        if ml and safe_get(ml, "modelLink"):
+            out.write("      MODEL_LINK\n")
+            out.write(f'        "{ml.modelLink}"  /* modelLink */\n')
+        write_symbol_link(out, safe_get(b, "symbol_link"), logger)
         out.write("    /end BLOB\n\n")
 
 
@@ -641,6 +832,52 @@ def write_typedefs(
             out.write(f"      {tm.accuracy}  /* accuracy */\n")
             out.write(f"      {tm.lowerLimit}  /* lowerLimit */\n")
             out.write(f"      {tm.upperLimit}  /* upperLimit */\n")
+            write_annotation(out, safe_get(tm, "annotation"))
+            bm = safe_get(tm, "bit_mask")
+            if bm and safe_get(bm, "mask") is not None:
+                out.write("      BIT_MASK\n")
+                out.write(f"        {bm.mask}  /* mask */\n")
+            byte_order = safe_get(tm, "byte_order")
+            if byte_order and safe_get(byte_order, "byteOrder"):
+                out.write("      BYTE_ORDER\n")
+                out.write(f"        {byte_order.byteOrder}  /* byteOrder */\n")
+            if safe_get(tm, "discrete"):
+                out.write("      DISCRETE\n")
+            di = safe_get(tm, "display_identifier")
+            if di and safe_get(di, "display_name"):
+                out.write("      DISPLAY_IDENTIFIER\n")
+                out.write(f"        {di.display_name}  /* display_name */\n")
+            ecu_ext = safe_get(tm, "ecu_address_extension")
+            if ecu_ext and safe_get(ecu_ext, "extension") is not None:
+                out.write("      ECU_ADDRESS_EXTENSION\n")
+                out.write(f"        {ecu_ext.extension}  /* extension */\n")
+            em = safe_get(tm, "error_mask")
+            if em and safe_get(em, "mask") is not None:
+                out.write("      ERROR_MASK\n")
+                out.write(f"        {em.mask}  /* mask */\n")
+            fmt = safe_get(tm, "format")
+            if fmt and safe_get(fmt, "formatString"):
+                out.write("      FORMAT\n")
+                out.write(f'        "{fmt.formatString}"  /* formatString */\n')
+            write_function_list(out, safe_get(tm, "function_list"))
+            layout = safe_get(tm, "layout")
+            if layout and safe_get(layout, "indexMode"):
+                out.write("      LAYOUT\n")
+                out.write(f"        {layout.indexMode}  /* indexMode */\n")
+            write_matrix_dim(out, safe_get(tm, "matrix_dim"))
+            mr = safe_get(tm, "max_refresh")
+            if mr and safe_get(mr, "scalingUnit") is not None and safe_get(mr, "rate") is not None:
+                out.write("      MAX_REFRESH\n")
+                out.write(f"        {mr.scalingUnit}  /* scalingUnit */\n")
+                out.write(f"        {mr.rate}  /* rate */\n")
+            if safe_get(tm, "phys_unit") and safe_get(tm.phys_unit, "unit"):
+                out.write("      PHYS_UNIT\n")
+                out.write(f'        "{tm.phys_unit.unit}"  /* unit */\n')
+            if safe_get(tm, "read_write"):
+                out.write("      READ_WRITE\n")
+            if safe_get(tm, "ref_memory_segment") and safe_get(tm.ref_memory_segment, "name"):
+                out.write("      REF_MEMORY_SEGMENT\n")
+                out.write(f"        {tm.ref_memory_segment.name}  /* name */\n")
             out.write("    /end TYPEDEF_MEASUREMENT\n\n")
     if typedef_structs:
         for ts in typedef_structs:
@@ -648,24 +885,24 @@ def write_typedefs(
             out.write(f"      {ts.name}  /* name */\n")
             out.write(f'      "{safe_get(ts, "longIdentifier") or ""}"  /* longIdentifier */\n')
             out.write(f"      {ts.size}  /* size */\n")
-            # structure_component (if present)
-            # keep concise: only output basic fields
-            # full expansion not required for exporter completeness
-            # but include structure components if present
-            # (done below)
-            # ---
-            # continue writing
-
-            # NOTE: above comment prevents extremely long functions; now continue
+            write_annotation(out, safe_get(ts, "annotation"))
             if safe_get(ts, "structure_component"):
                 for sc in ts.structure_component:
                     out.write("      /begin STRUCTURE_COMPONENT\n")
                     out.write(f"        {sc.name}  /* name */\n")
                     out.write(f"        {sc.type_ref}  /* type_Ref */\n")
                     out.write(f"        {sc.offset}  /* offset */\n")
+                    al = safe_get(sc, "address_offset")
+                    if al and safe_get(al, "offset") is not None:
+                        out.write("        ADDRESS_OFFSET\n")
+                        out.write(f"          {al.offset}  /* offset */\n")
+                    layout = safe_get(sc, "layout")
+                    if layout and safe_get(layout, "indexMode"):
+                        out.write("        LAYOUT\n")
+                        out.write(f"          {layout.indexMode}  /* indexMode */\n")
                     write_matrix_dim(out, safe_get(sc, "matrix_dim"))
                     num = safe_get(sc, "number")
-                    if num:
+                    if num and safe_get(num, "number") is not None:
                         out.write("        NUMBER\n")
                         out.write(f"          {num.number}  /* number */\n")
                     stl = safe_get(sc, "symbol_type_link")
@@ -707,17 +944,35 @@ def write_typedef_axes(out, typedef_axes: list[Any] | None) -> None:
         if dep and safe_get(dep, "mode"):
             out.write("      DEPOSIT\n")
             out.write(f"        {dep.mode}  /* mode */\n")
+        di = safe_get(ta, "display_identifier")
+        if di and safe_get(di, "display_name"):
+            out.write("      DISPLAY_IDENTIFIER\n")
+            out.write(f"        {di.display_name}  /* display_name */\n")
+        ecu_ext = safe_get(ta, "ecu_address_extension")
+        if ecu_ext and safe_get(ecu_ext, "extension") is not None:
+            out.write("      ECU_ADDRESS_EXTENSION\n")
+            out.write(f"        {ecu_ext.extension}  /* extension */\n")
         if safe_get(ta, "extended_limits"):
             el = ta.extended_limits
             out.write("      EXTENDED_LIMITS\n")
             out.write(f"        {el.lowerLimit}  /* lowerLimit */\n")
             out.write(f"        {el.upperLimit}  /* upperLimit */\n")
         fmt = safe_get(ta, "format")
-        if fmt and safe_get(fmt, "format"):
+        if fmt and safe_get(fmt, "formatString"):
             out.write("      FORMAT\n")
-            out.write(f'        "{fmt.format}"  /* format */\n')
+            out.write(f'        "{fmt.formatString}"  /* formatString */\n')
         if safe_get(ta, "guard_rails"):
             out.write("      GUARD_RAILS\n")
+        write_raw_ifdata(out, safe_get(ta, "if_data"))
+        mr = safe_get(ta, "max_refresh")
+        if mr and safe_get(mr, "scalingUnit") is not None and safe_get(mr, "rate") is not None:
+            out.write("      MAX_REFRESH\n")
+            out.write(f"        {mr.scalingUnit}  /* scalingUnit */\n")
+            out.write(f"        {mr.rate}  /* rate */\n")
+        ml = safe_get(ta, "model_link")
+        if ml and safe_get(ml, "modelLink"):
+            out.write("      MODEL_LINK\n")
+            out.write(f'        "{ml.modelLink}"  /* modelLink */\n')
         if safe_get(ta, "monotony"):
             out.write("      MONOTONY\n")
             out.write(f"        {ta.monotony.monotony}  /* monotony */\n")
@@ -732,7 +987,47 @@ def write_typedef_axes(out, typedef_axes: list[Any] | None) -> None:
         if safe_get(ta, "step_size"):
             out.write("      STEP_SIZE\n")
             out.write(f"        {ta.step_size.stepSize}  /* stepSize */\n")
+        write_symbol_link(out, safe_get(ta, "symbol_link"), logger)
         out.write("    /end TYPEDEF_AXIS\n\n")
+
+
+def write_typedef_blobs(out, typedef_blobs: list[Any] | None) -> None:
+    if not typedef_blobs:
+        return
+    for tb in typedef_blobs:
+        out.write("    /begin TYPEDEF_BLOB\n")
+        out.write(f"      {tb.name}  /* name */\n")
+        out.write(f'      "{safe_get(tb, "longIdentifier") or ""}"  /* longIdentifier */\n')
+        out.write(f"      {safe_get(tb, 'length') or 0}  /* length */\n")
+        addr_type = safe_get(tb, "address_type")
+        if addr_type and safe_get(addr_type, "addrType"):
+            out.write("      ADDRESS_TYPE\n")
+            out.write(f"        {addr_type.addrType}  /* addrType */\n")
+        write_annotation(out, safe_get(tb, "annotation"))
+        ca = safe_get(tb, "calibration_access")
+        if ca and safe_get(ca, "type"):
+            out.write("      CALIBRATION_ACCESS\n")
+            out.write(f"        {ca.type}  /* type */\n")
+        di = safe_get(tb, "display_identifier")
+        if di and safe_get(di, "display_name"):
+            out.write("      DISPLAY_IDENTIFIER\n")
+            out.write(f"        {di.display_name}  /* display_name */\n")
+        ecu_ext = safe_get(tb, "ecu_address_extension")
+        if ecu_ext and safe_get(ecu_ext, "extension") is not None:
+            out.write("      ECU_ADDRESS_EXTENSION\n")
+            out.write(f"        {ecu_ext.extension}  /* extension */\n")
+        write_raw_ifdata(out, safe_get(tb, "if_data"))
+        mr = safe_get(tb, "max_refresh")
+        if mr and safe_get(mr, "scalingUnit") is not None and safe_get(mr, "rate") is not None:
+            out.write("      MAX_REFRESH\n")
+            out.write(f"        {mr.scalingUnit}  /* scalingUnit */\n")
+            out.write(f"        {mr.rate}  /* rate */\n")
+        ml = safe_get(tb, "model_link")
+        if ml and safe_get(ml, "modelLink"):
+            out.write("      MODEL_LINK\n")
+            out.write(f'        "{ml.modelLink}"  /* modelLink */\n')
+        write_symbol_link(out, safe_get(tb, "symbol_link"), logger)
+        out.write("    /end TYPEDEF_BLOB\n\n")
 
 
 def write_units(out, unit_list: list[Any] | None) -> None:
@@ -1041,6 +1336,7 @@ def export_db(db: A2LDatabase, out_path: Path | TextIO, module_name: str | None 
                 safe_get(mod, "typedef_structure"),
             )
             write_typedef_axes(out, safe_get(mod, "typedef_axis"))
+            write_typedef_blobs(out, safe_get(mod, "typedef_blob"))
             write_units(out, safe_get(mod, "unit"))
             write_user_rights(out, safe_get(mod, "user_rights"))
             write_variant_coding(out, safe_get(mod, "variant_coding"))
