@@ -71,6 +71,7 @@ from pya2l.functions import (
 )
 from pya2l.utils import SingletonBase, align_as, enum_from_str, ffs
 
+
 T = TypeVar("T")
 
 DB_CACHE_SIZE = 4096  # Completly arbitrary, could be configurable.
@@ -1767,8 +1768,7 @@ class CompuMethod(CachedBase):
                 f=self.compu_method.coeffs.f,
             )
         elif cm_type in ("TAB_INTP", "TAB_NOINTP"):
-            self.tab = CompuTab.get(self.session, name=self.compu_method.compu_tab_ref.conversionTable,
-                                    module_name=module_name)
+            self.tab = CompuTab.get(self.session, name=self.compu_method.compu_tab_ref.conversionTable, module_name=module_name)
         elif cm_type == "TAB_VERB":
             has_compu_vtab = self.session.query(
                 self.session.query(model.CompuVtab)
@@ -1853,7 +1853,7 @@ class CompuMethod(CachedBase):
 
     @classmethod
     def get(
-            cls, session: Any, name: Optional[str] = None, module_name: Optional[str] = None
+        cls, session: Any, name: Optional[str] = None, module_name: Optional[str] = None
     ) -> Union["CompuMethod", NoCompuMethod]:
         """Get a CompuMethod instance, using cache if available.
 
@@ -2731,8 +2731,7 @@ class AxisDescr(CachedBase):
         self.upperLimit = axis.upperLimit
 
         self.compuMethod = (
-            CompuMethod.get(session,
-                            self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
+            CompuMethod.get(session, self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
         )
         self.annotations = _annotations(session, axis.annotation)
         self.byteOrder = axis.byte_order.byteOrder if axis.byte_order else None
@@ -2849,8 +2848,7 @@ class Characteristic(CachedBase):
         self.maxDiff = self.characteristic.maxDiff
         self._conversionRef = self.characteristic.conversion
         self.compuMethod = (
-            CompuMethod.get(session,
-                            self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
+            CompuMethod.get(session, self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
         )
         self.lowerLimit = self.characteristic.lowerLimit
         self.upperLimit = self.characteristic.upperLimit
@@ -2878,8 +2876,7 @@ class Characteristic(CachedBase):
         self.encoding = self.characteristic.encoding.encoding if self.characteristic.encoding else None
         self.extendedLimits = _create_extended_limits(self.characteristic.extended_limits)
         self.format = self.characteristic.format.formatString if self.characteristic.format else None
-        self.functionList = [f.name for f in
-                             self.characteristic.function_list] if self.characteristic.function_list else []
+        self.functionList = [f.name for f in self.characteristic.function_list] if self.characteristic.function_list else []
         self.guardRails = self.characteristic.guard_rails
         self.mapList = [f.name for f in self.characteristic.map_list] if self.characteristic.map_list else []
         self.matrixDim = MatrixDim.from_model(self.characteristic.matrix_dim)
@@ -2991,8 +2988,8 @@ class Characteristic(CachedBase):
         else:
             for axis, deposit in zip(self.axisDescriptions, self.deposit.axes.values()):
                 if axis.attribute not in (
-                        "RES_AXIS",
-                        "STD_AXIS",
+                    "RES_AXIS",
+                    "STD_AXIS",
                 ):
                     continue
                 element_count = axis.maxAxisPoints
@@ -3410,18 +3407,34 @@ class Function(CachedBase):
         self.ar_component = self._dissect_ar_component(self.function.ar_component)
         self.functionVersion = self.function.function_version.versionIdentifier if self.function.function_version else None
         self.if_data = session.parse_ifdata(self.function.if_data)
-        self.inMeasurements = [Measurement.get(self.session, m) for m in
-                               self.function.in_measurement.identifier] if self.function.in_measurement else []
-        self.locMeasurements = [Measurement.get(self.session, m) for m in
-                                self.function.loc_measurement.identifier] if self.function.loc_measurement else []
-        self.outMeasurements = [Measurement.get(self.session, m) for m in
-                                self.function.out_measurement.identifier] if self.function.out_measurement else []
-        self.defCharacteristics = [get_characteristic_or_axispts(self.session, r) for r in
-                                   self.function.def_characteristic.identifier] if self.function.def_characteristic else []
-        self.refCharacteristics = [get_characteristic_or_axispts(self.session, r) for r in
-                                   self.function.ref_characteristic.identifier] if self.function.ref_characteristic else []
-        self.subFunctions = [Function.get(self.session, g) for g in
-                             self.function.sub_function.identifier] if self.function.sub_function else []
+        self.inMeasurements = (
+            [Measurement.get(self.session, m) for m in self.function.in_measurement.identifier]
+            if self.function.in_measurement
+            else []
+        )
+        self.locMeasurements = (
+            [Measurement.get(self.session, m) for m in self.function.loc_measurement.identifier]
+            if self.function.loc_measurement
+            else []
+        )
+        self.outMeasurements = (
+            [Measurement.get(self.session, m) for m in self.function.out_measurement.identifier]
+            if self.function.out_measurement
+            else []
+        )
+        self.defCharacteristics = (
+            [get_characteristic_or_axispts(self.session, r) for r in self.function.def_characteristic.identifier]
+            if self.function.def_characteristic
+            else []
+        )
+        self.refCharacteristics = (
+            [get_characteristic_or_axispts(self.session, r) for r in self.function.ref_characteristic.identifier]
+            if self.function.ref_characteristic
+            else []
+        )
+        self.subFunctions = (
+            [Function.get(self.session, g) for g in self.function.sub_function.identifier] if self.function.sub_function else []
+        )
 
     def _dissect_ar_component(self, component) -> Dict:
         result: Dict = {"component_type": None, "ar_prototype_of": None}
@@ -3454,8 +3467,7 @@ class Function(CachedBase):
             names = s.name
             if names:
                 excluded_funcs.update(names)
-        func_names = [f[0] for f in
-                      session.query(model.Function.name).filter(not_(model.Function.name.in_(excluded_funcs))).all()]
+        func_names = [f[0] for f in session.query(model.Function.name).filter(not_(model.Function.name.in_(excluded_funcs))).all()]
         if ordered:
             func_names = sorted(func_names)
         result = []
@@ -3525,14 +3537,16 @@ class Group(CachedBase):
         self.annotations = _annotations(session, self.group.annotation)
         self.root = False if self.group.root is None else True
         self.if_data = session.parse_ifdata(self.group.if_data)
-        self.characteristics = [get_characteristic_or_axispts(self.session, r) for r in
-                                self.group.ref_characteristic.identifier] if self.group.ref_characteristic else []
-        self.measurements = [Measurement.get(self.session, m) for m in
-                             self.group.ref_measurement.identifier] if self.group.ref_measurement else []
-        self.functions = [Function.get(self.session, f) for f in
-                          self.group.function_list.name] if self.group.function_list else []
-        self.subgroups = [Group.get(self.session, g) for g in
-                          self.group.sub_group.identifier] if self.group.sub_group else []
+        self.characteristics = (
+            [get_characteristic_or_axispts(self.session, r) for r in self.group.ref_characteristic.identifier]
+            if self.group.ref_characteristic
+            else []
+        )
+        self.measurements = (
+            [Measurement.get(self.session, m) for m in self.group.ref_measurement.identifier] if self.group.ref_measurement else []
+        )
+        self.functions = [Function.get(self.session, f) for f in self.group.function_list.name] if self.group.function_list else []
+        self.subgroups = [Group.get(self.session, g) for g in self.group.sub_group.identifier] if self.group.sub_group else []
 
     @classmethod
     def get_root_groups(klass, session, ordered=False):
@@ -3706,8 +3720,7 @@ def create_overwrite(overwrite) -> Optional[Overwrite]:
             monotony = overwrite.monotony.monotony
         if overwrite.phys_unit:
             phys_unit = overwrite.phys_unit.unit
-        return Overwrite(name, axisNumber, conversion, extended_limits, format, input_quantity, limits, monotony,
-                         phys_unit)
+        return Overwrite(name, axisNumber, conversion, extended_limits, format, input_quantity, limits, monotony, phys_unit)
     return None
 
 
@@ -3867,8 +3880,7 @@ class TypedefMeasurement(CachedBase):
         self.lowerLimit = self.typedef.lowerLimit
         self.upperLimit = self.typedef.upperLimit
         self.compuMethod = (
-            CompuMethod.get(session,
-                            self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
+            CompuMethod.get(session, self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
         )
         if self.typedef.address_type is not None:
             self.addressType = self.typedef.address_type.addressType
@@ -3921,8 +3933,7 @@ class TypedefAxis(CachedBase):
         self.upperLimit = self.typedef.upperLimit
 
         self.compuMethod = (
-            CompuMethod.get(session,
-                            self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
+            CompuMethod.get(session, self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
         )
         self.byteOrder = self.typedef.byte_order.byteOrder if self.typedef.byte_order else None
         self.deposit = self.typedef.deposit.mode if self.typedef.deposit else None
@@ -4032,8 +4043,7 @@ class TypedefCharacteristic(CachedBase):
         self.lowerLimit = self.typedef.lowerLimit
         self.upperLimit = self.typedef.upperLimit
         self.compuMethod = (
-            CompuMethod.get(session,
-                            self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
+            CompuMethod.get(session, self._conversionRef) if self._conversionRef != "NO_COMPU_METHOD" else "NO_COMPU_METHOD"
         )
         self.axisDescriptions = [AxisDescr.get(session, a) for a in self.typedef.axis_descr]
         self.bitMask = self.typedef.bit_mask.mask if self.typedef.bit_mask else None
