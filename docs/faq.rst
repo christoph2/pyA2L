@@ -230,6 +230,53 @@ the offset value to produce syntactically valid A2L:
 **Recommendation**: Provide explicit offsets when known; use ``None`` only
 when the symbol table alone is sufficient for your toolchain.
 
+What performance can I expect for large A2L files?
+--------------------------------------------------
+
+**Import performance** (v0.10.2+, with adaptive flush optimization):
+
+- Small files (<1 MB): ~0.03 MB/s (dominated by session setup)
+- Medium files (5-10 MB): ~0.22 MB/s
+- Large files (15-20 MB): ~0.21 MB/s
+- Very large files (50+ MB): ~0.20 MB/s, ~4 GiB memory
+
+**Key insights**:
+
+1. **C++ parser is fast**: The ANTLR4-based C++ parser runs at 2.5 MB/s,
+   accounting for only 10% of total import time.
+
+2. **Python DB insertion is the bottleneck**: SQLAlchemy object creation and
+   database insertion take 90% of the time.
+
+3. **Adaptive flush strategy**: pyA2L automatically adjusts database flush
+   frequency based on file size:
+
+   - Small files (<10k keywords): flush every 100 objects
+   - Medium files (10k-100k keywords): scale from 200-500 objects
+   - Large files (>100k keywords): flush every 1000 or 1% of total
+
+   This provides a 10% speedup for large files compared to fixed percentage
+   flushing.
+
+4. **Memory scales linearly**: For files >1MB, memory usage scales predictably
+   (~60-70 KiB per object).
+
+**Best practices for large files**:
+
+- Import once, reuse the ``.a2ldb`` (opening existing DB is instant)
+- Use ``progress_bar=False`` to avoid rendering overhead
+- Use selective queries with filters instead of loading entire tables
+- Consider JSON export for downstream processing (20-30% faster)
+
+**Export performance**:
+
+- A2L text export: dominated by lazy loading (93% of time)
+- JSON export: 20-30% faster than A2L
+- Concurrent exports supported (WAL mode allows multiple readers)
+
+See the :doc:`howto` section on "Performance & Best Practices" for detailed
+optimization techniques and code examples.
+
 Does the exporter preserve all A2L attributes during roundtrip?
 ---------------------------------------------------------------
 
