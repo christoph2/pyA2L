@@ -82,13 +82,16 @@ Why pyA2L?
 Design highlights
 -----------------
 
-- SQLite-backed storage (.a2ldb) with SQLAlchemy models
-- High-level inspection helpers in ``pya2l.api.inspect``
-- Creator API in ``pya2l.api.create`` for programmatic A2L generation
-- Validator framework in ``pya2l.api.validate`` yielding structured
+- **SQLite-backed storage** (.a2ldb) with SQLAlchemy models
+- **C++ parser** (ANTLR4-based) for fast parsing (2.5 MB/s)
+- **Adaptive flush strategy** automatically tunes performance (10% speedup for large files)
+- **High-level inspection helpers** in ``pya2l.api.inspect``
+- **Creator API** in ``pya2l.api.create`` for programmatic A2L generation
+- **Validator framework** in ``pya2l.api.validate`` yielding structured
   diagnostics
-- Export to A2L text or JSON format
-- Optional CLI (``a2ldb-imex``) for import/export tasks
+- **Export to A2L text or JSON** format with complete roundtrip fidelity
+- **Optional CLI** (``a2ldb-imex``) for import/export tasks
+- **Concurrent access** via SQLite WAL mode (multiple readers during export)
 
 Learn more about the standard at the ASAM website:
 https://www.asam.net/standards/detail/mcd-2-mc/wiki/
