@@ -420,7 +420,15 @@ class A2LParser:
         self.progress_bar = Progress(*progress_columns, console=Console(stderr=True), disable=self.silent)
         if not self.silent:
             self.task = self.progress_bar.add_task("[blue]writing to DB...", total=keyword_counter)
-        self.advance = keyword_counter // 100 if keyword_counter >= 100 else 1
+        # Adaptive flush strategy: balance memory usage and performance across file sizes
+        if keyword_counter < 10000:
+            self.advance = 100  # Small files: flush often to limit session overhead
+        elif keyword_counter < 100000:
+            # Medium files: scale from 200 to 500 based on size
+            self.advance = min(500, 200 + (keyword_counter - 10000) // 300)
+        else:
+            # Large files: use max of 1000 or 1% to avoid over-flushing
+            self.advance = max(1000, keyword_counter // 100)
         fr = FakeRoot()
         with self.progress_bar:
             self.traverse(values, fr, None, False)
