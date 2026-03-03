@@ -1140,7 +1140,12 @@ def write_record_layouts(out, layouts: list[Any] | None) -> None:
             data = safe_get(rl, attr)
             if data is None:
                 continue
-            write_record_layout_entries(out, elem.keyword_name, data)
+            # Handle Boolean flags (e.g., STATIC_RECORD_LAYOUT, STATIC_ADDRESS_OFFSETS, alignment flags)
+            if isinstance(data, bool):
+                if data:  # Only write if True
+                    out.write(f"      {elem.keyword_name}\n")
+            else:
+                write_record_layout_entries(out, elem.keyword_name, data)
         out.write("    /end RECORD_LAYOUT\n\n")
 
 
