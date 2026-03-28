@@ -199,6 +199,21 @@ def get_legacy_formulas(session: Any) -> bool:
     return cached_per_session(session, "pya2l_legacy_formulas", lambda: _legacy_flag_from_db(session))
 
 
+def get_asap2_version(session: Any) -> Tuple[int, int]:
+    """Get the ASAP2 version from the database as a tuple (version, upgrade).
+
+    The result is cached per session. Defaults to (1, 70) if not found.
+    """
+
+    def _get_version():
+        asap_version = session.query(model.Asap2Version).first()
+        if asap_version is None:
+            return 1, 70
+        return asap_version.versionNo, asap_version.upgradeNo
+
+    return cached_per_session(session, "pya2l_asap2_version", _get_version)
+
+
 class PrgTypeLayout(IntEnum):
     """Enumeration for program memory layout types.
 
@@ -811,13 +826,15 @@ class MatrixDim:
         self.numbers = tuple(d for d in (self.x, self.y, self.z) if d is not None)
 
     @classmethod
-    def from_model(cls, matrix_dim):
+    def from_model(cls, matrix_dim, version: Optional[Tuple[int, int]] = None):
         """Create a MatrixDim instance from a model object.
 
         Parameters
         ----------
         matrix_dim : Any
             Object containing matrix dimension information
+        version : Optional[Tuple[int, int]]
+            ASAM MCD-2 MC version as (version, upgrade) tuple
         """
         if matrix_dim is None:
             return cls()
@@ -825,6 +842,21 @@ class MatrixDim:
         try:
             numbers = matrix_dim.numbers
             length = len(numbers)
+
+            if version is not None and version <= (1, 61):
+                # ASAM MCD-2 MC <= V1.6.1: always 3 dimensions given.
+                # To describe objects with less than 3 dimensions, not used dimensions are stated as '1'.
+                # E.g. MATRIX_DIM 4 2 1 describes a 2-dimensional object.
+                if length == 3:
+                    x, y, z = numbers[0], numbers[1], numbers[2]
+                    if z == 1:
+                        z = None
+                        if y == 1:
+                            y = None
+                    return cls(x=x, y=y, z=z)
+
+            # ASAM MCD-2 MC V1.7+: dimensions are optional.
+            # E.g. MATRIX_DIM 4 2 1 describes a 3-dimensional object (z-dimension = 1).
             x, y, z = None, None, None
             if length >= 3:
                 z = numbers[2]
@@ -844,14 +876,12 @@ class MatrixDim:
     def valid(self) -> bool:
         """Check if the matrix dimensions are valid.
 
-        Valid dimensions must have x, y, and z defined.
-
         Returns
         -------
         bool
             True if the dimensions are valid, False otherwise
         """
-        return self.x is not None and self.y is not None and self.z is not None
+        return self.x is not None
 
 
 @dataclass
@@ -2879,7 +2909,7 @@ class Characteristic(CachedBase):
         self.functionList = [f.name for f in self.characteristic.function_list] if self.characteristic.function_list else []
         self.guardRails = self.characteristic.guard_rails
         self.mapList = [f.name for f in self.characteristic.map_list] if self.characteristic.map_list else []
-        self.matrixDim = MatrixDim.from_model(self.characteristic.matrix_dim)
+        self.matrixDim = MatrixDim.from_model(self.characteristic.matrix_dim, get_asap2_version(session))
         self.maxRefresh = _dissect_max_refresh(self.characteristic.max_refresh)
         self.modelLink = self.characteristic.model_link.link if self.characteristic.model_link else None
         self.number = self.characteristic.number.number if self.characteristic.number else None
@@ -3331,7 +3361,7 @@ class Measurement(CachedBase):
         self.format = self.measurement.format.formatString if self.measurement.format else None
         self.functionList = self.measurement.function_list.name if self.measurement.function_list else []
         self.layout = self.measurement.layout.indexMode if self.measurement.layout else None
-        self.matrixDim = MatrixDim.from_model(self.measurement.matrix_dim)
+        self.matrixDim = MatrixDim.from_model(self.measurement.matrix_dim, get_asap2_version(session))
         self.maxRefresh = _dissect_max_refresh(self.measurement.max_refresh)
         self.physUnit = self.measurement.phys_unit.unit if self.measurement.phys_unit else None
         self.readWrite = False if self.measurement.read_write is None else True
@@ -3616,7 +3646,7 @@ class StructureComponent(CachedBase):
         else:
             self.addressType = None
             self.layout = self.component.layout.indexMode if self.component.layout else None
-        self.matrixDim = MatrixDim.from_model(self.component.matrix_dim)
+        self.matrixDim = MatrixDim.from_model(self.component.matrix_dim, get_asap2_version(session))
         self.symbolLink = _dissect_symbol_link(self.component.symbol_link)
 
 
@@ -3797,7 +3827,7 @@ class Instance(CachedBase):
         self.ecuAddressExtension = self.instance.ecu_address_extension.extension if self.instance.ecu_address_extension else 0
         self.if_data = self.session.parse_ifdata(self.instance.if_data)
         self.layout = self.instance.layout.indexMode if self.instance.layout else None
-        self.matrixDim = MatrixDim.from_model(self.instance.matrix_dim)
+        self.matrixDim = MatrixDim.from_model(self.instance.matrix_dim, get_asap2_version(session))
         self.maxRefresh = _dissect_max_refresh(self.instance.max_refresh)
         self.modelLink = self.instance.model_link.link if self.instance.model_link else None
         self.overwrite = create_overwrite(self.instance.overwrite)
@@ -3893,7 +3923,7 @@ class TypedefMeasurement(CachedBase):
         self.errorMask = self.typedef.error_mask.mask if self.typedef.error_mask else None
         self.format = self.typedef.format.formatString if self.typedef.format else None
         self.layout = self.typedef.layout.indexMode if self.typedef.layout else None
-        self.matrixDim = MatrixDim.from_model(self.typedef.matrix_dim)
+        self.matrixDim = MatrixDim.from_model(self.typedef.matrix_dim, get_asap2_version(session))
         self.physUnit = self.typedef.phys_unit.unit if self.typedef.phys_unit else None
 
 
@@ -4052,7 +4082,7 @@ class TypedefCharacteristic(CachedBase):
         self.encoding = self.typedef.encoding.encoding if self.typedef.encoding else None
         self.extendedLimits = _create_extended_limits(self.typedef.extended_limits)
         self.format = self.typedef.format.formatString if self.typedef.format else None
-        self.matrixDim = MatrixDim.from_model(self.typedef.matrix_dim)
+        self.matrixDim = MatrixDim.from_model(self.typedef.matrix_dim, get_asap2_version(session))
         self.number = self.typedef.number.number if self.typedef.number else None
         self.physUnit = self.typedef.phys_unit.unit if self.typedef.phys_unit else None
         self.stepSize = self.typedef.step_size
