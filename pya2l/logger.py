@@ -27,6 +27,7 @@ __author__ = "Christoph Schueler"
 __version__ = "0.1.0"
 
 import logging
+import traceback
 
 
 try:
@@ -77,13 +78,18 @@ class Logger:
         self.log(message, logging.INFO)
 
     def warn(self, message):
-        self.log(message, logging.WARN)
+        self.log(message, logging.WARNING)
+
+    def warning(self, message):
+        self.log(message, logging.WARNING)
 
     def debug(self, message):
         self.log(message, logging.DEBUG)
 
-    def error(self, message):
+    def error(self, message, exc_info: bool = False):
         self.log(message, logging.ERROR)
+        if exc_info:
+            self.logger.debug(traceback.format_exc())
 
     def critical(self, message):
         self.log(message, logging.CRITICAL)
@@ -97,11 +103,12 @@ class Logger:
     def setLevel(self, level):
         LEVEL_MAP = {
             "INFO": logging.INFO,
-            "WARN": logging.WARN,
+            "WARN": logging.WARNING,
+            "WARNING": logging.WARNING,
             "DEBUG": logging.DEBUG,
             "ERROR": logging.ERROR,
             "CRITICAL": logging.CRITICAL,
         }
         if isinstance(level, str):
-            level = LEVEL_MAP.get(level.upper(), logging.WARN)
+            level = LEVEL_MAP.get(level.upper(), logging.WARNING)
         self.logger.setLevel(level)

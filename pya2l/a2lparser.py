@@ -1,5 +1,6 @@
 import re
 import sys
+import traceback
 import typing
 from collections import defaultdict
 from os import unlink
@@ -395,7 +396,8 @@ class A2LParser:
         try:
             keyword_counter, values, tables, aml_data = ext.parse(str(a2l_fn), encoding, loglevel)
         except Exception as e:
-            print(f"{e!r}", file=sys.stderr)
+            self.logger.error(f"Failed to parse {a2l_fn!r}: {e}")
+            self.logger.error(traceback.format_exc())
             try:
                 unlink(str(db_fn))
             except Exception:
@@ -454,13 +456,13 @@ class A2LParser:
             try:
                 params = tree.parameters
             except UnicodeDecodeError as e:
-                print(e, "***", tree, name, table, file=sys.stderr)
+                self.logger.error(f"UnicodeDecodeError reading parameters of {name!r}: {e}")
                 params = {}
             mult = tree.multiple_values
             try:
                 raw_if_data = tree.if_data
             except UnicodeDecodeError as exc:
-                self.logger.warn(f"Failed to decode IF_DATA using UTF-8: {exc}")
+                self.logger.warning(f"Failed to decode IF_DATA in {name!r} using encoding {self.encoding!r}: {exc}")
                 raw_if_data = []
             if_data = self._decode_if_data_sections(raw_if_data)
 
