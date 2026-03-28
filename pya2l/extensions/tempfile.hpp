@@ -49,7 +49,7 @@ class TempFile {
         m_file(m_path, std::ios::trunc | std::ios::out | (binary ? std::ios::binary : static_cast<std::ios::openmode>(0))),
         m_closed(false) {
         if (!m_file.is_open()) {
-            throw std::runtime_error("Could not open temporary file '" + m_path.string() + "'");
+            throw std::runtime_error("[ERROR (pya2l.TempFile)]  Could not open temporary file '" + m_path.string() + "'.");
         }
     }
 
@@ -178,7 +178,7 @@ class TempFile {
             // small backoff
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }
-        throw std::runtime_error("Failed to create unique temporary filename with suffix '" + suffix + "'");
+        throw std::runtime_error("[ERROR (pya2l.TempFile)]  Failed to create unique temporary filename with suffix '" + suffix + "'.");
     }
 };
 

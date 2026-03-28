@@ -221,12 +221,12 @@ class IfDataReader : public IfDataBase {
     #if defined(_MSC_VER)
         auto err = ::fopen_s(&m_file, m_file_name.c_str(), "rb");
         if (err != 0) {
-            throw std::runtime_error("Could not open file '" + m_file_name + "'.\n");
+            throw std::runtime_error("[ERROR (pya2l.IfDataReader)]  Could not open file '" + m_file_name + "'.");
         }
     #else
         m_file = ::fopen(m_file_name.c_str(), "rb");
         if (m_file == nullptr) {
-            throw std::runtime_error("Could not open file '" + m_file_name + "'.\n");
+            throw std::runtime_error("[ERROR (pya2l.IfDataReader)]  Could not open file '" + m_file_name + "'.");
         }
     #endif
 
@@ -258,7 +258,13 @@ class IfDataReader : public IfDataBase {
         }
 
         if (offset >= m_size) {
-            spdlog::get("a2lparser")->error("file offset {} is out of range of file size {}", offset, m_size);
+            auto logger = spdlog::get("preprocessor");
+            if (logger) {
+                logger->error(
+                    "[ERROR (pya2l.IfDataReader)]  File offset {} is out of range of file size {} in '{}'",
+                    offset, m_size, m_file_name
+                );
+            }
             return std::nullopt;
         }
 
@@ -281,16 +287,25 @@ class IfDataReader : public IfDataBase {
    private:
 
     std::size_t read_int() {
-        std::size_t value = 0;
-
-        ::fread((char*)&value, sizeof(std::size_t), 1, m_file);
+        std::size_t value  = 0;
+        std::size_t nread  = ::fread((char*)&value, sizeof(std::size_t), 1, m_file);
+        if (nread != 1 && !::feof(m_file)) {
+            throw std::runtime_error(
+                "[ERROR (pya2l.IfDataReader)]  Failed to read integer from '" + m_file_name + "'."
+            );
+        }
         return value;
     }
 
     std::string read_string(std::size_t count) {
         std::vector<char> buf(count + 1);
-
-        ::fread(buf.data(), 1, count, m_file);
+        std::size_t       nread = ::fread(buf.data(), 1, count, m_file);
+        if (nread != count && !::feof(m_file)) {
+            throw std::runtime_error(
+                "[ERROR (pya2l.IfDataReader)]  Failed to read " + std::to_string(count) +
+                " bytes from '" + m_file_name + "'."
+            );
+        }
         buf[count] = '\x00';
         std::string result{ buf.data() };
         return result;

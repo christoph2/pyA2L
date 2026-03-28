@@ -22,16 +22,31 @@ class Reader {
 
     template<typename T>
     inline T from_binary() {
+        if (m_offset + sizeof(T) > std::size(m_buf)) {
+            throw std::runtime_error(
+                "[ERROR (pya2l.AMLUnmarshal)] Read out of bounds: attempted to read " +
+                std::to_string(sizeof(T)) + " byte(s) at offset " +
+                std::to_string(m_offset) + " but buffer size is " +
+                std::to_string(std::size(m_buf))
+            );
+        }
         auto tmp = *reinterpret_cast<const T*>(&m_buf[m_offset]);
         m_offset += sizeof(T);
         return tmp;
     }
 
     inline std::string from_binary_str() {
-        auto        length = from_binary<std::size_t>();
+        auto length = from_binary<std::size_t>();
+        if (m_offset + length > std::size(m_buf)) {
+            throw std::runtime_error(
+                "[ERROR (pya2l.AMLUnmarshal)] String read out of bounds: attempted to read " +
+                std::to_string(length) + " byte(s) at offset " +
+                std::to_string(m_offset) + " but buffer size is " +
+                std::to_string(std::size(m_buf))
+            );
+        }
         std::string result;
         auto        start = m_buf.cbegin() + m_offset;
-
         std::copy(start, start + length, std::back_inserter(result));
         m_offset += length;
         return result;
@@ -145,6 +160,8 @@ class Node {
                 return m_list;
             case NodeType::MAP:
                 return m_map;
+            default:
+                return terminal_t{};
         }
     }
 
@@ -154,7 +171,7 @@ class Node {
             const auto& members = tp.at("MEMBERS").list();
             for (const auto& member : members) {
                 const auto& tag = member.get_tag();
-                std::cout << "tag: " << tag << std::endl;
+                // std::cerr << "[DEBUG (pya2l.AMLUnmarshal)] find_block tag: " << tag << std::endl;
                 if (name == tag) {
                     return &member;
                 }
@@ -172,7 +189,6 @@ class Node {
         } else {
             return { multiple, &member, std::nullopt };
         }
-        return { false, {}, {} };
     }
 
     ///////////////////////////////////////////////////////////////
@@ -494,6 +510,10 @@ class Unmarshaller {
             return make_enumeration(name, enumerators);
         } else if (disc == "R") {
             return load_referrrer();
+        } else {
+            throw std::runtime_error(
+                "[ERROR (pya2l.AMLUnmarshal)] load_enum(): Unknown discriminator '" + disc + "'"
+            );
         }
     }
 
@@ -586,11 +606,12 @@ class Unmarshaller {
         } else if (disc == "NA") {
             return make_null_node();
         } else if (disc == "TY") {
-            load_type();
+            return load_type();
         } else {
-            assert(true == false);
+            throw std::runtime_error(
+                "[ERROR (pya2l.AMLUnmarshal)] load_type(): Unknown type discriminator '" + disc + "'"
+            );
         }
-        return result;
     }
 
     Node load_member() {

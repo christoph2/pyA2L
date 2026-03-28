@@ -60,7 +60,14 @@ const std::set<std::string> PredefinedTypesSet {
 };
 
 inline AMLPredefinedTypeEnum createPredefinedType(const std::string& name) {
-    return PredefinedTypesMap.at(name);
+    auto it = PredefinedTypesMap.find(name);
+    if (it == PredefinedTypesMap.end()) {
+        throw std::out_of_range(
+            "[ERROR (pya2l.AMLParser)] Unknown predefined type '" + name +
+            "'. Valid types are: char, int, long, uchar, uint, ulong, int64, uint64, double, float, float16"
+        );
+    }
+    return it->second;
 }
 
 #endif  // __TYPES_HPP

@@ -11,27 +11,82 @@ class AMLParser {
     explicit AMLParser(const std::vector<AmlToken>& tokens) : m_tokens(tokens), m_pos(0) {
     }
 
-    const AmlToken& current_token() const noexcept {
+    const AmlToken& current_token() const {
+        if (m_pos >= std::size(m_tokens)) {
+            throw std::runtime_error(
+                "[ERROR (pya2l.AMLParser)] Unexpected end of token stream at position " +
+                std::to_string(m_pos) + " (total tokens: " + std::to_string(std::size(m_tokens)) + ")"
+            );
+        }
         return m_tokens[m_pos];
     }
 
-    const AmlToken& la(std::size_t offs) const noexcept {
+    const AmlToken& la(std::size_t offs) const {
+        if (m_pos + offs >= std::size(m_tokens)) {
+            throw std::runtime_error(
+                "[ERROR (pya2l.AMLParser)] Look-ahead out of bounds: position " +
+                std::to_string(m_pos + offs) + " (total tokens: " + std::to_string(std::size(m_tokens)) + ")"
+            );
+        }
         return m_tokens[m_pos + offs];
     }
 
-    void consume() noexcept {
+    void consume() {
+        if (m_pos >= std::size(m_tokens)) {
+            throw std::runtime_error(
+                "[ERROR (pya2l.AMLParser)] Cannot consume past end of token stream (position " +
+                std::to_string(m_pos) + ", total tokens: " + std::to_string(std::size(m_tokens)) + ")"
+            );
+        }
         m_pos++;
+    }
+
+    static std::string token_type_name(AmlTokenType t) {
+        switch (t) {
+            case AmlTokenType::NONE:          return "NONE";
+            case AmlTokenType::IDENT:         return "IDENT";
+            case AmlTokenType::FLOAT:         return "FLOAT";
+            case AmlTokenType::INT:           return "INT";
+            case AmlTokenType::COMMENT:       return "COMMENT";
+            case AmlTokenType::TAG:           return "TAG";
+            case AmlTokenType::BEGIN:         return "BEGIN(/begin)";
+            case AmlTokenType::END:           return "END(/end)";
+            case AmlTokenType::ENUM:          return "ENUM";
+            case AmlTokenType::STRUCT:        return "STRUCT";
+            case AmlTokenType::TAGGED_STRUCT: return "TAGGED_STRUCT";
+            case AmlTokenType::TAGGED_UNION:  return "TAGGED_UNION";
+            case AmlTokenType::PDT:           return "PDT";
+            case AmlTokenType::LBRACE:        return "{";
+            case AmlTokenType::RBRACE:        return "}";
+            case AmlTokenType::LPARAN:        return "(";
+            case AmlTokenType::RPARAN:        return ")";
+            case AmlTokenType::LSQ:           return "[";
+            case AmlTokenType::RSQ:           return "]";
+            case AmlTokenType::EQU:           return "=";
+            case AmlTokenType::SEMI:          return ";";
+            case AmlTokenType::COLON:         return ",";
+            case AmlTokenType::STAR:          return "*";
+            case AmlTokenType::BLOCK:         return "BLOCK";
+            case AmlTokenType::INCLUDE:       return "INCLUDE";
+            default:                          return "<unknown>";
+        }
+    }
+
+    std::string token_location(const AmlToken& tok) const {
+        return "line " + std::to_string(tok.line) + ", col " + std::to_string(tok.col);
     }
 
     bool expect(AmlTokenType type, TokenDataType value = std::nullopt) {
         auto token = current_token();
         if (type != token.type) {
-            std::cerr << "Invalid AmlToken type!!!\n";
+            std::cerr << "[ERROR (pya2l.AMLParser)] Expected token type '" << token_type_name(type)
+                      << "' but got '" << token_type_name(token.type)
+                      << "' at " << token_location(token) << "\n";
             return false;
         }
         if (value && token.value) {
             if (*value != *token.value) {
-                std::cerr << "Unexpected AmlToken value!!!\n";
+                std::cerr << "[ERROR (pya2l.AMLParser)] Unexpected token value at " << token_location(token) << "\n";
                 return false;
             }
         }
@@ -40,7 +95,11 @@ class AMLParser {
 
     void match(AmlTokenType type, bool consume_token = true) {
         if (!expect(type)) {
-            throw std::runtime_error("Invalid AmlToken type.");
+            auto& tok = current_token();
+            throw std::runtime_error(
+                "[ERROR (pya2l.AMLParser)] Expected '" + token_type_name(type) +
+                "' but got '" + token_type_name(tok.type) + "' at " + token_location(tok)
+            );
         }
         if (consume_token) {
             consume();
@@ -49,7 +108,11 @@ class AMLParser {
 
     auto match_get_value(AmlTokenType type, bool consume_token = true) -> TokenDataType {
         if (!expect(type)) {
-            throw std::runtime_error("Invalid AmlToken type.");
+            auto& tok = current_token();
+            throw std::runtime_error(
+                "[ERROR (pya2l.AMLParser)] Expected '" + token_type_name(type) +
+                "' but got '" + token_type_name(tok.type) + "' at " + token_location(tok)
+            );
         }
         auto value = current_token().value;
 
@@ -74,17 +137,17 @@ class AMLParser {
         if (std::holds_alternative<int64_t >(value)) {
             return std::get<int64_t>(value);
         } else if (std::holds_alternative<long double>(value)) {
-            return static_cast<long double>(std::get<long double>(value));
+            return static_cast<int64_t>(std::get<long double>(value));
         } else if (std::holds_alternative<std::string>(value)) {
             return std::strtoll(std::get<std::string>(value).c_str(), nullptr, 10);
         } else {
-            throw std::runtime_error("get_int(): Invalid AMLType.");
+            throw std::runtime_error("[ERROR (pya2l.AMLParser)] get_int(): Token at " + token_location(token) + " has no numeric value.");
         }
     }
 
     auto parse() -> AmlFile {
         if (std::size(m_tokens) == 0) {
-            std::cout << "Empty AML section." << std::endl;
+            std::cerr << "[WARNING (pya2l.AMLParser)] Empty AML section - no tokens to parse." << std::endl;
             return {};
         }
         return aml_file();
@@ -131,12 +194,13 @@ class AMLParser {
 
         if (token.type == AmlTokenType::TAG) {
             std::string tag_value{};
-            if (std::holds_alternative<std::string>(*token.value)) {
+            if (token.value && std::holds_alternative<std::string>(*token.value)) {
                 tag_value = std::get<std::string>(*token.value);
             }
-            std::cerr << "Unexpected TAG '" << tag_value << "\'\n";
-            consume();
-            token = current_token();
+            throw std::runtime_error(
+                "[ERROR (pya2l.AMLParser)] Unexpected TAG '" + tag_value +
+                "' where a type name was expected at " + token_location(token)
+            );
         }
 
         if (token.type == AmlTokenType::STRUCT) {
@@ -150,8 +214,10 @@ class AMLParser {
         } else if (token.type == AmlTokenType::ENUM) {
             return enum_type_name();
         } else {
-            std::cerr << "Unexpected token (not an AML type)\n";
-            consume();
+            throw std::runtime_error(
+                "[ERROR (pya2l.AMLParser)] Unexpected token '" + token_type_name(token.type) +
+                "' - expected an AML type (struct/taggedstruct/taggedunion/enum/PDT) at " + token_location(token)
+            );
         }
     }
 
@@ -288,7 +354,10 @@ class AMLParser {
         bool        multiple{ false };
         auto        token = current_token();
         if (token.type != AmlTokenType::TAG) {
-            std::cerr << "Missing required TAG\n";
+            throw std::runtime_error(
+                "[ERROR (pya2l.AMLParser)] Missing required TAG in taggedstruct_definition - got '" +
+                token_type_name(token.type) + "' at " + token_location(token)
+            );
         } else {
             tag = get_tag();
         }
@@ -354,6 +423,11 @@ class AMLParser {
             mem = member();
         } else if (token.type == AmlTokenType::BLOCK) {
             block = block_definition();
+        } else {
+            throw std::runtime_error(
+                "[ERROR (pya2l.AMLParser)] Unexpected token '" + token_type_name(token.type) +
+                "' in tagged_union_member - expected TAG or BLOCK at " + token_location(token)
+            );
         }
         token = current_token();
         if (token.type == AmlTokenType::SEMI) {

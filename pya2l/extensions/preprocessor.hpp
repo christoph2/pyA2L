@@ -380,7 +380,7 @@ class Preprocessor {
             update_line_map(abs_pth, line_offset, line_offset + length, start_line_number, end_line);
             line_offset += length;
         } else {
-            throw std::runtime_error("Could not open file: '" + abs_pth.string() + "'");
+            throw std::runtime_error("[ERROR (pya2l.Preprocessor)]  Could not open file: '" + abs_pth.string() + "'");
         }
     }
 

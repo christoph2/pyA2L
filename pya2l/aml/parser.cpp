@@ -23,14 +23,11 @@ AmlData parse_aml(const std::string& aml_file_name) {
         result.text   = file_content;
         // auto root_node = unmarshal(res);
     } catch (const std::runtime_error& re) {
-        // speciffic handling for runtime_error
-        std::cerr << "Error while parsing AML: " << re.what() << std::endl;
+        std::cerr << "[ERROR (pya2l.AMLParser)] Runtime error while parsing AML file '" << aml_file_name << "': " << re.what() << std::endl;
     } catch (const std::exception& ex) {
-        // speciffic handling for all exceptions extending std::exception, except
-        // std::runtime_error which is handled explicitly
-        std::cerr << "Error while parsing AML: " << ex.what() << std::endl;
+        std::cerr << "[ERROR (pya2l.AMLParser)] Exception while parsing AML file '" << aml_file_name << "': " << ex.what() << std::endl;
     } catch (...) {
-        // catch any other errors (that we have no information about)
+        std::cerr << "[ERROR (pya2l.AMLParser)] Unknown error while parsing AML file '" << aml_file_name << "' - no further information available." << std::endl;
     }
     return result;
 }

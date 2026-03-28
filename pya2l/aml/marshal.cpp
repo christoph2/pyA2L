@@ -70,7 +70,8 @@ inline void dumps(std::stringstream& ss, const Member& mem) {
         if (blk) {
             dumps(ss, blk);
         } else {
-            // FIX-ME!
+            // Member has neither type nor block - write null marker
+            ss << null_pointer();
         }
     }
 }
@@ -224,7 +225,7 @@ inline void dumps(std::stringstream& ss, std::shared_ptr<Type> tp_) {
         [&ss, &tp](auto&& arg) {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, std::monostate>) {
-                // std::cout << "std::monostate!? " << '\n';
+                std::cerr << "[WARNING (pya2l.AMLMarshal)] Encountered valueless std::monostate in Type variant - skipping." << std::endl;
             } else if constexpr (std::is_same_v<T, AMLPredefinedType>) {
                 dumps(ss, arg);
             } else if constexpr (std::is_same_v<T, EnumerationOrReferrer>) {

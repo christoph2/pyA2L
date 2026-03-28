@@ -497,12 +497,12 @@ class TokenReader {
     #if defined(_MSC_VER)
         auto err = ::fopen_s(&m_file, m_file_name.c_str(), "rb");
         if (err != 0) {
-            throw std::runtime_error("Could not open file '" + m_file_name + "'");
+            throw std::runtime_error("[ERROR (pya2l.TokenReader)]  Could not open file '" + m_file_name + "'.");
         }
     #else
         m_file = ::fopen(m_file_name.c_str(), "rb");
         if (m_file == nullptr) {
-            throw std::runtime_error("Could not open file '" + m_file_name + "'");
+            throw std::runtime_error("[ERROR (pya2l.TokenReader)]  Could not open file '" + m_file_name + "'.");
         }
     #endif
     }
@@ -555,15 +555,24 @@ class TokenReader {
 
     std::size_t read_int() const {
         std::size_t value = 0;
-
-        ::fread((char *)&value, sizeof(std::size_t), 1, m_file);
+        std::size_t nread = ::fread((char *)&value, sizeof(std::size_t), 1, m_file);
+        if (nread != 1 && !::feof(m_file)) {
+            throw std::runtime_error(
+                "[ERROR (pya2l.TokenReader)]  Failed to read integer from '" + m_file_name + "'."
+            );
+        }
         return value;
     }
 
     std::string read_string(std::size_t count) const {
         std::vector<char> buf(count + 1);
-
-        ::fread(buf.data(), 1, count, m_file);
+        std::size_t       nread = ::fread(buf.data(), 1, count, m_file);
+        if (nread != count && !::feof(m_file)) {
+            throw std::runtime_error(
+                "[ERROR (pya2l.TokenReader)]  Failed to read " + std::to_string(count) +
+                " bytes from '" + m_file_name + "'."
+            );
+        }
         buf[count] = '\x00';
         std::string result{ buf.data() };
         return result;

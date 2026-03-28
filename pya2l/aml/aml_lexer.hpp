@@ -48,8 +48,10 @@ enum class AmlTokenType : uint8_t {
 using TokenDataType = std::optional<std::variant<int64_t, long double, std::string, AMLPredefinedTypeEnum>>;
 
 struct AmlToken {
-    AmlTokenType type{ AmlTokenType::NONE };
+    AmlTokenType  type{ AmlTokenType::NONE };
     TokenDataType value{ std::nullopt };
+    std::size_t   line{ 0 };
+    std::size_t   col{ 0 };
 };
 
 
@@ -58,11 +60,15 @@ inline auto aml_lexer(const std::string& ifdata_section) -> std::vector<AmlToken
 
     std::smatch match;
     std::string input{ ifdata_section };
-    size_t      skip {0};
+    size_t      skip{ 0 };
+    std::size_t current_line{ 1 };
+    std::size_t current_col{ 1 };
 
     while (std::regex_search(input, match, AML_REGEX)) {
-        auto idx = 0;
+        auto     idx = 0;
         AmlToken tok{};
+        tok.line = current_line;
+        tok.col  = current_col;
         for (auto x : match) {
             if ((x.matched) && (idx > 0)) {
                 const auto& tstr = x.str();
@@ -102,7 +108,7 @@ inline auto aml_lexer(const std::string& ifdata_section) -> std::vector<AmlToken
                         skip     = 2;
                     }
                     else {
-                        std::cout << "???\n";
+                        std::cerr << "[ERROR (pya2l.AMLLexer)] Unknown keyword token '" << tstr << "' at line " << current_line << ", col " << current_col << "\n";
                     }
                     break;
                 case 6: // PARAN, OP
@@ -137,7 +143,7 @@ inline auto aml_lexer(const std::string& ifdata_section) -> std::vector<AmlToken
                         tok.type = AmlTokenType::EQU;
                     }
                     else {
-                        std::cout << "???\n";
+                        std::cerr << "[ERROR (pya2l.AMLLexer)] Unknown operator/punctuation '" << tstr << "' at line " << current_line << ", col " << current_col << "\n";
                     }
                     break;
                 case 7: // PDT
@@ -194,7 +200,7 @@ inline auto aml_lexer(const std::string& ifdata_section) -> std::vector<AmlToken
                     }
                     break;
                 default:
-                    std::cout << "ERROR\n";
+                    std::cerr << "[ERROR (pya2l.AMLLexer)] Unhandled regex group " << idx << " for token '" << x.str() << "' at line " << current_line << ", col " << current_col << "\n";
                     break;
 
                 }
@@ -208,12 +214,27 @@ inline auto aml_lexer(const std::string& ifdata_section) -> std::vector<AmlToken
             idx++;
         }
 
-        auto pos = 0;
+        // Advance line/col tracking over the matched text
+        for (char ch : match[0].str()) {
+            if (ch == '\n') {
+                ++current_line;
+                current_col = 1;
+            } else {
+                ++current_col;
+            }
+        }
+        auto pos    = 0;
         auto suffix = match.suffix().str();
         while (true) {
             auto ch = suffix[pos];
             if (!std::isspace(ch)) {
                 break;
+            }
+            if (ch == '\n') {
+                ++current_line;
+                current_col = 1;
+            } else {
+                ++current_col;
             }
             ++pos;
         }
@@ -225,8 +246,14 @@ inline auto aml_lexer(const std::string& ifdata_section) -> std::vector<AmlToken
 
 inline std::string get_file_content(const std::string& file_name) {
     std::ifstream input{ file_name };
+    if (!input.is_open()) {
+        throw std::runtime_error("[ERROR (pya2l.AMLLexer)] Could not open AML file: '" + file_name + "'");
+    }
     std::stringstream buffer;
     buffer << input.rdbuf();
+    if (input.bad()) {
+        throw std::runtime_error("[ERROR (pya2l.AMLLexer)] I/O error while reading AML file: '" + file_name + "'");
+    }
     return buffer.str();
 }
 
