@@ -8,10 +8,9 @@ import shutil
 import sys
 import tempfile
 import time
+import tracemalloc
 import uuid
 from pathlib import Path
-
-from memory_profiler import memory_usage
 
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -49,11 +48,12 @@ def import_with_strategy(a2l_path, strategy, label=""):
 
         start_time = time.perf_counter()
 
-        # Track memory during import
-        mem_usage = memory_usage(do_import, interval=0.1, max_usage=True, retval=True, include_children=True)
+        tracemalloc.start()
+        db_obj = do_import()
+        _, peak_mem_bytes = tracemalloc.get_traced_memory()
+        tracemalloc.stop()
 
-        peak_mem = mem_usage[0]
-        db_obj = mem_usage[1]
+        peak_mem = peak_mem_bytes / (1024 * 1024)  # Convert to MiB
 
         elapsed = time.perf_counter() - start_time
 
