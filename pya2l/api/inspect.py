@@ -14,7 +14,7 @@ converting between different data formats and representations.
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2020-2025 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2020-2026 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -323,6 +323,33 @@ class SegmentAttributeType(IntEnum):
 ## Dataclasses.
 ##
 
+
+@dataclass  # (slots=True)
+class IfData:
+    if_data_parsed: list
+    if_data_raw: list
+    items: Dict[str, list] = field(default_factory=lambda: collections.defaultdict(list))
+    _initialized: bool = field(default=False, repr=False)
+
+    def _traverse(self, item: List | Dict,) -> Any:
+        if isinstance(item, dict):
+            for k, v in item.items():
+                self.items[k].append(v)
+                self._traverse(v)
+        elif isinstance(item, list):
+            for el in item:
+                self._traverse(el)
+
+    def _build_flatmap(self) -> None:
+        for ifd in self.if_data_parsed:
+            self._traverse(ifd)
+
+    @property
+    def flatmap(self):
+        if not self._initialized:
+            self._build_flatmap()
+            self._initialized = True
+        return self.items
 
 @dataclass
 class Alignment:
