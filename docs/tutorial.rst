@@ -178,68 +178,108 @@ Advanced Features
 Working with IF_DATA Sections
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-IF_DATA sections contain vendor-specific information. pyA2L parses these
-blocks for you and exposes them uniformly on many inspect classes via
-the ``.if_data`` attribute. You can also parse raw IF_DATA text manually
-if needed.
+IF_DATA sections contain vendor-specific information (XCP, CCP, KWP2000,
+…).  pyA2L parses these blocks and wraps the result in an ``IfData``
+dataclass that gives you access to both the **parsed** and **raw**
+representation simultaneously.
 
-Where you can find IF_DATA (inspect API): - Module.if_data — IF_DATA
-blocks attached to the MODULE - Measurement.if_data — IF_DATA for
-MEASUREMENT - Characteristic.if_data — IF_DATA for CHARACTERISTIC -
-AxisPts.if_data — IF_DATA for AXIS_PTS - Function.if_data — IF_DATA for
-FUNCTION - Group.if_data — IF_DATA for GROUP - Frame.if_data — IF_DATA
-for FRAME - ModPar.memoryLayouts[i].if_data and
-ModPar.memorySegments[i].if_data — IF_DATA under MOD_PAR MEMORY_LAYOUT
-and MEMORY_SEGMENT
+The ``IfData`` dataclass
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-Accessing parsed IF_DATA from inspect objects:
+Every inspect object that can carry IF_DATA (``Module``, ``Measurement``,
+``Characteristic``, ``AxisPts``, ``Function``, ``Group``, ``Frame``,
+``Instance``, ``Blob``, ``MemoryLayout``, ``MemorySegment``) exposes an
+``if_data`` attribute of type ``IfData``:
+
+- ``if_data.if_data_parsed`` — ``List[Any]``: structured dicts produced
+  by the AML-based parser, one entry per ``/begin IF_DATA`` block.
+- ``if_data.if_data_raw`` — ``list``: the original model objects whose
+  ``.raw`` attribute holds the verbatim A2L text.
+- ``if_data.flatmap`` — ``Dict[str, List[Any]]``: lazily built flat
+  index over all keys found in the parsed tree.  Useful for quick
+  look-ups when you know the tag but not the nesting depth.
+
+Where you can find IF_DATA (inspect API):
+
+- ``Module.if_data``
+- ``Measurement.if_data``
+- ``Characteristic.if_data``
+- ``AxisPts.if_data``
+- ``Function.if_data``
+- ``Group.if_data``
+- ``Frame.if_data``
+- ``Instance.if_data``
+- ``Blob.if_data``
+- ``ModPar.memoryLayouts[i].if_data``
+- ``ModPar.memorySegments[i].if_data``
+
+Accessing parsed IF_DATA
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code:: python
 
    from pya2l.api.inspect import Module
 
-   module = Module(session)  # or Module(session, "MY_MODULE")
+   module = Module(session)
 
    # MODULE-level IF_DATA
-   print(module.if_data)  # list[dict], already parsed
+   print(module.if_data.if_data_parsed)  # list of parsed dicts
 
    # MEASUREMENT IF_DATA
    for meas in module.measurement.query():
-       if meas.if_data:
-           print(meas.name, meas.if_data)
+       if meas.if_data.if_data_parsed:
+           print(meas.name, meas.if_data.if_data_parsed)
+
+   # Quick tag look-up via flatmap
+   for meas in module.measurement.query():
+       if "DAQ_LIST" in meas.if_data.flatmap:
+           print(f"{meas.name} has DAQ config: {meas.if_data.flatmap['DAQ_LIST']}")
 
    # CHARACTERISTIC IF_DATA
    for char in module.characteristic.query():
-       if char.if_data:
-           print(char.name, char.if_data)
+       if char.if_data.if_data_parsed:
+           print(char.name, char.if_data.if_data_parsed)
 
    # AXIS_PTS IF_DATA
    for ax in module.axis_pts.query():
-       if ax.if_data:
-           print(ax.name, ax.if_data)
+       if ax.if_data.if_data_parsed:
+           print(ax.name, ax.if_data.if_data_parsed)
 
    # FUNCTION / GROUP / FRAME IF_DATA
    for fn in module.function.query():
-       if fn.if_data:
-           print(fn.name, fn.if_data)
+       if fn.if_data.if_data_parsed:
+           print(fn.name, fn.if_data.if_data_parsed)
    for grp in module.group.query():
-       if grp.if_data:
-           print(grp.name, grp.if_data)
+       if grp.if_data.if_data_parsed:
+           print(grp.name, grp.if_data.if_data_parsed)
    for fr in module.frame.query():
-       if fr.if_data:
-           print(fr.name, fr.if_data)
+       if fr.if_data.if_data_parsed:
+           print(fr.name, fr.if_data.if_data_parsed)
 
    # MOD_PAR memory layouts/segments IF_DATA
    mp = module.mod_par
    if mp:
        for i, ml in enumerate(mp.memoryLayouts):
-           if ml.if_data:
-               print(f"MEMORY_LAYOUT[{i}]", ml.if_data)
+           if ml.if_data.if_data_parsed:
+               print(f"MEMORY_LAYOUT[{i}]", ml.if_data.if_data_parsed)
        for i, ms in enumerate(mp.memorySegments):
-           if ms.if_data:
-               print(f"MEMORY_SEGMENT[{i}] {ms.name}", ms.if_data)
+           if ms.if_data.if_data_parsed:
+               print(f"MEMORY_SEGMENT[{i}] {ms.name}", ms.if_data.if_data_parsed)
+
+Accessing raw IF_DATA text
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When the AML schema is unavailable or you need the verbatim text:
+
+.. code:: python
+
+   for meas in module.measurement.query():
+       for raw_obj in meas.if_data.if_data_raw:
+           print(f"--- {meas.name} raw IF_DATA ---")
+           print(raw_obj.raw)
 
 Parsing raw IF_DATA text manually
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code:: python
 
@@ -247,7 +287,6 @@ Parsing raw IF_DATA text manually
 
    ifdata_parser = IfDataParser(session)
 
-   # Example raw IF_DATA snippet (e.g., from a blob or external source)
    ifdata_text = """/begin IF_DATA XCP
    /begin SEGMENT 0x01 0x02 0x00 0x00 0x00
    /begin CHECKSUM XCP_ADD_44 MAX_BLOCK_SIZE 0xFFFF EXTERNAL_FUNCTION "" /end CHECKSUM
@@ -259,10 +298,14 @@ Parsing raw IF_DATA text manually
    parsed = ifdata_parser.parse(ifdata_text)
    print(parsed)
 
-Notes: - The inspect API returns IF_DATA already parsed (list of
-dictionaries). Use manual parsing only when you have raw text and not a
-model object. - The exact structure of the parsed dictionaries depends
-on the vendor-specific schema (e.g., XCP, XCP SEGMENT/PAGE/CHECKSUM).
+.. note::
+
+   The inspect API always returns an ``IfData`` instance (never ``None``).
+   If no IF_DATA blocks exist, ``if_data_parsed`` and ``if_data_raw`` are
+   empty lists.  The ``flatmap`` property safely returns an empty dict.
+
+For a comprehensive guide including XCP, CCP, and KWP2000 examples, see
+:doc:`ifdata`.
 
 Creating New A2L Elements
 ~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -74,7 +74,44 @@ How do I work with IF_DATA sections in A2L files?
 -------------------------------------------------
 
 IF_DATA sections contain vendor-specific information in A2L files. pyA2L
-provides a dedicated parser for these sections:
+parses these blocks automatically (when an AML schema is present) and
+wraps the result in an ``IfData`` dataclass with three access paths:
+
+- ``if_data.if_data_parsed`` — structured dicts produced by the AML parser
+- ``if_data.if_data_raw`` — original model objects with verbatim ``.raw`` text
+- ``if_data.flatmap`` — lazily built flat index for quick tag look-ups
+
+Using the inspect API (recommended):
+
+.. code:: python
+
+   from pya2l import DB
+   from pya2l.api.inspect import Project
+
+   db = DB()
+   session = db.open_create("ASAP2_Demo_V161.a2l")
+   project = Project(session)
+   module = project.module[0]
+
+   # Access module IF_DATA
+   ifd = module.if_data
+   print(ifd.if_data_parsed)        # list of parsed dicts
+   print(len(ifd.if_data_raw))      # number of raw blocks
+
+   # Quick tag look-up
+   if "PROTOCOL_LAYER" in ifd.flatmap:
+       print(ifd.flatmap["PROTOCOL_LAYER"])
+
+   # IF_DATA on measurements
+   for meas in module.measurement.query():
+       if meas.if_data.if_data_parsed:
+           print(meas.name, meas.if_data.if_data_parsed)
+
+   # Raw text for debugging
+   for raw_obj in module.if_data.if_data_raw:
+       print(raw_obj.raw)
+
+Manual parsing with ``IfDataParser``:
 
 .. code:: python
 
@@ -97,22 +134,8 @@ provides a dedicated parser for these sections:
    result = ifdata_parser.parse(ifdata_text)
    print(result)
 
-You can also access IF_DATA sections that are already parsed from A2L
-elements:
-
-.. code:: python
-
-   from pya2l import DB
-   from pya2l.api.inspect import Project
-
-   db = DB()
-   session = db.open_create("ASAP2_Demo_V161.a2l")
-   project = Project(session)
-
-   # Access module IF_DATA
-   module = project.module[0]
-   if hasattr(module, 'if_data') and module.if_data:
-       print(module.if_data)
+See :doc:`ifdata` for a comprehensive guide with XCP, CCP, and KWP2000
+examples.
 
 How do I create new A2L elements programmatically?
 --------------------------------------------------
