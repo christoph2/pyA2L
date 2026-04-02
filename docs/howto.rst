@@ -181,6 +181,25 @@ Export examples
    # Export specific module (if database contains multiple)
    a2ldb-imex -e file.a2ldb -m ModuleName -o module_only.a2l
 
+JSON export
+~~~~~~~~~~~
+
+Use ``--json`` to export as JSON instead of A2L text:
+
+.. code-block:: console
+
+   # Export to JSON file
+   a2ldb-imex -e file.a2ldb --json -o exported.json
+
+   # Pretty-printed JSON (human-readable, larger file)
+   a2ldb-imex -e file.a2ldb --json --pretty -o exported.json
+
+   # JSON to stdout (for piping to jq, Python, etc.)
+   a2ldb-imex -e file.a2ldb --json | jq '.modules[0].measurements | length'
+
+   # Combine with module filter
+   a2ldb-imex -e file.a2ldb --json --pretty -m ModuleName -o module.json
+
 Typical workflows
 ~~~~~~~~~~~~~~~~~
 
@@ -203,7 +222,13 @@ Typical workflows
    # Import A2L
    a2ldb-imex -i input.a2l
 
-   # Export to JSON (use Python API)
+   # Export to JSON directly via CLI
+   a2ldb-imex -e input.a2ldb --json -o output.json
+
+   # Pretty-printed JSON
+   a2ldb-imex -e input.a2ldb --json --pretty -o output.json
+
+   # Or via Python API
    python -c "from pya2l.imex.json_exporter import export_json; export_json('input.a2ldb', 'output.json')"
 
 **Batch processing**:

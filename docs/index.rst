@@ -20,6 +20,8 @@ For background on the ASAP2 standard, see: https://www.asam.net/standards/detail
    building
    configuration
    tutorial
+   ifdata
+   api_reference
    howto
    faq
    modules

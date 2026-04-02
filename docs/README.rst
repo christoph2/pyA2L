@@ -1,7 +1,7 @@
 Readme
 ======
 
-|PyPI| |Python Versions| |License: LGPL v3+| |Code style: black| |Ask DeepWiki|
+|PyPI| |Python Versions| |License: LGPL v3+| |Code style: black| |Ask DeepWiki| |PDF Manual|
 
 .. image:: pya2l_social.jpg
     :align: center
@@ -354,6 +354,7 @@ Project links
 - Issue tracker: https://github.com/christoph2/pyA2L/issues
 - PyPI: https://pypi.org/project/pya2ldb/
 - `Documentation <index.rst>`__
+- `PDF Manual <https://pya2l.readthedocs.io/_/downloads/en/latest/pdf/>`__
 
 Contributing
 ------------
@@ -392,3 +393,5 @@ See GitHub Releases: https://github.com/christoph2/pyA2L/releases
    :target: https://github.com/psf/black
 .. |Ask DeepWiki| image:: https://deepwiki.com/badge.svg
    :target: https://deepwiki.com/christoph2/pyA2L
+.. |PDF Manual| image:: https://img.shields.io/badge/docs-PDF%20manual-blue.svg
+   :target: https://pya2l.readthedocs.io/_/downloads/en/latest/pdf/

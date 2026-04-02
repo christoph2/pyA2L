@@ -86,6 +86,86 @@ Yields the following output:
 
 The classes describing an `.a2ldb` database live in `pya2l.model <../pya2l/model/__init__.py>`_, they are required to query, modify, and add model instances.
 
+Using the Inspect API
+~~~~~~~~~~~~~~~~~~~~~
+
+The inspect API provides high-level, read-only wrappers with automatic
+conversion and caching:
+
+.. code-block:: python
+
+    from pya2l import DB
+    from pya2l.api.inspect import Project, Measurement, Characteristic
+
+    session = DB().open_existing("ASAP2_Demo_V161")
+
+    # Navigate the project hierarchy
+    project = Project(session)
+    module = project.module[0]
+    print(f"Project: {project.name}")
+    print(f"Module:  {module.name}")
+
+    # Get a measurement by name
+    m = Measurement.get(session, "ASAM.M.SCALAR.UBYTE.IDENTICAL")
+    print(f"Name:      {m.name}")
+    print(f"Data type: {m.datatype}")
+    print(f"Address:   0x{m.ecuAddress:08X}")
+    print(f"Limits:    [{m.lowerLimit}, {m.upperLimit}]")
+    print(f"CompuMethod: {m.compuMethod.conversionType}")
+
+    # Convert a raw ECU value to physical
+    raw_value = 42
+    phys = m.compuMethod.int_to_physical(raw_value)
+    print(f"  {raw_value} raw → {phys} physical")
+
+    # Query all FLOAT32 measurements
+    float_meas = list(module.measurement.query(
+        lambda row: row.datatype == "FLOAT32_IEEE"
+    ))
+    print(f"\nFLOAT32 measurements: {len(float_meas)}")
+    for fm in float_meas:
+        print(f"  {fm.name}")
+
+    # Query characteristics by type
+    maps = list(module.characteristic.query(
+        lambda row: row.type == "MAP"
+    ))
+    print(f"\nMAP characteristics: {len(maps)}")
+    for c in maps:
+        print(f"  {c.name}: {c.num_axes} axes, shape={c.fnc_np_shape}")
+
+Working with IF_DATA
+~~~~~~~~~~~~~~~~~~~~
+
+IF_DATA sections carry vendor-specific protocol information (XCP, CCP, …).
+The ``if_data`` attribute on every inspect object returns an ``IfData``
+instance with parsed and raw data:
+
+.. code-block:: python
+
+    from pya2l import DB
+    from pya2l.api.inspect import Module
+
+    session = DB().open_create("xcp_demo_autodetect.a2l")
+    module = Module(session)
+
+    # Access the IfData dataclass
+    ifd = module.if_data
+
+    # Parsed structure (list of dicts)
+    for block in ifd.if_data_parsed:
+        print(block)
+
+    # Quick key look-up via flatmap
+    for key in ifd.flatmap:
+        print(f"  {key}: {len(ifd.flatmap[key])} occurrence(s)")
+
+    # Raw text for debugging
+    for raw in ifd.if_data_raw:
+        print(raw.raw[:200], "...")
+
+See :doc:`ifdata` for a comprehensive guide.
+
 Validate and export
 ~~~~~~~~~~~~~~~~~~~
 
@@ -112,3 +192,11 @@ See :doc:`howto` for Excel export and other short recipes.
 
 The test-suite found  `here <../pya2l/tests/test_a2l_parser.py>`_ is a good starting point for further experimentations, because
 it touches virtually every A2L element/attribute.
+
+Next steps
+~~~~~~~~~~
+
+- :doc:`tutorial` — In-depth walkthrough of all features
+- :doc:`ifdata` — Comprehensive IF_DATA guide
+- :doc:`api_reference` — Full API reference with examples
+- :doc:`howto` — Task-oriented quick recipes

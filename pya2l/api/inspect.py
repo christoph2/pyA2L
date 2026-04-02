@@ -326,12 +326,12 @@ class SegmentAttributeType(IntEnum):
 
 @dataclass  # (slots=True)
 class IfData:
-    if_data_parsed: list
+    if_data_parsed: List[Any]
     if_data_raw: list
-    items: Dict[str, list] = field(default_factory=lambda: collections.defaultdict(list))
+    items: Dict[str, List[Any]] = field(default_factory=lambda: collections.defaultdict(list))
     _initialized: bool = field(default=False, repr=False)
 
-    def _traverse(self, item: List | Dict,) -> Any:
+    def _traverse(self, item: Union[List[Any], Dict[str, Any]]) -> None:
         if isinstance(item, dict):
             for k, v in item.items():
                 self.items[k].append(v)
@@ -345,11 +345,12 @@ class IfData:
             self._traverse(ifd)
 
     @property
-    def flatmap(self):
+    def flatmap(self) -> Dict[str, List[Any]]:
         if not self._initialized:
             self._build_flatmap()
             self._initialized = True
         return self.items
+
 
 @dataclass
 class Alignment:
@@ -2147,7 +2148,7 @@ class ModPar(CachedBase):
                     layout.offset_2,
                     layout.offset_3,
                     layout.offset_4,
-                    session.parse_ifdata(layout.if_data),
+                    IfData(session.parse_ifdata(layout.if_data), layout.if_data),
                 )
                 result.append(entry)
         return result
@@ -2170,7 +2171,7 @@ class ModPar(CachedBase):
                     segment.offset_2,
                     segment.offset_3,
                     segment.offset_4,
-                    session.parse_ifdata(segment.if_data),
+                    IfData(session.parse_ifdata(segment.if_data), segment.if_data),
                 )
                 result.append(entry)
         return result
@@ -2707,7 +2708,7 @@ class AxisPts(CachedBase):
         self.stepSize = self.axis.step_size
         self.symbolLink = _dissect_symbol_link(self.axis.symbol_link)
         self.record_layout_components = create_record_layout_components(self) if self.depositAttr else None
-        self.if_data = session.parse_ifdata(self.axis.if_data)
+        self.if_data = IfData(session.parse_ifdata(self.axis.if_data), self.axis.if_data)
 
     @property
     def record_layout(self) -> RecordLayout:
@@ -2960,7 +2961,7 @@ class Characteristic(CachedBase):
             self.fnc_np_shape = (self.number,)
         elif self.axisDescriptions:
             self.fnc_np_shape = tuple([ax.maxAxisPoints for ax in self.axisDescriptions])
-        self.if_data = session.parse_ifdata(self.characteristic.if_data)
+        self.if_data = IfData(session.parse_ifdata(self.characteristic.if_data), self.characteristic.if_data)
 
     def axisDescription(self, axis) -> AxisDescr:
         MAP = {
@@ -3397,7 +3398,7 @@ class Measurement(CachedBase):
         self.virtual = self.measurement.virtual.measuringChannel if self.measurement.virtual else []
         self.compuMethod = CompuMethod.get(session, self._conversionRef)
         self.fnc_np_shape = fnc_np_shape(self.matrixDim)
-        self.if_data = session.parse_ifdata(self.measurement.if_data)
+        self.if_data = IfData(session.parse_ifdata(self.measurement.if_data), self.measurement.if_data)
 
     @property
     def is_virtual(self):
@@ -3463,7 +3464,7 @@ class Function(CachedBase):
         self.annotations = _annotations(session, self.function.annotation)
         self.ar_component = self._dissect_ar_component(self.function.ar_component)
         self.functionVersion = self.function.function_version.versionIdentifier if self.function.function_version else None
-        self.if_data = session.parse_ifdata(self.function.if_data)
+        self.if_data = IfData(session.parse_ifdata(self.function.if_data), self.function.if_data)
         self.inMeasurements = (
             [Measurement.get(self.session, m) for m in self.function.in_measurement.identifier]
             if self.function.in_measurement
@@ -3593,7 +3594,7 @@ class Group(CachedBase):
         self.longIdentifier = self.group.groupLongIdentifier
         self.annotations = _annotations(session, self.group.annotation)
         self.root = False if self.group.root is None else True
-        self.if_data = session.parse_ifdata(self.group.if_data)
+        self.if_data = IfData(session.parse_ifdata(self.group.if_data), self.group.if_data)
         self.characteristics = (
             [get_characteristic_or_axispts(self.session, r) for r in self.group.ref_characteristic.identifier]
             if self.group.ref_characteristic
@@ -3852,7 +3853,7 @@ class Instance(CachedBase):
             self.calibration_access = None
         self.displayIdentifier = self.instance.display_identifier.display_name if self.instance.display_identifier else None
         self.ecuAddressExtension = self.instance.ecu_address_extension.extension if self.instance.ecu_address_extension else 0
-        self.if_data = self.session.parse_ifdata(self.instance.if_data)
+        self.if_data = IfData(self.session.parse_ifdata(self.instance.if_data), self.instance.if_data)
         self.layout = self.instance.layout.indexMode if self.instance.layout else None
         self.matrixDim = MatrixDim.from_model(self.instance.matrix_dim, get_asap2_version(session))
         self.maxRefresh = _dissect_max_refresh(self.instance.max_refresh)
@@ -4140,7 +4141,7 @@ class Frame(CachedBase):
         self.scalingUnit = self.frame.scalingUnit
         self.rate = self.frame.rate
         self.frame_measurement = [f.identifier for f in self.frame.frame_measurement]
-        self.if_data = session.parse_ifdata(self.frame.if_data)
+        self.if_data = IfData(session.parse_ifdata(self.frame.if_data), self.frame.if_data)
 
 
 @dataclass
@@ -4390,7 +4391,7 @@ class Blob(CachedBase):
             self.calibration_access = None
         self.displayIdentifier = self.blob.display_identifier.display_name if self.blob.display_identifier else None
         self.ecuAddressExtension = self.blob.ecu_address_extension.extension if self.blob.ecu_address_extension else 0
-        self.if_data = self.session.parse_ifdata(self.blob.if_data)
+        self.if_data = IfData(self.session.parse_ifdata(self.blob.if_data), self.blob.if_data)
         self.maxRefresh = _dissect_max_refresh(self.blob.max_refresh)
         self.modelLink = self.blob.model_link.link if self.blob.model_link else None
         self.symbolLink = _dissect_symbol_link(self.blob.symbol_link)
@@ -4528,7 +4529,7 @@ class Module(CachedBase):
         self.frame = FilteredList(self.session, self.module.frame, Frame)
         self.function = FilteredList(self.session, self.module.function, Function)
         self.group = FilteredList(self.session, self.module.group, Group, "groupName")
-        self.if_data = self.session.parse_ifdata(self.module.if_data)
+        self.if_data = IfData(self.session.parse_ifdata(self.module.if_data), self.module.if_data)
 
         self.measurement = FilteredList(self.session, self.module.measurement, Measurement)
         self.mod_common = ModCommon.get(self.session, self.name, module_name=self.module.name)
