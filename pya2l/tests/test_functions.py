@@ -50,6 +50,7 @@ def test_interpolate1D_out_of_bounds(x, expected):
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")
 def test_axis_rescale_ok():
+    """Spec example: 3 rescale pairs, 9 axis points, D=32."""
     EXPECTED = [
         0,
         16.666666666666668,
@@ -70,6 +71,140 @@ def test_axis_rescale_ok():
         ),
         EXPECTED,
     )
+
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_axis_rescale_output_length_matches_no_axis_pts():
+    """Output array must always have exactly no_axis_pts elements."""
+    for no_axis_pts in (3, 5, 9, 17, 33):
+        result = functions.axis_rescale(
+            no_rescale_x=3,
+            no_axis_pts=no_axis_pts,
+            axis=(0x00, 0x64, 0xD8),
+            virtual=(0x00, 0xC0, 0xFF),
+        )
+        assert len(result) == no_axis_pts, f"Expected {no_axis_pts} points, got {len(result)}"
+
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_axis_rescale_two_pairs_linear():
+    """Two rescale pairs form a single linear segment (identity-like mapping)."""
+    result = functions.axis_rescale(
+        no_rescale_x=2,
+        no_axis_pts=9,
+        axis=(0, 200),
+        virtual=(0, 255),
+    )
+    assert len(result) == 9
+    assert result[0] == 0.0
+    assert result[-1] == 200.0
+    # Interior points must be strictly monotonically increasing.
+    for i in range(1, len(result)):
+        assert result[i] > result[i - 1]
+
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_axis_rescale_boundaries():
+    """First output equals axis[0], last output equals axis[-1]."""
+    result = functions.axis_rescale(
+        no_rescale_x=3,
+        no_axis_pts=9,
+        axis=(10, 100, 216),
+        virtual=(0x00, 0xC0, 0xFF),
+    )
+    assert result[0] == 10.0
+    assert result[-1] == 216.0
+
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_axis_rescale_non_power_of_two_d():
+    """D that is not an exact integer must still produce correct number of points."""
+    result = functions.axis_rescale(
+        no_rescale_x=2,
+        no_axis_pts=7,
+        axis=(0, 100),
+        virtual=(0, 200),
+    )
+    assert len(result) == 7
+    assert result[0] == 0.0
+    assert result[-1] == 100.0
+
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_axis_rescale_rescale_pair_value_appears_at_segment_boundary():
+    """When a virtual grid point coincides with a rescale pair boundary,
+    the corresponding axis value must appear in the output."""
+    # virtual(2) = 0xC0 = 192.  With D = 32, k * D hits 192 exactly at k = 6,
+    # so X(7) = axis(2) = 100 must be in the result.
+    result = functions.axis_rescale(
+        no_rescale_x=3,
+        no_axis_pts=9,
+        axis=(0x00, 0x64, 0xD8),
+        virtual=(0x00, 0xC0, 0xFF),
+    )
+    assert 100.0 in result
+
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_axis_rescale_monotonically_increasing():
+    """Output axis points must be monotonically increasing
+    when both axis and virtual inputs are ascending."""
+    result = functions.axis_rescale(
+        no_rescale_x=3,
+        no_axis_pts=33,
+        axis=(0, 100, 216),
+        virtual=(0, 192, 255),
+    )
+    for i in range(1, len(result)):
+        assert result[i] >= result[i - 1], f"Not monotonic at index {i}: {result[i - 1]} > {result[i]}"
+
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_axis_rescale_four_pairs():
+    """Four rescale pairs spanning three linear segments."""
+    axis = (0, 50, 150, 255)
+    virtual = (0, 64, 192, 255)
+    no_axis_pts = 9
+    result = functions.axis_rescale(
+        no_rescale_x=4,
+        no_axis_pts=no_axis_pts,
+        axis=axis,
+        virtual=virtual,
+    )
+    assert len(result) == no_axis_pts
+    assert result[0] == axis[0]
+    assert result[-1] == axis[-1]
+    for i in range(1, len(result)):
+        assert result[i] >= result[i - 1]
+
+
+@pytest.mark.skipif("RUN_MATH_TEST == False")
+def test_axis_rescale_spec_example_manual_verification():
+    """Verify individual X values from the worked spec example."""
+    result = functions.axis_rescale(
+        no_rescale_x=3,
+        no_axis_pts=9,
+        axis=(0, 100, 216),
+        virtual=(0, 192, 255),
+    )
+    # X(1) = axis(1) = 0
+    assert result[0] == pytest.approx(0.0)
+    # X(2) = 0 + 32 * 100/192
+    assert result[1] == pytest.approx(32 * 100 / 192)
+    # X(3) = 0 + 64 * 100/192
+    assert result[2] == pytest.approx(64 * 100 / 192)
+    # X(4) = 0 + 96 * 100/192 = 50
+    assert result[3] == pytest.approx(50.0)
+    # X(5) = 0 + 128 * 100/192
+    assert result[4] == pytest.approx(128 * 100 / 192)
+    # X(6) = 0 + 160 * 100/192
+    assert result[5] == pytest.approx(160 * 100 / 192)
+    # X(7) = 100 + (192-192) * 116/63 = 100
+    assert result[6] == pytest.approx(100.0)
+    # X(8) = 100 + (224-192) * 116/63
+    assert result[7] == pytest.approx(100 + 32 * 116 / 63)
+    # X(9) = axis(3) = 216
+    assert result[8] == pytest.approx(216.0)
 
 
 @pytest.mark.skipif("RUN_MATH_TEST == False")

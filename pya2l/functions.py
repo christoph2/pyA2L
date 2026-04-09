@@ -171,7 +171,7 @@ def axis_rescale(no_rescale_x: int, no_axis_pts: int, axis, virtual):
     `numpy.array`
     """
     k = 1
-    d = (virtual[-1] - virtual[0] + 1) // (no_axis_pts - 1)
+    d = (virtual[-1] - virtual[0] + 1) / (no_axis_pts - 1)
     xs = [axis[0]]
     for idx in range(no_rescale_x - 1):
         while True:
