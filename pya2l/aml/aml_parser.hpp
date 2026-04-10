@@ -8,7 +8,11 @@
 class AMLParser {
    public:
 
-    explicit AMLParser(const std::vector<AmlToken>& tokens) : m_tokens(tokens), m_pos(0) {
+    explicit AMLParser(const std::vector<AmlToken>& tokens) : m_tokens(tokens), m_pos(0), m_error_count(0) {
+    }
+
+    std::size_t get_error_count() const noexcept {
+        return m_error_count;
     }
 
     const AmlToken& current_token() const {
@@ -150,7 +154,11 @@ class AMLParser {
             std::cerr << "[WARNING (pya2l.AMLParser)] Empty AML section - no tokens to parse." << std::endl;
             return {};
         }
-        return aml_file();
+        auto result = aml_file();
+        if (m_error_count > 0) {
+            std::cerr << "[WARNING (pya2l.AMLParser)] AML parsing completed with " << m_error_count << " error(s) - some definitions were skipped." << std::endl;
+        }
+        return result;
     }
 
     auto aml_file() -> AmlFile {
@@ -171,10 +179,17 @@ class AMLParser {
             if (token.type == AmlTokenType::END) {
                 break;
             }
-            if (token.type == AmlTokenType::BLOCK) {
-                decls.emplace_back(nullptr, std::make_shared<BlockDefinition>(block_definition()));
-            } else {
-                decls.emplace_back(std::make_shared<TypeDefinition>(type_definition()), nullptr);
+            try {
+                if (token.type == AmlTokenType::BLOCK) {
+                    decls.emplace_back(nullptr, std::make_shared<BlockDefinition>(block_definition()));
+                } else {
+                    decls.emplace_back(std::make_shared<TypeDefinition>(type_definition()), nullptr);
+                }
+            } catch (const std::runtime_error& e) {
+                m_error_count++;
+                std::cerr << "[WARNING (pya2l.AMLParser)] Skipping declaration: " << e.what() << std::endl;
+                skip_to_next_member();
+                continue;
             }
             token = current_token();
             if (token.type == AmlTokenType::SEMI) {
@@ -264,7 +279,13 @@ class AMLParser {
                 if (token.type == AmlTokenType::RBRACE) {
                     break;
                 }
-                members.emplace_back(struct_member());
+                try {
+                    members.emplace_back(struct_member());
+                } catch (const std::runtime_error& e) {
+                    m_error_count++;
+                    std::cerr << "[WARNING (pya2l.AMLParser)] Skipping struct member: " << e.what() << std::endl;
+                    skip_to_next_member();
+                }
             }
             match(AmlTokenType::RBRACE);
             return Struct(name, members);
@@ -303,7 +324,13 @@ class AMLParser {
                 if (token.type == AmlTokenType::RBRACE) {
                     break;
                 }
-                members.emplace_back(tagged_struct_member());
+                try {
+                    members.emplace_back(tagged_struct_member());
+                } catch (const std::runtime_error& e) {
+                    m_error_count++;
+                    std::cerr << "[WARNING (pya2l.AMLParser)] Skipping tagged struct member: " << e.what() << std::endl;
+                    skip_to_next_member();
+                }
             }
             match(AmlTokenType::RBRACE);
         } else {
@@ -403,7 +430,13 @@ class AMLParser {
                 if (token.type == AmlTokenType::RBRACE) {
                     break;
                 }
-                members.emplace_back(tagged_union_member());
+                try {
+                    members.emplace_back(tagged_union_member());
+                } catch (const std::runtime_error& e) {
+                    m_error_count++;
+                    std::cerr << "[WARNING (pya2l.AMLParser)] Skipping tagged union member: " << e.what() << std::endl;
+                    skip_to_next_member();
+                }
             }
             match(AmlTokenType::RBRACE);
             return TaggedUnion(name, std::move(members));
@@ -517,8 +550,37 @@ class AMLParser {
 
    private:
 
+    void skip_to_next_member() {
+        int brace_depth = 0;
+        int paren_depth = 0;
+        while (m_pos < std::size(m_tokens)) {
+            auto& token = m_tokens[m_pos];
+            if (token.type == AmlTokenType::LBRACE) {
+                brace_depth++;
+            } else if (token.type == AmlTokenType::RBRACE) {
+                if (brace_depth == 0) {
+                    return;  // End of containing block — don't consume
+                }
+                brace_depth--;
+            } else if (token.type == AmlTokenType::LPARAN) {
+                paren_depth++;
+            } else if (token.type == AmlTokenType::RPARAN) {
+                if (paren_depth > 0) {
+                    paren_depth--;
+                }
+            } else if (token.type == AmlTokenType::SEMI && brace_depth == 0 && paren_depth == 0) {
+                m_pos++;  // Consume the semicolon
+                return;   // Ready for next member
+            } else if (token.type == AmlTokenType::END && brace_depth == 0) {
+                return;   // End of AML block
+            }
+            m_pos++;
+        }
+    }
+
     std::vector<AmlToken> m_tokens;
     std::size_t           m_pos;
+    std::size_t           m_error_count;
 };
 
 // };   // namespace Aml

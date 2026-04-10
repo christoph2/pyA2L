@@ -259,8 +259,12 @@ class IfDataParser:
 
         # Initialize from session
         aml_section = session.query(model.AMLSection).first()
-        if aml_section:
-            aml_root = unmarshal(aml_section.parsed)
+        if aml_section and aml_section.parsed:
+            try:
+                aml_root = unmarshal(aml_section.parsed)
+            except (RuntimeError, Exception) as e:
+                self.logger.error(f"Failed to unmarshal AML section: {e}")
+                return
             self.root = self.traverse(aml_root)
             if self.root and self.root.members:
                 try:
