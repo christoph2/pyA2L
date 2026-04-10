@@ -29,6 +29,7 @@ __version__ = "0.10.2"
 import re
 import sys
 import typing
+import warnings
 from io import TextIOWrapper
 
 
@@ -41,6 +42,7 @@ except ImportError:
 
 import pya2l.model as model
 from pya2l.a2lparser import A2LParser, path_components
+from pya2l.imex import export_a2l_db, export_json_dict, open_a2l_database, open_json_database
 from pya2l.logger import Logger
 from pya2l.templates import doTemplateFromText
 
@@ -208,7 +210,6 @@ def open_existing(file_name: str, loglevel: str = "INFO") -> model.SessionProxy:
                 raise InvalidA2LDatabase(
                     f"Database seems to be corrupted (no meta-data). Attempted auto-recovery failed: {e}"
                 ) from e
-        return session
 
 
 def open_create(file_name: str, local: bool = False, encoding: str = "latin-1", loglevel: str = "INFO") -> model.SessionProxy:
@@ -243,9 +244,21 @@ def export_a2l(
 
 
 class DB:
-    """"""
+    """Deprecated: use the module-level functions directly.
+
+    .. deprecated::
+        Use :func:`import_a2l`, :func:`open_existing`, :func:`open_create`,
+        and :func:`export_a2l` directly instead of this wrapper class.
+    """
 
     def __init__(self, loglevel: str = "") -> None:
+        warnings.warn(
+            "pya2l.DB is deprecated and will be removed in a future release. "
+            "Use the module-level functions import_a2l(), open_existing(), "
+            "open_create(), and export_a2l() directly.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if loglevel:
             a2l_logger.setLevel(loglevel)
 

@@ -159,5 +159,19 @@ compile_commands.json
 install_manifest.txt
 Makefile
 
+# MSVC / CMake build artifacts
+*.vcxproj
+*.vcxproj.filters
+*.sln
+*.dir/
+Release/
+x64/
+ALL_BUILD*
+ZERO_CHECK*
+INSTALL.vcxproj
+INSTALL.vcxproj.filters
+pep517.json
+tickets.md
+
 # cibuildwheel
 wheelhouse/

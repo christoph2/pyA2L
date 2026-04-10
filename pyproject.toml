@@ -21,11 +21,11 @@ build = "build_ext.py"
 include = [
     { path = "pya2l/*.so", format = "wheel" },
     { path = "pya2l/*.pyd", format = "wheel" },
+    { path = "pya2l/py.typed", format = "wheel" },
 ]
 packages = [
     { include = "pya2l" }
 ]
-# package_data={"": "CMakeLists.txt"}
 
 
 [tool.poetry.dependencies]
@@ -34,9 +34,12 @@ chardet = "^7.0.0"
 Mako = "^1.3.5"
 SQLAlchemy = "^2.0.30"
 numpy = ">=1.26.4,<3"
-scipy = "^1.15.0"
 rich = "^14.2"
-numexpr = "^2.14.1"
+scipy = { version = "^1.15.0", optional = true }
+numexpr = { version = "^2.14.1", optional = true }
+
+[tool.poetry.extras]
+compute = ["scipy", "numexpr"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
@@ -50,7 +53,10 @@ flake8-bugbear = "^24.4.26"
 pre-commit-hooks = "^5.0.0"
 
 pyupgrade = "^3.16.0"
-bumpver = "^2024.1130"
+pytest-cov = "^6.0"
+mypy = "^1.16"
+scipy = "^1.15.0"
+numexpr = "^2.14.1"
 
 [tool.bumpver]
 current_version = "1.0.333"

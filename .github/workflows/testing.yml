@@ -40,11 +40,18 @@ jobs:
       - name: Install project + dev dependencies with Poetry
         run: |
           poetry config virtualenvs.create false --local
-          poetry install --no-interaction --no-ansi --with dev
+          poetry install --no-interaction --no-ansi --with dev --extras compute
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: |
-          poetry run pytest -q --junitxml=result.xml
+          poetry run pytest -q --junitxml=result.xml --cov=pya2l --cov-report=term-missing --cov-report=xml
+
+      - name: Lint
+        run: |
+          poetry run ruff check .
+          poetry run black --check .
+          poetry run bandit -c bandit.yml -r pya2l -q
+          poetry run mypy pya2l --ignore-missing-imports --no-error-summary
 
       - name: Upload test results
         if: always()
@@ -52,3 +59,10 @@ jobs:
         with:
           name: junit-report-${{ matrix.os }}-py${{ matrix.python }}
           path: result.xml
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.os }}-py${{ matrix.python }}
+          path: coverage.xml

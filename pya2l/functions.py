@@ -31,10 +31,28 @@ import typing
 from dataclasses import dataclass
 from operator import itemgetter
 
-import numexpr
 import numpy as np
-from scipy import interpolate
-from scipy.interpolate import RegularGridInterpolator
+
+try:
+    import numexpr as _numexpr
+    from scipy import interpolate as _interpolate
+    from scipy.interpolate import RegularGridInterpolator
+
+    _COMPUTE_AVAILABLE = True
+except ImportError:
+    _numexpr = None  # type: ignore[assignment]
+    _interpolate = None  # type: ignore[assignment]
+    RegularGridInterpolator = None  # type: ignore[assignment,misc]
+    _COMPUTE_AVAILABLE = False
+
+
+def _require_compute(feature: str) -> None:
+    if not _COMPUTE_AVAILABLE:
+        raise ImportError(
+            f"'{feature}' requires scipy and numexpr. "
+            "Install them with: pip install pya2ldb[compute]"
+        )
+
 
 from pya2l import exceptions
 
@@ -92,6 +110,7 @@ class Interpolate1D:
     """
 
     def __init__(self, pairs, saturate=True):
+        _require_compute("Interpolate1D")
         xs, ys = zip(*pairs)
 
         if any(x1 - x0 <= 0 for x0, x1 in zip(xs, xs[1:])):
@@ -106,7 +125,7 @@ class Interpolate1D:
             fill_value = None
             bounds_error = True
 
-        self.interp = interpolate.interp1d(x=xs, y=ys, kind="linear", bounds_error=bounds_error, fill_value=fill_value)
+        self.interp = _interpolate.interp1d(x=xs, y=ys, kind="linear", bounds_error=bounds_error, fill_value=fill_value)
 
     def __call__(self, x):
         """Interpolate a single value.
@@ -199,6 +218,7 @@ class NormalizationAxes:
     """
 
     def __init__(self, x_norm, y_norm, z_map):
+        _require_compute("NormalizationAxes")
         self.xn = np.array(x_norm)
         self.yn = np.array(y_norm)
         self.zm = np.array(z_map)
@@ -553,6 +573,10 @@ class Formula(FormulaBase):
 
     MATH_FUNCS = {}
 
+    def __init__(self, formula, inverse_formula=None, system_constants=None, legacy=False):
+        _require_compute("Formula")
+        super().__init__(formula, inverse_formula, system_constants, legacy)
+
     def _replace_special_symbols(self, text):
         if text is None:
             return None
@@ -614,7 +638,7 @@ class Formula(FormulaBase):
     def int_to_physical(self, *args):
         """"""  # noqa: DAR101, DAR201
         try:
-            res = numexpr.evaluate(self.formula, local_dict=self._build_namespace(*args))
+            res = _numexpr.evaluate(self.formula, local_dict=self._build_namespace(*args))
             if isinstance(res, np.ndarray):
                 return res.item() if res.shape == () else res
             try:
@@ -630,7 +654,7 @@ class Formula(FormulaBase):
         if self.inverse_formula is None:
             raise NotImplementedError("Formula: physical_to_int() requires inverse_formula.")
         try:
-            res = numexpr.evaluate(self.inverse_formula, local_dict=self._build_namespace(*args))
+            res = _numexpr.evaluate(self.inverse_formula, local_dict=self._build_namespace(*args))
             if isinstance(res, np.ndarray):
                 return res.item() if res.shape == () else res
             try:

@@ -2,7 +2,9 @@ import math
 
 import pytest
 
-from pya2l.functions import Formula
+from pya2l.functions import Formula, _COMPUTE_AVAILABLE
+
+requires_compute = pytest.mark.skipif(not _COMPUTE_AVAILABLE, reason="requires pya2ldb[compute]")
 
 
 def _approx(a, b, eps=1e-12):
@@ -12,6 +14,7 @@ def _approx(a, b, eps=1e-12):
 
 
 @pytest.mark.skip
+@requires_compute
 def test_current_mode_logical_tokens_and_bitwise():
     # current: &&, ||, ! are logical
     f = Formula("(X1 > 0) && (X2 < 0)")
@@ -30,11 +33,13 @@ def test_current_mode_logical_tokens_and_bitwise():
     assert f.int_to_physical(0x55AA, 0x2222) == (0x55AA ^ 0x2222)
 
 
+@requires_compute
 def test_current_mode_disallows_XOR_keyword():
     with pytest.raises(ValueError):
         Formula("X1 XOR X2")
 
 
+@requires_compute
 def test_current_mode_function_names_short_and_long():
     # accept short names and long numpy-style names equally
     f1 = Formula("asin(X1)")
@@ -52,6 +57,7 @@ def test_current_mode_function_names_short_and_long():
     assert _approx(f1.int_to_physical(0.5), f2.int_to_physical(0.5))
 
 
+@requires_compute
 def test_legacy_mode_logical_and_power_and_xor():
     # legacy: &, |, ~ are logical
     f = Formula("(X1 > 0) & (X2 < 0)", legacy=True)
@@ -74,12 +80,14 @@ def test_legacy_mode_logical_and_power_and_xor():
     assert f.int_to_physical(1, 0) == (1 ^ 0)
 
 
+@requires_compute
 def test_legacy_mode_disallows_current_tokens():
     for expr in ("X1 && X2", "X1 || X2", "!X1"):
         with pytest.raises(ValueError):
             Formula(expr, legacy=True)
 
 
+@requires_compute
 def test_legacy_mode_function_name_aliases():
     # arcos -> acos (eval) / arccos (numexpr); arcsin/arctan should be accepted
     f = Formula("arcos(X1)", legacy=True)
@@ -93,6 +101,7 @@ def test_legacy_mode_function_name_aliases():
     assert _approx(f.int_to_physical(0.5), math.atan(0.5))
 
 
+@requires_compute
 def test_pow_and_sysc_expansion_current_and_legacy():
     sysc = {"A": 2, "B": 5}
     f = Formula("pow(X1, X2) + sysc(A)", system_constants=sysc)
@@ -102,12 +111,14 @@ def test_pow_and_sysc_expansion_current_and_legacy():
     assert f.int_to_physical(2, 3) == (2**3) + 5
 
 
+@requires_compute
 def test_missing_inverse_raises():
     f = Formula("X1 + 1")
     with pytest.raises(NotImplementedError):
         f.physical_to_int(1)
 
 
+@requires_compute
 def test_inverse_formula_works_current_and_legacy():
     # linear invertible example: y = 2*x + 3; x = (y - 3)/2
     f = Formula("2*X + 3", inverse_formula="(X - 3)/2")
@@ -128,6 +139,7 @@ def test_inverse_formula_works_current_and_legacy():
     assert f.physical_to_int(23) == 10
 
 
+@requires_compute
 def test_x_alias_and_spacing_pow_sysc():
     # X aliases X1
     f = Formula("pow( X , 2 ) + sysc( A )", system_constants={"A": 4})

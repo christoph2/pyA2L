@@ -8,9 +8,9 @@ import numpy as np
 import pytest
 
 from pya2l import exceptions, functions
+from pya2l.functions import _COMPUTE_AVAILABLE
 
-
-RUN_MATH_TEST = True
+requires_compute = pytest.mark.skipif(not _COMPUTE_AVAILABLE, reason="requires pya2ldb[compute]")
 
 
 @dataclass
@@ -29,7 +29,7 @@ Xins = [-1.0, 0.0, 850.0, 5700.0, 8000.0]
 Rs = [2.0, 2.0, 3.9000000000000004, 4.9, 4.9]
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 @pytest.mark.parametrize("x, expected", zip(Xins, Rs))
 def test_interpolate1D_saturate(x, expected):
     interp = functions.Interpolate1D(pairs=zip(Xs, Ys), saturate=True)
@@ -40,7 +40,7 @@ XsOutOfBounds = [-1.0, 8000.0]
 expected = [None, None]
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 @pytest.mark.parametrize("x, expected", zip(XsOutOfBounds, expected))
 def test_interpolate1D_out_of_bounds(x, expected):
     interp = functions.Interpolate1D(pairs=zip(Xs, Ys), saturate=False)
@@ -48,7 +48,7 @@ def test_interpolate1D_out_of_bounds(x, expected):
         interp(x) == expected
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_axis_rescale_ok():
     """Spec example: 3 rescale pairs, 9 axis points, D=32."""
     EXPECTED = [
@@ -73,7 +73,7 @@ def test_axis_rescale_ok():
     )
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_axis_rescale_output_length_matches_no_axis_pts():
     """Output array must always have exactly no_axis_pts elements."""
     for no_axis_pts in (3, 5, 9, 17, 33):
@@ -86,7 +86,7 @@ def test_axis_rescale_output_length_matches_no_axis_pts():
         assert len(result) == no_axis_pts, f"Expected {no_axis_pts} points, got {len(result)}"
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_axis_rescale_two_pairs_linear():
     """Two rescale pairs form a single linear segment (identity-like mapping)."""
     result = functions.axis_rescale(
@@ -103,7 +103,7 @@ def test_axis_rescale_two_pairs_linear():
         assert result[i] > result[i - 1]
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_axis_rescale_boundaries():
     """First output equals axis[0], last output equals axis[-1]."""
     result = functions.axis_rescale(
@@ -116,7 +116,7 @@ def test_axis_rescale_boundaries():
     assert result[-1] == 216.0
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_axis_rescale_non_power_of_two_d():
     """D that is not an exact integer must still produce correct number of points."""
     result = functions.axis_rescale(
@@ -130,7 +130,7 @@ def test_axis_rescale_non_power_of_two_d():
     assert result[-1] == 100.0
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_axis_rescale_rescale_pair_value_appears_at_segment_boundary():
     """When a virtual grid point coincides with a rescale pair boundary,
     the corresponding axis value must appear in the output."""
@@ -145,7 +145,7 @@ def test_axis_rescale_rescale_pair_value_appears_at_segment_boundary():
     assert 100.0 in result
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_axis_rescale_monotonically_increasing():
     """Output axis points must be monotonically increasing
     when both axis and virtual inputs are ascending."""
@@ -159,7 +159,7 @@ def test_axis_rescale_monotonically_increasing():
         assert result[i] >= result[i - 1], f"Not monotonic at index {i}: {result[i - 1]} > {result[i]}"
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_axis_rescale_four_pairs():
     """Four rescale pairs spanning three linear segments."""
     axis = (0, 50, 150, 255)
@@ -178,7 +178,7 @@ def test_axis_rescale_four_pairs():
         assert result[i] >= result[i - 1]
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_axis_rescale_spec_example_manual_verification():
     """Verify individual X values from the worked spec example."""
     result = functions.axis_rescale(
@@ -207,7 +207,7 @@ def test_axis_rescale_spec_example_manual_verification():
     assert result[8] == pytest.approx(216.0)
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_fix_axis_par_ok():
     assert np.array_equal(
         functions.fix_axis_par(10, 3, 10),
@@ -215,7 +215,7 @@ def test_fix_axis_par_ok():
     )
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_fix_axis_par_dist_ok():
     assert np.array_equal(
         functions.fix_axis_par_dist(7, 4, 10),
@@ -267,13 +267,13 @@ Z_MAP = (
 )
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_normalization_axes():
     na = functions.NormalizationAxes(X_NORM, Y_NORM, Z_MAP)
     assert na(850, 60) == 2.194
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_normalization_ident():
     na = functions.NormalizationAxes(X_IDENT, Y_IDENT, Z_MAP)
     for row_idx, row in enumerate(Z_MAP):
@@ -281,7 +281,7 @@ def test_normalization_ident():
             assert value == na(col_idx, row_idx)  # Interpolator should just pick every element from Z_MAP.
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_ratfunc_identity():
     coeffs = Coeffs(0, 1, 0, 0, 0, 1)
     rf = functions.RatFunc(coeffs)
@@ -289,7 +289,7 @@ def test_ratfunc_identity():
     assert rf.physical_to_int(21845) == 21845
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_ratfunc_linear():
     xs = np.arange(-10, 11)
     ys = np.array(
@@ -323,7 +323,7 @@ def test_ratfunc_linear():
     assert np.array_equal(rf.physical_to_int(xs), ys)
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_ratfunc_linear_scalar():
     x = -10
     y = -6.4
@@ -332,7 +332,7 @@ def test_ratfunc_linear_scalar():
     assert rf.physical_to_int(x) == y
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_ratfunc_linear_inv():
     xs = np.arange(-10, 11)
     ys = np.array(
@@ -366,7 +366,7 @@ def test_ratfunc_linear_inv():
     assert np.array_equal(rf.int_to_physical(ys), xs)
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_ratfunc_linear_inv_scalar():
     x = -10
     y = -6.4
@@ -375,7 +375,7 @@ def test_ratfunc_linear_inv_scalar():
     assert rf.int_to_physical(y) == x
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_ratfunc_constant():
     xs = np.arange(-10, 11)
     ys = np.full((21,), 10.0)
@@ -384,7 +384,7 @@ def test_ratfunc_constant():
     assert np.array_equal(rf.physical_to_int(xs), ys)
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_ratfunc_constant_scalar():
     x = -10
     y = 10.0
@@ -393,7 +393,7 @@ def test_ratfunc_constant_scalar():
     assert rf.physical_to_int(x) == y
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_ratfunc_constant_inv():
     ys = np.full((21,), 10.0)
     coeffs = Coeffs(0, 0, 20, 0, 0, 20)
@@ -402,7 +402,7 @@ def test_ratfunc_constant_inv():
         rf.int_to_physical(ys)
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_ratfunc_constant_inv_scalar():
     y = 10.0
     coeffs = Coeffs(0, 0, 20, 0, 0, 20)
@@ -411,7 +411,7 @@ def test_ratfunc_constant_inv_scalar():
         rf.int_to_physical(y)
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_ratfunc_quadratic():
     xs = np.arange(-10, 11)
     ys = np.array(
@@ -444,7 +444,7 @@ def test_ratfunc_quadratic():
     assert np.array_equal(rf.physical_to_int(xs), ys)
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_ratfunc_quadratic_scalar():
     x = -10
     y = 1.231638418079096
@@ -453,7 +453,7 @@ def test_ratfunc_quadratic_scalar():
     assert rf.physical_to_int(x) == y
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_ratfunc_quadratic_inv():
     xs = np.arange(-10, 11)
     coeffs = Coeffs(5, 7, 6, 3, -5, 4)
@@ -462,7 +462,7 @@ def test_ratfunc_quadratic_inv():
         rf.int_to_physical(xs)
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_ratfunc_quadratic_inv_scalar():
     x = -10
     coeffs = Coeffs(5, 7, 6, 3, -5, 4)
@@ -497,7 +497,7 @@ def test_identical_inv_scalar():
     assert rf.physical_to_int(x) == x
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_linear():
     xs = np.arange(-10, 11)
     ys = np.array(
@@ -530,7 +530,7 @@ def test_linear():
     assert np.array_equal(rf.int_to_physical(xs), ys)
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_linear_scalar():
     x = -10
     y = -43
@@ -539,7 +539,7 @@ def test_linear_scalar():
     assert rf.int_to_physical(x) == y
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_linear_inv():
     xs = np.arange(-10, 11)
     ys = np.array(
@@ -572,7 +572,7 @@ def test_linear_inv():
     assert np.array_equal(rf.physical_to_int(ys), xs)
 
 
-@pytest.mark.skipif("RUN_MATH_TEST == False")
+@requires_compute
 def test_linear_inv_scalar():
     x = -10
     y = -43
@@ -793,12 +793,14 @@ def test_tab_verb_ranges_with_default_negative_vectorized():
     assert np.array_equal(tvr.int_to_physical(xs), ys)
 
 
+@requires_compute
 def test_formula_with_no_parameters_raises():
     form = functions.Formula("sin(X1)")
     result = form.int_to_physical()
     assert result.size == 0
 
 
+@requires_compute
 def test_formula_for_required_operations():
     form = functions.Formula("X1 + X2")
     assert form.int_to_physical(23.0, 42.0) == 65.0
@@ -830,6 +832,7 @@ def test_formula_for_required_operations():
 #    assert form(1, 0) == 0
 
 
+@requires_compute
 def test_formula_for_required_functions():
     form = functions.Formula("sin(X1)")
     assert form.int_to_physical(0.5) == 0.479425538604203

@@ -30,7 +30,8 @@ import mmap
 import pickle
 import re
 import sqlite3
-from typing import Any, List, Optional, Sequence
+import warnings
+from typing import Any, Callable, List, Optional, Sequence
 
 from sqlalchemy import Column, ForeignKey, Index, create_engine, event, orm, types
 from sqlalchemy.engine import Engine
@@ -46,6 +47,34 @@ from pya2l.utils import SingletonBase
 DB_EXTENSION = "a2ldb"
 
 CURRENT_SCHEMA_VERSION = 10
+
+# Registry: (from_version, to_version) -> migration callable
+_MIGRATIONS: dict[tuple[int, int], Callable] = {}
+
+
+def _register_migration(from_version: int, to_version: int) -> Callable:
+    """Decorator to register a schema migration function."""
+
+    def decorator(fn: Callable) -> Callable:
+        _MIGRATIONS[(from_version, to_version)] = fn
+        return fn
+
+    return decorator
+
+
+def _migrate_schema(session: Any, from_version: int, to_version: int) -> bool:
+    """Walk the migration chain from *from_version* to *to_version*.
+
+    Returns True if migration succeeded, False if no path was found.
+    """
+    current = from_version
+    while current != to_version:
+        step = _MIGRATIONS.get((current, current + 1))
+        if step is None:
+            return False
+        step(session)
+        current += 1
+    return True
 
 CACHE_SIZE = 4  # MB
 PAGE_SIZE = mmap.PAGESIZE
@@ -5572,6 +5601,19 @@ class A2LDatabase:
             self.session.add(meta)
             self.session.flush()
             self.session.commit()
+        elif existing_meta.schema_version != CURRENT_SCHEMA_VERSION:
+            migrated = _migrate_schema(self.session, existing_meta.schema_version, CURRENT_SCHEMA_VERSION)
+            if migrated:
+                existing_meta.schema_version = CURRENT_SCHEMA_VERSION
+                self.session.commit()
+            else:
+                warnings.warn(
+                    f"Database schema version {existing_meta.schema_version} does not match "
+                    f"current version {CURRENT_SCHEMA_VERSION} and no migration path is registered. "
+                    "The database may be incompatible.",
+                    UserWarning,
+                    stacklevel=2,
+                )
         self._closed = False
 
     def __del__(self) -> None:
