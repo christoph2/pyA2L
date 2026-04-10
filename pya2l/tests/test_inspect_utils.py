@@ -68,8 +68,8 @@ class TestFncNpShape:
     def test_partial_matrix_dim(self):
         """Test fnc_np_shape with partially valid MatrixDim."""
         matrix_dim = MatrixDim(x=2, y=3, z=None)
-        # Should still return empty tuple because valid() will return False
-        assert fnc_np_shape(matrix_dim) == ()
+        # valid() only checks x is not None, so a 2-D matrix (x, y) is valid.
+        assert fnc_np_shape(matrix_dim) == (2, 3)
 
     def test_zero_dimensions(self):
         """Test fnc_np_shape with zero dimensions."""

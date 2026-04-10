@@ -12,7 +12,6 @@ classifiers=[
     "Topic :: Software Development",
     "Topic :: Scientific/Engineering",
     "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
 	"Programming Language :: Python :: 3.11",
 	"Programming Language :: Python :: 3.12",
@@ -77,14 +76,9 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 a2ldb-imex = "pya2l.scripts.a2ldb_imex:main"
 
-[tool.pytest]
-addopts = [
-  "--verbose",
-  "--tb=short",
-  "--junitxml=result.xml",
-  "-o",
-  "junit_family=xunit2",
-]
+[tool.pytest.ini_options]
+addopts = ["--tb=short"]
+junit_family = "xunit2"
 testpaths = ["pya2l/tests"]
 
 [tool.flake8]
@@ -103,14 +97,8 @@ exclude = '''
     | docs
     | dist
     | experimental
-    | pya2l/a2lLexer.py
-    | pya2l/amlLexer.py
-    | pya2l/amlParser.py
-    | pya2l/a2llg.py
-    | pya2l/a2lParser.py
 )/
 '''
-max-complexity = 10
 count = true
 statistics = true
 show-source = true
@@ -132,11 +120,6 @@ exclude = '''
     | docs
     | experimental
     | __pycache__
-    | pya2l/a2lLexer.py
-    | pya2l/amlLexer.py
-    | pya2l/amlParser.py
-    | pya2l/a2llg.py
-    | pya2l/a2lParser.py
     | dist
 )/
 '''
