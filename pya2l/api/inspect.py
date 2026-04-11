@@ -1388,7 +1388,14 @@ class CachedBase:
         return instance
 
     @classmethod
-    def get(cls, session: Any, name: Optional[str] = None, module_name: Optional[str] = None, *args: Any) -> Any:
+    def get(
+        cls,
+        session: Any,
+        name: Optional[str] = None,
+        module_name: Optional[str] = None,
+        *args: Any,
+        no_cache: bool = False,
+    ) -> Any:
         """Get an instance of the class, using cache if available.
 
         Parameters
@@ -1401,6 +1408,9 @@ class CachedBase:
             Name of the module, by default None
         *args : Any
             Additional arguments to pass to the constructor
+        no_cache : bool, optional
+            If True, bypass the cache and return a freshly created instance,
+            by default False
 
         Returns
         -------
@@ -1416,6 +1426,15 @@ class CachedBase:
         if session is None:
             print(f"{cls.__name__}.get(): session cannot be None")
             return None
+
+        if no_cache:
+            try:
+                inst = cls(session, name, module_name, *args)
+                cls._strong_ref.append(inst)
+                return inst
+            except Exception as e:
+                # print(f"{cls.__name__}.get({name!r}): {e!r}")
+                return None
 
         cache = cls._get_session_cache(session)
         entry = (cls.__name__, name, module_name, args)
@@ -1911,7 +1930,12 @@ class CompuMethod(CachedBase):
 
     @classmethod
     def get(
-        cls, session: Any, name: Optional[str] = None, module_name: Optional[str] = None
+        cls,
+        session: Any,
+        name: Optional[str] = None,
+        module_name: Optional[str] = None,
+        *,
+        no_cache: bool = False,
     ) -> Union["CompuMethod", NoCompuMethod]:
         """Get a CompuMethod instance, using cache if available.
 
@@ -1932,7 +1956,7 @@ class CompuMethod(CachedBase):
         if name == "NO_COMPU_METHOD":
             return NoCompuMethod()
         else:
-            return super(cls, CompuMethod).get(session, name, module_name)
+            return super(cls, CompuMethod).get(session, name, module_name, no_cache=no_cache)
 
 
 @dataclass
@@ -2288,12 +2312,12 @@ class ModCommon(CachedBase):
         self.sRecLayout = self.modcommon.s_rec_layout.name if self.modcommon.s_rec_layout else None
 
     @classmethod
-    def get(cls, session, name: str = None, module_name: str = None):
+    def get(cls, session, name: str = None, module_name: str = None, *, no_cache: bool = False):
         module = get_module(session, module_name)
         if module.mod_common is None:
             return NoModCommon()
         else:
-            return super(cls, ModCommon).get(session, name, module_name)
+            return super(cls, ModCommon).get(session, name, module_name, no_cache=no_cache)
 
 
 @dataclass
@@ -2682,7 +2706,7 @@ class AxisPts(CachedBase):
         self.longIdentifier = self.axis.longIdentifier
         self.address = self.axis.address
         self.inputQuantity = self.axis.inputQuantity  # REF: Measurement
-        self.depositAttr = RecordLayout.get(session, self.axis.depositAttr)
+        self.depositAttr = RecordLayout.get(session, self.axis.depositAttr, no_cache=True)
         self.deposit = self.axis.deposit.mode if self.axis.deposit else None
         self.maxDiff = self.axis.maxDiff
         self._conversionRef = self.axis.conversion
@@ -2902,7 +2926,7 @@ class Characteristic(CachedBase):
         self.longIdentifier = self.characteristic.longIdentifier
         self.type = self.characteristic.type
         self.address = self.characteristic.address
-        self.deposit = RecordLayout.get(session, self.characteristic.deposit, module_name)
+        self.deposit = RecordLayout.get(session, self.characteristic.deposit, module_name, no_cache=True)
         self.maxDiff = self.characteristic.maxDiff
         self._conversionRef = self.characteristic.conversion
         self.compuMethod = (
@@ -4096,7 +4120,7 @@ class TypedefCharacteristic(CachedBase):
         self.longIdentifier = self.typedef.longIdentifier
         self.type = self.typedef.type
         self._conversionRef = self.typedef.conversion
-        self.deposit = RecordLayout.get(session, self.typedef.deposit, module_name)
+        self.deposit = RecordLayout.get(session, self.typedef.deposit, module_name, no_cache=True)
         self.maxDiff = self.typedef.maxDiff
         self.lowerLimit = self.typedef.lowerLimit
         self.upperLimit = self.typedef.upperLimit

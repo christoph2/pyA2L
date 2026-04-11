@@ -44,6 +44,22 @@ def test_cached_base_reopen_uses_fresh_session_bucket():
     assert a is not b
 
 
+def test_cached_base_no_cache_bypasses_cache():
+    CachedBase.clear()
+
+    session = _DummySession()
+
+    uncached_a = _DummyCached.get(session, "foo", no_cache=True)
+    uncached_b = _DummyCached.get(session, "foo", no_cache=True)
+    cached = _DummyCached.get(session, "foo")
+    cached_again = _DummyCached.get(session, "foo")
+
+    assert uncached_a is not uncached_b
+    assert uncached_a is not cached
+    assert uncached_b is not cached
+    assert cached is cached_again
+
+
 def test_project_cache_isolation_between_different_a2l_files():
     """Regression test for issue #93: Cache should not leak between different A2L imports.
 
