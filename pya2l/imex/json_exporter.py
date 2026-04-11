@@ -11,9 +11,10 @@ import argparse
 import json
 import logging
 import re
+from collections.abc import Mapping, Sequence as SequenceABC
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence
+from typing import Any, Iterable, Sequence
 
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import selectinload
@@ -70,6 +71,19 @@ def as_list(value: Any) -> list[Any]:
         return list(value)
     except Exception:
         return [value]
+
+
+def to_json_serializable(value: Any) -> Any:
+    """Recursively convert SQLAlchemy proxy collections to native JSON types."""
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, dict):
+        return {str(key): to_json_serializable(item) for key, item in value.items()}
+    if isinstance(value, Mapping):
+        return {str(key): to_json_serializable(item) for key, item in value.items()}
+    if isinstance(value, SequenceABC) and not isinstance(value, (str, bytes, bytearray)):
+        return [to_json_serializable(item) for item in value]
+    return value
 
 
 def _bool_flag(obj: Any) -> bool:
@@ -1048,7 +1062,7 @@ def project_to_dict(db: A2LDatabase, module_name: str | None = None) -> dict[str
         "if_data_raw": ifdata_raw_list(safe_get(proj, "if_data")),
         "if_data_parsed": ifdata_parsed_list(session, safe_get(proj, "if_data")),
     }
-    return out
+    return to_json_serializable(out)
 
 
 def parse_args(argv: list[str] | None = None) -> ExporterConfig:
