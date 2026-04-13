@@ -70,7 +70,7 @@ class ReferrerType(IntEnum):
 class Root:
     """Root node of the AML tree."""
 
-    members: List[Any] = field(default_factory=list)
+    members: list[Any] = field(default_factory=list)
 
 
 @dataclass
@@ -85,8 +85,8 @@ class Referrer:
 class Struct:
     """Represents a struct in AML."""
 
-    name: Optional[str] = field(default=None)
-    members: List[Any] = field(default_factory=list)
+    name: str | None = field(default=None)
+    members: list[Any] = field(default_factory=list)
 
 
 @dataclass
@@ -101,8 +101,8 @@ class Member:
 class TaggedStruct:
     """Represents a tagged struct in AML."""
 
-    name: Optional[str] = field(default=None)
-    members: Dict[str, Any] = field(default_factory=dict)
+    name: str | None = field(default=None)
+    members: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -125,16 +125,16 @@ class TaggedStructDefinition:
 class TaggedUnion:
     """Represents a tagged union in AML."""
 
-    name: Optional[str] = field(default=None)
-    members: Dict[str, Any] = field(default_factory=dict)
+    name: str | None = field(default=None)
+    members: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class Enumeration:
     """Represents an enumeration in AML."""
 
-    name: Optional[str] = field(default=None)
-    values: Dict[str, Any] = field(default_factory=dict)
+    name: str | None = field(default=None)
+    values: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -142,14 +142,14 @@ class PDT:
     """Represents a predefined type in AML."""
 
     type: AMLPredefinedTypeEnum
-    arr_spec: List[int]
+    arr_spec: list[int]
 
 
 @dataclass
 class Block:
     """Represents a block in AML."""
 
-    tag: Optional[str]
+    tag: str | None
     type: Any
 
 
@@ -274,7 +274,7 @@ class IfDataParser:
                     self.logger.error(f"Failed to initialize parser: {str(e)}")
                     self.root = None
 
-    def parse(self, data) -> Dict:
+    def parse(self, data) -> dict:
         """
         Parse an IF_DATA section.
 
@@ -323,7 +323,7 @@ class IfDataParser:
             self.logger.error(f"Error parsing IF_DATA: {str(e)}")
             raise ParsingError(f"Error parsing IF_DATA: {str(e)}")
 
-    def block(self) -> Dict:
+    def block(self) -> dict:
         """
         Parse a block in the IF_DATA section.
 
@@ -348,7 +348,7 @@ class IfDataParser:
         else:
             raise TypeError(f"Expected IDENT got {tk_type}[{tk_value!r}].")
 
-    def tagged_struct(self) -> Dict:
+    def tagged_struct(self) -> dict:
         """
         Parse a tagged struct in the IF_DATA section.
 
@@ -426,7 +426,7 @@ class IfDataParser:
 
         return return_value
 
-    def tagged_union(self) -> Dict:
+    def tagged_union(self) -> dict:
         """
         Parse a tagged union in the IF_DATA section.
 
@@ -479,7 +479,7 @@ class IfDataParser:
             self.rewind(amount)
             return {}
 
-    def struct(self) -> List:
+    def struct(self) -> list:
         """
         Parse a struct in the IF_DATA section.
 
@@ -573,7 +573,7 @@ class IfDataParser:
         self.leave()
         return result
 
-    def tagged_struct_definition(self) -> Union[List, Any]:
+    def tagged_struct_definition(self) -> list | Any:
         """
         Parse a tagged struct definition in the IF_DATA section.
 
@@ -705,7 +705,7 @@ class IfDataParser:
         """
         self.token_idx = max(0, self.token_idx - n)
 
-    def match(self, token_type: IfDataTokenType, value: Optional[Any] = None) -> bool:
+    def match(self, token_type: IfDataTokenType, value: Any | None = None) -> bool:
         """
         Match the current token against the expected type and value.
 

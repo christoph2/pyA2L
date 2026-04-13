@@ -42,7 +42,7 @@ def alternate_libdir(pth: str):
         return ""
 
 
-def get_py_config() -> Optional[dict]:
+def get_py_config() -> dict | None:
     pynd = VARS["py_version_nodot"]  # Should always be present.
     include = sysconfig.get_path("include")  # Seems to be cross-platform.
     if uname.system == "Windows":
@@ -89,12 +89,12 @@ def get_py_config() -> Optional[dict]:
     return dict(exe=sys.executable, include=include, libdir=libdir, library=library)
 
 
-def sort_by_version(version: str) -> Tuple[int]:  # noqa: UP006
+def sort_by_version(version: str) -> tuple[int]:  # noqa: UP006
     h, m, s = version.split(".")
     return int(h), int(m), int(s)
 
 
-def fetch_tags(repo: str) -> List[str]:  # noqa: UP006
+def fetch_tags(repo: str) -> list[str]:  # noqa: UP006
     res = subprocess.run(["git", "ls-remote", "--tags", repo], shell=False, capture_output=True, text=True)  # nosec
     if res.returncode != 0:
         return []
@@ -106,7 +106,7 @@ def fetch_tags(repo: str) -> List[str]:  # noqa: UP006
     return sorted(tag_set, key=sort_by_version)
 
 
-def most_recent_tag(repo: str) -> Optional[str]:  # noqa: UP007
+def most_recent_tag(repo: str) -> str | None:  # noqa: UP007
     tags = fetch_tags(repo)
     return tags[-1] if tags else None
 

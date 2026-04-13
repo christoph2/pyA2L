@@ -12,7 +12,8 @@ import tempfile
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional
+from typing import Dict, List, Optional
+from collections.abc import Iterable
 
 from pya2l import import_a2l
 from pya2l.api.validate import Validator

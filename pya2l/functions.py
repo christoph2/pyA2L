@@ -33,6 +33,7 @@ from operator import itemgetter
 
 import numpy as np
 
+
 try:
     import numexpr as _numexpr
     from scipy import interpolate as _interpolate
@@ -48,10 +49,7 @@ except ImportError:
 
 def _require_compute(feature: str) -> None:
     if not _COMPUTE_AVAILABLE:
-        raise ImportError(
-            f"'{feature}' requires scipy and numexpr. "
-            "Install them with: pip install pya2ldb[compute]"
-        )
+        raise ImportError(f"'{feature}' requires scipy and numexpr. " "Install them with: pip install pya2ldb[compute]")
 
 
 from pya2l import exceptions
@@ -521,8 +519,8 @@ class FormulaBase:
     def __init__(
         self,
         formula: str,
-        inverse_formula: typing.Optional[str] = None,
-        system_constants: typing.Optional[typing.Dict] = None,
+        inverse_formula: str | None = None,
+        system_constants: dict | None = None,
         legacy: bool = False,
     ):
         if not formula:

@@ -31,7 +31,8 @@ import pickle
 import re
 import sqlite3
 import warnings
-from typing import Any, Callable, List, Optional, Sequence
+from typing import Any, List, Optional
+from collections.abc import Callable, Sequence
 
 from sqlalchemy import Column, ForeignKey, Index, create_engine, event, orm, types
 from sqlalchemy.engine import Engine
@@ -75,6 +76,7 @@ def _migrate_schema(session: Any, from_version: int, to_version: int) -> bool:
         step(session)
         current += 1
     return True
+
 
 CACHE_SIZE = 4  # MB
 PAGE_SIZE = mmap.PAGESIZE
@@ -5551,11 +5553,11 @@ class SessionProxy:
     def __getattr__(self, name: str) -> Any:
         return getattr(self._session, name)
 
-    def parse_ifdata(self, sections: Sequence["IfData"]) -> List[Any]:
+    def parse_ifdata(self, sections: Sequence["IfData"]) -> list[Any]:
         if self._ifdata_parser is None or not self._ifdata_parser.root or not sections:
             return []
         else:
-            result: List[Any] = []
+            result: list[Any] = []
             for section in sections:
                 try:
                     res = self._ifdata_parser.parse(section.raw)

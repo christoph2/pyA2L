@@ -72,7 +72,7 @@ class IfDataLexer:
         self.skip_list = skip_list
         self.pos = 0
 
-    def run(self) -> List[IfDataToken]:
+    def run(self) -> list[IfDataToken]:
         result = []
         while self.pos < self.section_length:
             token = self.get_token()
@@ -80,7 +80,7 @@ class IfDataLexer:
                 result.append(token)
         return result
 
-    def get_token(self) -> Optional[IfDataToken]:
+    def get_token(self) -> IfDataToken | None:
         for code, expr, converter in EXPRESSIONS:
             match = expr.match(self.section, self.pos)
             if match:
@@ -96,7 +96,7 @@ class IfDataLexer:
 
 def ifdata_lexer(
     section: str, skip_list: list[IfDataTokenType] = [IfDataTokenType.WS, IfDataTokenType.COMMENT]
-) -> List[IfDataToken]:
+) -> list[IfDataToken]:
     length = len(section)
     pos = 0
     result = []
