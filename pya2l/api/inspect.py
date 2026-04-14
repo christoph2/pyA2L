@@ -42,9 +42,7 @@ from functools import cached_property, reduce
 from operator import attrgetter, mul
 from typing import (
     Any,
-    Callable,
     Dict,
-    Generator,
     Generic,
     List,
     Optional,
@@ -52,6 +50,7 @@ from typing import (
     TypeVar,
     Union,
 )
+from collections.abc import Callable, Generator
 
 from sqlalchemy import exists, not_
 
@@ -199,7 +198,7 @@ def get_legacy_formulas(session: Any) -> bool:
     return cached_per_session(session, "pya2l_legacy_formulas", lambda: _legacy_flag_from_db(session))
 
 
-def get_asap2_version(session: Any) -> Tuple[int, int]:
+def get_asap2_version(session: Any) -> tuple[int, int]:
     """Get the ASAP2 version from the database as a tuple (version, upgrade).
 
     The result is cached per session. Defaults to (1, 70) if not found.
@@ -326,12 +325,12 @@ class SegmentAttributeType(IntEnum):
 
 @dataclass  # (slots=True)
 class IfData:
-    if_data_parsed: List[Any]
+    if_data_parsed: list[Any]
     if_data_raw: list
-    items: Dict[str, List[Any]] = field(default_factory=lambda: collections.defaultdict(list))
+    items: dict[str, list[Any]] = field(default_factory=lambda: collections.defaultdict(list))
     _initialized: bool = field(default=False, repr=False)
 
-    def _traverse(self, item: Union[List[Any], Dict[str, Any]]) -> None:
+    def _traverse(self, item: list[Any] | dict[str, Any]) -> None:
         if isinstance(item, dict):
             for k, v in item.items():
                 self.items[k].append(v)
@@ -345,7 +344,7 @@ class IfData:
             self._traverse(ifd)
 
     @property
-    def flatmap(self) -> Dict[str, List[Any]]:
+    def flatmap(self) -> dict[str, list[Any]]:
         if not self._initialized:
             self._build_flatmap()
             self._initialized = True
@@ -449,7 +448,7 @@ class Alignment:
         """
         return align_as(offset, self.get(data_type))
 
-    def to_dict(self) -> Dict[str, int]:
+    def to_dict(self) -> dict[str, int]:
         """Return the alignment values as a dictionary."""
         return asdict(self)
 
@@ -481,8 +480,8 @@ class RecordLayoutBase:
         Memory address of the component
     """
 
-    position: Optional[int] = field(default=None)
-    data_type: Optional[str] = field(default=None)
+    position: int | None = field(default=None)
+    data_type: str | None = field(default=None)
     axis: str = field(default="-")
     address: int = field(default=-1)
 
@@ -525,8 +524,8 @@ class RecordLayoutAxisPts(RecordLayoutBase):
         Addressing mode for the axis points
     """
 
-    indexIncr: Optional[str] = field(default=None)
-    addressing: Optional[str] = field(default=None)
+    indexIncr: str | None = field(default=None)
+    addressing: str | None = field(default=None)
 
 
 @dataclass
@@ -546,9 +545,9 @@ class RecordLayoutAxisRescale(RecordLayoutBase):
         Addressing mode for the rescale points
     """
 
-    indexIncr: Optional[str] = field(default=None)
-    maxNumberOfRescalePairs: Optional[int] = field(default=None)
-    addressing: Optional[str] = field(default=None)
+    indexIncr: str | None = field(default=None)
+    maxNumberOfRescalePairs: int | None = field(default=None)
+    addressing: str | None = field(default=None)
 
 
 @dataclass
@@ -566,8 +565,8 @@ class RecordLayoutFncValues(RecordLayoutBase):
         Type of addressing for the function values
     """
 
-    indexMode: Optional[str] = field(default=None)
-    addresstype: Optional[str] = field(default=None)
+    indexMode: str | None = field(default=None)
+    addresstype: str | None = field(default=None)
 
 
 @dataclass
@@ -687,7 +686,7 @@ class RecordLayoutFixNoAxisPts:
         Axis identifier (e.g., 'x', 'y', 'z')
     """
 
-    number: Optional[int] = field(default=None)
+    number: int | None = field(default=None)
     position: int = field(default=0)
     axis: str = field(default="-")
 
@@ -726,9 +725,9 @@ class FixAxisPar:
         Number of axis points
     """
 
-    offset: Optional[int] = field(default=None)
-    shift: Optional[int] = field(default=None)
-    numberapo: Optional[int] = field(default=None)
+    offset: int | None = field(default=None)
+    shift: int | None = field(default=None)
+    numberapo: int | None = field(default=None)
 
     def valid(self) -> bool:
         """Check if the fixed axis parameters are valid.
@@ -760,9 +759,9 @@ class FixAxisParDist:
         Number of axis points
     """
 
-    offset: Optional[int] = field(default=None)
-    distance: Optional[int] = field(default=None)
-    numberapo: Optional[int] = field(default=None)
+    offset: int | None = field(default=None)
+    distance: int | None = field(default=None)
+    numberapo: int | None = field(default=None)
 
     def valid(self) -> bool:
         """Check if the fixed axis parameters are valid.
@@ -792,8 +791,8 @@ class ExtendedLimits:
         Upper limit of the valid range
     """
 
-    lowerLimit: Optional[float] = field(default=None)
-    upperLimit: Optional[float] = field(default=None)
+    lowerLimit: float | None = field(default=None)
+    upperLimit: float | None = field(default=None)
 
     def valid(self) -> bool:
         """Check if the extended limits are valid.
@@ -813,14 +812,14 @@ class Limits(ExtendedLimits):
     pass
 
 
-def _create_extended_limits(limits) -> Optional[ExtendedLimits]:
+def _create_extended_limits(limits) -> ExtendedLimits | None:
     if limits is not None:
         return ExtendedLimits(limits.lowerLimit, limits.upperLimit)
     else:
         return None
 
 
-def _create_limits(limits) -> Optional[Limits]:
+def _create_limits(limits) -> Limits | None:
     if limits is not None:
         return Limits(limits.lowerLimit, limits.upperLimit)
     else:
@@ -846,15 +845,15 @@ class MatrixDim:
         Tuple of dimension sizes
     """
 
-    x: Optional[int] = field(default=None)
-    y: Optional[int] = field(default=None)
-    z: Optional[int] = field(default=None)
+    x: int | None = field(default=None)
+    y: int | None = field(default=None)
+    z: int | None = field(default=None)
 
     def __post_init__(self):
         self.numbers = tuple(d for d in (self.x, self.y, self.z) if d is not None)
 
     @classmethod
-    def from_model(cls, matrix_dim, version: Optional[Tuple[int, int]] = None):
+    def from_model(cls, matrix_dim, version: tuple[int, int] | None = None):
         """Create a MatrixDim instance from a model object.
 
         Parameters
@@ -929,9 +928,9 @@ class Annotation:
         List of text lines in the annotation
     """
 
-    label: Optional[str]
-    origin: Optional[str]
-    text: List[str]
+    label: str | None
+    origin: str | None
+    text: list[str]
 
 
 @dataclass
@@ -950,7 +949,7 @@ class DependentCharacteristic:
     """
 
     formula: str
-    characteristics: List[str]
+    characteristics: list[str]
 
 
 @dataclass
@@ -970,7 +969,7 @@ class VirtualCharacteristic:
     """
 
     formula: str
-    characteristics: List[str]
+    characteristics: list[str]
 
 
 @dataclass
@@ -988,11 +987,11 @@ class MaxRefresh:
         Maximum refresh rate value
     """
 
-    scalingUnit: Optional[int] = field(default=None)
-    rate: Optional[int] = field(default=None)
+    scalingUnit: int | None = field(default=None)
+    rate: int | None = field(default=None)
 
 
-def _dissect_max_refresh(max_ref) -> Optional[MaxRefresh]:
+def _dissect_max_refresh(max_ref) -> MaxRefresh | None:
     if max_ref is not None:
         return MaxRefresh(max_ref.scalingUnit, max_ref.rate)
     else:
@@ -1014,11 +1013,11 @@ class SymbolLink:
         Offset to add to the symbol's address
     """
 
-    symbolLink: Optional[str] = field(default=None)
-    offset: Optional[int] = field(default=None)
+    symbolLink: str | None = field(default=None)
+    offset: int | None = field(default=None)
 
 
-def _dissect_symbol_link(sym_link) -> Optional[SymbolLink]:
+def _dissect_symbol_link(sym_link) -> SymbolLink | None:
     if sym_link is not None:
         return SymbolLink(sym_link.symbolName, sym_link.offset)
     else:
@@ -1058,19 +1057,19 @@ class AxisInfo:
     maximum_element_count: int
     reversed_storage: bool
     addressing: str
-    elements: Dict = field(default_factory=dict)
+    elements: dict = field(default_factory=dict)
     adjustable: bool = field(default=False)
-    actual_element_count: Optional[int] = field(default=None)
+    actual_element_count: int | None = field(default=None)
 
 
 @dataclass
 class BitOperation:
-    left: Optional[int]
-    right: Optional[int]
+    left: int | None
+    right: int | None
     sign_extend: bool
 
 
-def _dissect_bit_operation(bit_op) -> Optional[BitOperation]:
+def _dissect_bit_operation(bit_op) -> BitOperation | None:
     if bit_op is not None:
         left = None
         right = None
@@ -1106,7 +1105,7 @@ def asam_type_size(datatype: str) -> int:
     return ASAM_TYPE_SIZES[datatype]
 
 
-def all_axes_names() -> List[str]:
+def all_axes_names() -> list[str]:
     """Get a list of all possible axis names.
 
     Returns
@@ -1117,7 +1116,7 @@ def all_axes_names() -> List[str]:
     return list("x y z 4 5".split())
 
 
-def get_module(session: Any, module_name: Optional[str] = None) -> Optional[model.Module]:
+def get_module(session: Any, module_name: str | None = None) -> model.Module | None:
     """Get a module from the database.
 
     Parameters
@@ -1138,7 +1137,7 @@ def get_module(session: Any, module_name: Optional[str] = None) -> Optional[mode
     return query.first()
 
 
-def _annotations(session: Any, refs: Optional[List[Any]]) -> List[Annotation]:
+def _annotations(session: Any, refs: list[Any] | None) -> list[Annotation]:
     """Extract annotation information from database objects.
 
     Parameters
@@ -1168,7 +1167,7 @@ def _annotations(session: Any, refs: Optional[List[Any]]) -> List[Annotation]:
     return items
 
 
-def fnc_np_shape(matrixDim: MatrixDim) -> Tuple[int, ...]:
+def fnc_np_shape(matrixDim: MatrixDim) -> tuple[int, ...]:
     """Convert MatrixDim object to tuple suitable as Numpy array `shape` argument.
 
     Parameters
@@ -1193,7 +1192,7 @@ def fnc_np_shape(matrixDim: MatrixDim) -> Tuple[int, ...]:
     return tuple(result)
 
 
-def fnc_np_order(order: Optional[str]) -> Optional[str]:
+def fnc_np_order(order: str | None) -> str | None:
     """Convert ASAM indexMode to NumPy array order string.
 
     Parameters
@@ -1255,7 +1254,7 @@ class FilteredList(Generic[T]):
         self.klass = klass
         self.attribute = attrgetter(attr_name)
 
-    def query(self, criterion: Optional[Callable] = None) -> Generator:
+    def query(self, criterion: Callable | None = None) -> Generator:
         """Query the association with an optional filter criterion.
 
         Parameters
@@ -1318,11 +1317,11 @@ class CachedBase:
     """
 
     _cache: weakref.WeakKeyDictionary = weakref.WeakKeyDictionary()
-    _fallback_cache: Dict[int, Dict[Tuple[str, Optional[str], Tuple[Any, ...]], Any]] = {}
+    _fallback_cache: dict[int, dict[tuple[str, str | None, tuple[Any, ...]], Any]] = {}
     _strong_ref: collections.deque = collections.deque(maxlen=DB_CACHE_SIZE)
 
     @classmethod
-    def _get_session_cache(cls, session: Any) -> Dict[Tuple[str, Optional[str], Tuple[Any, ...]], Any]:
+    def _get_session_cache(cls, session: Any) -> dict[tuple[str, str | None, tuple[Any, ...]], Any]:
         """Return (and create) the cache bucket for a given session."""
         info = getattr(session, "info", None)
         if isinstance(info, dict):
@@ -1391,8 +1390,8 @@ class CachedBase:
     def get(
         cls,
         session: Any,
-        name: Optional[str] = None,
-        module_name: Optional[str] = None,
+        name: str | None = None,
+        module_name: str | None = None,
         *args: Any,
         no_cache: bool = False,
     ) -> Any:
@@ -1466,21 +1465,21 @@ class NoCompuMethod(SingletonBase):
 
     def __init__(self) -> None:
         """Initialize a NoCompuMethod instance with default values."""
-        self._name: Optional[str] = None
-        self._longIdentifier: Optional[str] = None
+        self._name: str | None = None
+        self._longIdentifier: str | None = None
         self._conversionType: str = "NO_COMPU_METHOD"
-        self._format: Optional[str] = None
-        self._unit: Optional[str] = None
-        self._coeffs: List[float] = []
-        self._coeffs_linear: List[float] = []
-        self._formula: Optional[str] = None
-        self._tab: Optional[Any] = None
-        self._tab_verb: Optional[Any] = None
-        self._statusStringRef: Optional[str] = None
-        self._refUnit: Optional[str] = None
+        self._format: str | None = None
+        self._unit: str | None = None
+        self._coeffs: list[float] = []
+        self._coeffs_linear: list[float] = []
+        self._formula: str | None = None
+        self._tab: Any | None = None
+        self._tab_verb: Any | None = None
+        self._statusStringRef: str | None = None
+        self._refUnit: str | None = None
 
     @property
-    def name(self) -> Optional[str]:
+    def name(self) -> str | None:
         """Get the name of the computation method.
 
         Returns
@@ -1491,7 +1490,7 @@ class NoCompuMethod(SingletonBase):
         return self._name
 
     @property
-    def longIdentifier(self) -> Optional[str]:
+    def longIdentifier(self) -> str | None:
         """Get the long identifier of the computation method.
 
         Returns
@@ -1513,7 +1512,7 @@ class NoCompuMethod(SingletonBase):
         return self._conversionType
 
     @property
-    def format(self) -> Optional[str]:
+    def format(self) -> str | None:
         """Get the format string.
 
         Returns
@@ -1524,7 +1523,7 @@ class NoCompuMethod(SingletonBase):
         return self._format
 
     @property
-    def unit(self) -> Optional[str]:
+    def unit(self) -> str | None:
         """Get the unit.
 
         Returns
@@ -1535,7 +1534,7 @@ class NoCompuMethod(SingletonBase):
         return self._unit
 
     @property
-    def coeffs(self) -> List[float]:
+    def coeffs(self) -> list[float]:
         """Get the coefficients.
 
         Returns
@@ -1546,7 +1545,7 @@ class NoCompuMethod(SingletonBase):
         return self._coeffs
 
     @property
-    def coeffs_linear(self) -> List[float]:
+    def coeffs_linear(self) -> list[float]:
         """Get the linear coefficients.
 
         Returns
@@ -1557,7 +1556,7 @@ class NoCompuMethod(SingletonBase):
         return self._coeffs_linear
 
     @property
-    def formula(self) -> Optional[str]:
+    def formula(self) -> str | None:
         """Get the formula.
 
         Returns
@@ -1568,7 +1567,7 @@ class NoCompuMethod(SingletonBase):
         return self._formula
 
     @property
-    def tab(self) -> Optional[Any]:
+    def tab(self) -> Any | None:
         """Get the table.
 
         Returns
@@ -1579,7 +1578,7 @@ class NoCompuMethod(SingletonBase):
         return self._tab
 
     @property
-    def tab_verb(self) -> Optional[Any]:
+    def tab_verb(self) -> Any | None:
         """Get the verbal table.
 
         Returns
@@ -1590,7 +1589,7 @@ class NoCompuMethod(SingletonBase):
         return self._tab_verb
 
     @property
-    def statusStringRef(self) -> Optional[str]:
+    def statusStringRef(self) -> str | None:
         """Get the status string reference.
 
         Returns
@@ -1601,7 +1600,7 @@ class NoCompuMethod(SingletonBase):
         return self._statusStringRef
 
     @property
-    def refUnit(self) -> Optional[str]:
+    def refUnit(self) -> str | None:
         """Get the reference unit.
 
         Returns
@@ -1659,11 +1658,11 @@ class CompuTab(CachedBase):
     name: str
     longIdentifier: str
     interpolation: bool
-    default_value: Optional[float] = field(default=None)
-    in_values: List[float] = field(default_factory=list)
-    out_values: List[float] = field(default_factory=list)
+    default_value: float | None = field(default=None)
+    in_values: list[float] = field(default_factory=list)
+    out_values: list[float] = field(default_factory=list)
 
-    def __init__(self, session, name: str, module_name: Optional[str] = None):
+    def __init__(self, session, name: str, module_name: str | None = None):
         self.session = session
         compu_tab = session.query(model.CompuTab).filter(model.CompuTab.name == name)
         if module_name is not None:
@@ -1686,11 +1685,11 @@ class CompuTabVerb(CachedBase):
     name: str
     longIdentifier: str
     interpolation: bool
-    default_value: Optional[float] = field(default=None)
-    in_values: List[float] = field(default_factory=list)
-    text_values: List[str] = field(default_factory=list)
+    default_value: float | None = field(default=None)
+    in_values: list[float] = field(default_factory=list)
+    text_values: list[str] = field(default_factory=list)
 
-    def __init__(self, session, name: str, module_name: Optional[str] = None):
+    def __init__(self, session, name: str, module_name: str | None = None):
         self.session = session
         compu_tab_verb = session.query(model.CompuVtab).filter(model.CompuVtab.name == name)
         if module_name is not None:
@@ -1712,12 +1711,12 @@ class CompuTabVerbRanges(CachedBase):
     compu_tab_verb_ranges: model.CompuTab = field(repr=False)
     name: str
     longIdentifier: str
-    default_value: Optional[float] = field(default=None)
-    lower_values: List[float] = field(default_factory=list)
-    upper_values: List[float] = field(default_factory=list)
-    text_values: List[str] = field(default_factory=list)
+    default_value: float | None = field(default=None)
+    lower_values: list[float] = field(default_factory=list)
+    upper_values: list[float] = field(default_factory=list)
+    text_values: list[str] = field(default_factory=list)
 
-    def __init__(self, session, name: str, module_name: Optional[str] = None):
+    def __init__(self, session, name: str, module_name: str | None = None):
         self.session = session
         compu_tab_verb_ranges = session.query(model.CompuVtabRange).filter(model.CompuVtabRange.name == name)
         if module_name is not None:
@@ -1780,19 +1779,19 @@ class CompuMethod(CachedBase):
     name: str
     longIdentifier: str
     conversionType: str
-    format: Optional[str]
-    unit: Optional[str]
-    coeffs: Optional[Coeffs]
-    coeffs_linear: Optional[CoeffsLinear]
-    formula: Dict[str, Any]
-    tab: Optional[CompuTab]
-    tab_verb: Optional[CompuTabVerb]
-    tab_verb_ranges: Optional[CompuTabVerbRanges]
-    statusStringRef: Optional[str]
-    refUnit: Optional[str]
+    format: str | None
+    unit: str | None
+    coeffs: Coeffs | None
+    coeffs_linear: CoeffsLinear | None
+    formula: dict[str, Any]
+    tab: CompuTab | None
+    tab_verb: CompuTabVerb | None
+    tab_verb_ranges: CompuTabVerbRanges | None
+    statusStringRef: str | None
+    refUnit: str | None
     evaluator: Callable = field(repr=False, default=Identical())
 
-    def __init__(self, session: Any, name: str, module_name: Optional[str] = None) -> None:
+    def __init__(self, session: Any, name: str, module_name: str | None = None) -> None:
         """Initialize a CompuMethod instance.
 
         Parameters
@@ -1898,7 +1897,7 @@ class CompuMethod(CachedBase):
         else:
             raise ValueError(f"Unknown conversation type '{cm_type}'.")
 
-    def int_to_physical(self, i: Union[int, float, Any]) -> Any:
+    def int_to_physical(self, i: int | float | Any) -> Any:
         """Convert internal value to physical value.
 
         Parameters
@@ -1913,7 +1912,7 @@ class CompuMethod(CachedBase):
         """
         return self.evaluator.int_to_physical(i)
 
-    def physical_to_int(self, p: Union[int, float, Any]) -> Any:
+    def physical_to_int(self, p: int | float | Any) -> Any:
         """Convert physical value to internal value.
 
         Parameters
@@ -1932,8 +1931,8 @@ class CompuMethod(CachedBase):
     def get(
         cls,
         session: Any,
-        name: Optional[str] = None,
-        module_name: Optional[str] = None,
+        name: str | None = None,
+        module_name: str | None = None,
         *,
         no_cache: bool = False,
     ) -> Union["CompuMethod", NoCompuMethod]:
@@ -1990,7 +1989,7 @@ class MemoryLayout:
     offset_2: int
     offset_3: int
     offset_4: int
-    if_data: List[Dict]
+    if_data: list[dict]
 
 
 @dataclass
@@ -2039,7 +2038,7 @@ class MemorySegment:
     offset_2: int
     offset_3: int
     offset_4: int
-    if_data: List[Dict]
+    if_data: list[dict]
 
 
 @dataclass
@@ -2103,21 +2102,21 @@ class ModPar(CachedBase):
 
     modpar: model.ModPar = field(repr=False)
     comment: str
-    addrEpk: List[int]
-    cpu: Optional[str]
-    customer: Optional[str]
-    customerNo: Optional[str]
-    ecu: Optional[str]
-    ecuCalibrationOffset: Optional[int]
-    epk: Optional[str]
-    memoryLayouts: List[MemoryLayout]
-    memorySegments: List[MemorySegment]
-    noOfInterfaces: Optional[int]
-    phoneNo: Optional[str]
-    supplier: Optional[str]
-    systemConstants: Dict[str, Union[str, float]]
-    user: Optional[str]
-    version: Optional[str]
+    addrEpk: list[int]
+    cpu: str | None
+    customer: str | None
+    customerNo: str | None
+    ecu: str | None
+    ecuCalibrationOffset: int | None
+    epk: str | None
+    memoryLayouts: list[MemoryLayout]
+    memorySegments: list[MemorySegment]
+    noOfInterfaces: int | None
+    phoneNo: str | None
+    supplier: str | None
+    systemConstants: dict[str, str | float]
+    user: str | None
+    version: str | None
 
     def __init__(self, session, name=None, module_name: str = None):
         module = get_module(session, module_name)
@@ -2145,7 +2144,7 @@ class ModPar(CachedBase):
         return module.mod_par is not None
 
     @staticmethod
-    def _dissect_sysc(constants: list) -> Dict:
+    def _dissect_sysc(constants: list) -> dict:
         if constants is not None:
             return process_sys_consts(
                 list(
@@ -2159,7 +2158,7 @@ class ModPar(CachedBase):
         return []
 
     @staticmethod
-    def _create_memory_layout(session, layouts) -> List[MemoryLayout]:
+    def _create_memory_layout(session, layouts) -> list[MemoryLayout]:
         result = []
         if layouts is not None:
             for layout in layouts:
@@ -2178,7 +2177,7 @@ class ModPar(CachedBase):
         return result
 
     @staticmethod
-    def _create_memory_segments(session, segments) -> List[MemorySegment]:
+    def _create_memory_segments(session, segments) -> list[MemorySegment]:
         result = []
         if segments is not None:
             for segment in segments:
@@ -2274,12 +2273,12 @@ class ModCommon(CachedBase):
     """
 
     modcommon: model.ModCommon = field(repr=False)
-    comment: Optional[str]
+    comment: str | None
     alignment: Alignment
-    byteOrder: Optional[str]
-    dataSize: Optional[int]
+    byteOrder: str | None
+    dataSize: int | None
     deposit: str
-    sRecLayout: Optional[str]
+    sRecLayout: str | None
 
     def __init__(self, session, name=None, module_name: str = None):
         module = get_module(session, module_name)
@@ -2332,7 +2331,7 @@ class RecordLayout(CachedBase):
     alignment: Alignment
     fncValues: RecordLayoutFncValues
     identification: RecordLayoutIdentification
-    reserved: List[RecordLayoutReserved]
+    reserved: list[RecordLayoutReserved]
     staticAddressOffsets: bool
     staticRecordLayout: bool
 
@@ -2450,7 +2449,7 @@ class RecordLayout(CachedBase):
         return RecordLayoutOffset(offset.position, offset.datatype, axis_name, -1)
 
     @staticmethod
-    def create_reserved(axis_name, reserved) -> List[RecordLayoutReserved]:
+    def create_reserved(axis_name, reserved) -> list[RecordLayoutReserved]:
         result = []
         if len(reserved) > 0:
             for r in reserved:
@@ -2513,7 +2512,7 @@ class RecordLayout(CachedBase):
             return None
 
 
-def create_record_layout_components(parent) -> Dict:
+def create_record_layout_components(parent) -> dict:
     result = {}
     result["axes"] = {}
     result["elements"] = {}
@@ -2664,36 +2663,36 @@ class AxisPts(CachedBase):
 
     axis: model.AxisPts = field(repr=False)
     name: str
-    longIdentifier: Optional[str]
+    longIdentifier: str | None
     address: int
-    inputQuantity: Optional[str]
-    deposit: Optional[str]
-    maxDiff: Optional[float]
+    inputQuantity: str | None
+    deposit: str | None
+    maxDiff: float | None
     _conversionRef: str = field(repr=False)
     compuMethod: CompuMethod
     maxAxisPoints: int
     lowerLimit: float
     upperLimit: float
-    annotations: List[Annotation]
-    byteOrder: Optional[str]
-    calibrationAccess: Optional[str]
-    displayIdentifier: Optional[str]
+    annotations: list[Annotation]
+    byteOrder: str | None
+    calibrationAccess: str | None
+    displayIdentifier: str | None
     ecuAddressExtension: int
-    extendedLimits: Optional[ExtendedLimits]
-    format: Optional[str]
-    functionList: List[str]
+    extendedLimits: ExtendedLimits | None
+    format: str | None
+    functionList: list[str]
     guardRails: bool
-    if_data: List[Dict]
-    maxRefresh: Optional[MaxRefresh]
-    modelLink: Optional[str]
-    monotony: Optional[str]
-    physUnit: Optional[str]
+    if_data: list[dict]
+    maxRefresh: MaxRefresh | None
+    modelLink: str | None
+    monotony: str | None
+    physUnit: str | None
     readOnly: bool
-    refMemorySegment: Optional[str]
-    stepSize: Optional[float]
-    symbolLink: Optional[SymbolLink]
+    refMemorySegment: str | None
+    stepSize: float | None
+    symbolLink: SymbolLink | None
     depositAttr: RecordLayout
-    record_layout_components: Dict
+    record_layout_components: dict
 
     def __init__(self, session, name: str, module_name: str = None):
         axis = session.query(model.AxisPts).filter(model.AxisPts.name == name)
@@ -2778,26 +2777,26 @@ class AxisDescr(CachedBase):
 
     axisPtsRef: AxisPts = field(repr=False)
     attribute: str
-    inputQuantity: Optional[str]
-    _conversionRef: Optional[str] = field(repr=False)
+    inputQuantity: str | None
+    _conversionRef: str | None = field(repr=False)
     lowerLimit: float
     upperLimit: float
-    compuMethod: Union[CompuMethod, str]
+    compuMethod: CompuMethod | str
     maxAxisPoints: int
-    byteOrder: Optional[str]
-    annotations: List[Annotation]
-    curveAxisRef: Optional[str]
-    deposit: Optional[Any]
-    extendedLimits: Optional[ExtendedLimits]
+    byteOrder: str | None
+    annotations: list[Annotation]
+    curveAxisRef: str | None
+    deposit: Any | None
+    extendedLimits: ExtendedLimits | None
     fixAxisPar: FixAxisPar
     fixAxisParDist: FixAxisParDist
-    fixAxisParList: Dict
-    format: Optional[str]
-    maxGrad: Optional[float]
-    monotony: Optional[str]
-    physUnit: Optional[str]
+    fixAxisParList: dict
+    format: str | None
+    maxGrad: float | None
+    monotony: str | None
+    physUnit: str | None
     readOnly: bool
-    stepSize: Optional[float]
+    stepSize: float | None
 
     def __init__(self, session, axis, module_name=None):
         self.attribute = axis.attribute
@@ -2876,7 +2875,7 @@ class Characteristic(CachedBase):
 
     characteristic: model.Characteristic = field(repr=False)
     name: str
-    longIdentifier: Optional[str]
+    longIdentifier: str | None
     type: str
     address: int
     deposit: RecordLayout
@@ -2885,35 +2884,35 @@ class Characteristic(CachedBase):
     lowerLimit: float
     upperLimit: float
     compuMethod: CompuMethod
-    annotations: List[Annotation]
-    axisDescriptions: List[AxisDescr]
-    bitMask: Optional[int]
-    byteOrder: Optional[str]
-    calibrationAccess: Optional[str]
-    comparisonQuantity: Optional[str]
+    annotations: list[Annotation]
+    axisDescriptions: list[AxisDescr]
+    bitMask: int | None
+    byteOrder: str | None
+    calibrationAccess: str | None
+    comparisonQuantity: str | None
     dependent_characteristic: DependentCharacteristic
     discrete: bool
-    displayIdentifier: Optional[str]
+    displayIdentifier: str | None
     ecuAddressExtension: int
-    encoding: Optional[str]
-    extendedLimits: Optional[ExtendedLimits]
-    format: Optional[str]
-    functionList: List[str]
+    encoding: str | None
+    extendedLimits: ExtendedLimits | None
+    format: str | None
+    functionList: list[str]
     guardRails: bool
-    if_data: List[Dict]
-    mapList: List
+    if_data: list[dict]
+    mapList: list
     matrixDim: MatrixDim
-    maxRefresh: Optional[MaxRefresh]
-    modelLink: Optional[str]
-    number: Optional[int]
-    physUnit: Optional[str]
+    maxRefresh: MaxRefresh | None
+    modelLink: str | None
+    number: int | None
+    physUnit: str | None
     readOnly: bool
-    refMemorySegment: Optional[str]
-    stepSize: Optional[float]
-    symbolLink: Optional[SymbolLink]
+    refMemorySegment: str | None
+    stepSize: float | None
+    symbolLink: SymbolLink | None
     virtual_characteristic: VirtualCharacteristic
     fnc_np_shape: tuple
-    record_layout_components: Dict
+    record_layout_components: dict
 
     def __init__(self, session, name: str, module_name: str = None):
         characteristic = session.query(model.Characteristic).filter(model.Characteristic.name == name)
@@ -3144,7 +3143,7 @@ class Characteristic(CachedBase):
             return None
 
 
-def axispts_or_characteristic(session, name: str) -> Union[AxisPts, Characteristic]:
+def axispts_or_characteristic(session, name: str) -> AxisPts | Characteristic:
     """Load an AxisPts or Characteristic object (they share the same namespace).
 
     Parameters
@@ -3354,36 +3353,36 @@ class Measurement(CachedBase):
 
     measurement: model.Measurement = field(repr=False)
     name: str
-    longIdentifier: Optional[str]
+    longIdentifier: str | None
     datatype: str
     _conversionRef: str
     resolution: int
     accuracy: float
     lowerLimit: float
     upperLimit: float
-    annotations: List[Annotation]
-    arraySize: Optional[int]
-    bitMask: Optional[int]
-    bitOperation: Dict
-    byteOrder: Optional[str]
+    annotations: list[Annotation]
+    arraySize: int | None
+    bitMask: int | None
+    bitOperation: dict
+    byteOrder: str | None
     discrete: bool
-    displayIdentifier: Optional[str]
-    ecuAddress: Optional[int]
-    ecuAddressExtension: Optional[int]
-    errorMask: Optional[int]
-    format: Optional[str]
-    functionList: List[Dict]
-    layout: Optional[str]
+    displayIdentifier: str | None
+    ecuAddress: int | None
+    ecuAddressExtension: int | None
+    errorMask: int | None
+    format: str | None
+    functionList: list[dict]
+    layout: str | None
     matrixDim: MatrixDim
-    maxRefresh: Optional[MaxRefresh]
-    physUnit: Optional[str]
+    maxRefresh: MaxRefresh | None
+    physUnit: str | None
     readWrite: bool
-    refMemorySegment: Optional[str]
-    symbolLink: Optional[SymbolLink]
-    virtual: List[str]
+    refMemorySegment: str | None
+    symbolLink: SymbolLink | None
+    virtual: list[str]
     compuMethod: CompuMethod
     fnc_np_shape: tuple
-    if_data: List[Dict]
+    if_data: list[dict]
 
     def __init__(self, session, name: str, module_name: str = None):
         measurement = session.query(model.Measurement).filter(model.Measurement.name == name)
@@ -3463,17 +3462,17 @@ class Function(CachedBase):
     session: Any = field(repr=False)
     function: model.Function = field(repr=False)
     name: str
-    longIdentifier: Optional[str]
-    annotations: List[Annotation]
-    ar_component: Dict
-    defCharacteristics: List[str] = field(default_factory=list)
-    functionVersion: Optional[str] = field(default=None)
-    if_data: List[Dict] = field(default_factory=list)
-    inMeasurements: List[str] = field(default_factory=list)
-    locMeasurements: List[str] = field(default_factory=list)
-    outMeasurements: List[str] = field(default_factory=list)
-    refCharacteristics: List[str] = field(default_factory=list)
-    subFunctions: List[str] = field(default_factory=list)
+    longIdentifier: str | None
+    annotations: list[Annotation]
+    ar_component: dict
+    defCharacteristics: list[str] = field(default_factory=list)
+    functionVersion: str | None = field(default=None)
+    if_data: list[dict] = field(default_factory=list)
+    inMeasurements: list[str] = field(default_factory=list)
+    locMeasurements: list[str] = field(default_factory=list)
+    outMeasurements: list[str] = field(default_factory=list)
+    refCharacteristics: list[str] = field(default_factory=list)
+    subFunctions: list[str] = field(default_factory=list)
 
     def __init__(self, session, name=None, module_name: str = None):
         self.session = session
@@ -3518,8 +3517,8 @@ class Function(CachedBase):
             [Function.get(self.session, g) for g in self.function.sub_function.identifier] if self.function.sub_function else []
         )
 
-    def _dissect_ar_component(self, component) -> Dict:
-        result: Dict = {"component_type": None, "ar_prototype_of": None}
+    def _dissect_ar_component(self, component) -> dict:
+        result: dict = {"component_type": None, "ar_prototype_of": None}
         if component is not None:
             result["component_type"] = component.component_type
             if component.ar_prototype_of is not None:
@@ -3597,14 +3596,14 @@ class Group(CachedBase):
     session: Any = field(repr=False)
     group: model.Group = field(repr=False)
     name: str
-    longIdentifier: Optional[str]
-    annotations: List[Annotation]
+    longIdentifier: str | None
+    annotations: list[Annotation]
     root: bool
-    if_data: List[Dict]
-    characteristics: List[Any]
-    measurements: List[Any]
-    functions: List[Any]
-    subgroups: List[Any]
+    if_data: list[dict]
+    characteristics: list[Any]
+    measurements: list[Any]
+    functions: list[Any]
+    subgroups: list[Any]
 
     def __init__(self, session, name=None, module_name: str = None):
         self.session = session
@@ -3677,10 +3676,10 @@ class StructureComponent(CachedBase):
     name: str
     typedefName: Any
     addressOffset: int
-    addressType: Optional[str]
-    layout: Optional[str]
+    addressType: str | None
+    layout: str | None
     matrixDim: MatrixDim
-    symbolLink: Optional[SymbolLink]
+    symbolLink: SymbolLink | None
 
     def __init__(self, session, name=None, module_name: str = None, parent=None, *args):
         self.session = session
@@ -3727,12 +3726,12 @@ class TypedefStructure(CachedBase):
     session: Any = field(repr=False)
     typedef: model.TypedefStructure = field(repr=False)
     name: str
-    longIdentifier: Optional[str]
+    longIdentifier: str | None
     size: int
-    addressType: Optional[str]
+    addressType: str | None
     consistentExchange: bool
-    symbolLink: Optional[SymbolLink]
-    components: List[StructureComponent]
+    symbolLink: SymbolLink | None
+    components: list[StructureComponent]
 
     def __init__(self, session, name=None, module_name: str = None):
         self.session = session
@@ -3769,15 +3768,15 @@ class Overwrite:
     name: str
     axisNumber: int
     conversion: str
-    extendedLimits: Optional[ExtendedLimits]
+    extendedLimits: ExtendedLimits | None
     format: str
     inputQuantity: str
-    limits: Optional[Limits]
+    limits: Limits | None
     monotony: str
     physUnit: str
 
 
-def create_overwrite(overwrite) -> Optional[Overwrite]:
+def create_overwrite(overwrite) -> Overwrite | None:
     if overwrite is not None:
         name = overwrite.name
         axisNumber = overwrite.axisNumber
@@ -3837,22 +3836,22 @@ class Instance(CachedBase):
     session: Any = field(repr=False)
     instance: model.Instance = field(repr=False)
     name: str
-    longIdentifier: Optional[str]
+    longIdentifier: str | None
     typedefName: str
     address: int
-    addressType: Optional[str]
-    annotations = List[Annotation]
-    calibration_access: Optional[str]
-    displayIdentifier: Optional[str]
+    addressType: str | None
+    annotations = list[Annotation]
+    calibration_access: str | None
+    displayIdentifier: str | None
     ecuAddressExtension: int
-    if_data: List[Dict[str, Any]]
-    layout: Optional[str]
+    if_data: list[dict[str, Any]]
+    layout: str | None
     matrixDim: MatrixDim
-    maxRefresh: Optional[MaxRefresh]
-    modelLink: Optional[str]
-    overwrite: Optional[Overwrite]
+    maxRefresh: MaxRefresh | None
+    modelLink: str | None
+    overwrite: Overwrite | None
     readWrite: bool
-    symbolLink: Optional[SymbolLink]
+    symbolLink: SymbolLink | None
 
     def __init__(self, session, name=None, module_name: str = None):
         self.session = session
@@ -3927,24 +3926,24 @@ class TypedefMeasurement(CachedBase):
 
     typedef: model.TypedefMeasurement = field(repr=False)
     name: str
-    longIdentifier: Optional[str]
+    longIdentifier: str | None
     datatype: str
-    _conversionRef: Optional[str] = field(repr=False)
-    resolution: Optional[int]
-    accuracy: Optional[float]
-    upperLimit: Optional[float]
-    lowerLimit: Optional[float]
+    _conversionRef: str | None = field(repr=False)
+    resolution: int | None
+    accuracy: float | None
+    upperLimit: float | None
+    lowerLimit: float | None
     compuMethod: CompuMethod
-    addressType: Optional[str]
-    bitMask: Optional[int]
-    bitOperation: Dict
-    byteOrder: Optional[str]
+    addressType: str | None
+    bitMask: int | None
+    bitOperation: dict
+    byteOrder: str | None
     discrete: bool
-    errorMask: Optional[int]
-    format: Optional[str]
-    layout: Optional[str]
+    errorMask: int | None
+    format: str | None
+    layout: str | None
     matrixDim: MatrixDim
-    physUnit: Optional[str]
+    physUnit: str | None
 
     def __init__(self, session, name: str, module_name: str = None):
         typedef = session.query(model.TypedefMeasurement).filter(model.TypedefMeasurement.name == name)
@@ -3983,20 +3982,20 @@ class TypedefMeasurement(CachedBase):
 class TypedefAxis(CachedBase):
     typedef: model.TypedefAxis = field(repr=False)
     name: str
-    longIdentifier: Optional[str]
-    inputQuantity: Optional[str]
-    _conversionRef: Optional[str] = field(repr=False)
+    longIdentifier: str | None
+    inputQuantity: str | None
+    _conversionRef: str | None = field(repr=False)
     lowerLimit: float
     upperLimit: float
-    compuMethod: Union[CompuMethod, str]
+    compuMethod: CompuMethod | str
     maxAxisPoints: int
-    byteOrder: Optional[str]
-    deposit: Optional[Any]
-    extendedLimits: Optional[ExtendedLimits]
-    format: Optional[str]
-    monotony: Optional[str]
-    physUnit: Optional[str]
-    stepSize: Optional[float]
+    byteOrder: str | None
+    deposit: Any | None
+    extendedLimits: ExtendedLimits | None
+    format: str | None
+    monotony: str | None
+    physUnit: str | None
+    stepSize: float | None
 
     def __init__(self, session, name: str, module_name: str = None):
         typedef = session.query(model.TypedefAxis).filter(model.TypedefAxis.name == name)
@@ -4030,9 +4029,9 @@ class TypedefAxis(CachedBase):
 class TypedefBlob(CachedBase):
     typedef: model.TypedefBlob = field(repr=False)
     name: str
-    longIdentifier: Optional[str]
+    longIdentifier: str | None
     size: int
-    addressType: Optional[str]
+    addressType: str | None
 
     def __init__(self, session, name: str, module_name: str = None):
         typedef = session.query(model.TypedefBlob).filter(model.TypedefBlob.name == name)
@@ -4089,25 +4088,25 @@ class TypedefCharacteristic(CachedBase):
 
     typedef: model.TypedefCharacteristic = field(repr=False)
     name: str
-    longIdentifier: Optional[str]
+    longIdentifier: str | None
     type: str
-    _conversionRef: Optional[str] = field(repr=False)
+    _conversionRef: str | None = field(repr=False)
     deposit: RecordLayout
-    maxDiff: Optional[float]
-    lowerLimit: Optional[float]
-    upperLimit: Optional[float]
+    maxDiff: float | None
+    lowerLimit: float | None
+    upperLimit: float | None
     compuMethod: CompuMethod
-    axisDescriptions: List[AxisDescr]
-    bitMask: Optional[int]
-    byteOrder: Optional[str]
+    axisDescriptions: list[AxisDescr]
+    bitMask: int | None
+    byteOrder: str | None
     discrete: bool
-    encoding: Optional[str]
-    extendedLimits: Optional[ExtendedLimits]
-    format: Optional[str]
+    encoding: str | None
+    extendedLimits: ExtendedLimits | None
+    format: str | None
     matrixDim: MatrixDim
-    number: Optional[int]
-    physUnit: Optional[str]
-    stepSize: Optional[float]
+    number: int | None
+    physUnit: str | None
+    stepSize: float | None
 
     def __init__(self, session, name: str, module_name: str = None):
         typedef = session.query(model.TypedefCharacteristic).filter(model.TypedefCharacteristic.name == name)
@@ -4147,11 +4146,11 @@ class Frame(CachedBase):
     session: Any = field(repr=False)
     frame: model.Frame = field(repr=False)
     name: str
-    longIdentifier: Optional[str]
+    longIdentifier: str | None
     scalingUnit: int
     rate: int
-    frame_measurement: List[str]
-    if_data: List[Dict]
+    frame_measurement: list[str]
+    if_data: list[dict]
 
     def __init__(self, session, name: str, module_name: str = None):
         frame = session.query(model.Frame).filter(model.Frame.name == name)
@@ -4172,22 +4171,22 @@ class Frame(CachedBase):
 class VarCriterion:
     name: str
     longIdentifier: str
-    values: List[str]
-    var_characteristic: Optional[str]
-    var_measurement: Optional[str]
+    values: list[str]
+    var_characteristic: str | None
+    var_measurement: str | None
 
 
 @dataclass
 class VarCharacteristic:
     name: str
-    criterions: List[str]
-    addresses: List[int]
+    criterions: list[str]
+    addresses: list[int]
 
 
 @dataclass
 class VarCombination:
     address: int
-    combinations: List[Dict[str, str]]
+    combinations: list[dict[str, str]]
 
 
 @dataclass
@@ -4209,11 +4208,11 @@ class VariantCoding(CachedBase):
     variant_coded: bool
     naming: str
     separator: str
-    criterions: Dict[str, VarCriterion]
-    characteristics: Dict[str, VarCharacteristic]
-    forbidden_combs: List[Dict[str, str]]
-    _combination_cache: Dict[str, str] = field(repr=False)
-    _product_cache: Dict[List[str], Tuple[str]] = field(repr=False)
+    criterions: dict[str, VarCriterion]
+    characteristics: dict[str, VarCharacteristic]
+    forbidden_combs: list[dict[str, str]]
+    _combination_cache: dict[str, str] = field(repr=False)
+    _product_cache: dict[list[str], tuple[str]] = field(repr=False)
 
     def __init__(self, session, name: str = None, module_name: str = None):
         variant_coding = session.query(model.VariantCoding)
@@ -4257,13 +4256,13 @@ class VariantCoding(CachedBase):
         else:
             self.variant_coded = False
 
-    def get_citerion_values(self, name: str) -> List[str]:
+    def get_citerion_values(self, name: str) -> list[str]:
         res = self.criterions.get(name)
         if res:
             return res.values
         return []
 
-    def values_product(self, criterions: List[str]) -> List[str]:
+    def values_product(self, criterions: list[str]) -> list[str]:
         criterions = tuple(criterions)
         if criterions in self._product_cache:
             return self._product_cache[criterions]
@@ -4271,7 +4270,7 @@ class VariantCoding(CachedBase):
         self._product_cache[criterions] = result
         return result
 
-    def valid_combinations(self, criterions: List[str]) -> List[str]:
+    def valid_combinations(self, criterions: list[str]) -> list[str]:
         criterions = tuple(criterions)
         if criterions in self._combination_cache:
             return self._combination_cache[criterions]
@@ -4283,7 +4282,7 @@ class VariantCoding(CachedBase):
         self._combination_cache[criterions] = result
         return result
 
-    def variants(self, name: str) -> List[VarCombination]:
+    def variants(self, name: str) -> list[VarCombination]:
         ac = axispts_or_characteristic(self.session, name)
         vcc = self.characteristics.get(ac.name)
         combis = self.valid_combinations(vcc.criterions)
@@ -4294,8 +4293,8 @@ class VariantCoding(CachedBase):
 class AMLSection(CachedBase):
     session: Any = field(repr=False)
     aml_section: model.AMLSection = field(repr=False)
-    text: Optional[str]
-    parsed: Optional[bytes]
+    text: str | None
+    parsed: bytes | None
 
     def __init__(self, session):
         self.session = session
@@ -4331,11 +4330,11 @@ class Unit(CachedBase):
     longIdentifier: str
     display: str
     type: str
-    si_exponents: Optional[SiExponents]
-    unit_conversion: Optional[UnitConversion]
-    ref_unit: Optional[str]
+    si_exponents: SiExponents | None
+    unit_conversion: UnitConversion | None
+    ref_unit: str | None
 
-    def __init__(self, session, name: str, module_name: Optional[str] = None):
+    def __init__(self, session, name: str, module_name: str | None = None):
         self.session = session
         unit = session.query(model.Unit).filter(model.Unit.name == name)
         if module_name is not None:
@@ -4352,7 +4351,7 @@ class Unit(CachedBase):
         self.ref_unit = self.unit.ref_unit.unit if self.unit.ref_unit else None
 
     @staticmethod
-    def _create_si_exponents(si_exponents: model.SiExponents) -> Optional[SiExponents]:
+    def _create_si_exponents(si_exponents: model.SiExponents) -> SiExponents | None:
         if si_exponents is not None:
             return SiExponents(
                 si_exponents.length,
@@ -4367,7 +4366,7 @@ class Unit(CachedBase):
             return None
 
     @staticmethod
-    def _create_unit_conversion(unit_conversion: model.UnitConversion) -> Optional[UnitConversion]:
+    def _create_unit_conversion(unit_conversion: model.UnitConversion) -> UnitConversion | None:
         if unit_conversion is not None:
             return UnitConversion(unit_conversion.gradient, unit_conversion.offset)
         else:
@@ -4382,17 +4381,17 @@ class Blob(CachedBase):
     longIdentifier: str
     address: int
     size: int
-    addressType: Optional[str]
-    annotations = List[Annotation]
-    calibration_access: Optional[str]
-    displayIdentifier: Optional[str]
+    addressType: str | None
+    annotations = list[Annotation]
+    calibration_access: str | None
+    displayIdentifier: str | None
     ecuAddressExtension: int
-    if_data: List[Dict[str, Any]]
-    maxRefresh: Optional[MaxRefresh]
-    modelLink: Optional[str]
-    symbolLink: Optional[SymbolLink]
+    if_data: list[dict[str, Any]]
+    maxRefresh: MaxRefresh | None
+    modelLink: str | None
+    symbolLink: SymbolLink | None
 
-    def __init__(self, session, name: str, module_name: Optional[str] = None):
+    def __init__(self, session, name: str, module_name: str | None = None):
         self.session = session
         blob = session.query(model.Blob).filter(model.Blob.name == name)
         if module_name is not None:
@@ -4432,10 +4431,10 @@ class Transformer(CachedBase):
     timeout: int
     trigger: str
     inverseTransformer: str
-    transformer_in_objects: List[str]
-    transformer_out_objects: List[str]
+    transformer_in_objects: list[str]
+    transformer_out_objects: list[str]
 
-    def __init__(self, session, name: str, module_name: Optional[str] = None):
+    def __init__(self, session, name: str, module_name: str | None = None):
         self.session = session
         transformer = session.query(model.Transformer).filter(model.Transformer.name == name)
         if module_name is not None:
@@ -4462,9 +4461,9 @@ class UserRights(CachedBase):
     user_rights: model.UserRights = field(repr=False)
     userLevelId: str
     read_only: bool
-    ref_group: List[str]
+    ref_group: list[str]
 
-    def __init__(self, session, userLevelId: str, module_name: Optional[str] = None):
+    def __init__(self, session, userLevelId: str, module_name: str | None = None):
         self.session = session
         user_rights = session.query(model.UserRights)
         if module_name is not None:
@@ -4522,17 +4521,17 @@ class Module(CachedBase):
     frame: FilteredList[Frame]
     function: FilteredList[Function]
     group: FilteredList[Group]
-    if_data: List[Dict[str, Any]]
+    if_data: list[dict[str, Any]]
     measurement: FilteredList[Measurement]
-    mod_common: Optional[ModCommon]
-    mod_par: Optional[ModPar]
+    mod_common: ModCommon | None
+    mod_par: ModPar | None
     record_layout: FilteredList[RecordLayout]
     transformer: FilteredList[Transformer]
     unit: FilteredList[Unit]
     user_rights: FilteredList[UserRights]
-    variant_coding: Optional[VariantCoding]
+    variant_coding: VariantCoding | None
 
-    def __init__(self, session, name: Optional[str] = None):
+    def __init__(self, session, name: str | None = None):
         self.session = session
         if name is not None:
             self.module = self.session.query(model.Module).filter(model.Module.name == name).first()
@@ -4578,10 +4577,10 @@ class Project:
     project: model.Project = field(repr=False)
     name: str
     longIdentifier: str
-    comment: Optional[str]
-    projectNumber: Optional[str]
-    version: Optional[str]
-    module: List[Module]
+    comment: str | None
+    projectNumber: str | None
+    version: str | None
+    module: list[Module]
 
     def __init__(self, session, file_name: str = ""):
         self.session = session

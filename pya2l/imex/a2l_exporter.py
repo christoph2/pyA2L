@@ -14,7 +14,8 @@ import logging
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, List, Optional, TextIO, Tuple, Union
+from typing import Any, List, Optional, TextIO, Tuple, Union
+from collections.abc import Iterable
 
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import selectinload

@@ -42,7 +42,12 @@ except ImportError:
 
 import pya2l.model as model
 from pya2l.a2lparser import A2LParser, path_components
-from pya2l.imex import export_a2l_db, export_json_dict, open_a2l_database, open_json_database
+from pya2l.imex import (
+    export_a2l_db,
+    export_json_dict,
+    open_a2l_database,
+    open_json_database,
+)
 from pya2l.logger import Logger
 from pya2l.templates import doTemplateFromText
 
@@ -223,7 +228,7 @@ def open_create(file_name: str, local: bool = False, encoding: str = "latin-1", 
 
 
 def export_a2l(
-    db_name: str, output: typing.Union[TextIOWrapper, str, typing.Any] = sys.stdout, encoding: str = "latin1"
+    db_name: str, output: TextIOWrapper | str | typing.Any = sys.stdout, encoding: str = "latin1"
 ) -> None:  # noqa: UP007
     """
     Parameters
@@ -285,6 +290,6 @@ class DB:
 
     @staticmethod
     def export_a2l(
-        db_name: str, output: typing.Union[TextIOWrapper, str, typing.Any] = sys.stdout, encoding: str = "latin1"  # noqa: UP007
+        db_name: str, output: TextIOWrapper | str | typing.Any = sys.stdout, encoding: str = "latin1"  # noqa: UP007
     ):
         export_a2l(db_name, output, encoding)

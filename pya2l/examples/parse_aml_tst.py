@@ -194,7 +194,7 @@ class Block:
 @dataclass
 class Enum:
     name: str
-    values: typing.Dict[str, int]
+    values: dict[str, int]
 
 
 @dataclass
@@ -207,7 +207,7 @@ class TaggedUnionMember:
 class TaggedUnion:
     name: str
     members: list[typing.Any] = field(default_factory=[])
-    tags: typing.Dict[str, TaggedUnionMember] = field(default_factory=dict)
+    tags: dict[str, TaggedUnionMember] = field(default_factory=dict)
 
 
 @dataclass
@@ -227,7 +227,7 @@ class TaggedStructDefinition:
 class TaggedStruct:
     name: str
     members: list[TaggedStructMember] = field(default_factory=[])
-    tags: typing.Dict[str, TaggedStructDefinition] = field(default_factory=dict)
+    tags: dict[str, TaggedStructDefinition] = field(default_factory=dict)
 
 
 @dataclass
@@ -245,7 +245,7 @@ class StructMember:
 class Member:
     arr_spec: list[int]
     type_name: typing.Any
-    block: typing.Optional[Block]
+    block: Block | None
 
 
 class TreeCreator:

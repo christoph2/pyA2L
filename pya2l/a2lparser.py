@@ -242,7 +242,7 @@ def lower_first(text: str) -> str:
     return f"{text[0].lower()}{text[1:]}"
 
 
-def make_zipper(kw) -> typing.Callable[[typing.Container[typing.Any]], typing.Dict[str, typing.Any]]:  # noqa: UP006
+def make_zipper(kw) -> typing.Callable[[typing.Container[typing.Any]], dict[str, typing.Any]]:  # noqa: UP006
     if hasattr(kw, "__required_parameters__"):
         table_name = kw.__tablename__.upper()
         if table_name == "IFDATA":
@@ -440,7 +440,7 @@ class A2LParser:
         self.logger.info(f"Done. Elapsed time [{perf_counter() - start_time:.2f}s].")
         return self.db
 
-    def traverse(self, tree: typing.Any, parent: typing.Any, attr: typing.Optional[str], multiple: bool, level: int = 0) -> None:
+    def traverse(self, tree: typing.Any, parent: typing.Any, attr: str | None, multiple: bool, level: int = 0) -> None:
         self.counter += 1
         inst = None
         mult: list = []
