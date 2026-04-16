@@ -36,6 +36,7 @@ __copyright__ = """
 import collections
 import itertools
 import weakref
+from collections.abc import Callable, Generator
 from dataclasses import asdict, dataclass, field
 from enum import IntEnum
 from functools import cached_property, reduce
@@ -50,7 +51,6 @@ from typing import (
     TypeVar,
     Union,
 )
-from collections.abc import Callable, Generator
 
 from sqlalchemy import exists, not_
 

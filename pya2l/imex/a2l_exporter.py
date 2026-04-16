@@ -12,10 +12,10 @@ from __future__ import annotations
 import argparse
 import logging
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Optional, TextIO, Tuple, Union
-from collections.abc import Iterable
 
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import selectinload
