@@ -289,7 +289,5 @@ class DB:
         return open_create(file_name, local, encoding, loglevel)
 
     @staticmethod
-    def export_a2l(
-        db_name: str, output: TextIOWrapper | str | typing.Any = sys.stdout, encoding: str = "latin1"  # noqa: UP007
-    ):
+    def export_a2l(db_name: str, output: TextIOWrapper | str | typing.Any = sys.stdout, encoding: str = "latin1"):  # noqa: UP007
         export_a2l(db_name, output, encoding)

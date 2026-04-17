@@ -31,8 +31,8 @@ import pickle
 import re
 import sqlite3
 import warnings
-from typing import Any, List, Optional
 from collections.abc import Callable, Sequence
+from typing import Any, List, Optional
 
 from sqlalchemy import Column, ForeignKey, Index, create_engine, event, orm, types
 from sqlalchemy.engine import Engine

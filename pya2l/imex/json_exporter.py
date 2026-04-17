@@ -11,12 +11,12 @@ import argparse
 import json
 import logging
 import re
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
+from collections.abc import Sequence
 from collections.abc import Sequence as SequenceABC
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from collections.abc import Iterable, Sequence
 
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import selectinload

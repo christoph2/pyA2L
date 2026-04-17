@@ -612,9 +612,7 @@ class BlobCreator(
         SQLAlchemy session object used to interact with the database
     """
 
-    def create_blob(
-        self, name: str, long_identifier: str, address: int, size: int, module_name: str | None = None
-    ) -> model.Blob:
+    def create_blob(self, name: str, long_identifier: str, address: int, size: int, module_name: str | None = None) -> model.Blob:
         """Create a new Blob instance.
 
         Parameters
