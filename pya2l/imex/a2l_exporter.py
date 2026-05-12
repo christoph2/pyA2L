@@ -377,13 +377,14 @@ def write_compu_tabs(out, tabs: list[Any] | None) -> None:
     if not tabs:
         return
     for t in tabs:
-        # detect type by attributes
-        if hasattr(t, "numberValuePairs"):
+        if isinstance(t, model.CompuTab):
             out.write("    /begin COMPU_TAB\n")
             out.write(f"      {t.name}  /* name */\n")
             out.write(f'      "{safe_get(t, "longIdentifier") or ""}"  /* longIdentifier */\n')
             out.write(f"      {t.conversionType}  /* conversionType */\n")
             out.write(f"      {t.numberValuePairs}  /* numberValuePairs */\n")
+            for pair in safe_get(t, "pairs") or []:
+                out.write(f"      {pair.inVal}  {pair.outVal}\n")
             dv = safe_get(t, "default_value")
             if dv and safe_get(dv, "display_string"):
                 out.write("      DEFAULT_VALUE\n")
@@ -393,27 +394,33 @@ def write_compu_tabs(out, tabs: list[Any] | None) -> None:
                 out.write("      DEFAULT_VALUE_NUMERIC\n")
                 out.write(f"        {dvn.display_value}  /* display_value */\n")
             out.write("    /end COMPU_TAB\n\n")
-        elif hasattr(t, "numberValueTriples"):
+        elif isinstance(t, model.CompuVtabRange):
             out.write("    /begin COMPU_VTAB_RANGE\n")
             out.write(f"      {t.name}  /* name */\n")
             out.write(f'      "{safe_get(t, "longIdentifier") or ""}"  /* longIdentifier */\n')
             out.write(f"      {t.numberValueTriples}  /* numberValueTriples */\n")
+            for triple in safe_get(t, "triples") or []:
+                out.write(f'      {triple.inValMin}  {triple.inValMax}  "{triple.outVal}"\n')
             dv = safe_get(t, "default_value")
             if dv and safe_get(dv, "display_string"):
                 out.write("      DEFAULT_VALUE\n")
                 out.write(f'        "{dv.display_string}"  /* display_string */\n')
             out.write("    /end COMPU_VTAB_RANGE\n\n")
-        else:
+        elif isinstance(t, model.CompuVtab):
             out.write("    /begin COMPU_VTAB\n")
             out.write(f"      {t.name}  /* name */\n")
-            out.write(f"      {safe_get(t, 'longIdentifier') or ''}   /* longIdentifier */\n")
+            out.write(f'      "{safe_get(t, "longIdentifier") or ""}"  /* longIdentifier */\n')
             out.write(f"      {t.conversionType}  /* conversionType */\n")
             out.write(f"      {t.numberValuePairs}  /* numberValuePairs */\n")
+            for pair in safe_get(t, "pairs") or []:
+                out.write(f'      {pair.inVal}  "{pair.outVal}"\n')
             dv = safe_get(t, "default_value")
             if dv and safe_get(dv, "display_string"):
                 out.write("      DEFAULT_VALUE\n")
                 out.write(f'        "{dv.display_string}"  /* display_string */\n')
             out.write("    /end COMPU_VTAB\n\n")
+        else:
+            logger.warning("Skipping unsupported COMPU table object of type %s", type(t).__name__)
 
 
 def write_frames(out, frame_list: list[Any] | None) -> None:

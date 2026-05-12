@@ -41,7 +41,6 @@ except ImportError:
     RICH_AVAILABLE = False
 
 import pya2l.model as model
-from pya2l.a2lparser import A2LParser, path_components
 from pya2l.imex import (
     export_a2l_db,
     export_json_dict,
@@ -77,6 +76,12 @@ else:
 
 
 _BLANK_BLOCKS = re.compile(r"(\r?\n)[ \t]*(\r?\n){2,}")
+
+
+def _get_a2lparser_symbols():
+    from pya2l.a2lparser import A2LParser, path_components
+
+    return A2LParser, path_components
 
 
 def _render_a2l(session: model.SessionProxy, encoding: str) -> str:
@@ -141,6 +146,7 @@ def import_a2l(
     ``AML`` and ``IF_DATA`` sections are currently not processed.
     """
 
+    A2LParser, _ = _get_a2lparser_symbols()
     a2l_parser = A2LParser()
     db = a2l_parser.parse(
         file_name=file_name,
@@ -176,6 +182,7 @@ def open_existing(file_name: str, loglevel: str = "INFO") -> model.SessionProxy:
     OSError
         If database already exists.
     """
+    _, path_components = _get_a2lparser_symbols()
     _, db_fn = path_components(in_memory=False, file_name=file_name)
 
     if not db_fn.exists():
@@ -220,6 +227,7 @@ def open_existing(file_name: str, loglevel: str = "INFO") -> model.SessionProxy:
 def open_create(file_name: str, local: bool = False, encoding: str = "latin-1", loglevel: str = "INFO") -> model.SessionProxy:
     """Open or create an A2LDB."""
 
+    _, path_components = _get_a2lparser_symbols()
     a2l_fn, db_fn = path_components(in_memory=False, file_name=file_name)
     if not db_fn.exists():
         return import_a2l(a2l_fn, local=local, encoding=encoding, loglevel=loglevel)

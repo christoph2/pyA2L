@@ -32,7 +32,7 @@ import re
 import sqlite3
 import warnings
 from collections.abc import Callable, Sequence
-from typing import Any, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 
 from sqlalchemy import Column, ForeignKey, Index, create_engine, event, orm, types
 from sqlalchemy.engine import Engine
@@ -40,9 +40,12 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import as_declarative, backref, declared_attr, relationship
 
-from pya2l.aml.ifdata_parser import IfDataParser
 from pya2l.model.mixins import AxisDescrMixIn, CompareByPositionMixIn
 from pya2l.utils import SingletonBase
+
+
+if TYPE_CHECKING:
+    from pya2l.aml.ifdata_parser import IfDataParser
 
 
 DB_EXTENSION = "a2ldb"
@@ -5548,6 +5551,8 @@ class SessionProxy:
         self._ifdata_parser = None
 
     def setup_ifdata_parser(self, loglevel: str = "INFO") -> None:
+        from pya2l.aml.ifdata_parser import IfDataParser
+
         self._ifdata_parser = IfDataParser(self._session, loglevel)
 
     def __getattr__(self, name: str) -> Any:

@@ -9,6 +9,7 @@ __pycache__/
 
 # C extensions
 *.so
+*.pyd
 
 # Distribution / packaging
 .Python
@@ -142,6 +143,13 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# lokale Projektartefakte
+*.tmp
+*.a2ldb
+*.prof
+*.bak
+*.un~
+
 # static files generated from Django application using `collectstatic`
 media
 static
@@ -163,6 +171,13 @@ Makefile
 *.vcxproj
 *.vcxproj.filters
 *.sln
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.dll
+*.exe
 *.dir/
 Release/
 x64/
@@ -175,3 +190,9 @@ tickets.md
 
 # cibuildwheel
 wheelhouse/
+built_wheel/
+
+# bekannte lokale Output-Dateien
+out.txt
+trace.txt
+result.xml

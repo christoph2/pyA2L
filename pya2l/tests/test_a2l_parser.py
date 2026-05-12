@@ -93,6 +93,55 @@ ASAP2_VERSION 1 71
 /end PROJECT
 """
 
+COMPU_TABLES_A2L = """
+ASAP2_VERSION 1 71
+/begin PROJECT CompuProject "Compu table export test"
+  /begin MODULE CompuModule "Module with compu tables"
+    /begin COMPU_METHOD CompuMethod_Tab
+      "Numeric table"
+      TAB_INTP
+      "%6.3"
+      "unit"
+      COMPU_TAB_REF NumTab
+    /end COMPU_METHOD
+
+    /begin COMPU_METHOD CompuMethod_Vtab
+      "Verbal table"
+      TAB_VERB
+      "%6.3"
+      "unit"
+      COMPU_TAB_REF VerbTab
+    /end COMPU_METHOD
+
+    /begin COMPU_TAB NumTab
+      "Numeric Table"
+      TAB_INTP
+      2
+      0 0
+      1 10
+      DEFAULT_VALUE_NUMERIC 5
+    /end COMPU_TAB
+
+    /begin COMPU_VTAB VerbTab
+      "Verbal Table"
+      TAB_VERB
+      2
+      0 "Off"
+      1 "On"
+      DEFAULT_VALUE "Unknown"
+    /end COMPU_VTAB
+
+    /begin COMPU_VTAB_RANGE VerbRange
+      "Range Table"
+      2
+      0 10 "LOW"
+      11 20 "HIGH"
+      DEFAULT_VALUE "OUT"
+    /end COMPU_VTAB_RANGE
+  /end MODULE
+/end PROJECT
+"""
+
 AXIS_A2L = """
 ASAP2_VERSION 1 71
 /begin PROJECT AxisProject "Axis Test"
@@ -519,6 +568,49 @@ def test_export_roundtrip_asap2_demo(parser, tmp_path):
     assert project is not None
     assert project.name == "ASAP2_Example"
     assert len(db_rt.session.query(model.IfData).all()) == len(session.query(model.IfData).all())
+
+
+def test_export_roundtrip_compu_tables(parser, tmp_path):
+    a2l_file = tmp_path / "compu_tables.a2l"
+    a2l_file.write_text(COMPU_TABLES_A2L, encoding="latin-1")
+
+    db = parser.parse(str(a2l_file), in_memory=True, progress_bar=False, loglevel="ERROR")
+    session = db.session
+
+    exported = _render_a2l(session, encoding="latin-1")
+
+    assert "      0.0  0.0\n" in exported
+    assert "      1.0  10.0\n" in exported
+    assert "      DEFAULT_VALUE_NUMERIC\n        5.0" in exported
+    assert '      0.0  "Off"\n' in exported
+    assert '      1.0  "On"\n' in exported
+    assert '      0.0  10.0  "LOW"\n' in exported
+    assert '      11.0  20.0  "HIGH"\n' in exported
+
+    exported_path = tmp_path / "compu_tables_exported.a2l"
+    exported_path.write_text(exported, encoding="latin-1")
+
+    db_rt = parser.parse(str(exported_path), in_memory=True, progress_bar=False, loglevel="ERROR")
+    module = db_rt.session.query(model.Module).first()
+
+    num_tab = db_rt.session.query(model.CompuTab).filter_by(name="NumTab").first()
+    assert num_tab is not None
+    assert [(pair.inVal, pair.outVal) for pair in num_tab.pairs] == [(0.0, 0.0), (1.0, 10.0)]
+    assert num_tab.default_value_numeric.display_value == 5.0
+
+    verb_tab = db_rt.session.query(model.CompuVtab).filter_by(name="VerbTab").first()
+    assert verb_tab is not None
+    assert [(pair.inVal, pair.outVal) for pair in verb_tab.pairs] == [(0.0, "Off"), (1.0, "On")]
+    assert verb_tab.default_value.display_string == "Unknown"
+
+    verb_range = db_rt.session.query(model.CompuVtabRange).filter_by(name="VerbRange").first()
+    assert verb_range is not None
+    assert [(triple.inValMin, triple.inValMax, triple.outVal) for triple in verb_range.triples] == [
+        (0.0, 10.0, "LOW"),
+        (11.0, 20.0, "HIGH"),
+    ]
+    assert verb_range.default_value.display_string == "OUT"
+    assert module is not None
 
 
 def test_export_roundtrip_ifdata_section(parser, tmp_path):

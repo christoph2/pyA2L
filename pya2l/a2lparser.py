@@ -17,13 +17,19 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 
-import pya2l.a2lparser_ext as ext
 from pya2l import classes, model
 from pya2l.logger import Logger
 from pya2l.utils import detect_encoding
 
 
 IFD_HEADER = re.compile(r"/begin\s+IF_DATA\s+(\w+)", re.DOTALL | re.MULTILINE)
+
+
+def _get_parser_ext():
+    import pya2l.a2lparser_ext as ext
+
+    return ext
+
 
 KW_MAP = {
     "A2ml": model.A2ml,
@@ -394,6 +400,7 @@ class A2LParser:
         # self.db.session.commit()
         self.logger.info(f"Importing {a2l_fn!r} [{encoding}] ==> DB {db_fn!r}.")
         try:
+            ext = _get_parser_ext()
             keyword_counter, values, tables, aml_data = ext.parse(str(a2l_fn), encoding, loglevel)
         except Exception as e:
             self.logger.error(f"Failed to parse {a2l_fn!r}: {e}")

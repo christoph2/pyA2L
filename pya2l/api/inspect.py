@@ -56,7 +56,6 @@ from sqlalchemy import exists, not_
 
 import pya2l.model as model
 from pya2l import exceptions
-from pya2l.a2lparser_ext import process_sys_consts
 from pya2l.functions import (
     Coeffs,
     CoeffsLinear,
@@ -74,6 +73,13 @@ from pya2l.utils import SingletonBase, align_as, enum_from_str, ffs
 T = TypeVar("T")
 
 DB_CACHE_SIZE = 4096  # Completly arbitrary, could be configurable.
+
+
+def _process_sys_consts(values):
+    from pya2l.a2lparser_ext import process_sys_consts
+
+    return process_sys_consts(values)
+
 
 ASAM_TO_NUMPY_TYPES = {
     "UBYTE": "uint8",
@@ -2146,7 +2152,7 @@ class ModPar(CachedBase):
     @staticmethod
     def _dissect_sysc(constants: list) -> dict:
         if constants is not None:
-            return process_sys_consts(
+            return _process_sys_consts(
                 list(
                     (
                         c.name,
