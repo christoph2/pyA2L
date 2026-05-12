@@ -49,7 +49,12 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL  "Windows")
 	message("Platform is WINDOWS")
 	SET(MSVC_EXTRA_OPTIONS "")
 elseif (CMAKE_SYSTEM_NAME STREQUAL  "Linux")
-    SET(GCC_N_CLANG_EXTRA_OPTIONS "-fvisibility=hidden -g0") # -fcoroutines
+    SET(GCC_N_CLANG_EXTRA_OPTIONS "-fvisibility=hidden -g0")
+    # GCC < 11 requires -fcoroutines to enable C++20 coroutine support explicitly
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.0")
+        SET(GCC_N_CLANG_EXTRA_OPTIONS "${GCC_N_CLANG_EXTRA_OPTIONS} -fcoroutines")
+        message(STATUS "GCC < 11 detected (${CMAKE_CXX_COMPILER_VERSION}): adding -fcoroutines")
+    endif()
 	message("Platform is LINUX")
 endif()
 
