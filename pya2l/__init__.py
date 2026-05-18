@@ -102,6 +102,7 @@ def import_a2l(
     encoding: str = "latin-1",
     loglevel: str = "INFO",
     progress_bar: bool = True,
+    force_overwrite: bool = False,
 ) -> model.SessionProxy:
     """Import `.a2l` file to `.a2ldb` database.
 
@@ -132,6 +133,9 @@ def import_a2l(
     progress_bar: bool
         Disable progress bar.
 
+    force_overwrite: bool
+        Silently overwrite an existing ``.a2ldb`` without raising an error.
+
     Returns
     -------
     SQLAlchemy session object.
@@ -139,7 +143,7 @@ def import_a2l(
     Raises
     ------
     OSError
-        If database already exists.
+        If database already exists and *force_overwrite* is ``False``.
 
     Note
     ----
@@ -154,6 +158,7 @@ def import_a2l(
         in_memory=in_memory,
         encoding=encoding,
         remove_existing=remove_existing,
+        force_overwrite=force_overwrite,
         loglevel=loglevel,
         progress_bar=progress_bar,
     )
@@ -285,8 +290,9 @@ class DB:
         encoding: str = "latin-1",
         loglevel: str = "INFO",
         progress_bar: bool = True,
+        force_overwrite: bool = False,
     ) -> model.SessionProxy:
-        return import_a2l(file_name, debug, in_memory, remove_existing, local, encoding, loglevel, progress_bar)
+        return import_a2l(file_name, debug, in_memory, remove_existing, local, encoding, loglevel, progress_bar, force_overwrite)
 
     @staticmethod
     def open_existing(file_name: str, loglevel: str = "INFO") -> model.SessionProxy:

@@ -26,7 +26,10 @@ import json
 import sys
 from pathlib import Path
 
-from pya2l import DB
+from rich.prompt import Confirm
+
+from pya2l import import_a2l
+from pya2l.a2lparser import path_components
 from pya2l.imex import (
     export_a2l_db,
     export_json_dict,
@@ -125,8 +128,14 @@ def main():
         dest="pretty",
     )
 
-    # parser.add_argument("-f", "--force-overwrite", help = "Force overwrite of existing file",
-    # default = False, action = "store_true")
+    parser.add_argument(
+        "-f",
+        "--force-overwrite",
+        help="Overwrite existing .a2ldb without prompting",
+        default=False,
+        action="store_true",
+        dest="force_overwrite",
+    )
 
     args = parser.parse_args()
     if args.version:
@@ -135,7 +144,6 @@ def main():
     if not (args.ifn or args.efn):
         print("Either -i or -e option is required.")
         sys.exit(2)
-    db = DB()
 
     if args.efn:
         db_path = Path(args.efn)
@@ -173,8 +181,20 @@ def main():
                     pass
     else:
         ifn = Path(args.ifn)
-        session = db.import_a2l(
-            ifn, encoding=args.encoding, loglevel=args.loglevel, local=args.local, progress_bar=not args.no_progress_bar
+        force = args.force_overwrite
+        if not force:
+            _, db_fn = path_components(in_memory=False, file_name=ifn, local=args.local)
+            if db_fn.exists():
+                force = Confirm.ask(f"[yellow]Database [bold]{db_fn}[/bold] already exists. Overwrite?[/yellow]")
+                if not force:
+                    sys.exit(0)
+        session = import_a2l(
+            ifn,
+            encoding=args.encoding,
+            loglevel=args.loglevel,
+            local=args.local,
+            progress_bar=not args.no_progress_bar,
+            force_overwrite=force,
         )
         session.close()
 

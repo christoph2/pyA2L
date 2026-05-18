@@ -376,6 +376,7 @@ class A2LParser:
         in_memory: bool = False,
         local: bool = False,
         remove_existing: bool = False,
+        force_overwrite: bool = False,
         loglevel: str = "INFO",
         progress_bar: bool = True,
     ) -> model.A2LDatabase:
@@ -384,7 +385,7 @@ class A2LParser:
         self.silent: bool = not effective_progress
         a2l_fn, db_fn = path_components(in_memory, file_name, local)
         if not in_memory:
-            if remove_existing:
+            if remove_existing or force_overwrite:
                 try:
                     unlink(str(db_fn))
                 except Exception:
