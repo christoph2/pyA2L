@@ -2,17 +2,21 @@
 branch = True
 omit =
     pya2l/tests/*
-    pya2l/model/*
     pya2l/classes.py
     pya2l/amlLexer.py
     pya2l/amlParser.py
     pya2l/a2lParser.py
     pya2l/a2lLexer.py
     pya2l/a2llg.py
+    pya2l/a2l.py
     pya2l/version.py
     pya2l/logger.py
+    pya2l/preprocessor_orig.py
+    pya2l/trie_stuff.py
+    pya2l/ex01.py
 
 [report]
+fail_under = 55
 exclude_lines =
 
     pragma: no cover

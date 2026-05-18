@@ -2,9 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from pya2l import A2L_TEMPLATE, _render_a2l, model
+from pya2l import _render_a2l, model
 from pya2l.a2lparser import A2LParser
-from pya2l.templates import doTemplateFromText
 
 
 MINIMAL_A2L = """
@@ -581,7 +580,7 @@ def test_export_roundtrip_compu_tables(parser, tmp_path):
 
     assert "      0.0  0.0\n" in exported
     assert "      1.0  10.0\n" in exported
-    assert "      DEFAULT_VALUE_NUMERIC\n        5.0" in exported
+    assert "      DEFAULT_VALUE_NUMERIC 5.0\n" in exported
     assert '      0.0  "Off"\n' in exported
     assert '      1.0  "On"\n' in exported
     assert '      0.0  10.0  "LOW"\n' in exported

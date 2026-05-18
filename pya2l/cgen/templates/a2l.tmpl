@@ -502,6 +502,9 @@ ${aml_section.text}
                     "${entry3.longIdentifier}"  /* longIdentifier */
                     ${entry3.conversionType}  /* conversionType */
                     ${entry3.numberValuePairs}  /* numberValuePairs */
+                    %for pair in entry3.pairs:
+                    ${pair.inVal}  ${pair.outVal}
+                    %endfor
                     <% default_value = entry3.default_value %>
                             %if default_value:
                     DEFAULT_VALUE
@@ -509,8 +512,7 @@ ${aml_section.text}
                     %endif
                     <% default_value_numeric = entry3.default_value_numeric %>
                             %if default_value_numeric:
-                    DEFAULT_VALUE_NUMERIC
-                        ${default_value_numeric.display_value}  /* display_value */
+                    DEFAULT_VALUE_NUMERIC ${default_value_numeric.display_value}
                     %endif
                 /end COMPU_TAB
             %endfor
@@ -523,6 +525,9 @@ ${aml_section.text}
                     "${entry3.longIdentifier}"  /* longIdentifier */
                     ${entry3.conversionType}  /* conversionType */
                     ${entry3.numberValuePairs}  /* numberValuePairs */
+                    %for pair in entry3.pairs:
+                    ${pair.inVal}  "${pair.outVal}"
+                    %endfor
                     <% default_value = entry3.default_value %>
                             %if default_value:
                     DEFAULT_VALUE
@@ -538,6 +543,9 @@ ${aml_section.text}
                     ${entry3.name}  /* name */
                     "${entry3.longIdentifier}"  /* longIdentifier */
                     ${entry3.numberValueTriples}  /* numberValueTriples */
+                    %for triple in entry3.triples:
+                    ${triple.inValMin}  ${triple.inValMax}  "${triple.outVal}"
+                    %endfor
                     <% default_value = entry3.default_value %>
                             %if default_value:
                     DEFAULT_VALUE
