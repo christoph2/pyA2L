@@ -57,7 +57,23 @@ _MIGRATIONS: dict[tuple[int, int], Callable] = {}
 
 
 def _register_migration(from_version: int, to_version: int) -> Callable:
-    """Decorator to register a schema migration function."""
+    """Decorator to register a schema migration function.
+
+    Each step must advance the schema by exactly one version (``to_version == from_version + 1``).
+    ``_migrate_schema`` walks the chain step-by-step, so gaps are not supported.
+
+    Usage example — bump schema from 10 → 11::
+
+        CURRENT_SCHEMA_VERSION = 11
+
+        @_register_migration(10, 11)
+        def _migrate_10_to_11(session):
+            # DDL via text() or ORM; session is a SQLAlchemy Session
+            session.execute(text("ALTER TABLE measurement ADD COLUMN new_col TEXT"))
+
+    The function receives the active SQLAlchemy *session* for the database being
+    migrated.  Commit/rollback is handled by the caller (``A2LDatabase.__init__``).
+    """
 
     def decorator(fn: Callable) -> Callable:
         _MIGRATIONS[(from_version, to_version)] = fn
