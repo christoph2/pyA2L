@@ -36,7 +36,7 @@
 - Column factory helpers (`StdFloat`, `StdShort`, `StdUShort`, `StdLong`, `StdULong`, `StdString`, `StdIdent`) keep column definitions uniform.
 - `CompareByPositionMixIn` (pya2l/model/mixins.py): add to identifier-list models that need positional sorting.
 - SQLite is opened with WAL mode, `FOREIGN_KEYS=ON`, `SYNCHRONOUS=OFF`, busy_timeout=5 s — set via `@event.listens_for(Engine, "connect")`.
-- `CURRENT_SCHEMA_VERSION = 10` — bump this when the schema changes and add migration logic.
+- `CURRENT_SCHEMA_VERSION = 10` — bump this when the schema changes and add migration logic. Use the `_register_migration(from_version, to_version)` decorator in `pya2l/model/__init__.py` to register incremental migration steps; `_migrate_schema` chains them automatically.
 
 ### API layer (pya2l/api/)
 - `inspect.py` — read-only wrapper classes (e.g. `Measurement`, `Characteristic`, `CompuMethod`). Use `cached_property` for expensive lookups. `FilteredList` provides lazy filtered views.
@@ -57,21 +57,24 @@ Implements compumethod evaluation: `Identical`, `Linear`, `RatFunc`, `Coeffs`/`C
 
 ## Build / install
 - Dev install (PEP 517 backend, builds native extensions): `pip install -v -e .` (requires Python 3.10+, CMake ≥ 3.12, C/C++ toolchain, pybind11).
-- Poetry workflow (matches CI): `poetry install --with dev` (use `poetry config virtualenvs.create false` to install into current env if desired).
+- Poetry workflow (matches CI): `poetry install --no-interaction --with dev --extras compute` (use `poetry config virtualenvs.create false` to install into current env if desired). `--extras compute` installs optional `scipy` and `numexpr` needed by `pya2l.functions` computation methods.
 - Source/wheel artifacts: `python -m build`.
 - Docs: `python -m pip install -r docs/requirements.txt sphinx` then `sphinx-build -b html docs docs/_build/html` (entrypoint `docs/index.rst` / `docs/README.rst`).
 - Versioning: `poetry run bumpver update --patch` (or `--minor` / `--major`); updates `pyproject.toml` and `pya2l/version.py`.
 - Python 3.10+ required (`python = "^3.10"` in pyproject.toml).
 
 ## Test commands
-- Full suite: `poetry run pytest` (tests live in `pya2l/tests`, pytest settings in `pyproject.toml`).
+- Full suite (matches CI): `poetry run pytest -q --junitxml=result.xml --cov=pya2l --cov-report=term-missing --cov-report=xml`
+- Quick run: `poetry run pytest` (tests live in `pya2l/tests`, pytest settings in `pyproject.toml`).
 - Single test/module: `python -m pytest pya2l/tests/test_a2l_parser.py -k basic -q`
-- Tests parse inline A2L strings via `A2LParser().parse(str(a2l_file), in_memory=True)` — the `db` fixture in `test_api_inspect.py` shows the canonical pattern.
+- The `db` fixture in `test_api_inspect.py` is parametrize-driven: the test receives A2L text via `request.param`, writes it to `tmp_path` in latin-1, then calls `parser.parse(str(a2l_file), in_memory=True)`. Use `@pytest.mark.parametrize("db", [A2L_STRING], indirect=True)` to invoke it.
 - For `pya2l.api.create` tests, build a bare in-memory session directly: `sqlalchemy.create_engine("sqlite:///:memory:")` + `model.Base.metadata.create_all(engine)`.
+- Tests that call `A2LParser.parse(..., in_memory=True)` should close the returned database object in fixture teardown.
 
 ## Linting/format/security
 - Format/check: `poetry run black --check .` (line length 132), `poetry run isort --check-only .`.
 - Lint: `poetry run ruff check .` (target py312), `poetry run flake8`.
+- Type-check: `poetry run mypy pya2l --ignore-missing-imports --no-error-summary`.
 - Security: `poetry run bandit -c bandit.yml -r pya2l`.
 - Pre-commit (recommended locally): `poetry run pre-commit run --all-files`.
 - Generated parser files and build outputs are excluded from lint/format (see tool configs in `pyproject.toml`); avoid manual edits there.
@@ -83,3 +86,5 @@ Implements compumethod evaluation: `Identical`, `Linear`, `RatFunc`, `Coeffs`/`C
 - `examples/` contains a large set of real-world `.a2l` and `.aml` files useful for manual testing and benchmarking.
 - Inline A2L strings in tests follow the pattern: `ASAP2_VERSION 1 71 /begin PROJECT … /begin MODULE … /end MODULE /end PROJECT`.
 - `pya2l/cgen/templates/a2l.tmpl` is a Mako template used by `_render_a2l` for A2L export; edit it when adding new keyword export support.
+- `pya2l.imex` also supports JSON round-trips via `export_json_dict` / `open_json_database` (entry-points re-exported from `pya2l/__init__.py`).
+- For direct low-level DB access (e.g., in tests that don't go through the parser), use `model.A2LDatabase(path)` directly and call `.session` / `.close()`.
