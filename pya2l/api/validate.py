@@ -217,8 +217,8 @@ class Validator:
                         f"{module.name}: Identifier '{name}' defined {count} times in namespace '{ns_label}'.",
                     )
 
-        ns1_all = set(n for lst in ns1_groups.values() for n in lst)
-        ns2_all = set(n for lst in ns2_groups.values() for n in lst)
+        ns1_all = {n for lst in ns1_groups.values() for n in lst}
+        ns2_all = {n for lst in ns2_groups.values() for n in lst}
         cross = ns1_all & ns2_all
         for name in sorted(cross):
             self.emit_diagnostic(
