@@ -32,7 +32,7 @@ import typing
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from operator import itemgetter
-from typing import Optional
+
 
 
 _logger = logging.getLogger(__name__)
