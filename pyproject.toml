@@ -137,10 +137,26 @@ lines_after_imports = 2
 
 [tool.mypy]
 strict = false
+no_implicit_optional = true
+warn_return_any = true
 warn_unreachable = true
 pretty = true
 show_column_numbers = true
 show_error_context = true
+
+# Auto-generated / ORM-heavy files — suppress noise
+[[tool.mypy.overrides]]
+module = [
+    "pya2l.a2l",
+    "pya2l.aml.aml_parser",
+    "pya2l.aml.ifdata_lexer",
+]
+ignore_errors = true
+
+# SQLAlchemy ORM column access is dynamic — suppress call-arg noise in creator
+[[tool.mypy.overrides]]
+module = "pya2l.api.create"
+disable_error_code = ["call-arg", "attr-defined"]
 
 [tool.ruff]
 target-version = "py312"

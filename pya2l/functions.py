@@ -29,8 +29,10 @@ import bisect
 import logging
 import re
 import typing
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from operator import itemgetter
+from typing import Optional
 
 _logger = logging.getLogger(__name__)
 
@@ -38,9 +40,9 @@ import numpy as np
 
 
 try:
-    import numexpr as _numexpr
-    from scipy import interpolate as _interpolate
-    from scipy.interpolate import RegularGridInterpolator
+    import numexpr as _numexpr  # type: ignore[import-untyped]
+    from scipy import interpolate as _interpolate  # type: ignore[import-untyped]
+    from scipy.interpolate import RegularGridInterpolator  # type: ignore[import-untyped]
 
     _COMPUTE_AVAILABLE = True
 except ImportError:
@@ -79,12 +81,12 @@ class CoeffsLinear:
     b: float
 
 
-def fix_axis_par(offset: int, shift: int, num_apo: int) -> list:
+def fix_axis_par(offset: int, shift: int, num_apo: int) -> np.ndarray:
     """"""  # noqa: DAR101, DAR201
     return np.array([offset + (i * (2**shift)) for i in range(num_apo)], dtype="float64")
 
 
-def fix_axis_par_dist(offset: int, distance: int, num_apo: int) -> list:
+def fix_axis_par_dist(offset: int, distance: int, num_apo: int) -> np.ndarray:
     """"""  # noqa: DAR101, DAR201
     return np.array([offset + (i * distance) for i in range(num_apo)], dtype="float64")
 
@@ -268,6 +270,7 @@ class RatFunc:
         a, b, c, d, e, f = (coeffs.a, coeffs.b, coeffs.c, coeffs.d, coeffs.e, coeffs.f)
         self.p = np.poly1d([a, b, c])
         self.q = np.poly1d([d, e, f])
+        self.p_inv: Optional[np.poly1d]
         if self.p.order == 1 and self.q.order == 0:
             self.p_inv = np.poly1d([(f / b), -((f * c) / (b * f))])
         else:
@@ -501,7 +504,7 @@ class LookupTableWithRanges:
             return self.dict_inv.get(p, None)
 
 
-class FormulaBase:
+class FormulaBase(ABC):
     """Base class for formula interpreters.
 
     Parameters
@@ -552,9 +555,12 @@ class FormulaBase:
         return namespace
 
     @staticmethod
-    def names_tolower(text):
+    def names_tolower(text: str) -> str:
         MATH_FUNCTIONS = re.compile("abs|acos|asin|atan|cos|cosh|exp|log|log10|pow|sin|sinh|sqrt|tan|tanh", re.IGNORECASE)
         return MATH_FUNCTIONS.sub(lambda m: m.group(0).lower(), text)
+
+    @abstractmethod
+    def _replace_special_symbols(self, text: str | None) -> str | None: ...
 
 
 class Formula(FormulaBase):
@@ -572,7 +578,7 @@ class Formula(FormulaBase):
     system_constants: list of 2-tuples (name, value)
     """
 
-    MATH_FUNCS = {}
+    MATH_FUNCS: dict = {}
 
     def __init__(self, formula, inverse_formula=None, system_constants=None, legacy=False):
         _require_compute("Formula")

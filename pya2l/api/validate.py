@@ -211,7 +211,7 @@ class Validator:
             print("VTAB-RANGE:", names(module.compu_vtab_range), end = "\n\n")
     '''
 
-    def emit_diagnostic(self, level: Level, category: Category, diag: Diagnostics, message: str = None):
+    def emit_diagnostic(self, level: Level, category: Category, diag: Diagnostics, message: str | None = None):
         self.logger.warning("%s - %s", level.name, message)
         self._diagnostics.append(Message(level, category, diag, message))
 

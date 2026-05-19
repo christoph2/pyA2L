@@ -43,16 +43,14 @@ class Logger:
     LOGGER_BASE_NAME = "pya2l"
     FORMAT = "[%(levelname)s (%(name)s)]: %(message)s"
 
-    def __init__(self, name, level="INFO"):
+    def __init__(self, name: str, level: str = "INFO") -> None:
         if not logging.getLogger().handlers:
             self.logger = logging.getLogger(f"{self.LOGGER_BASE_NAME}.{name}")
-            # self.logger.setLevel(level.upper())
             self.setLevel(level)
             if RICH_AVAILABLE:
-                handler = RichHandler()
+                handler: logging.Handler = RichHandler()
             else:
                 handler = logging.StreamHandler()
-            # handler.setLevel(level.upper())
             formatter = logging.Formatter(self.FORMAT)
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
@@ -60,48 +58,47 @@ class Logger:
             self.logger = logging.getLogger("rich")
         else:
             self.logger = logging.getLogger(f"{self.LOGGER_BASE_NAME}.{name}")
-        self.lastMessage = None
-        self.lastSeverity = None
+        self.lastMessage: str | None = None
+        self.lastSeverity: int | None = None
 
-    def getLastError(self):
+    def getLastError(self) -> tuple[int | None, str | None]:
         result = (self.lastSeverity, self.lastMessage)
         self.lastSeverity = self.lastMessage = None
         return result
 
-    def log(self, message, level):
+    def log(self, message: str, level: int) -> None:
         self.lastSeverity = level
         self.lastMessage = message
         self.logger.log(level, f"{message}")
-        # print("{0}{1}".format(level, message))
 
-    def info(self, message):
+    def info(self, message: str) -> None:
         self.log(message, logging.INFO)
 
-    def warn(self, message):
+    def warn(self, message: str) -> None:
         self.log(message, logging.WARNING)
 
-    def warning(self, message):
+    def warning(self, message: str) -> None:
         self.log(message, logging.WARNING)
 
-    def debug(self, message):
+    def debug(self, message: str) -> None:
         self.log(message, logging.DEBUG)
 
-    def error(self, message, exc_info: bool = False):
+    def error(self, message: str, exc_info: bool = False) -> None:
         self.log(message, logging.ERROR)
         if exc_info:
             self.logger.debug(traceback.format_exc())
 
-    def critical(self, message):
+    def critical(self, message: str) -> None:
         self.log(message, logging.CRITICAL)
 
-    def verbose(self):
+    def verbose(self) -> None:
         self.logger.setLevel(logging.DEBUG)
 
-    def silent(self):
+    def silent(self) -> None:
         self.logger.setLevel(logging.CRITICAL)
 
-    def setLevel(self, level):
-        LEVEL_MAP = {
+    def setLevel(self, level: str | int) -> None:
+        LEVEL_MAP: dict[str, int] = {
             "INFO": logging.INFO,
             "WARN": logging.WARNING,
             "WARNING": logging.WARNING,
