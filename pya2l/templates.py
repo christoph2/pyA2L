@@ -93,7 +93,9 @@ def doTemplateFromText(
     buf = StringIO()
     ctx = Context(buf, **namespace)
     try:
-        tobj = Template(text=tmpl, output_encoding=encoding, format_exceptions=formatExceptions)  # nosec B702 — generates A2L plain-text, not HTML
+        tobj = Template(
+            text=tmpl, output_encoding=encoding, format_exceptions=formatExceptions
+        )  # nosec B702 — generates A2L plain-text, not HTML
         tobj.render_context(ctx)
     except Exception:
         print(exceptions.text_error_template().render())

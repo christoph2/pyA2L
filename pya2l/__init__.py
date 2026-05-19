@@ -56,13 +56,13 @@ except ImportError:
     RICH_AVAILABLE = False
 
 import pya2l.model as model
+from pya2l.exceptions import MathError, RangeError, StructuralError
 from pya2l.imex import (
     export_a2l_db,
     export_json_dict,
     open_a2l_database,
     open_json_database,
 )
-from pya2l.exceptions import MathError, RangeError, StructuralError
 from pya2l.logger import Logger
 from pya2l.templates import doTemplateFromText
 

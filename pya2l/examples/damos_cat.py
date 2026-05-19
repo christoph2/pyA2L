@@ -1,9 +1,9 @@
-
 import os
-from pathlib import Path
+import sqlite3
 import subprocess
 import sys
-import sqlite3
+from pathlib import Path
+
 
 PTH = r"e:\damos"
 PTH = r"c:\csprojects"
@@ -27,20 +27,26 @@ class DB:
         self.conn.close()
 
     def get_category(self, name):
-        res = self.cur.execute("SELECT id  FROM category WHERE NAME=?;", (name, ))
+        res = self.cur.execute("SELECT id  FROM category WHERE NAME=?;", (name,))
         rows = res.fetchone()
         if not rows:
-            res = self.cur.execute("INSERT INTO category(name) VALUES(?)", (name, ))
+            res = self.cur.execute("INSERT INTO category(name) VALUES(?)", (name,))
             self.conn.commit()
-            res = self.cur.execute("SELECT id  FROM category WHERE NAME=?;", (name, ))
+            res = self.cur.execute("SELECT id  FROM category WHERE NAME=?;", (name,))
             rows = res.fetchone()
             return rows[0]
         return rows[0]
 
     def add(self, name, ext, cat_id):
-        res = self.cur.execute("INSERT INTO file(name, ext, cat) VALUES(?, ?, ?)", (name, ext, cat_id,))
+        res = self.cur.execute(
+            "INSERT INTO file(name, ext, cat) VALUES(?, ?, ?)",
+            (
+                name,
+                ext,
+                cat_id,
+            ),
+        )
         self.conn.commit()
-
 
     def create_schema(self):
         self.cur.execute("""PRAGMA foreign_keys=ON;""")
@@ -60,8 +66,8 @@ class DB:
         self.conn.commit()
 
 
-
 db = DB("damos_cat.sqlite3")
+
 
 def recurse(pth):
     for phile in pth.iterdir():
@@ -73,7 +79,9 @@ def recurse(pth):
                 pass
         else:
             try:
-                output = subprocess.getoutput(f"file -b {phile}")  # nosec B605 — example script; path comes from local filesystem walk
+                output = subprocess.getoutput(
+                    f"file -b {phile}"
+                )  # nosec B605 — example script; path comes from local filesystem walk
                 descr = output
                 category = output.split(",")[0]
                 cat_id = db.get_category(category)
@@ -82,6 +90,7 @@ def recurse(pth):
                 sys.exit()
             except Exception as e:
                 print(f"{e}")
+
 
 recurse(Path(PTH))
 db.close()
