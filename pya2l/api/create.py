@@ -57,6 +57,7 @@ from pya2l.api.inspect import (  # Project, Header, Annotation
     VariantCoding,
 )
 
+
 _T = TypeVar("_T")
 
 __all__ = [
