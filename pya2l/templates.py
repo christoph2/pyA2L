@@ -73,7 +73,7 @@ def doTemplate(
     try:
         tobj = Template(
             filename=tmpl, output_encoding=encoding, format_exceptions=formatExceptions
-        )  # , imports ='re' # TODO: imports parameter.
+        )  # nosec B702 — Mako generates ASAP2/A2L plain-text protocol files, not HTML; XSS is not applicable
         tobj.render_context(ctx)
     except Exception:
         print(exceptions.text_error_template().render())
@@ -93,7 +93,7 @@ def doTemplateFromText(
     buf = StringIO()
     ctx = Context(buf, **namespace)
     try:
-        tobj = Template(text=tmpl, output_encoding=encoding, format_exceptions=formatExceptions)  # , imports ='re'
+        tobj = Template(text=tmpl, output_encoding=encoding, format_exceptions=formatExceptions)  # nosec B702 — generates A2L plain-text, not HTML
         tobj.render_context(ctx)
     except Exception:
         print(exceptions.text_error_template().render())

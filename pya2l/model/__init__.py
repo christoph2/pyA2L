@@ -27,7 +27,7 @@ __copyright__ = """
 import datetime
 import logging
 import mmap
-import pickle
+import pickle  # nosec B403 — only deserializes blobs written by pya2l's own AML parser (never untrusted data)
 import re
 import sqlite3
 import warnings
@@ -1326,7 +1326,7 @@ class IfData(Base):
 
     @property
     def value(self):
-        return pickle.loads(self.parsed)
+        return pickle.loads(self.parsed)  # nosec B301 — data written exclusively by pya2l's AML parser
 
     __required_parameters__ = ()
 

@@ -60,12 +60,12 @@ def run_iteration(dataset: Path, module: str | None, loglevel: str) -> Iteration
             session.close()
             try:
                 bind = session.bind
-            except Exception:
+            except Exception:  # nosec B110 — best-effort cleanup; session.bind may not exist
                 bind = None
             if bind is not None:
                 try:
                     bind.dispose()
-                except Exception:
+                except Exception:  # nosec B110 — best-effort dispose; ignore if already closed
                     pass
 
             db_path = Path(tempdir) / dataset.with_suffix(".a2ldb").name
@@ -166,12 +166,12 @@ def run_benchmark(
                         imp_res.close()
                         try:
                             bind = imp_res.bind
-                        except Exception:
+                        except Exception:  # nosec B110 — best-effort cleanup
                             bind = None
                         if bind is not None:
                             try:
                                 bind.dispose()
-                            except Exception:
+                            except Exception:  # nosec B110 — best-effort dispose
                                 pass
 
                         db_path = Path(tempdir) / ds.with_suffix(".a2ldb").name

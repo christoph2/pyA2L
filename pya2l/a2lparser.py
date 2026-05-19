@@ -408,8 +408,8 @@ class A2LParser:
             self.logger.error(traceback.format_exc())
             try:
                 unlink(str(db_fn))
-            except Exception:
-                pass  # nosec
+            except Exception:  # nosec B110 — best-effort cleanup of incomplete .a2ldb on error
+                pass
             raise
         aml_section = model.AMLSection()
         if aml_data:

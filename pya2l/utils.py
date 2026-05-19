@@ -29,7 +29,6 @@ __version__ = "0.1.0"
 import ctypes
 import logging
 import pathlib
-import subprocess
 import sys
 import threading
 from enum import IntEnum
@@ -159,19 +158,6 @@ class Bunch(dict):
     def __init__(self, *args, **kwds):
         super().__init__(*args, **kwds)
         self.__dict__ = self
-
-
-class CommandError(Exception):
-    pass
-
-
-def runCommand(cmd):
-    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    result = proc.communicate()
-    proc.wait()
-    if proc.returncode:
-        raise CommandError(f"{result[1]}")
-    return result[0]
 
 
 def nfc_equal(str1, str2):

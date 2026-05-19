@@ -9,7 +9,7 @@ from pya2l.api.validate import Category, Diagnostics, Level, Message, Validator
 
 
 def _parse(tmp_path, a2l_content: str):
-    h = hashlib.md5(a2l_content.encode("latin-1")).hexdigest()[:8]
+    h = hashlib.md5(a2l_content.encode("latin-1"), usedforsecurity=False).hexdigest()[:8]
     a2l_file = tmp_path / f"tv_{h}.a2l"
     a2l_file.write_text(a2l_content, encoding="latin-1")
     return A2LParser().parse(str(a2l_file), in_memory=True)

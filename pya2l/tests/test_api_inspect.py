@@ -37,7 +37,7 @@ def db(parser, tmp_path, request):
     import hashlib
 
     a2l_content = request.param
-    h = hashlib.md5(a2l_content.encode("latin-1")).hexdigest()[:8]
+    h = hashlib.md5(a2l_content.encode("latin-1"), usedforsecurity=False).hexdigest()[:8]
     a2l_file = tmp_path / f"t_{h}.a2l"
     a2l_file.write_text(a2l_content, encoding="latin-1")
     database = parser.parse(str(a2l_file), in_memory=True)

@@ -1,4 +1,22 @@
+exclude_dirs:
+  - ".venv"
+  - "pya2l/examples"
+  - "pya2l/build"
+
 assert_used:
   skips: ["*/test_*.py"]
-  exclude_dirs: [".venv", "tests"]
-  # skips: ["B307", "B404", "B605", "B607", "B603"]
+
+# Security skip rationale (all suppressions are also annotated inline with # nosec):
+#
+# B403 / B301 (pickle): IfData.parsed blobs are written exclusively by pya2l's own C++
+#   AML parser and stored in .a2ldb files the user creates themselves.  No untrusted data
+#   ever reaches pickle.loads.  See pya2l/model/__init__.py.
+#
+# B702 (mako templates): Templates generate ASAP2/A2L plain-text protocol files,
+#   not HTML.  XSS is not applicable.  See pya2l/templates.py.
+#
+# B110 (try_except_pass): Used exclusively in best-effort cleanup paths
+#   (session.bind.dispose) in scripts/benchmark.py — failures here are harmless.
+#
+# B404 / B602 / B605 (subprocess): The subprocess import and runCommand helper were
+#   removed in WP-12.  No subprocess usage remains in core library code.
