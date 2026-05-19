@@ -146,11 +146,14 @@ def build_extension(debug: bool = False, use_temp_dir: bool = False) -> None:
         archs = re.findall(r"-arch (\S+)", os.environ.get("ARCHFLAGS", ""))
         if archs:
             cmake_args += [f"-DCMAKE_OSX_ARCHITECTURES={';'.join(archs)}"]
-        # Strip host-specific CPU/arch flags that leak into cross-compilation targets
-        for key in ("CFLAGS", "CXXFLAGS"):
+        cmake_args += ["-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0"]
+        # Strip host-specific CPU/arch tuning flags that break universal2/cross builds
+        # (e.g. -mcpu=apple-m3 is invalid for the x86_64 slice of a universal2 wheel)
+        for key in ("CFLAGS", "CXXFLAGS", "CPPFLAGS", "LDFLAGS", "LDSHARED", "BLDSHARED"):
             value = os.environ.get(key, "")
             value = re.sub(r"-mcpu=\S+", "", value)
             value = re.sub(r"-march=\S+", "", value)
+            value = re.sub(r"-mtune=\S+", "", value)
             os.environ[key] = " ".join(value.split())
 
     if use_temp_dir:

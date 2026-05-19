@@ -3818,9 +3818,8 @@ class TypedefStructure(CachedBase):
     addressType: str | None
     consistentExchange: bool
     symbolLink: SymbolLink | None
-    components: list[StructureComponent]
 
-    def __init__(self, session, name=None, module_name: str = None):
+    def __init__(self, session, name=None, module_name: str | None = None):
         self.session = session
         typedef = session.query(model.TypedefStructure).filter(model.TypedefStructure.name == name)
         if module_name is not None:

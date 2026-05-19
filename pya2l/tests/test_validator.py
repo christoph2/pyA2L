@@ -23,7 +23,7 @@ def _diag_codes(messages):
 def _safe_close(db):
     try:
         db.close()
-    except Exception:
+    except Exception:  # nosec B110
         pass
     finally:
         gc.collect()
