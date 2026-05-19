@@ -25,6 +25,8 @@ __copyright__ = """
 """
 """
 
+__all__ = ["MathError", "RangeError", "StructuralError"]
+
 
 class MathError(Exception):
     """General mathematical error, e.g. operation could not be executed."""

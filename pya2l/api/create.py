@@ -57,6 +57,52 @@ from pya2l.api.inspect import (  # Project, Header, Annotation
     VariantCoding,
 )
 
+__all__ = [
+    # Mixin traits (useful for type-checking and subclassing)
+    "HasAnnotation",
+    "HasAddressType",
+    "HasBitMask",
+    "HasBitOperation",
+    "HasByteOrder",
+    "HasCalibrationAccess",
+    "HasDisplayIdentifier",
+    "HasDeposit",
+    "HasDiscrete",
+    "HasEcuAddressExtension",
+    "HasEncoding",
+    "HasErrorMask",
+    "HasExtendedLimits",
+    "HasFormat",
+    "HasFunctionList",
+    "HasGuardRails",
+    "HasIfData",
+    "HasLayout",
+    "HasMatrixDim",
+    "HasMaxRefresh",
+    "HasModelLink",
+    "HasMonotony",
+    "HasPhysUnit",
+    "HasReadOnly",
+    "HasReadWrite",
+    "HasRefMemorySegment",
+    "HasStepSize",
+    "HasSymbolLink",
+    # Base creator
+    "Creator",
+    # Concrete creators
+    "AxisPtsCreator",
+    "BlobCreator",
+    "CharacteristicCreator",
+    "CompuMethodCreator",
+    "MeasurementCreator",
+    "ProjectCreator",
+    "ModuleCreator",
+    "InstanceCreator",
+    "FunctionCreator",
+    "GroupCreator",
+    "RecordLayoutCreator",
+]
+
 
 class HasAnnotation:
     """Base class for entities that have annotations."""

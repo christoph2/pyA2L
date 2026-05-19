@@ -26,6 +26,21 @@ __copyright__ = """
 __author__ = "Christoph Schueler"
 __version__ = "0.10.2"
 
+__all__ = [
+    # Entry-point functions
+    "import_a2l",
+    "open_existing",
+    "open_create",
+    "export_a2l",
+    # Exceptions
+    "InvalidA2LDatabase",
+    "MathError",
+    "RangeError",
+    "StructuralError",
+    # Deprecated wrapper (kept for backwards compatibility)
+    "DB",
+]
+
 import re
 import sys
 import typing
@@ -47,6 +62,7 @@ from pya2l.imex import (
     open_a2l_database,
     open_json_database,
 )
+from pya2l.exceptions import MathError, RangeError, StructuralError
 from pya2l.logger import Logger
 from pya2l.templates import doTemplateFromText
 
