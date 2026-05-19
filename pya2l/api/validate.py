@@ -212,11 +212,7 @@ class Validator:
     '''
 
     def emit_diagnostic(self, level: Level, category: Category, diag: Diagnostics, message: str = None):
-        try:
-            self.logger.warning("%s - %s", level.name, message)
-        except Exception:
-            # Be robust even if logging formatting fails for any reason
-            pass
+        self.logger.warning("%s - %s", level.name, message)
         self._diagnostics.append(Message(level, category, diag, message))
 
     @property

@@ -34,7 +34,7 @@ import warnings
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Any, List, Optional
 
-from sqlalchemy import Column, ForeignKey, Index, create_engine, event, orm, types
+from sqlalchemy import Column, ForeignKey, Index, create_engine, event, exc as sa_exc, orm, types
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -5599,7 +5599,7 @@ class A2LDatabase:
         Base.metadata.create_all(self.engine)
         try:
             existing_meta = self.session.query(MetaData).first()
-        except Exception:
+        except sa_exc.SQLAlchemyError:
             # If querying metadata itself fails, leave initialization to callers
             existing_meta = None
         if existing_meta is None:

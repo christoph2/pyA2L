@@ -583,7 +583,7 @@ def _min_passthrough_lookup(module: Any) -> dict[str, float]:
             if candidate is not None:
                 try:
                     values.append(float(candidate))
-                except Exception:
+                except (TypeError, ValueError):
                     continue
         return min(values) if values else None
 

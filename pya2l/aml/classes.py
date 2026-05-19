@@ -99,7 +99,7 @@ class BaseType:
     def _try(o):
         try:
             return o.__dict__
-        except Exception:
+        except AttributeError:
             return str(o)
 
     @property

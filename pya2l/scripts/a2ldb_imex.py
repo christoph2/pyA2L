@@ -23,6 +23,7 @@ __copyright__ = """
 
 import argparse
 import json
+import logging
 import sys
 from pathlib import Path
 
@@ -37,6 +38,8 @@ from pya2l.imex import (
     open_json_database,
 )
 from pya2l.version import __version__
+
+_logger = logging.getLogger(__name__)
 
 
 def main():
@@ -155,7 +158,7 @@ def main():
                 try:
                     db_json.close()
                 except Exception:
-                    pass
+                    _logger.debug("Error closing JSON database.", exc_info=True)
 
             out = args.output
             json_kwargs = {"ensure_ascii": False}
@@ -178,7 +181,7 @@ def main():
                 try:
                     db_export.close()
                 except Exception:
-                    pass
+                    _logger.debug("Error closing A2L database.", exc_info=True)
     else:
         ifn = Path(args.ifn)
         force = args.force_overwrite

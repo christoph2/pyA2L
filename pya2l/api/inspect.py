@@ -35,6 +35,7 @@ __copyright__ = """
 
 import collections
 import itertools
+import logging
 import weakref
 from collections.abc import Callable, Generator
 from dataclasses import asdict, dataclass, field
@@ -69,6 +70,7 @@ from pya2l.functions import (
 )
 from pya2l.utils import SingletonBase, align_as, enum_from_str, ffs
 
+_logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
@@ -1293,9 +1295,9 @@ class FilteredList(Generic[T]):
                         if xn is not None:
                             yield xn
                     except (AttributeError, ValueError) as e:
-                        print(f"Error getting {self.klass.__name__} instance: {e}")
+                        _logger.debug("Error getting %s instance: %r", self.klass.__name__, e)
         except Exception as e:
-            print(f"Error querying association: {e}")
+            _logger.debug("Error querying association: %r", e)
 
 
 class CachedBase:
@@ -1438,7 +1440,7 @@ class CachedBase:
                 cls._strong_ref.append(inst)
                 return inst
             except Exception as e:
-                # print(f"{cls.__name__}.get({name!r}): {e!r}")
+                _logger.debug("%s.get(%r): %r", cls.__name__, name, e)
                 return None
 
         cache = cls._get_session_cache(session)
@@ -1449,7 +1451,7 @@ class CachedBase:
                 cache[entry] = inst
                 cls._strong_ref.append(inst)
             except Exception as e:
-                # print(f"{cls.__name__}.get({name!r}): {e!r}")
+                _logger.debug("%s.get(%r): %r", cls.__name__, name, e)
                 return None
         return cache[entry]
 

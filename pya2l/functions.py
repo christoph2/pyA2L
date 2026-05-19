@@ -26,10 +26,13 @@ __copyright__ = """
 """
 
 import bisect
+import logging
 import re
 import typing
 from dataclasses import dataclass
 from operator import itemgetter
+
+_logger = logging.getLogger(__name__)
 
 import numpy as np
 
@@ -641,10 +644,10 @@ class Formula(FormulaBase):
                 return res.item() if res.shape == () else res
             try:
                 return res.item()
-            except Exception:
+            except AttributeError:
                 return res
         except Exception as e:
-            print(f"Error evaluating formula: {e!r})")
+            _logger.warning("Error evaluating formula %r: %r", self.formula, e)
             return np.array([])
 
     def physical_to_int(self, *args):
@@ -657,8 +660,8 @@ class Formula(FormulaBase):
                 return res.item() if res.shape == () else res
             try:
                 return res.item()
-            except Exception:
+            except AttributeError:
                 return res
         except Exception as e:
-            print(f"Error evaluating inverse formula: {e!r})")
+            _logger.warning("Error evaluating inverse formula %r: %r", self.inverse_formula, e)
             return np.array([])
