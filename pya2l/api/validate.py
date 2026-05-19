@@ -30,7 +30,6 @@ from collections import Counter, namedtuple
 from logging import getLogger
 
 import pya2l.model as model
-from pya2l import DB
 from pya2l.api.inspect import AxisDescr, Characteristic, Measurement, ModCommon, ModPar
 
 
@@ -87,7 +86,6 @@ class Validator:
 
     def __init__(self, session, loglevel="INFO"):
         self.logger = getLogger(self.__class__.__name__)
-        # self.logger.setLevel("INFO")
         self._session = session
         self._diagnostics = []
         self._identifier = {}
