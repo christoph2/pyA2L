@@ -57,6 +57,7 @@ from pya2l.api.inspect import (  # Project, Header, Annotation
     VariantCoding,
 )
 
+
 __all__ = [
     # Mixin traits (useful for type-checking and subclassing)
     "HasAnnotation",

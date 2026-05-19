@@ -70,6 +70,7 @@ from pya2l.functions import (
 )
 from pya2l.utils import SingletonBase, align_as, enum_from_str, ffs
 
+
 _logger = logging.getLogger(__name__)
 
 __all__ = [
