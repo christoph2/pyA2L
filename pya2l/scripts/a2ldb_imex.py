@@ -25,8 +25,11 @@ import argparse
 import json
 import logging
 import sys
+import traceback
 from pathlib import Path
 
+from rich.console import Console
+from rich.panel import Panel
 from rich.prompt import Confirm
 
 from pya2l import import_a2l
@@ -40,6 +43,7 @@ from pya2l.imex import (
 from pya2l.version import __version__
 
 _logger = logging.getLogger(__name__)
+_console = Console(stderr=True)
 
 
 def main():
@@ -96,6 +100,15 @@ def main():
     )
 
     parser.add_argument(
+        "-q",
+        "--quiet",
+        help="Suppress all output except errors (sets log level to CRITICAL, disables progress bar)",
+        action="store_true",
+        default=False,
+        dest="quiet",
+    )
+
+    parser.add_argument(
         "-V",
         help="Print pya2ldb version information and exit.",
         action="store_true",
@@ -142,11 +155,17 @@ def main():
 
     args = parser.parse_args()
     if args.version:
-        print(f"pya2ldb version: {__version__}")
-        sys.exit(1)
+        _console.print(f"pya2ldb version: {__version__}")
+        sys.exit(0)
     if not (args.ifn or args.efn):
-        print("Either -i or -e option is required.")
+        _console.print("[red]Either -i or -e option is required.[/red]")
+        parser.print_usage(sys.stderr)
         sys.exit(2)
+
+    # --quiet overrides -l
+    if args.quiet:
+        args.loglevel = "critical"
+        args.no_progress_bar = True
 
     if args.efn:
         db_path = Path(args.efn)
@@ -191,15 +210,28 @@ def main():
                 force = Confirm.ask(f"[yellow]Database [bold]{db_fn}[/bold] already exists. Overwrite?[/yellow]")
                 if not force:
                     sys.exit(0)
-        session = import_a2l(
-            ifn,
-            encoding=args.encoding,
-            loglevel=args.loglevel,
-            local=args.local,
-            progress_bar=not args.no_progress_bar,
-            force_overwrite=force,
-        )
-        session.close()
+        try:
+            session = import_a2l(
+                ifn,
+                encoding=args.encoding,
+                loglevel=args.loglevel,
+                local=args.local,
+                progress_bar=not args.no_progress_bar,
+                force_overwrite=force,
+            )
+            session.close()
+        except OSError as exc:
+            _console.print(Panel(str(exc), title="[bold red]Import failed[/bold red]", border_style="red"))
+            sys.exit(1)
+        except Exception as exc:
+            _console.print(
+                Panel(
+                    f"[red]{exc}[/red]\n\n[dim]{traceback.format_exc()}[/dim]",
+                    title="[bold red]Import failed[/bold red]",
+                    border_style="red",
+                )
+            )
+            sys.exit(1)
 
 
 if __name__ == "__main__":
