@@ -250,4 +250,3 @@ All keyword arguments (``encoding``, ``loglevel``, ``local``, ``progress_bar``,
     # After
     from pya2l import import_a2l
     session = import_a2l("my.a2l", loglevel="ERROR")
-
