@@ -147,7 +147,13 @@ def build_extension(debug: bool = False, use_temp_dir: bool = False) -> None:
         # Cross-compile support for macOS - respect ARCHFLAGS if set
         archs = re.findall(r"-arch (\S+)", os.environ.get("ARCHFLAGS", ""))
         if archs:
-            cmake_args += ["-DCMAKE_OSX_ARCHITECTURES={}".format(";".join(archs))]
+            cmake_args += [f"-DCMAKE_OSX_ARCHITECTURES={';'.join(archs)}"]
+        # Strip host-specific CPU/arch flags that leak into cross-compilation targets
+        for key in ("CFLAGS", "CXXFLAGS"):
+            value = os.environ.get(key, "")
+            value = re.sub(r"-mcpu=\S+", "", value)
+            value = re.sub(r"-march=\S+", "", value)
+            os.environ[key] = " ".join(value.split())
 
     if use_temp_dir:
         build_temp = Path(TemporaryDirectory(suffix=".build-temp").name) / "extension_it_in"
