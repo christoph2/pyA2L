@@ -45,7 +45,7 @@ inline auto unicode_decode(std::string_view value, const char * encoding) -> py:
     return py::reinterpret_steal<py::str>(py_s);
 }
 
-auto parse(const std::string& file_name, const std::string& encoding, const std::string& log_level) -> std::tuple<std::size_t, const ValueContainer, const std::vector<A2LParser::value_table_t>, AmlData> {
+auto parse(const std::string& file_name, const std::string& encoding, const std::string& log_level) -> std::tuple<std::size_t, ValueContainer, std::vector<A2LParser::value_table_t>, AmlData> {
 	auto logger = create_logger("a2l", convert_loglevel(log_level));
 	Preprocessor p{ convert_loglevel(log_level) };
 	std::vector<A2LParser::value_table_t> converted_tables{};
@@ -59,14 +59,15 @@ auto parse(const std::string& file_name, const std::string& encoding, const std:
 
     std::chrono::steady_clock::time_point start2 = std::chrono::steady_clock::now();
 	logger->info("Start parsing...");
-    const auto&        parser = A2LParser(res, fns.a2l, encoding, convert_loglevel(log_level));
+    auto parser = A2LParser(res, fns.a2l, encoding, convert_loglevel(log_level));
     auto counter = parser.get_keyword_counter();
-    const auto& values = parser.get_values();
+    // Move out values and tables to avoid deep-copying the entire tree.
+    auto values = parser.take_values();
+    auto raw_tables = parser.take_tables();
     std::chrono::steady_clock::time_point stop2 = std::chrono::steady_clock::now();
     logger->info("Elapsed Time: {}[s]", (std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - start2).count()) / 1000.0);
     logger->info("Number of keywords: {}", counter);
-	const auto& tables = parser.get_tables();
-	for (const auto&[tp, name, rows]: tables) {
+	for (const auto&[tp, name, rows]: raw_tables) {
 		const auto& tpt = unicode_decode(tp, encoding.c_str());
 		const auto& namet = unicode_decode(name, encoding.c_str());
 		std::vector<std::vector<AsamVariantType>> result;
@@ -79,13 +80,13 @@ auto parse(const std::string& file_name, const std::string& encoding, const std:
 					fixed_row.emplace_back(column);
 				}
 			}
-			result.emplace_back(fixed_row);
+			result.emplace_back(std::move(fixed_row));
 		}
-		converted_tables.emplace_back(tpt, namet, result);
+		converted_tables.emplace_back(std::move(tpt), std::move(namet), std::move(result));
 	}
 	auto aml_data = parse_aml(fns.aml);
 
-    return {counter, values, converted_tables, aml_data};
+    return {counter, std::move(values), std::move(converted_tables), std::move(aml_data)};
 }
 
 template<typename... Ts>

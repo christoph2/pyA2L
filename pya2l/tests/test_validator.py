@@ -1,5 +1,6 @@
 """Tests for pya2l.api.validate.Validator."""
 
+import gc
 import hashlib
 
 import pytest
@@ -17,6 +18,29 @@ def _parse(tmp_path, a2l_content: str):
 
 def _diag_codes(messages):
     return [m.diag_code for m in messages]
+
+
+def _safe_close(db):
+    try:
+        db.close()
+    except Exception:
+        pass
+    finally:
+        gc.collect()
+
+
+@pytest.fixture
+def parsed_db(tmp_path, request):
+    """Factory fixture: call parsed_db(a2l_content) to parse; DB is closed after test."""
+    opened = []
+
+    def _factory(a2l_content: str):
+        db = _parse(tmp_path, a2l_content)
+        opened.append(db)
+        return db
+
+    request.addfinalizer(lambda: [_safe_close(db) for db in opened])
+    return _factory
 
 
 # ---------------------------------------------------------------------------
@@ -43,36 +67,36 @@ def _a2l(*body_lines):
 # ---------------------------------------------------------------------------
 
 
-def test_missing_byte_order(tmp_path):
+def test_missing_byte_order(parsed_db):
     a2l = _a2l(
         '/begin MOD_COMMON ""',
         "/end MOD_COMMON",
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     msgs = Validator(db.session)()
     codes = _diag_codes(msgs)
     assert Diagnostics.MISSING_BYTE_ORDER in codes
 
 
-def test_missing_alignment(tmp_path):
+def test_missing_alignment(parsed_db):
     a2l = _a2l(
         '/begin MOD_COMMON ""',
         "  BYTE_ORDER MSB_LAST",
         "/end MOD_COMMON",
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     msgs = Validator(db.session)()
     codes = _diag_codes(msgs)
     assert Diagnostics.MISSING_ALIGNMENT in codes
 
 
-def test_no_module(tmp_path):
+def test_no_module(parsed_db):
     a2l = """
 ASAP2_VERSION 1 71
 /begin PROJECT TestProject ""
 /end PROJECT
 """
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     msgs = Validator(db.session)()
     assert Diagnostics.MISSING_MODULE in _diag_codes(msgs)
 
@@ -126,18 +150,18 @@ def _full_a2l(*snippets):
     return PREAMBLE + "\n".join(snippets) + POSTAMBLE
 
 
-def test_valid_compu_method_ref(tmp_path):
+def test_valid_compu_method_ref(parsed_db):
     a2l = _full_a2l(COMPU_METHOD_SNIPPET, MEASUREMENT_SNIPPET, RECORD_LAYOUT_SNIPPET, CHARACTERISTIC_SNIPPET)
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     msgs = Validator(db.session)()
     codes = _diag_codes(msgs)
     assert Diagnostics.MISSING_COMPU_METHOD not in codes
     assert Diagnostics.MISSING_RECORD_LAYOUT not in codes
 
 
-def test_missing_compu_method_measurement(tmp_path):
+def test_missing_compu_method_measurement(parsed_db):
     a2l = _full_a2l(MEASUREMENT_BAD_CM_SNIPPET)
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     msgs = Validator(db.session)()
     codes = _diag_codes(msgs)
     assert Diagnostics.MISSING_COMPU_METHOD in codes
@@ -145,15 +169,15 @@ def test_missing_compu_method_measurement(tmp_path):
     assert any("MEAS_BAD" in m.text for m in bad)
 
 
-def test_missing_compu_method_characteristic(tmp_path):
+def test_missing_compu_method_characteristic(parsed_db):
     a2l = _full_a2l(RECORD_LAYOUT_SNIPPET, CHARACTERISTIC_BAD_CM_SNIPPET)
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     msgs = Validator(db.session)()
     codes = _diag_codes(msgs)
     assert Diagnostics.MISSING_COMPU_METHOD in codes
 
 
-def test_no_compu_method_sentinel_is_valid(tmp_path):
+def test_no_compu_method_sentinel_is_valid(parsed_db):
     a2l = _full_a2l(
         RECORD_LAYOUT_SNIPPET,
         """
@@ -161,7 +185,7 @@ def test_no_compu_method_sentinel_is_valid(tmp_path):
 /end CHARACTERISTIC
 """,
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     msgs = Validator(db.session)()
     assert Diagnostics.MISSING_COMPU_METHOD not in _diag_codes(msgs)
 
@@ -171,9 +195,9 @@ def test_no_compu_method_sentinel_is_valid(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-def test_missing_record_layout_characteristic(tmp_path):
+def test_missing_record_layout_characteristic(parsed_db):
     a2l = _full_a2l(COMPU_METHOD_SNIPPET, CHARACTERISTIC_BAD_RL_SNIPPET)
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     msgs = Validator(db.session)()
     codes = _diag_codes(msgs)
     assert Diagnostics.MISSING_RECORD_LAYOUT in codes
@@ -186,20 +210,20 @@ def test_missing_record_layout_characteristic(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-def test_duplicate_within_namespace(tmp_path):
+def test_duplicate_within_namespace(parsed_db):
     a2l = _full_a2l(
         COMPU_METHOD_SNIPPET,
         MEASUREMENT_SNIPPET,
         # Second measurement with the same name → duplicate in namespace 1
         MEASUREMENT_SNIPPET,
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     msgs = Validator(db.session)()
     codes = _diag_codes(msgs)
     assert Diagnostics.MULTIPLE_DEFINITIONS_IN_NAMESPACE in codes
 
 
-def test_identifier_in_multiple_namespaces(tmp_path):
+def test_identifier_in_multiple_namespaces(parsed_db):
     # Same name "MEAS_1" used in both measurement namespace and compu_tab namespace.
     a2l = _full_a2l(
         COMPU_METHOD_SNIPPET,
@@ -210,7 +234,7 @@ def test_identifier_in_multiple_namespaces(tmp_path):
 /end COMPU_TAB
 """,
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     msgs = Validator(db.session)()
     codes = _diag_codes(msgs)
     assert Diagnostics.DEFINITION_IN_MULTIPLE_NAMESPACES in codes
@@ -221,7 +245,7 @@ def test_identifier_in_multiple_namespaces(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-def test_c_identifier_too_long(tmp_path):
+def test_c_identifier_too_long(parsed_db):
     long_name = "A" * 33  # one over the 32-char ISO C90 limit
     a2l = _full_a2l(
         COMPU_METHOD_SNIPPET,
@@ -231,7 +255,7 @@ def test_c_identifier_too_long(tmp_path):
 /end MEASUREMENT
 """,
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     msgs = Validator(db.session)()
     codes = _diag_codes(msgs)
     assert Diagnostics.INVALID_C_IDENTIFIER in codes
@@ -239,7 +263,7 @@ def test_c_identifier_too_long(tmp_path):
     assert any(long_name in m.text for m in bad)
 
 
-def test_c_identifier_exactly_32_chars_is_valid(tmp_path):
+def test_c_identifier_exactly_32_chars_is_valid(parsed_db):
     name_32 = "B" * 32
     a2l = _full_a2l(
         COMPU_METHOD_SNIPPET,
@@ -249,7 +273,7 @@ def test_c_identifier_exactly_32_chars_is_valid(tmp_path):
 /end MEASUREMENT
 """,
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     msgs = Validator(db.session)()
     codes = _diag_codes(msgs)
     assert Diagnostics.INVALID_C_IDENTIFIER not in codes
@@ -260,13 +284,13 @@ def test_c_identifier_exactly_32_chars_is_valid(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-def test_message_fields(tmp_path):
+def test_message_fields(parsed_db):
     """Every emitted Message must have all namedtuple fields populated."""
     a2l = _a2l(
         '/begin MOD_COMMON "msg-fields-unique"',
         "/end MOD_COMMON",
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     msgs = Validator(db.session)()
     assert len(msgs) > 0
     for msg in msgs:
@@ -325,53 +349,53 @@ CM_TAB_NOINTP_DEAD_REF = """
 """
 
 
-def test_rat_func_missing_coeffs(tmp_path):
+def test_rat_func_missing_coeffs(parsed_db):
     a2l = _full_a2l(CM_RAT_FUNC_BAD)
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.MISSING_COMPU_METHOD_COMPONENT in codes
 
 
-def test_rat_func_with_coeffs_is_valid(tmp_path):
+def test_rat_func_with_coeffs_is_valid(parsed_db):
     a2l = _full_a2l(CM_RAT_FUNC_GOOD)
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.MISSING_COMPU_METHOD_COMPONENT not in codes
 
 
-def test_linear_missing_coeffs_linear(tmp_path):
+def test_linear_missing_coeffs_linear(parsed_db):
     a2l = _full_a2l(CM_LINEAR_BAD)
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.MISSING_COMPU_METHOD_COMPONENT in codes
 
 
-def test_linear_with_coeffs_linear_is_valid(tmp_path):
+def test_linear_with_coeffs_linear_is_valid(parsed_db):
     a2l = _full_a2l(CM_LINEAR_GOOD)
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.MISSING_COMPU_METHOD_COMPONENT not in codes
 
 
-def test_tab_nointp_missing_compu_tab_ref(tmp_path):
+def test_tab_nointp_missing_compu_tab_ref(parsed_db):
     a2l = _full_a2l(CM_TAB_NOINTP_NO_REF)
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.MISSING_COMPU_METHOD_COMPONENT in codes
 
 
-def test_tab_nointp_with_valid_ref(tmp_path):
+def test_tab_nointp_with_valid_ref(parsed_db):
     a2l = _full_a2l(CM_TAB_NOINTP_WITH_REF)
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.MISSING_COMPU_METHOD_COMPONENT not in codes
     assert Diagnostics.UNRESOLVED_COMPU_TAB_REF not in codes
 
 
 @pytest.mark.xfail(reason="pre-existing C++ ext MemoryError under memory pressure; passes in isolation", strict=False)
-def test_tab_nointp_unresolved_compu_tab_ref(tmp_path):
+def test_tab_nointp_unresolved_compu_tab_ref(parsed_db):
     a2l = _full_a2l(CM_TAB_NOINTP_DEAD_REF)
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.UNRESOLVED_COMPU_TAB_REF in codes
 
@@ -381,7 +405,7 @@ def test_tab_nointp_unresolved_compu_tab_ref(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-def test_measurement_inverted_limits(tmp_path):
+def test_measurement_inverted_limits(parsed_db):
     a2l = _full_a2l(
         COMPU_METHOD_SNIPPET,
         """
@@ -392,12 +416,12 @@ def test_measurement_inverted_limits(tmp_path):
 /end MEASUREMENT
 """,
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.LIMIT_VIOLATION in codes
 
 
-def test_measurement_equal_limits_is_valid(tmp_path):
+def test_measurement_equal_limits_is_valid(parsed_db):
     a2l = _full_a2l(
         COMPU_METHOD_SNIPPET,
         """
@@ -406,12 +430,12 @@ def test_measurement_equal_limits_is_valid(tmp_path):
 /end MEASUREMENT
 """,
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.LIMIT_VIOLATION not in codes
 
 
-def test_characteristic_inverted_limits(tmp_path):
+def test_characteristic_inverted_limits(parsed_db):
     a2l = _full_a2l(
         COMPU_METHOD_SNIPPET,
         RECORD_LAYOUT_SNIPPET,
@@ -422,7 +446,7 @@ def test_characteristic_inverted_limits(tmp_path):
 /end CHARACTERISTIC
 """,
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.LIMIT_VIOLATION in codes
 
@@ -437,18 +461,18 @@ CM_IDENTICAL = """
 """
 
 
-def test_value_characteristic_no_axes_is_valid(tmp_path):
+def test_value_characteristic_no_axes_is_valid(parsed_db):
     a2l = _full_a2l(
         COMPU_METHOD_SNIPPET,
         RECORD_LAYOUT_SNIPPET,
         CHARACTERISTIC_SNIPPET,
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.AXIS_COUNT_MISMATCH not in codes
 
 
-def test_curve_characteristic_one_axis_is_valid(tmp_path):
+def test_curve_characteristic_one_axis_is_valid(parsed_db):
     a2l = _full_a2l(
         CM_IDENTICAL,
         RECORD_LAYOUT_SNIPPET,
@@ -459,12 +483,12 @@ def test_curve_characteristic_one_axis_is_valid(tmp_path):
 /end CHARACTERISTIC
 """,
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.AXIS_COUNT_MISMATCH not in codes
 
 
-def test_curve_characteristic_zero_axes_is_error(tmp_path):
+def test_curve_characteristic_zero_axes_is_error(parsed_db):
     a2l = _full_a2l(
         CM_IDENTICAL,
         RECORD_LAYOUT_SNIPPET,
@@ -473,12 +497,12 @@ def test_curve_characteristic_zero_axes_is_error(tmp_path):
 /end CHARACTERISTIC
 """,
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.AXIS_COUNT_MISMATCH in codes
 
 
-def test_map_characteristic_two_axes_is_valid(tmp_path):
+def test_map_characteristic_two_axes_is_valid(parsed_db):
     a2l = _full_a2l(
         CM_IDENTICAL,
         RECORD_LAYOUT_SNIPPET,
@@ -491,12 +515,12 @@ def test_map_characteristic_two_axes_is_valid(tmp_path):
 /end CHARACTERISTIC
 """,
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.AXIS_COUNT_MISMATCH not in codes
 
 
-def test_map_characteristic_one_axis_is_error(tmp_path):
+def test_map_characteristic_one_axis_is_error(parsed_db):
     a2l = _full_a2l(
         CM_IDENTICAL,
         RECORD_LAYOUT_SNIPPET,
@@ -507,7 +531,7 @@ def test_map_characteristic_one_axis_is_error(tmp_path):
 /end CHARACTERISTIC
 """,
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.AXIS_COUNT_MISMATCH in codes
 
@@ -517,7 +541,7 @@ def test_map_characteristic_one_axis_is_error(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-def test_measurement_missing_ecu_address(tmp_path):
+def test_measurement_missing_ecu_address(parsed_db):
     a2l = _full_a2l(
         COMPU_METHOD_SNIPPET,
         """
@@ -526,12 +550,12 @@ def test_measurement_missing_ecu_address(tmp_path):
 /end MEASUREMENT
 """,
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.MISSING_ECU_ADDRESS in codes
 
 
-def test_measurement_with_ecu_address_is_valid(tmp_path):
+def test_measurement_with_ecu_address_is_valid(parsed_db):
     a2l = _full_a2l(
         COMPU_METHOD_SNIPPET,
         """
@@ -541,6 +565,6 @@ def test_measurement_with_ecu_address_is_valid(tmp_path):
 /end MEASUREMENT
 """,
     )
-    db = _parse(tmp_path, a2l)
+    db = parsed_db(a2l)
     codes = _diag_codes(Validator(db.session)())
     assert Diagnostics.MISSING_ECU_ADDRESS not in codes

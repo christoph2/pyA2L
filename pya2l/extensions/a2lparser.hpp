@@ -272,8 +272,18 @@ class A2LParser {
         return m_tables;
     }
 
+    // Move out the table list, avoiding a deep copy on return.
+    std::vector<value_table_t> take_tables() noexcept {
+        return std::move(m_tables);
+    }
+
     const ValueContainer& get_values() const noexcept {
         return m_root;
+    }
+
+    // Move out the root container, avoiding a deep copy on return.
+    ValueContainer take_values() noexcept {
+        return std::move(m_root);
     }
 
     std::size_t get_keyword_counter() const noexcept {
