@@ -27,7 +27,6 @@ __copyright__ = """
 
 import enum
 from collections import Counter, namedtuple
-from itertools import combinations, filterfalse
 from logging import getLogger
 
 import pya2l.model as model
@@ -63,6 +62,8 @@ class Diagnostics(enum.IntEnum):
     MISSING_MODULE = 8
     DEPRECATED = 9
     OVERLAPPING_MEMORY = 10
+    MISSING_COMPU_METHOD = 11
+    MISSING_RECORD_LAYOUT = 12
 
 
 MAX_C_IDENTIFIER_LEN = 32  # ISO C90.
@@ -117,20 +118,19 @@ class Validator:
         return self._session
 
     def _traverse_db(self):
-        """ """
-
-        """
-        'a2ml', 'axis_pts', 'characteristic', 'compu_method',
-        'compu_tab', 'compu_vtab', 'compu_vtab_range', 'frame', 'function', 'group', 'if_data', 'if_data_association',
-        'longIdentifier', 'measurement', 'mod_common', 'mod_par', 'name', 'project', 'record_layout', 'unit',
-        'user_rights', 'variant_coding'
-        """
+        """Run all per-module validation checks."""
         for module in self.modules:
             self._validate_mod_common(module)
             self._validate_mod_par(module)
+            self._check_namespace_uniqueness(module)
+            self._check_compu_method_refs(module)
+            self._check_record_layout_refs(module)
+            self._check_c_identifier_lengths(module)
 
     def _validate_mod_common(self, module):
-        mod_common = mod_common = ModCommon(self.session, module.name)
+        if module.mod_common is None:
+            return
+        mod_common = ModCommon(self.session, module.name)
         if mod_common.byteOrder is None:
             self.emit_diagnostic(
                 Level.WARNING,
@@ -138,13 +138,23 @@ class Validator:
                 Diagnostics.MISSING_BYTE_ORDER,
                 f"{module.name}::ModCommon: Missing BYTE_ORDER.",
             )
-        missing_alignments = [e for e in mod_common.alignment.items() if e[1] is None]
+        # Check raw ORM fields to detect genuinely missing alignment keywords.
+        raw = module.mod_common
+        ALIGNMENT_FIELDS = {
+            "ALIGNMENT_BYTE": raw.alignment_byte,
+            "ALIGNMENT_WORD": raw.alignment_word,
+            "ALIGNMENT_LONG": raw.alignment_long,
+            "ALIGNMENT_INT64": raw.alignment_int64,
+            "ALIGNMENT_FLOAT32_IEEE": raw.alignment_float32_ieee,
+            "ALIGNMENT_FLOAT64_IEEE": raw.alignment_float64_ieee,
+        }
+        missing_alignments = [name for name, val in ALIGNMENT_FIELDS.items() if val is None]
         if missing_alignments:
             self.emit_diagnostic(
                 Level.WARNING,
                 Category.MISSING,
                 Diagnostics.MISSING_ALIGNMENT,
-                f"{module.name}::ModCommon: Missing ALIGNMENT(s): {[e[0] for e in missing_alignments]}.",
+                f"{module.name}::ModCommon: Missing ALIGNMENT(s): {missing_alignments}.",
             )
 
     def _validate_mod_par(self, module):
@@ -174,42 +184,115 @@ class Validator:
             )
         # memorySegments
 
-    '''
-    def duplicate_ids(self, objs):
-        """
-        """
-        cnt = Counter(names(objs))
-        #cnt["CM.TAB_NOINTP.NO_DEFAULT_VALUE.REF"] = 3
-        dups = filterfalse(lambda x: x[1] == 1, cnt.items())
-        print(list(names(objs)), end = "\n\n")
-        return list(dups)
+    def _check_namespace_uniqueness(self, module):
+        """Check that identifiers are unique within each ASAP2 namespace.
 
-    def _load_module_identifiers(self):
-        TABLES = ("axis_pts", "characteristic", "compu_method", "compu_tab", "compu_vtab", "compu_vtab_range",
-            "frame", "function", "group", "measurement", "mod_common", "mod_par", "record_layout", "unit",
-            "user_rights", "variant_coding",
-        )
+        Namespace 1 (measurement space): axis_pts, characteristic, measurement.
+        Namespace 2 (conversion table space): compu_tab, compu_vtab, compu_vtab_range.
 
-    def check_uniqueness(self, module, tables):
-        table_combinations = combinations(tables,2 )    # Pairwise.
-        print("TC:", list(table_combinations))
+        Emits MULTIPLE_DEFINITIONS_IN_NAMESPACE when a name appears more than once
+        inside the same namespace. Emits DEFINITION_IN_MULTIPLE_NAMESPACES when the
+        same name appears in both namespaces.
+        """
+        ns1_groups = {
+            "axis_pts": names(module.axis_pts),
+            "characteristic": names(module.characteristic),
+            "measurement": names(module.measurement),
+        }
+        ns2_groups = {
+            "compu_tab": names(module.compu_tab),
+            "compu_vtab": names(module.compu_vtab),
+            "compu_vtab_range": names(module.compu_vtab_range),
+        }
 
-    def check_namespaces(self):
-        """
-        """
-        modules = self.session.query(model.Module).all()
-        for module in modules:
-            print(module)
-            self.check_uniqueness(module, ("compu_vtab", "compu_vtab_range", "compu_tab"))
-            self.check_uniqueness(module, ("axis_pts", "characteristic", "measurement"))
-            dups = self.duplicate_ids(module.compu_tab)
-            if dups:
-                for dup, cnt in dups:
-                    print("COMPU_TAB: multiple occurrences of identifier '{}'.".format(dup))
-            print("TAB:", names(module.compu_tab), end = "\n\n")
-            print("VTAB:", names(module.compu_vtab), end = "\n\n")
-            print("VTAB-RANGE:", names(module.compu_vtab_range), end = "\n\n")
-    '''
+        for ns_label, groups in (("measurement_space", ns1_groups), ("conversion_space", ns2_groups)):
+            all_names: list[str] = []
+            for table_names in groups.values():
+                all_names.extend(table_names)
+            cnt = Counter(all_names)
+            for name, count in cnt.items():
+                if count > 1:
+                    self.emit_diagnostic(
+                        Level.ERROR,
+                        Category.DUPLICATE,
+                        Diagnostics.MULTIPLE_DEFINITIONS_IN_NAMESPACE,
+                        f"{module.name}: Identifier '{name}' defined {count} times in namespace '{ns_label}'.",
+                    )
+
+        ns1_all = set(n for lst in ns1_groups.values() for n in lst)
+        ns2_all = set(n for lst in ns2_groups.values() for n in lst)
+        cross = ns1_all & ns2_all
+        for name in sorted(cross):
+            self.emit_diagnostic(
+                Level.WARNING,
+                Category.DUPLICATE,
+                Diagnostics.DEFINITION_IN_MULTIPLE_NAMESPACES,
+                f"{module.name}: Identifier '{name}' appears in both the measurement and conversion namespaces.",
+            )
+
+    def _check_compu_method_refs(self, module):
+        """Verify that every conversion reference points to an existing COMPU_METHOD."""
+        valid_names = {cm.name for cm in module.compu_method}
+        NO_REF = "NO_COMPU_METHOD"
+
+        def _check(obj_type: str, obj_name: str, conversion: str) -> None:
+            if conversion and conversion != NO_REF and conversion not in valid_names:
+                self.emit_diagnostic(
+                    Level.ERROR,
+                    Category.MISSING,
+                    Diagnostics.MISSING_COMPU_METHOD,
+                    f"{module.name}: {obj_type} '{obj_name}' references unknown COMPU_METHOD '{conversion}'.",
+                )
+
+        for meas in module.measurement:
+            _check("MEASUREMENT", meas.name, meas.conversion)
+        for char in module.characteristic:
+            _check("CHARACTERISTIC", char.name, char.conversion)
+        for apts in module.axis_pts:
+            _check("AXIS_PTS", apts.name, apts.conversion)
+
+    def _check_record_layout_refs(self, module):
+        """Verify that every DEPOSIT/RECORD_LAYOUT reference is resolvable."""
+        valid_names = {rl.name for rl in module.record_layout}
+
+        for char in module.characteristic:
+            if char.deposit and char.deposit not in valid_names:
+                self.emit_diagnostic(
+                    Level.ERROR,
+                    Category.MISSING,
+                    Diagnostics.MISSING_RECORD_LAYOUT,
+                    f"{module.name}: CHARACTERISTIC '{char.name}' references unknown RECORD_LAYOUT '{char.deposit}'.",
+                )
+        for apts in module.axis_pts:
+            if apts.depositAttr and apts.depositAttr not in valid_names:
+                self.emit_diagnostic(
+                    Level.ERROR,
+                    Category.MISSING,
+                    Diagnostics.MISSING_RECORD_LAYOUT,
+                    f"{module.name}: AXIS_PTS '{apts.name}' references unknown RECORD_LAYOUT '{apts.depositAttr}'.",
+                )
+
+    def _check_c_identifier_lengths(self, module):
+        """Emit INVALID_C_IDENTIFIER for any name exceeding MAX_C_IDENTIFIER_LEN (ISO C90)."""
+        named_collections = [
+            ("MEASUREMENT", module.measurement),
+            ("CHARACTERISTIC", module.characteristic),
+            ("AXIS_PTS", module.axis_pts),
+            ("COMPU_METHOD", module.compu_method),
+            ("COMPU_TAB", module.compu_tab),
+            ("COMPU_VTAB", module.compu_vtab),
+            ("COMPU_VTAB_RANGE", module.compu_vtab_range),
+            ("RECORD_LAYOUT", module.record_layout),
+        ]
+        for obj_type, collection in named_collections:
+            for obj in collection:
+                if obj.name and len(obj.name) > MAX_C_IDENTIFIER_LEN:
+                    self.emit_diagnostic(
+                        Level.WARNING,
+                        Category.MISSING,
+                        Diagnostics.INVALID_C_IDENTIFIER,
+                        f"{module.name}: {obj_type} '{obj.name}' exceeds {MAX_C_IDENTIFIER_LEN} chars (ISO C90 limit).",
+                    )
 
     def emit_diagnostic(self, level: Level, category: Category, diag: Diagnostics, message: str | None = None):
         self.logger.warning("%s - %s", level.name, message)
@@ -218,35 +301,3 @@ class Validator:
     @property
     def diagnostics(self):
         return self._diagnostics
-
-
-"""
-
-class MODULE(Keyword):
-    multiple = True
-    block = True
-    children = [
-        "A2ML",
-        "AXIS_PTS",
-        "CHARACTERISTIC",
-        "COMPU_METHOD",
-        "COMPU_TAB",
-        "COMPU_VTAB",
-        "COMPU_VTAB_RANGE",
-        "FRAME",
-        "FUNCTION",
-        "GROUP",
-        "IF_DATA",
-        "INSTANCE",
-        "MEASUREMENT",
-        "MOD_COMMON",
-        "MOD_PAR",
-        "RECORD_LAYOUT",
-        "STRUCTURE_COMPONENT",
-        "TYPEDEF_MEASUREMENT",
-        "TYPEDEF_STRUCTURE",
-        "UNIT",
-        "USER_RIGHTS",
-        "VARIANT_CODING",
-    ]
-"""
