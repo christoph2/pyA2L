@@ -13,10 +13,10 @@ from sqlalchemy.orm import sessionmaker
 
 import pya2l.model as model
 from pya2l.model import (
+    _MIGRATIONS,
     CURRENT_SCHEMA_VERSION,
     A2LDatabase,
     MetaData,
-    _MIGRATIONS,
     _register_migration,
 )
 
@@ -87,9 +87,9 @@ def test_migration_succeeds_when_step_registered(tmp_path):
             # Verify schema version was persisted
             updated = db.session.query(MetaData).first()
             assert updated is not None
-            assert updated.schema_version == CURRENT_SCHEMA_VERSION, (
-                f"schema_version should be {CURRENT_SCHEMA_VERSION}, got {updated.schema_version}"
-            )
+            assert (
+                updated.schema_version == CURRENT_SCHEMA_VERSION
+            ), f"schema_version should be {CURRENT_SCHEMA_VERSION}, got {updated.schema_version}"
             db.close()
     finally:
         _MIGRATIONS.pop((old_version, CURRENT_SCHEMA_VERSION), None)
