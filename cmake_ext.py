@@ -15,10 +15,8 @@ import sys
 from pathlib import Path
 
 from pybind11 import get_cmake_dir
-from pybind11.setup_helpers import Pybind11Extension
 from setuptools import Extension
 from setuptools.command.build_ext import build_ext
-
 
 PB11_CMAKE = get_cmake_dir()
 

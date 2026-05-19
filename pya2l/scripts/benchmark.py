@@ -11,14 +11,13 @@ import sys
 import tempfile
 import time
 from collections.abc import Iterable
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pya2l import import_a2l
 from pya2l.api.validate import Validator
 from pya2l.imex import export_a2l_db, export_json_dict, open_a2l_database
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DATASETS: list[Path] = [
@@ -137,7 +136,7 @@ def run_benchmark(
                                     duration = time.perf_counter() - start
                                     pr.disable()
                                     profiling_available = True
-                                except ValueError as exc:
+                                except ValueError:
                                     profiling_available = False
                                     start = time.perf_counter()
                                     res = func()

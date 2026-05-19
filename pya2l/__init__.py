@@ -47,7 +47,6 @@ import typing
 import warnings
 from io import TextIOWrapper
 
-
 try:
     from rich.traceback import install
 
@@ -58,14 +57,13 @@ except ImportError:
 import pya2l.model as model
 from pya2l.exceptions import MathError, RangeError, StructuralError
 from pya2l.imex import (
-    export_a2l_db,
-    export_json_dict,
-    open_a2l_database,
-    open_json_database,
+    export_a2l_db,  # noqa: F401
+    export_json_dict,  # noqa: F401
+    open_a2l_database,  # noqa: F401
+    open_json_database,  # noqa: F401
 )
 from pya2l.logger import Logger
 from pya2l.templates import doTemplateFromText
-
 
 if RICH_AVAILABLE:
     install(show_locals=True, max_frames=3)  # Install custom exception handler.

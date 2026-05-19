@@ -42,7 +42,6 @@ from pya2l.imex import (
 )
 from pya2l.version import __version__
 
-
 _logger = logging.getLogger(__name__)
 _console = Console(stderr=True)
 

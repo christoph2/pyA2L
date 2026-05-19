@@ -9,8 +9,6 @@ import sys
 import sysconfig
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import List, Optional, Tuple  # noqa: UP035
-
 
 TOP_DIR = Path(__file__).parent
 

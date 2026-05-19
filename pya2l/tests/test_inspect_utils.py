@@ -1,19 +1,14 @@
 #!/usr/bin/env python
 """Tests for utility functions in pya2l.api.inspect module."""
 
-from typing import Dict, List, Optional, Tuple, Union
-
 import pytest
 
 from pya2l.api.inspect import (
-    Annotation,
     MatrixDim,
-    _annotations,
     all_axes_names,
     asam_type_size,
     fnc_np_order,
     fnc_np_shape,
-    get_module,
 )
 
 

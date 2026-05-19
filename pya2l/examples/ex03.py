@@ -1,6 +1,5 @@
 from pya2l import DB, model
 
-
 db = DB()
 session = db.open_create("ASAP2_Demo_V161")
 measurements = session.query(model.Measurement).order_by(model.Measurement.name).all()

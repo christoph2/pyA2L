@@ -166,6 +166,14 @@ line-length = 132
 ignore = ["I001"]
 unfixable = ["B"]
 
+[tool.ruff.lint.per-file-ignores]
+"pya2l/examples/*" = ["F401", "F841", "E402", "E722", "F821", "F811"]
+"scripts/*" = ["F401", "F841", "F541", "E402"]
+"pya2l/functions.py" = ["E402"]
+"pya2l/cse_units.py" = ["E402"]
+"pya2l/api/validate.py" = ["E402"]
+"pya2l/utils.py" = ["E402"]
+
 [tool.bandit]
 exclude_dirs = [".venv", "tests", "pya2l/examples", "pya2l/build"]
 # Broad skips removed — per-site suppressions use inline # nosec annotations instead

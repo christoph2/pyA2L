@@ -28,17 +28,13 @@ __copyright__ = """
 import bisect
 import logging
 import re
-import typing
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from operator import itemgetter
 
-
-
 _logger = logging.getLogger(__name__)
 
 import numpy as np
-
 
 try:
     import numexpr as _numexpr  # type: ignore[import-untyped]
@@ -61,7 +57,6 @@ def _require_compute(feature: str) -> None:
 
 
 from pya2l import exceptions
-
 
 POW = re.compile(r"pow\s*\((?P<params>.*?)\s*\)", re.IGNORECASE)
 SYSC = re.compile(r"sysc\s*\((?P<param>.*?)\s*\)", re.IGNORECASE)

@@ -7,7 +7,6 @@ These tests verify the migration chain in A2LDatabase:
 
 import warnings
 
-import pytest
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 
@@ -19,7 +18,6 @@ from pya2l.model import (
     MetaData,
     _register_migration,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers

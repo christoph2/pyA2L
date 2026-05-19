@@ -33,30 +33,10 @@ __copyright__ = """
 """
 
 import json
-from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union, cast
+from typing import Any, TypeVar, cast
 
 import pya2l.model as model
 from pya2l import exceptions
-from pya2l.api.inspect import (  # Project, Header, Annotation
-    AxisDescr,
-    AxisPts,
-    Characteristic,
-    CompuMethod,
-    Function,
-    Group,
-    Instance,
-    Measurement,
-    ModCommon,
-    ModPar,
-    NoCompuMethod,
-    RecordLayout,
-    StructureComponent,
-    TypedefCharacteristic,
-    TypedefMeasurement,
-    TypedefStructure,
-    VariantCoding,
-)
-
 
 _T = TypeVar("_T")
 

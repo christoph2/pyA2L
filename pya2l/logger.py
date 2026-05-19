@@ -29,7 +29,6 @@ __version__ = "0.1.0"
 import logging
 import traceback
 
-
 try:
     from rich.logging import RichHandler
 

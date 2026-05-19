@@ -7,7 +7,6 @@ from pprint import pprint
 
 from pya2l import amlparser_ext as e
 
-
 os.chdir(r"C:\csProjects\pyA2L\pya2l\examples")
 # sys.argv.append(r".\XCP_101.aml")
 sys.argv.append(r".\AML.tmp")

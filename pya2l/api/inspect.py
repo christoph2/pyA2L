@@ -44,11 +44,7 @@ from functools import cached_property, reduce
 from operator import attrgetter, mul
 from typing import (
     Any,
-    Dict,
     Generic,
-    List,
-    Optional,
-    Tuple,
     TypeVar,
     Union,
 )
@@ -68,8 +64,7 @@ from pya2l.functions import (
     LookupTableWithRanges,
     RatFunc,
 )
-from pya2l.utils import SingletonBase, align_as, enum_from_str, ffs
-
+from pya2l.utils import SingletonBase, align_as, enum_from_str
 
 _logger = logging.getLogger(__name__)
 
@@ -1364,7 +1359,9 @@ class FilteredList(Generic[_CachedT]):
         should be included in the results.
         """
         if criterion is None:
-            criterion = lambda x: x
+
+            def criterion(x):
+                return x
 
         if self.association is None:
             return
@@ -2668,7 +2665,7 @@ def create_record_layout_components(parent) -> dict:
                 adjustable=adjustable,
             )
         elif "offset" in axis_components:
-            offset = axis_components.get("offset")
+            _offset = axis_components.get("offset")  # noqa: F841
             dist_op = axis_components.get("dist_op")
             ## FIX_AXIS_PAR_DIST
             shift_op = axis_components.get("shift_op")

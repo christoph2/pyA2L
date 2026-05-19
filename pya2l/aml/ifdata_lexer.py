@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Any, List, Optional
+from typing import Any
 
 
 class IfDataTokenType(IntEnum):

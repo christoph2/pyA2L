@@ -8,7 +8,6 @@ import pya2l.a2lparser_ext as ext
 from pya2l import DB
 from pya2l.aml.ifdata_parser import IfDataParser
 
-
 # os.chdir(r"C:\csprojects\pyA2L\pya2l\examples")
 
 db = DB()

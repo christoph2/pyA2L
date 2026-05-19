@@ -29,16 +29,16 @@ def test_cygpathToWin():
 
 def test_tristate():
     t = Tristate(True)
-    assert t == True
+    assert t == True  # noqa: E712  - testing Tristate.__eq__ behavior
     assert str(t) == "True"
     assert repr(t) == "Tristate(True)"
 
     f = Tristate(False)
-    assert f == False
+    assert f == False  # noqa: E712  - testing Tristate.__eq__ behavior
 
     n = Tristate(None)
-    assert n != True
-    assert n != False
+    assert n != True  # noqa: E712  - testing Tristate.__ne__ behavior
+    assert n != False  # noqa: E712  - testing Tristate.__ne__ behavior
 
 
 def test_ffs():

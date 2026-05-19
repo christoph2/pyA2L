@@ -11,7 +11,7 @@ The main class is IfDataParser which handles the parsing of IF_DATA sections.
 from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import pya2l.model as model
 from pya2l.a2lparser_ext import AmlType, unmarshal

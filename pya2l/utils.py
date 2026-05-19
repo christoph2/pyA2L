@@ -29,14 +29,12 @@ __version__ = "0.1.0"
 import ctypes
 import logging
 import pathlib
-import sys
 import threading
 from enum import IntEnum
 from unicodedata import normalize
 
 # from chardet.universaldetector import UniversalDetector
 import chardet
-
 
 _logger = logging.getLogger(__name__)
 

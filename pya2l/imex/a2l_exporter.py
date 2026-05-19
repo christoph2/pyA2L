@@ -15,14 +15,13 @@ import re
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, List, Optional, TextIO, Tuple, Union
+from typing import Any, TextIO
 
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import selectinload
 
 import pya2l.model as model
 from pya2l.model import A2LDatabase
-
 
 logger = logging.getLogger(__name__)
 

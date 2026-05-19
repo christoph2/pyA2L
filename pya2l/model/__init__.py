@@ -32,9 +32,9 @@ import re
 import sqlite3
 import warnings
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import Column, ForeignKey, Index, create_engine, event
+from sqlalchemy import Column, ForeignKey, create_engine, event
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import orm, types
 from sqlalchemy.engine import Engine
@@ -45,9 +45,8 @@ from sqlalchemy.orm import as_declarative, backref, declared_attr, relationship
 from pya2l.model.mixins import AxisDescrMixIn, CompareByPositionMixIn
 from pya2l.utils import SingletonBase
 
-
 if TYPE_CHECKING:
-    from pya2l.aml.ifdata_parser import IfDataParser
+    pass  # IfDataParser is imported locally inside setup_ifdata_parser
 
 
 DB_EXTENSION = "a2ldb"

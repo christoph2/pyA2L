@@ -30,8 +30,7 @@ from collections import Counter, namedtuple
 from logging import getLogger
 
 import pya2l.model as model
-from pya2l.api.inspect import AxisDescr, Characteristic, Measurement, ModCommon, ModPar
-
+from pya2l.api.inspect import ModCommon, ModPar
 
 # *** Validator generated no diagnostic messages ***
 
@@ -308,9 +307,7 @@ class Validator:
         - FORM      → FORMULA
         """
         all_tab_names: set[str] = (
-            {t.name for t in module.compu_tab}
-            | {t.name for t in module.compu_vtab}
-            | {t.name for t in module.compu_vtab_range}
+            {t.name for t in module.compu_tab} | {t.name for t in module.compu_vtab} | {t.name for t in module.compu_vtab_range}
         )
 
         for cm in module.compu_method:

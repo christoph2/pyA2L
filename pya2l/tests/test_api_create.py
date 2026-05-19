@@ -137,7 +137,7 @@ class TestModuleCreator:
     @pytest.mark.skip
     def test_add_if_data(self, session, test_module):
         creator = ModuleCreator(session)
-        ifd = creator.add_if_data(test_module, "TEXT")
+        creator.add_if_data(test_module, "TEXT")
         creator.commit()
         assert test_module.if_data[0].ifDataText == "TEXT"
 

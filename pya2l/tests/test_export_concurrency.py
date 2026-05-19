@@ -1,6 +1,5 @@
 import sqlite3
 import threading
-from pathlib import Path
 
 import pya2l.imex.a2l_exporter as a2l_exporter
 import pya2l.model as model
