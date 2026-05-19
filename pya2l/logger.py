@@ -44,9 +44,11 @@ class Logger:
     FORMAT = "[%(levelname)s (%(name)s)]: %(message)s"
 
     def __init__(self, name: str, level: str = "INFO") -> None:
-        if not logging.getLogger().handlers:
-            self.logger = logging.getLogger(f"{self.LOGGER_BASE_NAME}.{name}")
-            self.setLevel(level)
+        self.logger = logging.getLogger(f"{self.LOGGER_BASE_NAME}.{name}")
+        self.setLevel(level)
+        # Add a handler only when neither this logger nor the root logger has one,
+        # so application-level logging configuration is respected.
+        if not self.logger.handlers and not logging.getLogger().handlers:
             if RICH_AVAILABLE:
                 handler: logging.Handler = RichHandler()
             else:
@@ -54,10 +56,6 @@ class Logger:
             formatter = logging.Formatter(self.FORMAT)
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
-        if RICH_AVAILABLE:
-            self.logger = logging.getLogger("rich")
-        else:
-            self.logger = logging.getLogger(f"{self.LOGGER_BASE_NAME}.{name}")
         self.lastMessage: str | None = None
         self.lastSeverity: int | None = None
 
@@ -86,7 +84,7 @@ class Logger:
     def error(self, message: str, exc_info: bool = False) -> None:
         self.log(message, logging.ERROR)
         if exc_info:
-            self.logger.debug(traceback.format_exc())
+            self.logger.error(traceback.format_exc())
 
     def critical(self, message: str) -> None:
         self.log(message, logging.CRITICAL)

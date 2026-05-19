@@ -985,7 +985,7 @@ class MatrixDim:
             return cls(x=x, y=y, z=z)
         except (AttributeError, IndexError) as e:
             # Handle case where matrix_dim doesn't have expected structure
-            print(f"Error initializing MatrixDim from model: {e}")
+            _logger.debug("Error initializing MatrixDim from model: %s", e)
             return cls()
 
     def valid(self) -> bool:
@@ -1511,7 +1511,7 @@ class CachedBase:
         Otherwise, a new instance is created, added to the cache, and returned.
         """
         if session is None:
-            print(f"{cls.__name__}.get(): session cannot be None")
+            _logger.warning("%s.get(): session cannot be None", cls.__name__)
             return None
 
         if no_cache:
@@ -1541,7 +1541,7 @@ class CachedBase:
 
         This method is used for debugging purposes.
         """
-        print("INNY: ", cls.__name__)
+        _logger.debug("INNY: %s", cls.__name__)
 
 
 class NoCompuMethod(SingletonBase):
@@ -2702,7 +2702,7 @@ def create_record_layout_components(parent) -> dict:
                 addressing="DIRECT",
             )
         else:
-            print("*** ax", axis_components)
+            _logger.debug("unexpected axis_components: %r", axis_components)
             raise TypeError("???")
         result["axes"][axis_name] = axis_info
     for ax in record_layout.axes.keys():

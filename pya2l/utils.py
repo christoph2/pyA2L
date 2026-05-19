@@ -27,6 +27,7 @@ __author__ = "Christoph Schueler"
 __version__ = "0.1.0"
 
 import ctypes
+import logging
 import pathlib
 import subprocess
 import sys
@@ -36,6 +37,8 @@ from unicodedata import normalize
 
 # from chardet.universaldetector import UniversalDetector
 import chardet
+
+_logger = logging.getLogger(__name__)
 
 
 def slicer(iterable, sliceLength, converter=None):
@@ -236,12 +239,12 @@ def detect_encoding(file_name: str = None, text: str = None) -> str:
         raise ValueError("`file_name` and `text` are mutual exclusive.")
     if isinstance(file_name, pathlib.WindowsPath):
         file_name = str(file_name)
-    print("Detecting encoding...")  # TODO: logger
+    _logger.info("Detecting encoding...")
     if file_name:
         with open(file_name, "rb") as inf:
             text = inf.read()
     encoding = chardet.detect(text, should_rename_legacy=True).get("encoding")
-    print(f"Detected encoding {encoding!r}")
+    _logger.info("Detected encoding %r", encoding)
     return encoding
 
 
