@@ -54,7 +54,7 @@ pre-commit-hooks = "^5.0.0"
 
 pyupgrade = "^3.16.0"
 pytest-cov = "^6.0"
-mypy = "^1.16"
+mypy = ">=1.16,<3.0"
 scipy = "^1.15.0"
 numexpr = "^2.14.1"
 
