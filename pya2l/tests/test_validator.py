@@ -45,7 +45,7 @@ def _a2l(*body_lines):
 
 def test_missing_byte_order(tmp_path):
     a2l = _a2l(
-        "/begin MOD_COMMON \"\"",
+        '/begin MOD_COMMON ""',
         "/end MOD_COMMON",
     )
     db = _parse(tmp_path, a2l)
@@ -56,7 +56,7 @@ def test_missing_byte_order(tmp_path):
 
 def test_missing_alignment(tmp_path):
     a2l = _a2l(
-        "/begin MOD_COMMON \"\"",
+        '/begin MOD_COMMON ""',
         "  BYTE_ORDER MSB_LAST",
         "/end MOD_COMMON",
     )
@@ -263,7 +263,7 @@ def test_c_identifier_exactly_32_chars_is_valid(tmp_path):
 def test_message_fields(tmp_path):
     """Every emitted Message must have all namedtuple fields populated."""
     a2l = _a2l(
-        "/begin MOD_COMMON \"msg-fields-unique\"",
+        '/begin MOD_COMMON "msg-fields-unique"',
         "/end MOD_COMMON",
     )
     db = _parse(tmp_path, a2l)
