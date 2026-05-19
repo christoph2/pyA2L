@@ -8,10 +8,9 @@ Import an .a2l file to database
 
 .. code-block:: python
 
-    from pya2l import DB
+    from pya2l import import_a2l
 
-    db = DB()
-    session = db.import_a2l(
+    session = import_a2l(
         "ASAP2_Demo_V161.a2l",
         # encoding="latin-1" is default; override if your file differs
         # progress_bar=False or loglevel="ERROR" to silence progress
@@ -23,15 +22,33 @@ which is simply a `Sqlite3 <https://www.sqlite.org/>`_ database file.
 Unlike other ASAP2 toolkits, you are not required
 to parse your `.a2l` files over and over again, which can be quite expensive.
 
-Open an existing .a2ldb database
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Re-importing an existing file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default, re-importing a file whose `.a2ldb` already exists triggers a
+confirmation prompt instead of raising an ``OSError``.  To suppress the prompt
+and overwrite unconditionally, pass ``force_overwrite=True``:
 
 .. code-block:: python
 
-    from pya2l import DB
+    from pya2l import import_a2l
 
-    db = DB()
-    session = db.open_existing("ASAP2_Demo_V161")   # No need to specify extension .a2ldb
+    session = import_a2l("ASAP2_Demo_V161.a2l", force_overwrite=True)
+
+The CLI flag ``-f`` / ``--force-overwrite`` provides the same behaviour:
+
+.. code-block:: bash
+
+    a2ldb-imex -i ASAP2_Demo_V161.a2l -f
+
+Open an existing .a2ldb database
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    from pya2l import open_existing
+
+    session = open_existing("ASAP2_Demo_V161")   # No need to specify extension .a2ldb
 
 You may have noticed, that in both cases the return value is stored in an object named `session`:
 
@@ -45,11 +62,10 @@ Running a first database query
 
 .. code-block:: python
 
-    from pya2l import DB
+    from pya2l import open_existing
     import pya2l.model as model
 
-    db = DB()
-    session = db.open_existing("ASAP2_Demo_V161")
+    session = open_existing("ASAP2_Demo_V161")
     measurements = session.query(model.Measurement).order_by(model.Measurement.name).all()
     for m in measurements:
         print(f"{m.name:48} {m.datatype:12} 0x{m.ecu_address.address:08x}")
@@ -94,10 +110,10 @@ conversion and caching:
 
 .. code-block:: python
 
-    from pya2l import DB
+    from pya2l import open_existing
     from pya2l.api.inspect import Project, Measurement, Characteristic
 
-    session = DB().open_existing("ASAP2_Demo_V161")
+    session = open_existing("ASAP2_Demo_V161")
 
     # Navigate the project hierarchy
     project = Project(session)
@@ -143,10 +159,10 @@ instance with parsed and raw data:
 
 .. code-block:: python
 
-    from pya2l import DB
+    from pya2l import open_create
     from pya2l.api.inspect import Module
 
-    session = DB().open_create("xcp_demo_autodetect.a2l")
+    session = open_create("xcp_demo_autodetect.a2l")
     module = Module(session)
 
     # Access the IfData dataclass
@@ -173,10 +189,10 @@ Basic validation:
 
 .. code-block:: python
 
-    from pya2l import DB
+    from pya2l import open_existing
     from pya2l.api.validate import Validator
 
-    session = DB().open_existing("ASAP2_Demo_V161")
+    session = open_existing("ASAP2_Demo_V161")
     for msg in Validator(session)():
         print(msg.type.name, msg.category.name, msg.diag_code.name, "-", msg.text)
 
@@ -200,3 +216,38 @@ Next steps
 - :doc:`ifdata` — Comprehensive IF_DATA guide
 - :doc:`api_reference` — Full API reference with examples
 - :doc:`howto` — Task-oriented quick recipes
+
+Migrating from ``pya2l.DB``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``DB`` wrapper class is **deprecated** and will be removed in a future
+release.  Replace each call pattern as shown below — the behaviour is identical:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 50 50
+
+   * - Old (deprecated)
+     - New (preferred)
+   * - ``DB().import_a2l("file.a2l")``
+     - ``import_a2l("file.a2l")``
+   * - ``DB().open_existing("file")``
+     - ``open_existing("file")``
+   * - ``DB().open_create("file.a2l")``
+     - ``open_create("file.a2l")``
+   * - ``DB.import_a2l(db, "file.a2l")``
+     - ``import_a2l("file.a2l")``
+
+All keyword arguments (``encoding``, ``loglevel``, ``local``, ``progress_bar``,
+``force_overwrite``) are available on the module-level functions.
+
+.. code-block:: python
+
+    # Before
+    from pya2l import DB
+    session = DB().import_a2l("my.a2l", loglevel="ERROR")
+
+    # After
+    from pya2l import import_a2l
+    session = import_a2l("my.a2l", loglevel="ERROR")
+

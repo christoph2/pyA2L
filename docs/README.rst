@@ -116,15 +116,15 @@ Import a .a2l file and persist it as .a2ldb (SQLite):
 
 .. code:: python
 
-   from pya2l import DB
+   from pya2l import import_a2l
 
-   db = DB()
-   session = db.import_a2l(
+   session = import_a2l(
        "ASAP2_Demo_V161.a2l",
        # Optional:
        # encoding="utf-8",        # default is latin-1
        # progress_bar=False,      # silence the progress meter
        # loglevel="ERROR",        # also suppresses progress
+       # force_overwrite=True,    # overwrite existing .a2ldb without prompting
    )
    # Creates ASAP2_Demo_V161.a2ldb in the working directory
 
@@ -132,21 +132,19 @@ Import a .a2l file and persist it as .a2ldb (SQLite):
 
 .. code:: python
 
-   from pya2l import DB
+   from pya2l import open_existing
 
-   db = DB()
-   session = db.open_existing("ASAP2_Demo_V161")  # extension .a2ldb is implied
+   session = open_existing("ASAP2_Demo_V161")  # extension .a2ldb is implied
 
 Query with SQLAlchemy ORM - List all measurements ordered by name with
 address and data type:
 
 .. code:: python
 
-   from pya2l import DB
+   from pya2l import open_existing
    import pya2l.model as model
 
-   db = DB()
-   session = db.open_existing("ASAP2_Demo_V161")
+   session = open_existing("ASAP2_Demo_V161")
    measurements = (
        session.query(model.Measurement)
        .order_by(model.Measurement.name)
@@ -160,11 +158,10 @@ pya2l.api.inspect to access derived info:
 
 .. code:: python
 
-   from pya2l import DB
+   from pya2l import open_existing
    from pya2l.api.inspect import Characteristic, Measurement, AxisDescr
 
-   db = DB()
-   session = db.open_existing("ASAP2_Demo_V161")
+   session = open_existing("ASAP2_Demo_V161")
    ch = Characteristic(session, "ASAM.C.MAP.UBYTE.IDENTICAL")
    print("shape:", ch.dim().shape)
    print("element size:", ch.fnc_element_size(), "bytes")
@@ -181,14 +178,13 @@ augment A2L databases:
 
 .. code:: python
 
-   from pya2l import DB
+   from pya2l import open_create
    from pya2l.api.create import (
        ProjectCreator, ModuleCreator, MeasurementCreator,
        CharacteristicCreator, CompuMethodCreator
    )
 
-   db = DB()
-   session = db.open_create("MyProject.a2ldb")
+   session = open_create("MyProject.a2ldb")
 
    # Create project and module
    pc = ProjectCreator(session)
@@ -230,11 +226,10 @@ Validate your database
 
 .. code:: python
 
-   from pya2l import DB
+   from pya2l import open_existing
    from pya2l.api.validate import Validator
 
-   db = DB()
-   session = db.open_existing("ASAP2_Demo_V161")
+   session = open_existing("ASAP2_Demo_V161")
    vd = Validator(session)
    for msg in vd():  # iterate diagnostics
        # msg has fields: type (Level), category (Category), diag_code (Diagnostics), text (str)
@@ -280,12 +275,12 @@ Example: creating common entities
 
 .. code:: python
 
-   from pya2l import DB
+   from pya2l import open_create
    from pya2l.api.create import ModuleCreator
    from pya2l.api.inspect import Module
 
    # Open or create a database
-   session = DB().open_create("MyProject.a2l")  # or .a2ldb
+   session = open_create("MyProject.a2l")  # or .a2ldb
 
    mc = ModuleCreator(session)
    # Create a module
@@ -327,7 +322,7 @@ A small CLI is provided as a console script named ``a2ldb-imex``:
 
 .. code:: bash
 
-   # Show version
+   # Show version (exit 0)
    $ a2ldb-imex -V
 
    # Import an A2L (creates .a2ldb next to the input or in CWD with -L)
@@ -335,6 +330,12 @@ A small CLI is provided as a console script named ``a2ldb-imex``:
 
    # Import with explicit encoding and create DB in current directory
    $ a2ldb-imex -i path/to/file.a2l -E latin-1 -L
+
+   # Overwrite existing .a2ldb without prompting
+   $ a2ldb-imex -i path/to/file.a2l -f
+
+   # Suppress all output (useful in scripts/CI)
+   $ a2ldb-imex -i path/to/file.a2l -q
 
    # Export an .a2ldb back to A2L text (stdout by default or -o file)
    $ a2ldb-imex -e path/to/file.a2ldb -o exported.a2l
