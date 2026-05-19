@@ -13,7 +13,7 @@ import time
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pya2l import import_a2l
 from pya2l.api.validate import Validator
@@ -111,8 +111,8 @@ def run_benchmark(
     loglevel: str,
     profile_dir: Path | None = None,
     profile_top: int = 20,
-) -> dict[str, dict[str, float]]:
-    results: dict[str, dict[str, float]] = {}
+) -> dict[str, Any]:
+    results: dict[str, Any] = {}
     for ds in datasets:
         timings: list[IterationTimings] = []
         for _ in range(iterations):
@@ -291,7 +291,7 @@ def main(argv: list[str] | None = None) -> None:
     for path_str, data in results.items():
         print(f"Dataset: {path_str}")
         for key in ("import", "export_a2l", "export_json", "validate"):
-            agg = data[key]
+            agg: dict[str, float | None] = data[key]
             print(
                 f"  {key}: mean={_fmt(agg['mean'])} median={_fmt(agg['median'])} " f"min={_fmt(agg['min'])} max={_fmt(agg['max'])}"
             )

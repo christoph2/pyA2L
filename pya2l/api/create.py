@@ -33,7 +33,7 @@ __copyright__ = """
 """
 
 import json
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union, cast
 
 import pya2l.model as model
 from pya2l import exceptions
@@ -57,6 +57,7 @@ from pya2l.api.inspect import (  # Project, Header, Annotation
     VariantCoding,
 )
 
+_T = TypeVar("_T")
 
 __all__ = [
     # Mixin traits (useful for type-checking and subclassing)
@@ -2690,13 +2691,13 @@ class RecordLayoutCreator(Creator):
         return record_layout
 
     @staticmethod
-    def _add_position_datatype(record_layout: model.RecordLayout, cls: Any, position: int, data_type: str) -> Any:
-        obj = cls(position=position, datatype=data_type)
+    def _add_position_datatype(record_layout: model.RecordLayout, cls: type[_T], position: int, data_type: str) -> _T:
+        obj: Any = cls(position=position, datatype=data_type)  # type: ignore[call-arg]
         obj.record_layout = record_layout
-        return obj
+        return cast(_T, obj)
 
-    def _add_and_attach(self, record_layout: model.RecordLayout, obj: Any) -> Any:
-        obj.record_layout = record_layout
+    def _add_and_attach(self, record_layout: model.RecordLayout, obj: _T) -> _T:
+        obj.record_layout = record_layout  # type: ignore[attr-defined]
         self.session.add(obj)
         return obj
 

@@ -154,6 +154,7 @@ __all__ = [
 ]
 
 T = TypeVar("T")
+_CachedT = TypeVar("_CachedT", bound="CachedBase")
 
 DB_CACHE_SIZE = 4096  # Completly arbitrary, could be configurable.
 
@@ -1306,7 +1307,7 @@ def fnc_np_order(order: str | None) -> str | None:
         return None
 
 
-class FilteredList(Generic[T]):
+class FilteredList(Generic[_CachedT]):
     """A filtered list of objects from a database association.
 
     This class provides a way to filter and query objects from a database
@@ -1324,7 +1325,7 @@ class FilteredList(Generic[T]):
         Function to extract the attribute used for instantiation
     """
 
-    def __init__(self, session, association, klass: T, attr_name: str = "name") -> None:
+    def __init__(self, session, association, klass: type[_CachedT], attr_name: str = "name") -> None:
         """Initialize a FilteredList instance.
 
         Parameters
@@ -1333,7 +1334,7 @@ class FilteredList(Generic[T]):
             SQLAlchemy session object
         association : Any
             Database association to query
-        klass : Type[T]
+        klass : Type[_CachedT]
             Class to instantiate for each row
         attr_name : str, optional
             Name of the attribute to use for instantiation, by default "name"
@@ -3856,13 +3857,13 @@ class TypedefStructure(CachedBase):
 class Overwrite:
     name: str
     axisNumber: int
-    conversion: str
+    conversion: str | None
     extendedLimits: ExtendedLimits | None
-    format: str
-    inputQuantity: str
+    format: str | None
+    inputQuantity: str | None
     limits: Limits | None
-    monotony: str
-    physUnit: str
+    monotony: str | None
+    physUnit: str | None
 
 
 def create_overwrite(overwrite) -> Overwrite | None:
@@ -3929,11 +3930,11 @@ class Instance(CachedBase):
     typedefName: str
     address: int
     addressType: str | None
-    annotations = list[Annotation]
+    annotations: list[Annotation]
     calibration_access: str | None
     displayIdentifier: str | None
     ecuAddressExtension: int
-    if_data: list[dict[str, Any]]
+    if_data: IfData
     layout: str | None
     matrixDim: MatrixDim
     maxRefresh: MaxRefresh | None
@@ -3942,7 +3943,7 @@ class Instance(CachedBase):
     readWrite: bool
     symbolLink: SymbolLink | None
 
-    def __init__(self, session, name=None, module_name: str = None):
+    def __init__(self, session, name=None, module_name: str | None = None):
         self.session = session
         instance = session.query(model.Instance).filter(model.Instance.name == name)
         if module_name is not None:
@@ -4022,10 +4023,10 @@ class TypedefMeasurement(CachedBase):
     accuracy: float | None
     upperLimit: float | None
     lowerLimit: float | None
-    compuMethod: CompuMethod
+    compuMethod: CompuMethod | NoCompuMethod | str
     addressType: str | None
     bitMask: int | None
-    bitOperation: dict
+    bitOperation: BitOperation | None
     byteOrder: str | None
     discrete: bool
     errorMask: int | None
@@ -4034,7 +4035,7 @@ class TypedefMeasurement(CachedBase):
     matrixDim: MatrixDim
     physUnit: str | None
 
-    def __init__(self, session, name: str, module_name: str = None):
+    def __init__(self, session, name: str, module_name: str | None = None):
         typedef = session.query(model.TypedefMeasurement).filter(model.TypedefMeasurement.name == name)
         if module_name is not None:
             typedef.join(model.Module).filter(model.Module.name == module_name)
@@ -4076,7 +4077,7 @@ class TypedefAxis(CachedBase):
     _conversionRef: str | None = field(repr=False)
     lowerLimit: float
     upperLimit: float
-    compuMethod: CompuMethod | str
+    compuMethod: CompuMethod | NoCompuMethod | str
     maxAxisPoints: int
     byteOrder: str | None
     deposit: Any | None
@@ -4086,7 +4087,7 @@ class TypedefAxis(CachedBase):
     physUnit: str | None
     stepSize: float | None
 
-    def __init__(self, session, name: str, module_name: str = None):
+    def __init__(self, session, name: str, module_name: str | None = None):
         typedef = session.query(model.TypedefAxis).filter(model.TypedefAxis.name == name)
         if module_name is not None:
             typedef.join(model.Module).filter(model.Module.name == module_name)
@@ -4122,7 +4123,7 @@ class TypedefBlob(CachedBase):
     size: int
     addressType: str | None
 
-    def __init__(self, session, name: str, module_name: str = None):
+    def __init__(self, session, name: str, module_name: str | None = None):
         typedef = session.query(model.TypedefBlob).filter(model.TypedefBlob.name == name)
         if module_name is not None:
             typedef.join(model.Module).filter(model.Module.name == module_name)
@@ -4184,7 +4185,7 @@ class TypedefCharacteristic(CachedBase):
     maxDiff: float | None
     lowerLimit: float | None
     upperLimit: float | None
-    compuMethod: CompuMethod
+    compuMethod: CompuMethod | NoCompuMethod | str
     axisDescriptions: list[AxisDescr]
     bitMask: int | None
     byteOrder: str | None
@@ -4197,7 +4198,7 @@ class TypedefCharacteristic(CachedBase):
     physUnit: str | None
     stepSize: float | None
 
-    def __init__(self, session, name: str, module_name: str = None):
+    def __init__(self, session, name: str, module_name: str | None = None):
         typedef = session.query(model.TypedefCharacteristic).filter(model.TypedefCharacteristic.name == name)
         if module_name is not None:
             typedef.join(model.Module).filter(model.Module.name == module_name)
@@ -4239,9 +4240,9 @@ class Frame(CachedBase):
     scalingUnit: int
     rate: int
     frame_measurement: list[str]
-    if_data: list[dict]
+    if_data: IfData
 
-    def __init__(self, session, name: str, module_name: str = None):
+    def __init__(self, session, name: str, module_name: str | None = None):
         frame = session.query(model.Frame).filter(model.Frame.name == name)
         if module_name is not None:
             frame.join(model.Module).filter(model.Module.name == module_name)
@@ -4295,15 +4296,15 @@ class VariantCoding(CachedBase):
     variant_coding: model.VariantCoding = field(repr=False)
     session: Any = field(repr=False)
     variant_coded: bool
-    naming: str
-    separator: str
+    naming: str | None
+    separator: str | None
     criterions: dict[str, VarCriterion]
     characteristics: dict[str, VarCharacteristic]
     forbidden_combs: list[dict[str, str]]
-    _combination_cache: dict[str, str] = field(repr=False)
-    _product_cache: dict[list[str], tuple[str]] = field(repr=False)
+    _combination_cache: dict[tuple[str, ...], list[dict[str, str]]] = field(repr=False)
+    _product_cache: dict[tuple[str, ...], list[tuple[str, ...]]] = field(repr=False)
 
-    def __init__(self, session, name: str = None, module_name: str = None):
+    def __init__(self, session, name: str | None = None, module_name: str | None = None):
         variant_coding = session.query(model.VariantCoding)
         if module_name is not None:
             variant_coding = variant_coding.join(model.Module).filter(model.Module.name == module_name)
@@ -4311,8 +4312,8 @@ class VariantCoding(CachedBase):
         self.session = session
         self.naming = None
         self.separator = None
-        self.criterions = []
-        self.characteristics = []
+        self.criterions = {}
+        self.characteristics = {}
         self.forbidden_combs = []
         if variant_coding:
             self.variant_coded = True
@@ -4351,31 +4352,33 @@ class VariantCoding(CachedBase):
             return res.values
         return []
 
-    def values_product(self, criterions: list[str]) -> list[str]:
-        criterions = tuple(criterions)
-        if criterions in self._product_cache:
-            return self._product_cache[criterions]
-        result = itertools.product(*[self.criterions[c].values for c in criterions])
-        self._product_cache[criterions] = result
+    def values_product(self, criterions: list[str]) -> list[tuple[str, ...]]:
+        key = tuple(criterions)
+        if key in self._product_cache:
+            return self._product_cache[key]
+        result = list(itertools.product(*[self.criterions[c].values for c in criterions]))
+        self._product_cache[key] = result
         return result
 
-    def valid_combinations(self, criterions: list[str]) -> list[str]:
-        criterions = tuple(criterions)
-        if criterions in self._combination_cache:
-            return self._combination_cache[criterions]
+    def valid_combinations(self, criterions: list[str]) -> list[dict[str, str]]:
+        key = tuple(criterions)
+        if key in self._combination_cache:
+            return self._combination_cache[key]
         result = []
         for entry in self.values_product(criterions):
             line = dict(zip(criterions, entry))
             if line not in self.forbidden_combs:
                 result.append(line)
-        self._combination_cache[criterions] = result
+        self._combination_cache[key] = result
         return result
 
     def variants(self, name: str) -> list[VarCombination]:
         ac = axispts_or_characteristic(self.session, name)
         vcc = self.characteristics.get(ac.name)
+        if vcc is None:
+            return []
         combis = self.valid_combinations(vcc.criterions)
-        return [VarCombination(a, c) for c, a in zip(combis, vcc.addresses)]
+        return [VarCombination(a, [c]) for c, a in zip(combis, vcc.addresses)]
 
 
 @dataclass
@@ -4440,7 +4443,7 @@ class Unit(CachedBase):
         self.ref_unit = self.unit.ref_unit.unit if self.unit.ref_unit else None
 
     @staticmethod
-    def _create_si_exponents(si_exponents: model.SiExponents) -> SiExponents | None:
+    def _create_si_exponents(si_exponents: model.SiExponents | None) -> SiExponents | None:
         if si_exponents is not None:
             return SiExponents(
                 si_exponents.length,
@@ -4455,7 +4458,7 @@ class Unit(CachedBase):
             return None
 
     @staticmethod
-    def _create_unit_conversion(unit_conversion: model.UnitConversion) -> UnitConversion | None:
+    def _create_unit_conversion(unit_conversion: model.UnitConversion | None) -> UnitConversion | None:
         if unit_conversion is not None:
             return UnitConversion(unit_conversion.gradient, unit_conversion.offset)
         else:
@@ -4471,11 +4474,11 @@ class Blob(CachedBase):
     address: int
     size: int
     addressType: str | None
-    annotations = list[Annotation]
+    annotations: list[Annotation]
     calibration_access: str | None
     displayIdentifier: str | None
     ecuAddressExtension: int
-    if_data: list[dict[str, Any]]
+    if_data: IfData
     maxRefresh: MaxRefresh | None
     modelLink: str | None
     symbolLink: SymbolLink | None
@@ -4610,7 +4613,7 @@ class Module(CachedBase):
     frame: FilteredList[Frame]
     function: FilteredList[Function]
     group: FilteredList[Group]
-    if_data: list[dict[str, Any]]
+    if_data: IfData
     measurement: FilteredList[Measurement]
     mod_common: ModCommon | None
     mod_par: ModPar | None
