@@ -63,6 +63,11 @@ class Diagnostics(enum.IntEnum):
     OVERLAPPING_MEMORY = 10
     MISSING_COMPU_METHOD = 11
     MISSING_RECORD_LAYOUT = 12
+    LIMIT_VIOLATION = 13  # lowerLimit > upperLimit
+    MISSING_COMPU_METHOD_COMPONENT = 14  # e.g. RAT_FUNC missing COEFFS
+    UNRESOLVED_COMPU_TAB_REF = 15  # COMPU_TAB_REF points to non-existent table
+    AXIS_COUNT_MISMATCH = 16  # CHARACTERISTIC type has wrong number of AXIS_DESCR
+    MISSING_ECU_ADDRESS = 17  # MEASUREMENT has no ECU address
 
 
 MAX_C_IDENTIFIER_LEN = 32  # ISO C90.
@@ -70,6 +75,24 @@ MAX_C_IDENTIFIER_LEN = 32  # ISO C90.
 
 # any(len(e) > MAX_C_IDENTIFIER_LEN for e in 'CM.VTAB_RANGE.DEFAULT_VALUE.REF'.split("."))
 # Some part of '{}' are longer than 32 chars (ISO C90 limit).
+
+# Expected number of AXIS_DESCR per CHARACTERISTIC type (ASAP2 spec).
+_AXIS_COUNT_BY_TYPE: dict[str, int] = {
+    "VALUE": 0,
+    "ASCII": 0,
+    "VAL_BLK": 0,
+    "CURVE": 1,
+    "MAP": 2,
+    "CUBOID": 3,
+    "CUBE_4": 4,
+    "CUBE_5": 5,
+}
+
+# COMPU_METHOD conversionType values that require specific sub-elements.
+_CM_NEEDS_COEFFS = frozenset({"RAT_FUNC"})
+_CM_NEEDS_COEFFS_LINEAR = frozenset({"LINEAR"})
+_CM_NEEDS_COMPU_TAB_REF = frozenset({"TAB_INTP", "TAB_NOINTP", "TAB_VERB"})
+_CM_NEEDS_FORMULA = frozenset({"FORM"})
 
 
 def names(objs):
@@ -122,8 +145,12 @@ class Validator:
             self._validate_mod_par(module)
             self._check_namespace_uniqueness(module)
             self._check_compu_method_refs(module)
+            self._check_compu_method_components(module)
             self._check_record_layout_refs(module)
             self._check_c_identifier_lengths(module)
+            self._check_limits(module)
+            self._check_characteristic_axis_counts(module)
+            self._check_ecu_addresses(module)
 
     def _validate_mod_common(self, module):
         if module.mod_common is None:
@@ -246,6 +273,8 @@ class Validator:
             _check("MEASUREMENT", meas.name, meas.conversion)
         for char in module.characteristic:
             _check("CHARACTERISTIC", char.name, char.conversion)
+            for i, axis in enumerate(char.axis_descr):
+                _check(f"CHARACTERISTIC '{char.name}' AXIS_DESCR[{i}]", char.name, axis.conversion)
         for apts in module.axis_pts:
             _check("AXIS_PTS", apts.name, apts.conversion)
 
@@ -268,6 +297,111 @@ class Validator:
                     Category.MISSING,
                     Diagnostics.MISSING_RECORD_LAYOUT,
                     f"{module.name}: AXIS_PTS '{apts.name}' references unknown RECORD_LAYOUT '{apts.depositAttr}'.",
+                )
+
+    def _check_compu_method_components(self, module):
+        """Verify each COMPU_METHOD has the sub-elements required by its conversionType.
+
+        - RAT_FUNC  → COEFFS
+        - LINEAR    → COEFFS_LINEAR
+        - TAB_INTP, TAB_NOINTP, TAB_VERB → COMPU_TAB_REF (and the referenced table exists)
+        - FORM      → FORMULA
+        """
+        all_tab_names: set[str] = (
+            {t.name for t in module.compu_tab}
+            | {t.name for t in module.compu_vtab}
+            | {t.name for t in module.compu_vtab_range}
+        )
+
+        for cm in module.compu_method:
+            ct = cm.conversionType
+            name = cm.name
+
+            if ct in _CM_NEEDS_COEFFS and cm.coeffs is None:
+                self.emit_diagnostic(
+                    Level.ERROR,
+                    Category.MISSING,
+                    Diagnostics.MISSING_COMPU_METHOD_COMPONENT,
+                    f"{module.name}: COMPU_METHOD '{name}' (RAT_FUNC) is missing COEFFS.",
+                )
+            elif ct in _CM_NEEDS_COEFFS_LINEAR and cm.coeffs_linear is None:
+                self.emit_diagnostic(
+                    Level.ERROR,
+                    Category.MISSING,
+                    Diagnostics.MISSING_COMPU_METHOD_COMPONENT,
+                    f"{module.name}: COMPU_METHOD '{name}' (LINEAR) is missing COEFFS_LINEAR.",
+                )
+            elif ct in _CM_NEEDS_FORMULA and cm.formula is None:
+                self.emit_diagnostic(
+                    Level.ERROR,
+                    Category.MISSING,
+                    Diagnostics.MISSING_COMPU_METHOD_COMPONENT,
+                    f"{module.name}: COMPU_METHOD '{name}' (FORM) is missing FORMULA.",
+                )
+            elif ct in _CM_NEEDS_COMPU_TAB_REF:
+                if cm.compu_tab_ref is None:
+                    self.emit_diagnostic(
+                        Level.ERROR,
+                        Category.MISSING,
+                        Diagnostics.MISSING_COMPU_METHOD_COMPONENT,
+                        f"{module.name}: COMPU_METHOD '{name}' ({ct}) is missing COMPU_TAB_REF.",
+                    )
+                else:
+                    ref = cm.compu_tab_ref.conversionTable
+                    if ref and ref not in all_tab_names:
+                        self.emit_diagnostic(
+                            Level.ERROR,
+                            Category.MISSING,
+                            Diagnostics.UNRESOLVED_COMPU_TAB_REF,
+                            f"{module.name}: COMPU_METHOD '{name}' COMPU_TAB_REF '{ref}' does not exist.",
+                        )
+
+    def _check_limits(self, module):
+        """Emit LIMIT_VIOLATION when lowerLimit > upperLimit."""
+
+        def _check(obj_type: str, obj_name: str, lower, upper) -> None:
+            if lower is not None and upper is not None and lower > upper:
+                self.emit_diagnostic(
+                    Level.ERROR,
+                    Category.MISSING,
+                    Diagnostics.LIMIT_VIOLATION,
+                    f"{module.name}: {obj_type} '{obj_name}' has lowerLimit ({lower}) > upperLimit ({upper}).",
+                )
+
+        for meas in module.measurement:
+            _check("MEASUREMENT", meas.name, meas.lowerLimit, meas.upperLimit)
+        for char in module.characteristic:
+            _check("CHARACTERISTIC", char.name, char.lowerLimit, char.upperLimit)
+            for i, axis in enumerate(char.axis_descr):
+                _check(f"CHARACTERISTIC '{char.name}' AXIS_DESCR[{i}]", char.name, axis.lowerLimit, axis.upperLimit)
+        for apts in module.axis_pts:
+            _check("AXIS_PTS", apts.name, apts.lowerLimit, apts.upperLimit)
+
+    def _check_characteristic_axis_counts(self, module):
+        """Verify that the number of AXIS_DESCR matches the CHARACTERISTIC type."""
+        for char in module.characteristic:
+            expected = _AXIS_COUNT_BY_TYPE.get(char.type)
+            if expected is None:
+                continue  # unknown type — skip
+            actual = len(char.axis_descr)
+            if actual != expected:
+                self.emit_diagnostic(
+                    Level.ERROR,
+                    Category.MISSING,
+                    Diagnostics.AXIS_COUNT_MISMATCH,
+                    f"{module.name}: CHARACTERISTIC '{char.name}' (type={char.type}) requires "
+                    f"{expected} AXIS_DESCR but has {actual}.",
+                )
+
+    def _check_ecu_addresses(self, module):
+        """Warn when a MEASUREMENT lacks an ECU_ADDRESS (cannot be acquired from ECU)."""
+        for meas in module.measurement:
+            if meas.ecu_address is None:
+                self.emit_diagnostic(
+                    Level.WARNING,
+                    Category.MISSING,
+                    Diagnostics.MISSING_ECU_ADDRESS,
+                    f"{module.name}: MEASUREMENT '{meas.name}' has no ECU_ADDRESS (cannot be acquired).",
                 )
 
     def _check_c_identifier_lengths(self, module):
