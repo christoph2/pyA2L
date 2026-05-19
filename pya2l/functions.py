@@ -34,6 +34,7 @@ from dataclasses import dataclass
 from operator import itemgetter
 from typing import Optional
 
+
 _logger = logging.getLogger(__name__)
 
 import numpy as np
@@ -42,7 +43,9 @@ import numpy as np
 try:
     import numexpr as _numexpr  # type: ignore[import-untyped]
     from scipy import interpolate as _interpolate  # type: ignore[import-untyped]
-    from scipy.interpolate import RegularGridInterpolator  # type: ignore[import-untyped]
+    from scipy.interpolate import (
+        RegularGridInterpolator,  # type: ignore[import-untyped]
+    )
 
     _COMPUTE_AVAILABLE = True
 except ImportError:
@@ -270,7 +273,7 @@ class RatFunc:
         a, b, c, d, e, f = (coeffs.a, coeffs.b, coeffs.c, coeffs.d, coeffs.e, coeffs.f)
         self.p = np.poly1d([a, b, c])
         self.q = np.poly1d([d, e, f])
-        self.p_inv: Optional[np.poly1d]
+        self.p_inv: np.poly1d | None
         if self.p.order == 1 and self.q.order == 0:
             self.p_inv = np.poly1d([(f / b), -((f * c) / (b * f))])
         else:
