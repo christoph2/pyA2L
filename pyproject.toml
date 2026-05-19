@@ -45,7 +45,7 @@ compute = ["scipy", "numexpr"]
 pytest = ">=8.2.2,<10.0.0"
 pre-commit = "^4.2.0"
 bandit = "^1.7.8"
-ruff = "^0.12.0"
+ruff = ">=0.12,<0.16"
 isort = "^6.0.1"
 flake8 = "^7.0.0"
 black = ">=25.1,<27.0"
