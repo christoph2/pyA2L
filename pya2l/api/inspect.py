@@ -66,6 +66,7 @@ from pya2l.functions import (
 )
 from pya2l.utils import SingletonBase, align_as, enum_from_str
 
+
 _logger = logging.getLogger(__name__)
 
 __all__ = [
@@ -2205,7 +2206,7 @@ class ModPar(CachedBase):
     user: str | None
     version: str | None
 
-    def __init__(self, session, name=None, module_name: str = None):
+    def __init__(self, session, name=None, module_name: str | None = None):
         module = get_module(session, module_name)
         self.modpar = module.mod_par
         self.comment = self.modpar.comment
@@ -2226,7 +2227,7 @@ class ModPar(CachedBase):
         self.version = self.modpar.version.versionIdentifier if self.modpar.version else None
 
     @staticmethod
-    def exists(session, name: str = None, module_name: str = None) -> bool:  # TODO: Better move to base class...
+    def exists(session, name: str | None = None, module_name: str | None = None) -> bool:  # TODO: Better move to base class...
         module = get_module(session, module_name)
         return module.mod_par is not None
 
@@ -2367,7 +2368,7 @@ class ModCommon(CachedBase):
     deposit: str
     sRecLayout: str | None
 
-    def __init__(self, session, name=None, module_name: str = None):
+    def __init__(self, session, name=None, module_name: str | None = None):
         module = get_module(session, module_name)
         self.modcommon = module.mod_common
         self.comment = self.modcommon.comment
@@ -2398,7 +2399,7 @@ class ModCommon(CachedBase):
         self.sRecLayout = self.modcommon.s_rec_layout.name if self.modcommon.s_rec_layout else None
 
     @classmethod
-    def get(cls, session, name: str = None, module_name: str = None, *, no_cache: bool = False):
+    def get(cls, session, name: str | None = None, module_name: str | None = None, *, no_cache: bool = False):
         module = get_module(session, module_name)
         if module.mod_common is None:
             return NoModCommon()
@@ -2422,7 +2423,7 @@ class RecordLayout(CachedBase):
     staticAddressOffsets: bool
     staticRecordLayout: bool
 
-    def __init__(self, session, name: str, module_name: str = None):
+    def __init__(self, session, name: str | None, module_name: str | None = None):
         layout = session.query(model.RecordLayout).filter(model.RecordLayout.name == name)
         if module_name is not None:
             layout.join(model.Module).filter(model.Module.name == module_name)
@@ -2781,7 +2782,7 @@ class AxisPts(CachedBase):
     depositAttr: RecordLayout
     record_layout_components: dict
 
-    def __init__(self, session, name: str, module_name: str = None):
+    def __init__(self, session, name: str | None, module_name: str | None = None):
         axis = session.query(model.AxisPts).filter(model.AxisPts.name == name)
         if module_name is not None:
             axis.join(model.Module).filter(model.Module.name == module_name)
@@ -3001,7 +3002,7 @@ class Characteristic(CachedBase):
     fnc_np_shape: tuple
     record_layout_components: dict
 
-    def __init__(self, session, name: str, module_name: str = None):
+    def __init__(self, session, name: str | None, module_name: str | None = None):
         characteristic = session.query(model.Characteristic).filter(model.Characteristic.name == name)
         if module_name is not None:
             characteristic.join(model.Module).filter(model.Module.name == module_name)
@@ -3471,7 +3472,7 @@ class Measurement(CachedBase):
     fnc_np_shape: tuple
     if_data: list[dict]
 
-    def __init__(self, session, name: str, module_name: str = None):
+    def __init__(self, session, name: str | None, module_name: str | None = None):
         measurement = session.query(model.Measurement).filter(model.Measurement.name == name)
         if module_name is not None:
             measurement.join(model.Module).filter(model.Module.name == module_name)
@@ -3561,7 +3562,7 @@ class Function(CachedBase):
     refCharacteristics: list[str] = field(default_factory=list)
     subFunctions: list[str] = field(default_factory=list)
 
-    def __init__(self, session, name=None, module_name: str = None):
+    def __init__(self, session, name=None, module_name: str | None = None):
         self.session = session
         function = session.query(model.Function).filter(model.Function.name == name)
         if module_name is not None:
@@ -3692,7 +3693,7 @@ class Group(CachedBase):
     functions: list[Any]
     subgroups: list[Any]
 
-    def __init__(self, session, name=None, module_name: str = None):
+    def __init__(self, session, name=None, module_name: str | None = None):
         self.session = session
         group = session.query(model.Group).filter(model.Group.groupName == name)
         if module_name is not None:
@@ -3768,7 +3769,7 @@ class StructureComponent(CachedBase):
     matrixDim: MatrixDim
     symbolLink: SymbolLink | None
 
-    def __init__(self, session, name=None, module_name: str = None, parent=None, *args):
+    def __init__(self, session, name=None, module_name: str | None = None, parent=None, *args):
         self.session = session
         component = session.query(model.StructureComponent).filter(model.StructureComponent.name == name)
         if module_name is not None:

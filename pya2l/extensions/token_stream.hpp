@@ -6,6 +6,7 @@
     #include <sys/types.h>
 
     #include <algorithm>
+    #include <cstdint>
     #include <cstdio>
     #include <deque>
     #include <ranges>
@@ -61,7 +62,7 @@ class FixedSizeStack {
 class TokenWriter {
    public:
 
-    const std::size_t HEADER_SIZE = sizeof(std::size_t) * 6;
+    const std::size_t HEADER_SIZE = sizeof(std::uint64_t) * 6;
 
     // Delete default constructor
     TokenWriter() = delete;
@@ -116,7 +117,8 @@ class TokenWriter {
 
     void write_int(std::size_t value) const {
         // const std::size_t before = m_outf.tellp();
-        m_outf.write(std::bit_cast<const char *>(&value), sizeof(std::size_t));
+        const std::uint64_t serialized = static_cast<std::uint64_t>(value);
+        m_outf.write(reinterpret_cast<const char*>(&serialized), sizeof(serialized));
     #if 0
 // Testing code.
         const std::size_t after   = m_outf.tellp();
@@ -554,14 +556,14 @@ class TokenReader {
     }
 
     std::size_t read_int() const {
-        std::size_t value = 0;
-        std::size_t nread = ::fread((char *)&value, sizeof(std::size_t), 1, m_file);
+        std::uint64_t value = 0;
+        std::size_t nread = ::fread((char *)&value, sizeof(value), 1, m_file);
         if (nread != 1 && !::feof(m_file)) {
             throw std::runtime_error(
                 "[ERROR (pya2l.TokenReader)]  Failed to read integer from '" + m_file_name + "'."
             );
         }
-        return value;
+        return static_cast<std::size_t>(value);
     }
 
     std::string read_string(std::size_t count) const {

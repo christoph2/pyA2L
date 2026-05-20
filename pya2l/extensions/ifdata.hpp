@@ -31,6 +31,7 @@
 
     #include <bit>
     #include <cstdio>
+    #include <cstdint>
 
     #include "logger.hpp"
     #include "tokenizer.hpp"
@@ -47,7 +48,7 @@ struct std::hash<line_type> {
 
 struct IfDataBase {
     using map_type                = std::unordered_map<line_type, std::size_t>;
-    const std::size_t HEADER_SIZE = sizeof(std::size_t) * (4 + 1);
+    const std::size_t HEADER_SIZE = sizeof(std::uint64_t) * (4 + 1);
 };
 
 class IfDataBuilder : public IfDataBase {
@@ -148,7 +149,8 @@ class IfDataBuilder : public IfDataBase {
     }
 
     void write_int(std::size_t value) {
-        m_out.write(std::bit_cast<const char*>(&value), sizeof value);
+        const std::uint64_t serialized = static_cast<std::uint64_t>(value);
+        m_out.write(reinterpret_cast<const char*>(&serialized), sizeof(serialized));
     }
 
     void write_string(std::string_view text) {
@@ -287,14 +289,14 @@ class IfDataReader : public IfDataBase {
    private:
 
     std::size_t read_int() {
-        std::size_t value  = 0;
-        std::size_t nread  = ::fread((char*)&value, sizeof(std::size_t), 1, m_file);
+        std::uint64_t value = 0;
+        std::size_t nread  = ::fread((char*)&value, sizeof(value), 1, m_file);
         if (nread != 1 && !::feof(m_file)) {
             throw std::runtime_error(
                 "[ERROR (pya2l.IfDataReader)]  Failed to read integer from '" + m_file_name + "'."
             );
         }
-        return value;
+        return static_cast<std::size_t>(value);
     }
 
     std::string read_string(std::size_t count) {

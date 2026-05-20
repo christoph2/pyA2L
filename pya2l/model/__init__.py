@@ -340,7 +340,7 @@ def StdULong(default=0, primary_key=False, unique=False):
     )
 
 
-def StdString(default=0, primary_key=False, unique=False, index=False):
+def StdString(default="", primary_key=False, unique=False, index=False):
     return Column(
         types.VARCHAR(256),
         default=default,
