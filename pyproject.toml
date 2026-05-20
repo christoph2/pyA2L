@@ -50,7 +50,7 @@ isort = ">=6.0.1,<9.0.0"
 flake8 = "^7.0.0"
 black = ">=25.1,<27.0"
 flake8-bugbear = ">=24.4.26,<26.0.0"
-pre-commit-hooks = "^5.0.0"
+pre-commit-hooks = ">=5,<7"
 
 pyupgrade = "^3.16.0"
 pytest-cov = "^6.0"
