@@ -7,4 +7,5 @@ from .a2l_exporter import open_database as open_a2l_database
 from .json_exporter import open_database as open_json_database
 from .json_exporter import project_to_dict as export_json_dict
 
+
 __all__ = ["export_a2l_db", "open_a2l_database", "export_json_dict", "open_json_database"]

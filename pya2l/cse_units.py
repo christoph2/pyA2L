@@ -28,6 +28,7 @@ __copyright__ = """
 from collections import namedtuple
 from enum import IntEnum
 
+
 CSE_Type = namedtuple("CSE_Type", "code unit referred_to comment")
 
 

@@ -10,6 +10,7 @@ import sysconfig
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+
 TOP_DIR = Path(__file__).parent
 
 GIT_TAG_RE = re.compile(r"refs/tags/v?(\d\.\d{1,3}.\d{1,3})")

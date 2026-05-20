@@ -10,6 +10,7 @@ import pytest
 from pya2l import exceptions, functions
 from pya2l.functions import _COMPUTE_AVAILABLE
 
+
 requires_compute = pytest.mark.skipif(not _COMPUTE_AVAILABLE, reason="requires pya2ldb[compute]")
 
 
