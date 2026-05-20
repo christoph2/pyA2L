@@ -36,6 +36,7 @@ from unicodedata import normalize
 # from chardet.universaldetector import UniversalDetector
 import chardet
 
+
 _logger = logging.getLogger(__name__)
 
 

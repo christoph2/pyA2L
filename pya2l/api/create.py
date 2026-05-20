@@ -38,6 +38,7 @@ from typing import Any, TypeVar, cast
 import pya2l.model as model
 from pya2l import exceptions
 
+
 _T = TypeVar("_T")
 
 __all__ = [
