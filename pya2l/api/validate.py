@@ -32,6 +32,7 @@ from logging import getLogger
 import pya2l.model as model
 from pya2l.api.inspect import ModCommon, ModPar
 
+
 # *** Validator generated no diagnostic messages ***
 
 Message = namedtuple("Message", "type category diag_code text")
