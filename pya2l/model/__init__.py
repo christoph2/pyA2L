@@ -45,6 +45,7 @@ from sqlalchemy.orm import as_declarative, backref, declared_attr, relationship
 from pya2l.model.mixins import AxisDescrMixIn, CompareByPositionMixIn
 from pya2l.utils import SingletonBase
 
+
 if TYPE_CHECKING:
     pass  # IfDataParser is imported locally inside setup_ifdata_parser
 

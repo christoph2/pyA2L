@@ -5,6 +5,7 @@ import pytest
 from pya2l import _render_a2l, model
 from pya2l.a2lparser import A2LParser
 
+
 MINIMAL_A2L = """
 ASAP2_VERSION 1 71
 /begin PROJECT MiniProject "Minimal A2L Project"
