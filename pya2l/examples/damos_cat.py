@@ -4,6 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+
 PTH = r"e:\damos"
 PTH = r"c:\csprojects"
 

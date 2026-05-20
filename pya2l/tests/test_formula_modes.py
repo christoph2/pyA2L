@@ -4,6 +4,7 @@ import pytest
 
 from pya2l.functions import _COMPUTE_AVAILABLE, Formula
 
+
 requires_compute = pytest.mark.skipif(not _COMPUTE_AVAILABLE, reason="requires pya2ldb[compute]")
 
 
