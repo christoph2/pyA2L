@@ -21,6 +21,7 @@ from pya2l import classes, model
 from pya2l.logger import Logger
 from pya2l.utils import detect_encoding
 
+
 IFD_HEADER = re.compile(r"/begin\s+IF_DATA\s+(\w+)", re.DOTALL | re.MULTILINE)
 
 
