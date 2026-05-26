@@ -2828,13 +2828,12 @@ class AxisPts(CachedBase):
     @property
     def axis_allocated_memory(self):
         """Statically allocated memory by axis."""
-        axis = self.record_layout_components.axes("x")
-        return axis["memSize"]
+        return self.maxAxisPoints * ASAM_TYPE_SIZES[self.fnc_asam_dtype]
 
     @property
     def total_allocated_memory(self):
         """Total amount of statically allocated memory by AxisPts."""
-        return self.record_layout_components.sizeof
+        return self.axis_allocated_memory
 
     @property
     def fnc_asam_dtype(self):
