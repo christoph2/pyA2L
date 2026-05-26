@@ -3223,8 +3223,8 @@ class Characteristic(CachedBase):
     def _ascii_length(self):
         l0 = self.number
         l1 = self.matrixDim
-        if l1:
-            return l1["x"]
+        if l1.valid():
+            return l1.x
         elif l0:
             return l0
         else:

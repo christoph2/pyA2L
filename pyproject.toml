@@ -158,6 +158,12 @@ ignore_errors = true
 module = "pya2l.api.create"
 disable_error_code = ["call-arg", "attr-defined"]
 
+# Declarative SQLAlchemy classes override __tablename__ dynamically.
+# This produces false-positive "assignment" errors in mypy for this module.
+[[tool.mypy.overrides]]
+module = "pya2l.model.__init__"
+disable_error_code = ["assignment"]
+
 [tool.ruff]
 target-version = "py312"
 line-length = 132
