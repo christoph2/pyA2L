@@ -138,6 +138,7 @@ __all__ = [
     "TypedefAxis",
     "TypedefBlob",
     "TypedefCharacteristic",
+    "CalibrationMethod",
     "Frame",
     "VariantCoding",
     "AMLSection",
@@ -995,6 +996,19 @@ class MatrixDim:
             True if the dimensions are valid, False otherwise
         """
         return self.x is not None
+
+
+@dataclass
+class CalibrationHandle:
+    handles: list[int]
+    text: str | None = field(default=None)
+
+
+@dataclass
+class CalibrationMethod:
+    method: str
+    version: int
+    handles: list[CalibrationHandle]
 
 
 @dataclass
@@ -2192,6 +2206,7 @@ class ModPar(CachedBase):
     comment: str
     addrEpk: list[int]
     cpu: str | None
+    calibrationMethods: list[CalibrationMethod]
     customer: str | None
     customerNo: str | None
     ecu: str | None
@@ -2211,6 +2226,7 @@ class ModPar(CachedBase):
         self.modpar = module.mod_par
         self.comment = self.modpar.comment
         self.addrEpk = [a.address for a in self.modpar.addr_epk]
+        self.calibrationMethods = self._create_calibration_methods(session, self.modpar.calibration_method)
         self.cpu = self.modpar.cpu_type.cPU if self.modpar.cpu_type else None
         self.customer = self.modpar.customer.customer if self.modpar.customer else None
         self.customerNo = self.modpar.customer_no.number if self.modpar.customer_no else None
@@ -2262,6 +2278,16 @@ class ModPar(CachedBase):
                     IfData(session.parse_ifdata(layout.if_data), layout.if_data),
                 )
                 result.append(entry)
+        return result
+
+    @staticmethod
+    def _create_calibration_methods(session, calibration_method) -> list[CalibrationMethod]:
+        result: list[CalibrationMethod] = []
+        for cm in calibration_method:
+            handles: list[CalibrationHandle] = []
+            for handle in cm.calibration_handle:
+                handles.append(CalibrationHandle(handle.handle, handle.calibration_handle_text))
+            result.append(CalibrationMethod(cm.method, cm.version, handles))
         return result
 
     @staticmethod
