@@ -35,6 +35,7 @@ __copyright__ = """
 
 import collections
 import itertools
+import json
 import logging
 import weakref
 from collections.abc import Callable, Generator
@@ -50,6 +51,7 @@ from typing import (
 )
 
 from sqlalchemy import exists, not_
+from sqlalchemy.orm import object_session as _orm_object_session
 
 import pya2l.model as model
 from pya2l import exceptions
@@ -68,6 +70,14 @@ from pya2l.utils import SingletonBase, align_as, enum_from_str
 
 
 _logger = logging.getLogger(__name__)
+
+
+def _to_json_str(data: dict, indent: int | None = None) -> str:
+    """Serialize a dict to a JSON string, handling SQLAlchemy proxy collections."""
+    from pya2l.imex.json_exporter import to_json_serializable
+
+    return json.dumps(to_json_serializable(data), indent=indent, ensure_ascii=False)
+
 
 __all__ = [
     # Enumerations
@@ -1752,6 +1762,25 @@ class NoCompuMethod(SingletonBase):
         """
         return "NoCompuMethod()"
 
+    def to_dict(self) -> dict:
+        from dataclasses import asdict
+
+        return {
+            "name": self._name,
+            "longIdentifier": self._longIdentifier,
+            "conversionType": self._conversionType,
+            "format": self._format,
+            "unit": self._unit,
+            "coeffs": asdict(self._coeffs) if self._coeffs else None,
+            "coeffs_linear": asdict(self._coeffs_linear) if self._coeffs_linear else None,
+            "formula": self._formula,
+            "statusStringRef": self._statusStringRef,
+            "refUnit": self._refUnit,
+        }
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
+
 
 @dataclass
 class CompuTab(CachedBase):
@@ -1779,6 +1808,14 @@ class CompuTab(CachedBase):
         self.in_values = [x.inVal for x in self.compu_tab.pairs]
         self.out_values = [x.outVal for x in self.compu_tab.pairs]
 
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import compu_tab_to_dict
+
+        return compu_tab_to_dict(self.compu_tab)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
+
 
 @dataclass
 class CompuTabVerb(CachedBase):
@@ -1805,6 +1842,14 @@ class CompuTabVerb(CachedBase):
         self.default_value = self.compu_tab_verb.default_value.display_string if self.compu_tab_verb.default_value else None
         self.in_values = [x.inVal for x in self.compu_tab_verb.pairs]
         self.text_values = [x.outVal for x in self.compu_tab_verb.pairs]
+
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import compu_vtab_to_dict
+
+        return compu_vtab_to_dict(self.compu_tab_verb)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
 
 
 @dataclass
@@ -1834,6 +1879,14 @@ class CompuTabVerbRanges(CachedBase):
         self.lower_values = [x.inValMin for x in self.compu_tab_verb_ranges.triples]
         self.upper_values = [x.inValMax for x in self.compu_tab_verb_ranges.triples]
         self.text_values = [x.outVal for x in self.compu_tab_verb_ranges.triples]
+
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import compu_vtab_range_to_dict
+
+        return compu_vtab_range_to_dict(self.compu_tab_verb_ranges)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
 
 
 @dataclass
@@ -2058,6 +2111,14 @@ class CompuMethod(CachedBase):
             return NoCompuMethod()
         else:
             return super(cls, CompuMethod).get(session, name, module_name, no_cache=no_cache)
+
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import compu_method_to_dict
+
+        return compu_method_to_dict(self.compu_method)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
 
 
 @dataclass
@@ -2286,7 +2347,7 @@ class ModPar(CachedBase):
         for cm in calibration_method:
             handles: list[CalibrationHandle] = []
             for handle in cm.calibration_handle:
-                handles.append(CalibrationHandle(handle.handle, handle.calibration_handle_text))
+                handles.append(CalibrationHandle(list(handle.handle), handle.calibration_handle_text))
             result.append(CalibrationMethod(cm.method, cm.version, handles))
         return result
 
@@ -2312,6 +2373,14 @@ class ModPar(CachedBase):
                 )
                 result.append(entry)
         return result
+
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import mod_par_to_dict
+
+        return mod_par_to_dict(_orm_object_session(self.modpar), self.modpar)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
 
 
 class NoModCommon(SingletonBase):
@@ -2353,6 +2422,21 @@ class NoModCommon(SingletonBase):
         return "NoModCommon()"
 
     __repr__ = __str__
+
+    def to_dict(self) -> dict:
+        from dataclasses import asdict
+
+        return {
+            "comment": self._comment,
+            "alignment": asdict(self._alignment),
+            "byteOrder": self._byteOrder,
+            "dataSize": self._dataSize,
+            "deposit": self._deposit,
+            "sRecLayout": self._sRecLayout,
+        }
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
 
 
 @dataclass
@@ -2431,6 +2515,14 @@ class ModCommon(CachedBase):
             return NoModCommon()
         else:
             return super(cls, ModCommon).get(session, name, module_name, no_cache=no_cache)
+
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import mod_common_to_dict
+
+        return mod_common_to_dict(self.modcommon)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
 
 
 @dataclass
@@ -2624,6 +2716,14 @@ class RecordLayout(CachedBase):
             return "C"
         else:
             return None
+
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import record_layout_to_dict
+
+        return record_layout_to_dict(self.layout)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
 
 
 def create_record_layout_components(parent) -> dict:
@@ -2883,11 +2983,21 @@ class AxisPts(CachedBase):
             return None
         return ASAM_TO_NUMPY_TYPES.get(axis_pts.data_type)
 
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import axis_pts_to_dict
+
+        return axis_pts_to_dict(_orm_object_session(self.axis), self.axis)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
+
 
 @dataclass
 class AxisDescr(CachedBase):
     """"""
 
+    session: Any = field(repr=False)
+    axis: Any = field(repr=False)
     axisPtsRef: AxisPts = field(repr=False)
     attribute: str
     inputQuantity: str | None
@@ -2912,6 +3022,8 @@ class AxisDescr(CachedBase):
     stepSize: float | None
 
     def __init__(self, session, axis, module_name=None):
+        self.session = session
+        self.axis = axis
         self.attribute = axis.attribute
         self.axisPtsRef = AxisPts.get(session, axis.axis_pts_ref.axisPoints) if axis.axis_pts_ref else None
         if self.attribute in ("COM_AXIS", "RES_AXIS", "CURVE_AXIS"):
@@ -2960,6 +3072,14 @@ class AxisDescr(CachedBase):
         if axis == 0 or axis.lower() == "x":
             return self
         raise ValueError("axis value out of range.")
+
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import axis_descr_to_dict
+
+        return axis_descr_to_dict(self.session, self.axis)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
 
 
 @dataclass
@@ -3255,6 +3375,14 @@ class Characteristic(CachedBase):
         else:
             return None
 
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import characteristic_to_dict
+
+        return characteristic_to_dict(_orm_object_session(self.characteristic), self.characteristic)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
+
 
 def axispts_or_characteristic(session, name: str) -> AxisPts | Characteristic:
     """Load an AxisPts or Characteristic object (they share the same namespace).
@@ -3540,6 +3668,14 @@ class Measurement(CachedBase):
     def is_virtual(self):
         return self.virtual != []
 
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import measurement_to_dict
+
+        return measurement_to_dict(_orm_object_session(self.measurement), self.measurement)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
+
 
 def get_characteristic_or_axispts(session, name):
     found = session.query(exists().where(model.Characteristic.name == name)).scalar()
@@ -3669,6 +3805,14 @@ class Function(CachedBase):
             result.append(Function.get(session, func_name))
         return result
 
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import function_to_dict
+
+        return function_to_dict(self.session, self.function)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
+
 
 @dataclass
 class Group(CachedBase):
@@ -3762,6 +3906,14 @@ class Group(CachedBase):
             result.append(Group.get(session, group.groupName))
         return result
 
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import group_to_dict
+
+        return group_to_dict(self.session, self.group)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
+
 
 @dataclass
 class StructureComponent(CachedBase):
@@ -3812,6 +3964,14 @@ class StructureComponent(CachedBase):
             self.layout = self.component.layout.indexMode if self.component.layout else None
         self.matrixDim = MatrixDim.from_model(self.component.matrix_dim, get_asap2_version(session))
         self.symbolLink = _dissect_symbol_link(self.component.symbol_link)
+
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import structure_component_to_dict
+
+        return structure_component_to_dict(self.component)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
 
 
 @dataclass
@@ -3873,6 +4033,14 @@ class TypedefStructure(CachedBase):
     @property
     def components(self):
         return self._components
+
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import typedef_structure_to_dict
+
+        return typedef_structure_to_dict(self.typedef)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
 
 
 @dataclass
@@ -3997,6 +4165,14 @@ class Instance(CachedBase):
         self.readWrite = False if self.instance.read_write is None else True
         self.symbolLink = _dissect_symbol_link(self.instance.symbol_link)
 
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import instance_to_dict
+
+        return instance_to_dict(self.session, self.instance)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
+
 
 @dataclass
 class TypedefMeasurement(CachedBase):
@@ -4089,6 +4265,14 @@ class TypedefMeasurement(CachedBase):
         self.matrixDim = MatrixDim.from_model(self.typedef.matrix_dim, get_asap2_version(session))
         self.physUnit = self.typedef.phys_unit.unit if self.typedef.phys_unit else None
 
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import typedef_measurement_to_dict
+
+        return typedef_measurement_to_dict(self.typedef)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
+
 
 @dataclass
 class TypedefAxis(CachedBase):
@@ -4136,6 +4320,14 @@ class TypedefAxis(CachedBase):
         self.physUnit = self.typedef.phys_unit.unit if self.typedef.phys_unit else None
         self.stepSize = self.typedef.step_size.stepSize if self.typedef.step_size else None
 
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import typedef_axis_to_dict
+
+        return typedef_axis_to_dict(self.typedef)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
+
 
 @dataclass
 class TypedefBlob(CachedBase):
@@ -4159,6 +4351,17 @@ class TypedefBlob(CachedBase):
             self.addressType = self.typedef.address_type.addressType
         else:
             self.addressType = None
+
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "longIdentifier": self.longIdentifier,
+            "size": self.size,
+            "addressType": self.addressType,
+        }
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
 
 
 @dataclass
@@ -4250,6 +4453,14 @@ class TypedefCharacteristic(CachedBase):
         self.physUnit = self.typedef.phys_unit.unit if self.typedef.phys_unit else None
         self.stepSize = self.typedef.step_size
 
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import typedef_characteristic_to_dict
+
+        return typedef_characteristic_to_dict(self.typedef)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
+
 
 @dataclass
 class Frame(CachedBase):
@@ -4265,6 +4476,7 @@ class Frame(CachedBase):
     if_data: IfData
 
     def __init__(self, session, name: str, module_name: str | None = None):
+        self.session = session
         frame = session.query(model.Frame).filter(model.Frame.name == name)
         if module_name is not None:
             frame.join(model.Module).filter(model.Module.name == module_name)
@@ -4277,6 +4489,14 @@ class Frame(CachedBase):
         self.rate = self.frame.rate
         self.frame_measurement = [f.identifier for f in self.frame.frame_measurement]
         self.if_data = IfData(session.parse_ifdata(self.frame.if_data), self.frame.if_data)
+
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import frame_to_dict
+
+        return frame_to_dict(self.session, self.frame)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
 
 
 @dataclass
@@ -4331,6 +4551,7 @@ class VariantCoding(CachedBase):
         if module_name is not None:
             variant_coding = variant_coding.join(model.Module).filter(model.Module.name == module_name)
         variant_coding = variant_coding.first()
+        self.variant_coding = variant_coding
         self.session = session
         self.naming = None
         self.separator = None
@@ -4367,6 +4588,14 @@ class VariantCoding(CachedBase):
                 self.forbidden_combs.append({p.criterionName: p.criterionValue for p in comb.pairs})
         else:
             self.variant_coded = False
+
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import variant_coding_to_dict
+
+        return variant_coding_to_dict(self.variant_coding if self.variant_coded else None)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
 
     def get_citerion_values(self, name: str) -> list[str]:
         res = self.criterions.get(name)
@@ -4416,6 +4645,12 @@ class AMLSection(CachedBase):
         self.text = self.aml_section.text
         self.parsed = self.aml_section.parsed
 
+    def to_dict(self) -> dict:
+        return {"text": self.text, "parsed": None}
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
+
 
 @dataclass
 class SiExponents:
@@ -4463,6 +4698,14 @@ class Unit(CachedBase):
         self.si_exponents = self._create_si_exponents(self.unit.si_exponents)
         self.unit_conversion = self._create_unit_conversion(self.unit.unit_conversion)
         self.ref_unit = self.unit.ref_unit.unit if self.unit.ref_unit else None
+
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import unit_to_dict
+
+        return unit_to_dict(self.unit)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
 
     @staticmethod
     def _create_si_exponents(si_exponents: model.SiExponents | None) -> SiExponents | None:
@@ -4533,6 +4776,14 @@ class Blob(CachedBase):
         self.modelLink = self.blob.model_link.link if self.blob.model_link else None
         self.symbolLink = _dissect_symbol_link(self.blob.symbol_link)
 
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import blob_to_dict
+
+        return blob_to_dict(self.session, self.blob)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
+
 
 @dataclass
 class Transformer(CachedBase):
@@ -4566,6 +4817,14 @@ class Transformer(CachedBase):
         self.transformer_in_objects = self.transformer.transformer_in_objects.identifier
         self.transformer_out_objects = self.transformer.transformer_out_objects.identifier
 
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import transformer_to_dict
+
+        return transformer_to_dict(self.transformer)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
+
 
 @dataclass
 class UserRights(CachedBase):
@@ -4589,6 +4848,14 @@ class UserRights(CachedBase):
         self.userLevelId = self.user_rights.userLevelId
         self.read_only = self.user_rights.read_only
         self.ref_group = [r.identifier for r in self.user_rights.ref_group]
+
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import user_rights_to_dict
+
+        return user_rights_to_dict(self.user_rights)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
 
 
 @dataclass
@@ -4682,6 +4949,14 @@ class Module(CachedBase):
 
         self.variant_coding = VariantCoding.get(self.session, module_name=self.module.name)
 
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import module_to_dict
+
+        return module_to_dict(self.session, self.module)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
+
 
 @dataclass
 class Project:
@@ -4719,3 +4994,30 @@ class Project:
         self.module = []
         for mod in project.module:
             self.module.append(Module(self.session, mod.name))
+
+    def to_dict(self) -> dict:
+        from pya2l.imex.json_exporter import (
+            ifdata_parsed_list,
+            ifdata_raw_list,
+            module_to_dict,
+            safe_get,
+        )
+
+        header = None
+        if self.project.header:
+            header = {
+                "comment": safe_get(self.project.header, "comment"),
+                "projectNumber": safe_get(safe_get(self.project.header, "project_no"), "projectNumber"),
+                "versionIdentifier": safe_get(safe_get(self.project.header, "version"), "versionIdentifier"),
+            }
+        return {
+            "name": self.name,
+            "longIdentifier": self.longIdentifier,
+            "header": header,
+            "modules": [module_to_dict(self.session, mod.module) for mod in self.module],
+            "if_data_raw": ifdata_raw_list(safe_get(self.project, "if_data")),
+            "if_data_parsed": ifdata_parsed_list(self.session, safe_get(self.project, "if_data")),
+        }
+
+    def to_json(self, indent: int | None = None) -> str:
+        return _to_json_str(self.to_dict(), indent)
