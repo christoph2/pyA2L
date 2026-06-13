@@ -2954,34 +2954,40 @@ class AxisPts(CachedBase):
     @property
     def axis_allocated_memory(self):
         """Statically allocated memory by axis."""
-        return self.maxAxisPoints * ASAM_TYPE_SIZES[self.fnc_asam_dtype]
+        max_axis_points = self.maxAxisPoints
+        if "axis_rescale" in self.depositAttr.axes.get("x"):
+            max_axis_points *= 2
+        return max_axis_points * ASAM_TYPE_SIZES[self.fnc_asam_dtype]
 
     @property
     def total_allocated_memory(self):
         """Total amount of statically allocated memory by AxisPts."""
         return self.axis_allocated_memory
 
-    @property
-    def fnc_asam_dtype(self):
-        """Return `str` (e.g. `SLONG`)."""
+    def _axis_pts_data_type(self):
+        """Return the ASAM data type of the x-axis points (or axis_rescale fallback)."""
         if self.depositAttr is None:
             return None
         x_axis = self.depositAttr.axes.get("x")
         axis_pts = x_axis.get("axis_pts")
         if axis_pts is None:
-            return None
+            axis_pts = x_axis.get("axis_rescale")
+            if axis_pts is None:
+                return None
         return axis_pts.data_type
+
+    @property
+    def fnc_asam_dtype(self):
+        """Return `str` (e.g. `SLONG`)."""
+        return self._axis_pts_data_type()
 
     @property
     def fnc_np_dtype(self):
         """Return `str` (e.g. `int32`) suitable for Numpy."""
-        if self.depositAttr is None:
+        data_type = self._axis_pts_data_type()
+        if data_type is None:
             return None
-        x_axis = self.depositAttr.axes.get("x")
-        axis_pts = x_axis.get("axis_pts")
-        if axis_pts is None:
-            return None
-        return ASAM_TO_NUMPY_TYPES.get(axis_pts.data_type)
+        return ASAM_TO_NUMPY_TYPES.get(data_type)
 
     def to_dict(self) -> dict:
         from pya2l.imex.json_exporter import axis_pts_to_dict
@@ -3287,7 +3293,7 @@ class Characteristic(CachedBase):
         element_size = self.fnc_element_size
         if self.type == "VALUE":
             return element_size  # Scalar Characteristic
-        elif self.type == "ASCII":
+        elif self.type in  ("ASCII", "VAL_BLK"):
             return dim["x"]  # Chars are always 8bit quantities.
         else:
             element_count = reduce(mul, [a.maxAxisPoints for a in self.axisDescriptions], 1)
