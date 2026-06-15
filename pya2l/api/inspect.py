@@ -3293,7 +3293,7 @@ class Characteristic(CachedBase):
         element_size = self.fnc_element_size
         if self.type == "VALUE":
             return element_size  # Scalar Characteristic
-        elif self.type in  ("ASCII", "VAL_BLK"):
+        elif self.type in ("ASCII", "VAL_BLK"):
             return dim["x"]  # Chars are always 8bit quantities.
         else:
             element_count = reduce(mul, [a.maxAxisPoints for a in self.axisDescriptions], 1)
