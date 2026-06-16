@@ -25,7 +25,7 @@ jobs:
             cibw_archs_windows: AMD64
     steps:
       - uses: actions/checkout@v6
-      - uses: pypa/cibuildwheel@v4.0.0
+      - uses: pypa/cibuildwheel@v4.1.0
         env:
           CIBW_ARCHS_WINDOWS: ${{ matrix.cibw_archs_windows || '' }}
           CIBW_ARCHS_MACOS: universal2
