@@ -207,11 +207,12 @@ def open_existing(file_name: str, loglevel: str = "INFO") -> model.SessionProxy:
     if not db_fn.exists():
         raise OSError(f"file {db_fn!r} does not exists.")
     else:
-        db = model.A2LDatabase(str(db_fn))
+        db = model.A2LDatabase(str(db_fn), initialize=False)
         session = db.session
         res = session.query(model.MetaData).first()
         if res:
             session.setup_ifdata_parser(loglevel=loglevel)
+            session._a2l_db_owner = db
             return session
         else:
             # Attempt recovery: delete corrupted DB and re-import from corresponding A2L
