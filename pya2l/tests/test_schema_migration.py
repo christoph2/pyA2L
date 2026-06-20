@@ -137,3 +137,15 @@ def test_fresh_database_gets_current_version(tmp_path):
         compat_warnings = [w for w in caught if issubclass(w.category, UserWarning)]
         assert not compat_warnings
         db.close()
+
+
+def test_existing_database_open_can_skip_metadata_initialization(tmp_path):
+    """Existing-DB validation should not silently add missing metadata."""
+    db_path = tmp_path / "missing_meta.a2ldb"
+    db_path.touch()
+
+    db = A2LDatabase(str(db_path), initialize=False)
+    try:
+        assert db.session.query(MetaData).first() is None
+    finally:
+        db.close()

@@ -4,6 +4,7 @@ from pya2l.a2lparser import A2LParser
 from pya2l.api.inspect import (
     AxisPts,
     Blob,
+    Characteristic,
     CompuMethod,
     FilteredList,
     Function,
@@ -77,6 +78,58 @@ def test_measurement_basic(db):
     assert meas.arraySize is None
     assert meas.bitMask is None
     assert meas.compuMethod.conversionType == "NO_COMPU_METHOD"
+
+
+MODULE_SCOPED_LOOKUP_A2L = """
+ASAP2_VERSION 1 71
+/begin PROJECT TestProject ""
+  /begin MODULE ModuleA ""
+    /begin COMPU_METHOD CM "A conversion" IDENTICAL "%d" "unitA" /end COMPU_METHOD
+    /begin RECORD_LAYOUT RL FNC_VALUES 1 UBYTE COLUMN_DIR DIRECT /end RECORD_LAYOUT
+    /begin MEASUREMENT Same "A measurement" UBYTE CM 1 1 0 10 /end MEASUREMENT
+    /begin CHARACTERISTIC SameChar "A characteristic" VALUE 0x1000 RL 0 CM 0 10 /end CHARACTERISTIC
+  /end MODULE
+  /begin MODULE ModuleB ""
+    /begin COMPU_METHOD CM "B conversion" IDENTICAL "%d" "unitB" /end COMPU_METHOD
+    /begin RECORD_LAYOUT RL FNC_VALUES 1 UWORD ROW_DIR DIRECT /end RECORD_LAYOUT
+    /begin MEASUREMENT Same "B measurement" UWORD CM 2 2 20 30 /end MEASUREMENT
+    /begin CHARACTERISTIC SameChar "B characteristic" VALUE 0x2000 RL 0 CM 20 30 /end CHARACTERISTIC
+  /end MODULE
+/end PROJECT
+"""
+
+
+@pytest.mark.parametrize("db", [MODULE_SCOPED_LOOKUP_A2L], indirect=True)
+def test_module_scoped_lookup_uses_requested_module(db):
+    measurement_a = Measurement(db.session, "Same", module_name="ModuleA")
+    measurement_b = Measurement(db.session, "Same", module_name="ModuleB")
+    characteristic_a = Characteristic(db.session, "SameChar", module_name="ModuleA")
+    characteristic_b = Characteristic(db.session, "SameChar", module_name="ModuleB")
+    layout_a = RecordLayout(db.session, "RL", module_name="ModuleA")
+    layout_b = RecordLayout(db.session, "RL", module_name="ModuleB")
+    compu_method_a = CompuMethod(db.session, "CM", module_name="ModuleA")
+    compu_method_b = CompuMethod(db.session, "CM", module_name="ModuleB")
+
+    assert measurement_a.longIdentifier == "A measurement"
+    assert measurement_a.datatype == "UBYTE"
+    assert measurement_a.compuMethod.unit == "unitA"
+    assert measurement_b.longIdentifier == "B measurement"
+    assert measurement_b.datatype == "UWORD"
+    assert measurement_b.compuMethod.unit == "unitB"
+
+    assert characteristic_a.longIdentifier == "A characteristic"
+    assert characteristic_a.address == 0x1000
+    assert characteristic_a.deposit.fncValues.data_type == "UBYTE"
+    assert characteristic_a.compuMethod.unit == "unitA"
+    assert characteristic_b.longIdentifier == "B characteristic"
+    assert characteristic_b.address == 0x2000
+    assert characteristic_b.deposit.fncValues.data_type == "UWORD"
+    assert characteristic_b.compuMethod.unit == "unitB"
+
+    assert layout_a.fncValues.data_type == "UBYTE"
+    assert layout_b.fncValues.data_type == "UWORD"
+    assert compu_method_a.unit == "unitA"
+    assert compu_method_b.unit == "unitB"
 
 
 MEASUREMENT_FULL_A2L = """

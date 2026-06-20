@@ -5592,7 +5592,7 @@ class SessionProxy:
 
 
 class A2LDatabase:
-    def __init__(self, filename: str, debug: bool = False, logLevel: str = "INFO") -> None:
+    def __init__(self, filename: str, debug: bool = False, logLevel: str = "INFO", initialize: bool = True) -> None:
         if filename == ":memory:":
             self.dbname = ""
         else:
@@ -5621,11 +5621,12 @@ class A2LDatabase:
             # If querying metadata itself fails, leave initialization to callers
             existing_meta = None
         if existing_meta is None:
-            # Fresh database or missing metadata: create initial metadata row
-            meta = MetaData(schema_version=CURRENT_SCHEMA_VERSION)
-            self.session.add(meta)
-            self.session.flush()
-            self.session.commit()
+            if initialize:
+                # Fresh database: create initial metadata row.
+                meta = MetaData(schema_version=CURRENT_SCHEMA_VERSION)
+                self.session.add(meta)
+                self.session.flush()
+                self.session.commit()
         elif existing_meta.schema_version != CURRENT_SCHEMA_VERSION:
             migrated = _migrate_schema(self.session, existing_meta.schema_version, CURRENT_SCHEMA_VERSION)
             if migrated:
