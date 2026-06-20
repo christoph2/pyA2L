@@ -28,7 +28,7 @@ jobs:
       - uses: pypa/cibuildwheel@v4.1.0
         env:
           CIBW_ARCHS_WINDOWS: ${{ matrix.cibw_archs_windows || '' }}
-          CIBW_ARCHS_MACOS: universal2
+          CIBW_ARCHS_MACOS: x86_64 arm64
       - uses: actions/upload-artifact@v7
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
