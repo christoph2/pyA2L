@@ -75,7 +75,7 @@ ignore_remote_version = true
     '__version__ = "{version}"',
 ]
 [build-system]
-requires = ["poetry-core>=1.6.0", "wheel", "cmake>=3.12", "pybind11[global]>=2.12.0"]
+requires = ["poetry-core>=1.6.0", "wheel", "cmake>=3.12", "pybind11[global]==2.13.6"]
 build-backend = "poetry.core.masonry.api"
 
 
