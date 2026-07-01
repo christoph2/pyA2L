@@ -66,9 +66,10 @@ def get_py_config() -> dict:
         arch = None
         if uname.system == "Linux":
             arch = VARS.get("MULTIARCH", "")
-            if not arch:
-                print("WARNING: var 'MULTIARCH' not found. search may fail!")
+        found = False
         for dir_var in DIR_VARS:
+            if found:
+                break
             dir_name = VARS.get(dir_var)
             if not dir_name:
                 continue
@@ -76,15 +77,22 @@ def get_py_config() -> dict:
                 full_path = [Path(dir_name) / library]
             elif uname.system == "Linux":
                 full_path = [Path(dir_name) / arch / library, Path(dir_name) / library]
-            else:
-                print("PF?", uname.system)
             for fp in full_path:
+                print(f"Trying '{fp}'")
                 if fp.exists():
-                    print(f"found Python library: '{full_path}'")
-                    libdir = dir_name
+                    print(f"found Python library: '{fp}'")
+                    libdir = str(fp.parent)
+                    found = True
                     break
-                # else:
-                #    print(f"NOT found: '{full_path}'")
+        if not found:
+            print("Could NOT locate Python library.")
+            print(f"Searched in: {DIR_VARS}")
+            print(f"LIBRARY variable: {library}")
+            if arch:
+                print(f"MULTIARCH: {arch}")
+            # Fallback: try without explicit library path (CMake might find it)
+            libdir = ""
+            print("WARNING: Proceeding without explicit library path. CMake will attempt auto-detection.")
     return dict(exe=sys.executable, include=include, libdir=libdir, library=library)
 
 
