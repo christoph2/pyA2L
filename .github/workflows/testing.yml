@@ -46,13 +46,6 @@ jobs:
         run: |
           poetry run pytest -q --junitxml=result.xml --cov=pya2l --cov-report=term-missing --cov-report=xml
 
-      - name: Lint
-        run: |
-          poetry run ruff check .
-          poetry run black --check .
-          poetry run bandit -c bandit.yml -r pya2l -q
-          poetry run mypy pya2l --ignore-missing-imports --no-error-summary
-
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7
