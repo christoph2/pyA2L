@@ -1,45 +1,49 @@
-[tool.poetry]
+[project]
 name = "pya2ldb"
-version = "1.0.342"
+version = "1.0.343"
 description = "A2L for Python"
-authors = ["Christoph Schueler <cpu12.gems@googlemail.com>"]
-license = "GPLv2"
 readme = "docs/README.rst"
-homepage = "https://github.com/christoph2/pyA2L"
-classifiers=[
+license = { text = "GPLv2" }
+authors = [{ name = "Christoph Schueler", email = "cpu12.gems@googlemail.com" }]
+requires-python = ">=3.10"
+classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Topic :: Software Development",
     "Topic :: Scientific/Engineering",
     "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
     "Programming Language :: Python :: 3.10",
-	"Programming Language :: Python :: 3.11",
-	"Programming Language :: Python :: 3.12",
-	"Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
-build = "build_ext.py"
-include = [
-    { path = "pya2l/*.so", format = "wheel" },
-    { path = "pya2l/*.pyd", format = "wheel" },
-    { path = "pya2l/py.typed", format = "wheel" },
-]
-packages = [
-    { include = "pya2l" }
+dependencies = [
+    "chardet>=7.0.0",
+    "Mako>=1.3.5",
+    "SQLAlchemy>=2.0.30,<3",
+    "numpy>=1.26.4,<3",
+    "rich>=14.2,<16.0",
 ]
 
+[project.optional-dependencies]
+compute = ["scipy>=1.15.0", "numexpr>=2.14.1"]
+
+[project.scripts]
+a2ldb-imex = "pya2l.scripts.a2ldb_imex:main"
+
+[project.urls]
+Homepage = "https://github.com/christoph2/pyA2L"
+
+[tool.scikit-build]
+cmake.build-type = "Release"
+wheel.packages = ["pya2l"]
+
+[tool.poetry]
+name = "pya2ldb"
+version = "1.0.343"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-chardet = "^7.0.0"
-Mako = "^1.3.5"
-SQLAlchemy = "^2.0.30"
-numpy = ">=1.26.4,<3"
-rich = ">=14.2,<16.0"
-scipy = { version = "^1.15.0", optional = true }
-numexpr = { version = "^2.14.1", optional = true }
-
-[tool.poetry.extras]
-compute = ["scipy", "numexpr"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.2.2,<10.0.0"
@@ -51,7 +55,6 @@ flake8 = "^7.0.0"
 black = ">=25.1,<27.0"
 flake8-bugbear = ">=24.4.26,<26.0.0"
 pre-commit-hooks = ">=5,<7"
-
 pyupgrade = "^3.16.0"
 pytest-cov = ">=6,<8"
 mypy = ">=1.16,<3.0"
@@ -59,7 +62,7 @@ scipy = "^1.15.0"
 numexpr = "^2.14.1"
 
 [tool.bumpver]
-current_version = "1.0.342"
+current_version = "1.0.343"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
@@ -75,8 +78,8 @@ ignore_remote_version = true
     '__version__ = "{version}"',
 ]
 [build-system]
-requires = ["poetry-core>=1.6.0", "wheel", "cmake>=3.12", "pybind11[global]==2.13.6"]
-build-backend = "poetry.core.masonry.api"
+requires = ["scikit-build-core>=0.10", "pybind11[global]>=2.13.6"]
+build-backend = "scikit_build_core.build"
 
 
 [tool.poetry.scripts]

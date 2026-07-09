@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 3.10...3.29)
+cmake_minimum_required(VERSION 3.15...3.29)
 project(pya2l_extensions LANGUAGES C CXX)
 
 cmake_policy(SET CMP0135 NEW)
@@ -18,7 +18,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 message( STATUS "Found pybind11 v${pybind11_VERSION} ${pybind11_VERSION_TYPE}: ${pybind11_INCLUDE_DIRS}")
 
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dist")
 
 SET(GCC_N_CLANG_BASE_OPTIONS "-Wall -Wextra -Wpedantic -Warray-bounds -fexceptions")
 
@@ -92,7 +91,6 @@ pybind11_add_module(a2lparser_ext ${CMAKE_CURRENT_SOURCE_DIR}/pya2l/a2lparser_wr
 
 target_compile_options(a2lparser_ext PUBLIC "-DEXTENSION_NAME=a2lparser_ext" PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
 
-set(LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pya2l")
 
 IF (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_N_CLANG_BASE_OPTIONS} ${GCC_N_CLANG_EXTRA_OPTIONS}")
@@ -101,4 +99,4 @@ ELSEIF (CMAKE_C_COMPILER_ID MATCHES "MSVC")
 	SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${MSVC_BASE_OPTIONS} ${MSVC_EXTRA_OPTIONS}")
 ENDIF()
 
-install(TARGETS a2lparser_ext LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/pya2l)
+install(TARGETS a2lparser_ext LIBRARY DESTINATION pya2l)
