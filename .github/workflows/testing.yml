@@ -43,7 +43,7 @@ jobs:
           poetry install --no-interaction --no-ansi --with dev --extras compute
 
       - name: Build and install native extensions
-        run: pip install -v .
+        run: pip install -v -e .
 
       - name: Run tests with coverage
         run: |
