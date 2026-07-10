@@ -717,24 +717,19 @@ def test_no_mod_common():
     assert nmc.alignment.align("BYTE", 1) == 1
 
 
-@pytest.mark.parametrize(
-    "db",
-    ["""
-ASAP2_VERSION 1 71
-/begin PROJECT Project1 ""
-  /begin MODULE Module1 ""
-  /end MODULE
-/end PROJECT
-"""],
-    indirect=True,
-)
-def test_filtered_list(db):
+def test_filtered_list():
     # FilteredList needs session, association, klass, and attr_name (default="name")
+    # Use a direct in-memory database to avoid invoking the parser (which can cause
+    # MemoryError on some platforms/Python versions for otherwise-unneeded parsing).
     from pya2l import model
 
-    fl = FilteredList(db.session, [], model.Measurement, "name")
-    # FilteredList doesn't have __len__, but we can check query results
-    assert len(list(fl.query())) == 0
+    db = model.A2LDatabase(":memory:")
+    try:
+        fl = FilteredList(db.session, [], model.Measurement, "name")
+        # FilteredList doesn't have __len__, but we can check query results
+        assert len(list(fl.query())) == 0
+    finally:
+        db.close()
 
 
 @pytest.mark.parametrize(
