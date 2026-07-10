@@ -13,9 +13,32 @@ Prerequisites
   Line Tools on macOS, or GCC/Clang on Linux)
 - CMake 3.12+
 - pip >= 21.3
+- Git (for fetching submodules)
 
 Note: The project uses pybind11 and CMake under the hood. ANTLR and Java
 are not required for normal builds.
+
+Git submodules
+--------------
+
+pyA2L uses two git submodules for its native C++ extensions:
+
+- **pybind11** — Python/C++ binding layer (``pybind11/``)
+- **spdlog** — Fast C++ logging library (``pya2l/extensions/spdlog/``,
+  from `gabime/spdlog <https://github.com/gabime/spdlog>`_)
+
+When cloning the repository you must initialise these submodules, otherwise
+the build will fail with missing headers:
+
+.. code:: bash
+
+   git clone --recurse-submodules https://github.com/christoph2/pyA2L.git
+
+If you already cloned without submodules, run:
+
+.. code:: bash
+
+   git submodule update --init --recursive
 
 One‑liner build and install (recommended)
 -----------------------------------------
