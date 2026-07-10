@@ -342,7 +342,26 @@ ASAP2_VERSION 1 71
 
 @pytest.fixture
 def parser():
-    return A2LParser()
+    import gc
+
+    p = A2LParser()
+    _dbs: list = []
+    _orig_parse = p.parse
+
+    def _tracked_parse(*args, **kwargs):
+        db = _orig_parse(*args, **kwargs)
+        _dbs.append(db)
+        return db
+
+    p.parse = _tracked_parse
+    yield p
+    for db in _dbs:
+        try:
+            if not db._closed:
+                db.close()
+        except Exception:  # nosec B110
+            pass
+    gc.collect()
 
 
 def test_parse_minimal(parser, tmp_path):

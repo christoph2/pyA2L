@@ -1,3 +1,4 @@
+import gc
 import re
 import sys
 import traceback
@@ -401,6 +402,8 @@ class A2LParser:
         # self.db.session.commit()
         self.logger.info(f"Importing {a2l_fn!r} [{encoding}] ==> DB {db_fn!r}.")
         try:
+
+            gc.collect()  # Free accumulated cyclic garbage before C++ memory allocation
             ext = _get_parser_ext()
             keyword_counter, values, tables, aml_data = ext.parse(str(a2l_fn), encoding, loglevel)
         except Exception as e:

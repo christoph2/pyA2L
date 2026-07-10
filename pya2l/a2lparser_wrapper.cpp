@@ -2,6 +2,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include <new>
 #include <sstream>
 
 #include "a2lparser.hpp"
@@ -89,6 +90,24 @@ auto parse(const std::string& file_name, const std::string& encoding, const std:
     return {counter, std::move(values), std::move(converted_tables), std::move(aml_data)};
 }
 
+/// Wrapper that retries once after triggering the Python cyclic GC on bad_alloc.
+/// Accumulated SQLAlchemy session cycles (held by Python's GC) can exhaust the
+/// process heap on memory-constrained CI runners.  A single PyGC_Collect() call
+/// usually reclaims enough memory for the retry to succeed.
+auto parse_with_gc_retry(const std::string& file_name, const std::string& encoding, const std::string& log_level)
+    -> std::tuple<std::size_t, ValueContainer, std::vector<A2LParser::value_table_t>, AmlData>
+{
+    try {
+        return parse(file_name, encoding, log_level);
+    } catch (const std::bad_alloc&) {
+        // Trigger Python's cyclic garbage collector to reclaim SQLAlchemy session
+        // cycles that CPython's reference counter alone cannot free.  This releases
+        // the heap pressure so the subsequent retry can allocate successfully.
+        PyGC_Collect();
+        return parse(file_name, encoding, log_level);
+    }
+}
+
 template<typename... Ts>
 struct Overload : Ts... {
     using Ts::operator()...;
@@ -104,7 +123,7 @@ Node unmarshal(const py::bytes& data) {
 
 
 PYBIND11_MODULE(a2lparser_ext, m) {
-    m.def("parse", &parse, py::return_value_policy::move);
+    m.def("parse", &parse_with_gc_retry, py::return_value_policy::move);
     m.def("process_sys_consts", &process_sys_consts, py::return_value_policy::move);
 	m.def("unmarshal", &unmarshal, py::return_value_policy::move);
 	// m.def("ifdata_lexer", &ifdata_lexer, py::return_value_policy::move);
