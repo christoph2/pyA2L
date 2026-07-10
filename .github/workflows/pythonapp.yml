@@ -3,8 +3,8 @@ name: pya2ldb
 on:
   push:
     branches: [master, develop]
-    tags:
-      - 'v*'
+    # tags:
+    #  - 'v*'
   pull_request:
     branches: [master, develop]
 
