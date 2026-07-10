@@ -1,3 +1,5 @@
+import gc
+
 import pytest
 
 from pya2l.a2lparser import A2LParser
@@ -42,7 +44,9 @@ def db(parser, tmp_path, request):
     a2l_file = tmp_path / f"t_{h}.a2l"
     a2l_file.write_text(a2l_content, encoding="latin-1")
     database = parser.parse(str(a2l_file), in_memory=True)
-    return database
+    yield database
+    database.close()
+    gc.collect()
 
 
 MEASUREMENT_BASIC_A2L = """
