@@ -6,6 +6,7 @@
     #include <optional>
     #include <set>
     #include <variant>
+    #include <cstdint>
 
 
 using string_opt_t = std::optional<std::string>;
