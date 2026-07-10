@@ -79,7 +79,7 @@ ignore_remote_version = true
     '__version__ = "{version}"',
 ]
 [build-system]
-requires = ["scikit-build-core>=0.10", "pybind11[global]>=2.13.6"]
+requires = ["scikit-build-core>=0.10", "pybind11[global]==2.13.6"]
 build-backend = "scikit_build_core.build"
 
 
