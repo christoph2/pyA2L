@@ -16,6 +16,8 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
 ]
 dependencies = [
     "chardet>=7.0.0",
@@ -191,6 +193,6 @@ exclude_dirs = [".venv", "tests", "pya2l/examples", "pya2l/build"]
 [tool.cibuildwheel]
 #test-command = "pya2l {package}/tests"
 
-build = "cp3{10,11,12,13,14}-*"
+build = "cp3{10,11,12,13,14,15}-*"
 skip = ["*_i686", "*-musllinux*"]
 build-frontend = "build"
