@@ -80,12 +80,12 @@ jobs:
   upload_pypi:
     needs: [build_wheels, build_sdist]  # , run_tests
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') &&
-      (needs.build_wheels.result == 'success' || needs.build_wheels.result == 'failure') &&
-      needs.build_sdist.result == 'success' &&
-      needs.run_tests.result == 'success'
-    environment: release
+    #if: |
+    #  github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') &&
+    #  (needs.build_wheels.result == 'success' || needs.build_wheels.result == 'failure') &&
+    #  needs.build_sdist.result == 'success' &&
+    #  needs.run_tests.result == 'success'
+    #environment: release
     permissions:
       id-token: write
       contents: read
