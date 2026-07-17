@@ -85,7 +85,9 @@ jobs:
     #  (needs.build_wheels.result == 'success' || needs.build_wheels.result == 'failure') &&
     #  needs.build_sdist.result == 'success' &&
     #  needs.run_tests.result == 'success'
-    #environment: release
+    environment:
+      name: q
+      url: https://pypi.org/p/pya2ldb
     permissions:
       id-token: write
       contents: read
@@ -96,5 +98,3 @@ jobs:
           merge-multiple: true
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@v1.14.0
-        with:
-          attestations: true
