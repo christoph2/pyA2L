@@ -1,3 +1,3 @@
 """pya2l version module"""
 
-__version__ = "1.0.344"
+__version__ = "1.0.345"

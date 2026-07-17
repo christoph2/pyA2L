@@ -380,11 +380,12 @@ class A2LParser:
         force_overwrite: bool = False,
         loglevel: str = "INFO",
         progress_bar: bool = True,
+        output_dir: str | Path | None = None,
     ) -> model.A2LDatabase:
         loglevel = loglevel.upper()
         effective_progress = progress_bar and sys.stderr.isatty() and loglevel not in ("ERROR", "CRITICAL")
         self.silent: bool = not effective_progress
-        a2l_fn, db_fn = path_components(in_memory, file_name, local)
+        a2l_fn, db_fn = path_components(in_memory, file_name, local, output_dir=output_dir)
         if not in_memory:
             if remove_existing or force_overwrite:
                 try:
@@ -542,7 +543,7 @@ def enforce_suffix(pth: Path, suffix: str):
     return pth
 
 
-def path_components(in_memory: bool, file_name: str, local=False):
+def path_components(in_memory: bool, file_name: str, local=False, output_dir: str | Path | None = None):
     """
     Parameters
     ----------
@@ -551,16 +552,23 @@ def path_components(in_memory: bool, file_name: str, local=False):
     file_name: str
 
     local: bool
+
+    output_dir: str | Path | None
     """
 
-    db_fn = ""
-    a2l_fn = ""
+    db_fn: Path | str = ""
+    a2l_fn: Path = Path("")
 
     file_path = Path(file_name)
     if in_memory:
         db_fn = ":memory:"
     else:
-        if local:
+        if output_dir is not None:
+            output_path = Path(output_dir)
+            if not output_path.exists():
+                raise OSError(f"output directory {output_dir!r} does not exist.")
+            db_fn = enforce_suffix(output_path / file_path.stem, ".a2ldb")
+        elif local:
             db_fn = enforce_suffix(Path(file_path.stem), ".a2ldb")
         else:
             db_fn = enforce_suffix((file_path.parent / file_path.stem), ".a2ldb")

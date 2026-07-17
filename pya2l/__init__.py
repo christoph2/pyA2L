@@ -46,6 +46,7 @@ import sys
 import typing
 import warnings
 from io import TextIOWrapper
+from pathlib import Path
 
 
 try:
@@ -117,6 +118,7 @@ def import_a2l(
     loglevel: str = "INFO",
     progress_bar: bool = True,
     force_overwrite: bool = False,
+    output_dir: str | Path | None = None,
 ) -> model.SessionProxy:
     """Import `.a2l` file to `.a2ldb` database.
 
@@ -150,6 +152,10 @@ def import_a2l(
     force_overwrite: bool
         Silently overwrite an existing ``.a2ldb`` without raising an error.
 
+    output_dir: str | Path | None
+        If provided, the database file will be created in this directory.
+        Takes precedence over `local`. The directory must exist.
+
     Returns
     -------
     SQLAlchemy session object.
@@ -157,7 +163,7 @@ def import_a2l(
     Raises
     ------
     OSError
-        If database already exists and *force_overwrite* is ``False``.
+        If database already exists and *force_overwrite* is ``False``, or if `output_dir` does not exist.
 
     Note
     ----
@@ -175,6 +181,7 @@ def import_a2l(
         force_overwrite=force_overwrite,
         loglevel=loglevel,
         progress_bar=progress_bar,
+        output_dir=output_dir,
     )
     session = db.session
     session.commit()
@@ -201,6 +208,8 @@ def open_existing(file_name: str, loglevel: str = "INFO") -> model.SessionProxy:
     OSError
         If database already exists.
     """
+    from pathlib import Path
+
     _, path_components = _get_a2lparser_symbols()
     _, db_fn = path_components(in_memory=False, file_name=file_name)
 
@@ -246,6 +255,7 @@ def open_existing(file_name: str, loglevel: str = "INFO") -> model.SessionProxy:
 
 def open_create(file_name: str, local: bool = False, encoding: str = "latin-1", loglevel: str = "INFO") -> model.SessionProxy:
     """Open or create an A2LDB."""
+    from pathlib import Path
 
     _, path_components = _get_a2lparser_symbols()
     a2l_fn, db_fn = path_components(in_memory=False, file_name=file_name)
@@ -306,8 +316,20 @@ class DB:
         loglevel: str = "INFO",
         progress_bar: bool = True,
         force_overwrite: bool = False,
+        output_dir: str | Path | None = None,
     ) -> model.SessionProxy:
-        return import_a2l(file_name, debug, in_memory, remove_existing, local, encoding, loglevel, progress_bar, force_overwrite)
+        return import_a2l(
+            file_name,
+            debug,
+            in_memory,
+            remove_existing,
+            local,
+            encoding,
+            loglevel,
+            progress_bar,
+            force_overwrite,
+            output_dir=output_dir,
+        )
 
     @staticmethod
     def open_existing(file_name: str, loglevel: str = "INFO") -> model.SessionProxy:

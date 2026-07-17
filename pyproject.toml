@@ -1,6 +1,6 @@
 [project]
 name = "pya2ldb"
-version = "1.0.344"
+version = "1.0.345"
 description = "A2L for Python"
 readme = "docs/README.rst"
 license = { text = "GPLv2" }
@@ -42,7 +42,7 @@ wheel.packages = ["pya2l"]
 
 [tool.poetry]
 name = "pya2ldb"
-version = "1.0.344"
+version = "1.0.345"
 package-mode = false
 
 [tool.poetry.dependencies]
@@ -65,7 +65,7 @@ scipy = "^1.15.0"
 numexpr = "^2.14.1"
 
 [tool.bumpver]
-current_version = "1.0.344"
+current_version = "1.0.345"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
