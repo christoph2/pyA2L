@@ -86,7 +86,7 @@ jobs:
     #  needs.build_sdist.result == 'success' &&
     #  needs.run_tests.result == 'success'
     environment:
-      name: q
+      name: pypi
       url: https://pypi.org/p/pya2ldb
     permissions:
       id-token: write
