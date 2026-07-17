@@ -19,7 +19,16 @@ from pya2l.aml.ifdata_lexer import IfDataLexer
 from pya2l.logger import Logger
 
 
-class IfDataTokenType(IntEnum):
+class IntEnum314(IntEnum):
+    @classmethod
+    def _prepare_classdict(cls, classdict):
+        to_delete = [k for k in classdict if k.startswith("__pydevd_")]
+        for k in to_delete:
+            del classdict[k]
+        return super()._prepare_classdict(classdict)
+
+
+class IfDataTokenType(IntEnum314):
     """Token types used by the IF_DATA parser."""
 
     NONE = 0
@@ -41,7 +50,7 @@ class IfDataToken:
     value: Any
 
 
-class AMLPredefinedTypeEnum(IntEnum):
+class AMLPredefinedTypeEnum(IntEnum314):
     """Predefined types in AML."""
 
     CHAR = 0
@@ -57,7 +66,7 @@ class AMLPredefinedTypeEnum(IntEnum):
     FLOAT16 = 10
 
 
-class ReferrerType(IntEnum):
+class ReferrerType(IntEnum314):
     """Types of referrers in AML."""
 
     Enumeration = 0

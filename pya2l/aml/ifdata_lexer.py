@@ -4,7 +4,16 @@ from enum import IntEnum
 from typing import Any
 
 
-class IfDataTokenType(IntEnum):
+class IntEnum314(IntEnum):
+    @classmethod
+    def _prepare_classdict(cls, classdict):
+        to_delete = [k for k in classdict if k.startswith("__pydevd_")]
+        for k in to_delete:
+            del classdict[k]
+        return super()._prepare_classdict(classdict)
+
+
+class IfDataTokenType(IntEnum314):
     NONE = 0
     IDENT = 1
     FLOAT = 2
@@ -65,7 +74,6 @@ EXPRESSIONS = [
 
 
 class IfDataLexer:
-
     def __init__(self, section: str, skip_list: list[IfDataTokenType] = [IfDataTokenType.WS, IfDataTokenType.COMMENT]):
         self.section = section
         self.section_length = len(section)
