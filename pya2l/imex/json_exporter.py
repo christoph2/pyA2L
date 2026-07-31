@@ -274,7 +274,7 @@ def characteristic_to_dict(session: Any, ch: Any) -> dict[str, Any]:
             if not safe_get(ch, "dependent_characteristic")
             else {
                 "formula": safe_get(ch.dependent_characteristic, "formula"),
-                "characteristic": as_list(safe_get(ch.dependent_characteristic, "characteristic")),
+                "characteristic": as_list(safe_get(ch.dependent_characteristic, "characteristic_id")),
             }
         ),
         "discrete": _bool_flag(safe_get(ch, "discrete")),
@@ -300,7 +300,7 @@ def characteristic_to_dict(session: Any, ch: Any) -> dict[str, Any]:
             if not safe_get(ch, "virtual_characteristic")
             else {
                 "formula": safe_get(ch.virtual_characteristic, "formula"),
-                "characteristic": as_list(safe_get(ch.virtual_characteristic, "characteristic")),
+                "characteristic": as_list(safe_get(ch.virtual_characteristic, "characteristic_id")),
             }
         ),
         "if_data_raw": ifdata_raw_list(safe_get(ch, "if_data")),
