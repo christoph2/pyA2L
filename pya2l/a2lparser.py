@@ -26,6 +26,27 @@ from pya2l.utils import detect_encoding
 IFD_HEADER = re.compile(r"/begin\s+IF_DATA\s+(\w+)", re.DOTALL | re.MULTILINE)
 
 
+class ProgressCallback:
+    """
+    """
+    def __init__(self) -> None:
+        self.total = 0
+        self.advance = 0
+        self._current = 0
+
+    def set_total(self, total: int) -> None:
+        self.total = total
+
+    def set_advance(self, advance: int) -> None:
+        self.advance = advance
+
+    @property
+    def current(self) -> int:
+        return self._current
+
+    def step(self) -> None:
+        self._current += self.advance
+
 def _get_parser_ext():
     import pya2l.a2lparser_ext as ext
 
@@ -360,9 +381,10 @@ def update_tables(session, tables):
 
 
 class A2LParser:
-    def __init__(self) -> None:
+    def __init__(self, progress_callback: ProgressCallback | None=None) -> None:
         self.debug: bool = False
         self.logger: Logger = Logger("A2LDB", "INFO")
+        self.progress_callback: ProgressCallback | None = progress_callback
 
     def __del__(self) -> None:
         pass
@@ -385,6 +407,7 @@ class A2LParser:
         loglevel = loglevel.upper()
         effective_progress = progress_bar and sys.stderr.isatty() and loglevel not in ("ERROR", "CRITICAL")
         self.silent: bool = not effective_progress
+        self.advance: int = 0
         a2l_fn, db_fn = path_components(in_memory, file_name, local, output_dir=output_dir)
         if not in_memory:
             if remove_existing or force_overwrite:
@@ -401,7 +424,7 @@ class A2LParser:
         start_time = perf_counter()
         self.db: model.A2LDatabase = model.A2LDatabase(str(db_fn), debug=self.debug)
         # self.db.session.commit()
-        self.logger.info(f"Importing {a2l_fn!r} [{encoding}] ==> DB {db_fn!r}.")
+        self.logger.info(f'Importing "{a2l_fn!s}" [{encoding}] ==> DB "{db_fn!s}".')
         try:
 
             gc.collect()  # Free accumulated cyclic garbage before C++ memory allocation
@@ -443,6 +466,9 @@ class A2LParser:
         else:
             # Large files: use max of 1000 or 1% to avoid over-flushing
             self.advance = max(1000, keyword_counter // 100)
+        if self.progress_callback is not None:
+            self.progress_callback.set_total(keyword_counter)
+            self.progress_callback.set_advance(self.advance)
         fr = FakeRoot()
         with self.progress_bar:
             self.traverse(values, fr, None, False)
@@ -461,6 +487,8 @@ class A2LParser:
         if not self.silent and self.counter % self.advance == 0:
             self.db.session.flush()
             self.progress_bar.update(self.task, advance=self.advance)
+            if self.progress_callback is not None:
+                self.progress_callback.step()
             # db.session.commit()
         if name != "root":
             table = KW_MAP[name]

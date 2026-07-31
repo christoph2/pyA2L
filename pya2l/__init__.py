@@ -64,7 +64,7 @@ from pya2l.imex import open_a2l_database  # noqa: F401
 from pya2l.imex import open_json_database  # noqa: F401
 from pya2l.logger import Logger
 from pya2l.templates import doTemplateFromText
-
+from pya2l.a2lparser import ProgressCallback
 
 if RICH_AVAILABLE:
     install(show_locals=True, max_frames=3)  # Install custom exception handler.
@@ -119,6 +119,7 @@ def import_a2l(
     progress_bar: bool = True,
     force_overwrite: bool = False,
     output_dir: str | Path | None = None,
+    progress_callback: ProgressCallback | None = None,
 ) -> model.SessionProxy:
     """Import `.a2l` file to `.a2ldb` database.
 
@@ -171,7 +172,7 @@ def import_a2l(
     """
 
     A2LParser, _ = _get_a2lparser_symbols()
-    a2l_parser = A2LParser()
+    a2l_parser = A2LParser(progress_callback=progress_callback)
     db = a2l_parser.parse(
         file_name=file_name,
         local=local,

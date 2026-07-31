@@ -1,7 +1,7 @@
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2022-2025 by Christoph Schueler <github.com/Christoph2,
+   (C) 2022-2026 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved

@@ -4899,6 +4899,7 @@ class Module(CachedBase):
     mod_par: ModPar | None
     record_layout: FilteredList[RecordLayout]
     transformer: FilteredList[Transformer]
+    typedef_structure: FilteredList[TypedefStructure]
     unit: FilteredList[Unit]
     user_rights: FilteredList[UserRights]
     variant_coding: VariantCoding | None
