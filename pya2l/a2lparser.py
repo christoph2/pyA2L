@@ -27,8 +27,8 @@ IFD_HEADER = re.compile(r"/begin\s+IF_DATA\s+(\w+)", re.DOTALL | re.MULTILINE)
 
 
 class ProgressCallback:
-    """
-    """
+    """ """
+
     def __init__(self) -> None:
         self.total = 0
         self.advance = 0
@@ -46,6 +46,7 @@ class ProgressCallback:
 
     def step(self) -> None:
         self._current += self.advance
+
 
 def _get_parser_ext():
     import pya2l.a2lparser_ext as ext
@@ -381,7 +382,7 @@ def update_tables(session, tables):
 
 
 class A2LParser:
-    def __init__(self, progress_callback: ProgressCallback | None=None) -> None:
+    def __init__(self, progress_callback: ProgressCallback | None = None) -> None:
         self.debug: bool = False
         self.logger: Logger = Logger("A2LDB", "INFO")
         self.progress_callback: ProgressCallback | None = progress_callback
