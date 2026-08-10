@@ -20,11 +20,11 @@ repos:
       - id: black
         language_version: python3
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.1
+    rev: v0.16.2
     hooks:
       - id: ruff
   - repo: https://github.com/PyCQA/isort
-    rev: 9.0.0b1
+    rev: 9.0.0b2
     hooks:
       - id: isort
         args: ["--filter-files"]
