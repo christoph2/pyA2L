@@ -732,6 +732,38 @@ def test_filtered_list():
         fl = FilteredList(db.session, [], model.Measurement, "name")
         # FilteredList doesn't have __len__, but we can check query results
         assert len(list(fl.query())) == 0
+
+        # Test with Characteristic and filter criterion
+        proj = model.Project(name="Proj1", longIdentifier="")
+        mod = model.Module(name="Mod1", longIdentifier="")
+        proj.module.append(mod)
+        db.session.add(proj)
+        db.session.add(mod)
+
+        rl = model.RecordLayout(name="RL1")
+        cm = model.CompuMethod(name="CM1", conversionType="IDENTICAL")
+        mod.record_layout.append(rl)
+        mod.compu_method.append(cm)
+        db.session.add(rl)
+        db.session.add(cm)
+
+        ch1 = model.Characteristic(name="CH1", longIdentifier="First", type="VALUE", address=0x100, deposit="RL1", conversion="CM1", lowerLimit=0.0, upperLimit=10.0)
+        ch2 = model.Characteristic(name="CH2", longIdentifier="Second", type="VALUE", address=0x104, deposit="RL1", conversion="CM1", lowerLimit=0.0, upperLimit=20.0)
+        mod.characteristic.extend([ch1, ch2])
+        db.session.add(ch1)
+        db.session.add(ch2)
+        db.session.commit()
+
+        fl_char = FilteredList(db.session, mod.characteristic, Characteristic)
+        all_chars = list(fl_char.query())
+        assert len(all_chars) == 2
+        assert all_chars[0].name == "CH1"
+        assert all_chars[1].name == "CH2"
+
+        # Test with criterion
+        filtered_chars = list(fl_char.query(lambda r: r.name == "CH2"))
+        assert len(filtered_chars) == 1
+        assert filtered_chars[0].name == "CH2"
     finally:
         db.close()
 
