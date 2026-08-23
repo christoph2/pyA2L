@@ -68,7 +68,6 @@ from pya2l.functions import (
 )
 from pya2l.utils import SingletonBase, align_as, enum_from_str
 
-
 _logger = logging.getLogger(__name__)
 
 
@@ -1866,7 +1865,9 @@ class CompuTabVerb(CachedBase):
     in_values: list[float] = field(default_factory=list)
     text_values: list[str] = field(default_factory=list)
 
-    def __init__(self, session, name: str | None = None, module_name: str | None = None, db_instance: model.CompuVtab | None = None):
+    def __init__(
+        self, session, name: str | None = None, module_name: str | None = None, db_instance: model.CompuVtab | None = None
+    ):
         self.session = session
         if db_instance is not None:
             self.compu_tab_verb = db_instance
@@ -1902,7 +1903,9 @@ class CompuTabVerbRanges(CachedBase):
     upper_values: list[float] = field(default_factory=list)
     text_values: list[str] = field(default_factory=list)
 
-    def __init__(self, session, name: str | None = None, module_name: str | None = None, db_instance: model.CompuVtabRange | None = None):
+    def __init__(
+        self, session, name: str | None = None, module_name: str | None = None, db_instance: model.CompuVtabRange | None = None
+    ):
         self.session = session
         if db_instance is not None:
             self.compu_tab_verb_ranges = db_instance
@@ -1988,7 +1991,9 @@ class CompuMethod(CachedBase):
     refUnit: str | None
     evaluator: Callable = field(repr=False, default=Identical())
 
-    def __init__(self, session: Any, name: str | None = None, module_name: str | None = None, db_instance: model.CompuMethod | None = None) -> None:
+    def __init__(
+        self, session: Any, name: str | None = None, module_name: str | None = None, db_instance: model.CompuMethod | None = None
+    ) -> None:
         """Initialize a CompuMethod instance.
 
         Parameters
@@ -2586,7 +2591,9 @@ class RecordLayout(CachedBase):
     staticAddressOffsets: bool
     staticRecordLayout: bool
 
-    def __init__(self, session, name: str | None = None, module_name: str | None = None, db_instance: model.RecordLayout | None = None):
+    def __init__(
+        self, session, name: str | None = None, module_name: str | None = None, db_instance: model.RecordLayout | None = None
+    ):
         if db_instance is not None:
             self.layout = db_instance
         else:
@@ -2843,9 +2850,7 @@ def create_record_layout_components(parent) -> dict:
             ## FIX_AXIS_PAR_DIST
             shift_op = axis_components.get("shift_op")
             ## FIX_AXIS_PAR
-            if dist_op is not None:
-                pass
-            elif shift_op is not None:
+            if dist_op is not None or shift_op is not None:
                 pass
             else:
                 raise ValueError(f"Either `DIST_OP` or `SHIFT_OP` needed for FIX_AXIS in RecordLayout {parent.name!r}")
@@ -3202,11 +3207,15 @@ class Characteristic(CachedBase):
     fnc_np_shape: tuple
     record_layout_components: dict
 
-    def __init__(self, session, name: str | None = None, module_name: str | None = None, db_instance: model.Characteristic | None = None):
+    def __init__(
+        self, session, name: str | None = None, module_name: str | None = None, db_instance: model.Characteristic | None = None
+    ):
         if db_instance is not None:
             self.characteristic = db_instance
         else:
-            characteristic = _module_scoped(session.query(model.Characteristic).filter(model.Characteristic.name == name), module_name)
+            characteristic = _module_scoped(
+                session.query(model.Characteristic).filter(model.Characteristic.name == name), module_name
+            )
             self.characteristic = characteristic.first()
         if self.characteristic is None:
             raise ValueError(f"CHARACTERISTIC {name!r} does not exist.")
@@ -3267,7 +3276,6 @@ class Characteristic(CachedBase):
             )
         else:
             self.virtual_characteristic = None
-        self.record_layout_components = create_record_layout_components(self) if self.deposit else None
         self.fnc_np_shape: tuple = ()
         if self.matrixDim.valid():
             self.fnc_np_shape = fnc_np_shape(self.matrixDim)
@@ -3275,6 +3283,7 @@ class Characteristic(CachedBase):
             self.fnc_np_shape = (self.number,)
         elif self.axisDescriptions:
             self.fnc_np_shape = tuple([ax.maxAxisPoints for ax in self.axisDescriptions])
+        self.record_layout_components = create_record_layout_components(self) if self.deposit else None
         self.if_data = IfData(session.parse_ifdata(self.characteristic.if_data), self.characteristic.if_data)
 
     def axisDescription(self, axis) -> AxisDescr:
@@ -3683,7 +3692,9 @@ class Measurement(CachedBase):
     fnc_np_shape: tuple
     if_data: list[dict]
 
-    def __init__(self, session, name: str | None = None, module_name: str | None = None, db_instance: model.Measurement | None = None):
+    def __init__(
+        self, session, name: str | None = None, module_name: str | None = None, db_instance: model.Measurement | None = None
+    ):
         if db_instance is not None:
             self.measurement = db_instance
         else:
@@ -4489,7 +4500,13 @@ class TypedefCharacteristic(CachedBase):
     physUnit: str | None
     stepSize: float | None
 
-    def __init__(self, session, name: str | None = None, module_name: str | None = None, db_instance: model.TypedefCharacteristic | None = None):
+    def __init__(
+        self,
+        session,
+        name: str | None = None,
+        module_name: str | None = None,
+        db_instance: model.TypedefCharacteristic | None = None,
+    ):
         if db_instance is not None:
             self.typedef = db_instance
         else:
@@ -4871,7 +4888,9 @@ class Transformer(CachedBase):
     transformer_in_objects: list[str]
     transformer_out_objects: list[str]
 
-    def __init__(self, session, name: str | None = None, module_name: str | None = None, db_instance: model.Transformer | None = None):
+    def __init__(
+        self, session, name: str | None = None, module_name: str | None = None, db_instance: model.Transformer | None = None
+    ):
         self.session = session
         if db_instance is not None:
             self.transformer = db_instance
@@ -4909,7 +4928,9 @@ class UserRights(CachedBase):
     read_only: bool
     ref_group: list[str]
 
-    def __init__(self, session, userLevelId: str | None = None, module_name: str | None = None, db_instance: model.UserRights | None = None):
+    def __init__(
+        self, session, userLevelId: str | None = None, module_name: str | None = None, db_instance: model.UserRights | None = None
+    ):
         self.session = session
         if db_instance is not None:
             self.user_rights = db_instance
