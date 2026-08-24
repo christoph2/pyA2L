@@ -747,8 +747,26 @@ def test_filtered_list():
         db.session.add(rl)
         db.session.add(cm)
 
-        ch1 = model.Characteristic(name="CH1", longIdentifier="First", type="VALUE", address=0x100, deposit="RL1", conversion="CM1", lowerLimit=0.0, upperLimit=10.0)
-        ch2 = model.Characteristic(name="CH2", longIdentifier="Second", type="VALUE", address=0x104, deposit="RL1", conversion="CM1", lowerLimit=0.0, upperLimit=20.0)
+        ch1 = model.Characteristic(
+            name="CH1",
+            longIdentifier="First",
+            type="VALUE",
+            address=0x100,
+            deposit="RL1",
+            conversion="CM1",
+            lowerLimit=0.0,
+            upperLimit=10.0,
+        )
+        ch2 = model.Characteristic(
+            name="CH2",
+            longIdentifier="Second",
+            type="VALUE",
+            address=0x104,
+            deposit="RL1",
+            conversion="CM1",
+            lowerLimit=0.0,
+            upperLimit=20.0,
+        )
         mod.characteristic.extend([ch1, ch2])
         db.session.add(ch1)
         db.session.add(ch2)
