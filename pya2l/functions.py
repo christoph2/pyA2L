@@ -38,6 +38,22 @@ _logger = logging.getLogger(__name__)
 import numpy as np
 
 
+class Config:
+    """Configuration for the functions module."""
+
+    _CONFIG: dict[str, str | int | None] = {
+        "lookup_table_default": None,
+    }
+
+    @staticmethod
+    def get(key: str):
+        return Config._CONFIG.get(key)
+
+    @staticmethod
+    def set(key: str, value: str | int | None):
+        Config._CONFIG[key] = value
+
+
 try:
     import numexpr as _numexpr  # type: ignore[import-untyped]
     from scipy import interpolate as _interpolate  # type: ignore[import-untyped]
@@ -55,7 +71,7 @@ except ImportError:
 
 def _require_compute(feature: str) -> None:
     if not _COMPUTE_AVAILABLE:
-        raise ImportError(f"'{feature}' requires scipy and numexpr. " "Install them with: pip install pya2ldb[compute]")
+        raise ImportError(f"'{feature}' requires scipy and numexpr. Install them with: pip install pya2ldb[compute]")
 
 
 from pya2l import exceptions
@@ -139,40 +155,6 @@ class Interpolate1D:
         x: float
         """
         return self.interp(x)
-
-
-'''
-class Lookup:
-    """Table lookup
-
-    Parameters
-    ----------
-
-    """
-
-    def __init__(self, xs, ys, saturate = False, y_low = None, y_high = None):
-        if any(x1 -x0 <= 0 for x0, x1 in zip(xs, xs[1 : ])):
-            raise ValueError("'xs' must be in strictly increasing order.")
-        self.xs = xs
-        self.ys = ys
-        self.saturate = saturate
-        self.y_low = y_low
-        self.y_high = y_high
-
-    def __call__(self, x):
-        """
-        """
-        if self.saturate:
-            if x <= self.min_x:
-                return self.y_low or self.ys[0]
-            elif x >= self.max_x:
-                return self.y_high or self.ys[-1]
-        else:
-            if not (self.xs[0] <= x <= self.xs[-1]):
-                raise ValueError("x out of bounds")
-        pos = bisect.bisect_right(self.xs, x) - 1
-        return self.ys[pos]
-'''
 
 
 def axis_rescale(no_rescale_x: int, no_axis_pts: int, axis, virtual):
@@ -386,15 +368,18 @@ class LookupTable:
             - keys can be either floats or ints (internaly converted to int)
             - values are either integers or strings.
 
-        default: int or str
+        default: optional int or str
             returned if value is not in mapping.
     """
 
-    def __init__(self, mapping, default=None):
+    def __init__(self, mapping, default: int | str | None = None):
         mapping = ((int(item[0]), item[1]) for item in mapping)
         self.mapping = dict(mapping)
         self.mapping_inv = {v: k for k, v in self.mapping.items()}
-        self.default = default
+        if default is None:
+            self.default = Config.get("lookup_table_default")
+        else:
+            self.default = default
         self.map_internal_to_phys_vec = np.vectorize(self.map_internal_to_phys)
 
     def map_internal_to_phys(self, value):
@@ -410,9 +395,9 @@ class LookupTable:
     def physical_to_int(self, p):
         """"""  # noqa: DAR101, DAR201
         if hasattr(p, "__iter__") and not isinstance(p, str):
-            return [self.mapping_inv.get(r) for r in p]
+            return [self.mapping_inv.get(r, None) for r in p]
         else:
-            return self.mapping_inv.get(p)
+            return self.mapping_inv.get(p, None)
 
 
 class InterpolatedTable:
@@ -450,14 +435,14 @@ class LookupTableWithRanges:
             - keys can be either floats or ints (s. `dtype`).
             - values are strings.
 
-        default: str
+        default: optional str
             returned if value is out of any declared range.
 
         dtype: int | float
             Datatype of keys.
     """
 
-    def __init__(self, mapping, default=None, dtype=int):
+    def __init__(self, mapping, default: str | None = None, dtype=int):
         if not (dtype is int or dtype is float):
             raise ValueError("dtype must be either int or float")
         mapping = ((dtype(item[0]), dtype(item[1]), item[2]) for item in mapping)
@@ -468,14 +453,17 @@ class LookupTableWithRanges:
         self.maximum = max(self.max_values)
         self.display_values = [item[2] for item in self.mapping]
         self.dict_inv = dict(zip(self.display_values, self.min_values))  # min_value, according to spec.
-        self.default = default
+        if default is None:
+            self.default = Config.get("lookup_table_default")
+        else:
+            self.default = default
         # For integer ranges we include both endpoints. For floating-point ranges we use
         # left-closed/right-open intervals, except that the very last range includes the
         # global maximum on the right to avoid dropping the upper boundary to default.
         if dtype is int:
             self.in_range = lambda x, left, right: left <= x <= right
         else:
-            self.in_range = lambda x, left, right: (left <= x <= right)
+            self.in_range = lambda x, left, right: left <= x <= right
 
     def _lookup(self, x):
         """"""  # noqa: DAR101, DAR201
