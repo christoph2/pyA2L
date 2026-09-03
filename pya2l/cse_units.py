@@ -25,11 +25,8 @@ __copyright__ = """
 """Codes for scaling units (CSE)
 """
 
-from collections import namedtuple
+from dataclasses import dataclass
 from enum import IntEnum
-
-
-CSE_Type = namedtuple("CSE_Type", "code unit referred_to comment")
 
 
 class Referer(IntEnum):
@@ -40,6 +37,14 @@ class Referer(IntEnum):
     ANGLE = 2
     COMBUSTION = 3
     EVENT = 4
+
+
+@dataclass
+class CSE_Type:
+    code: int
+    unit: str
+    referred_to: Referer
+    comment: str
 
 
 CSE = {
