@@ -3,7 +3,7 @@
 __copyright__ = """
     pySART - Simplified AUTOSAR-Toolkit for Python.
 
-   (C) 2009-2020 by Christoph Schueler <cpu12.gems@googlemail.com>
+   (C) 2009-2026 by Christoph Schueler <cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -68,4 +68,18 @@ CSE = {
                      calculating a complex trigger condition""",
     ),
     1000: CSE_Type(1000, "Non deterministic", Referer.NONE, "Without fixed scaling"),
+}
+
+CSE_TIME_MULTIPLIERS = {
+    0: 1e-6,
+    1: 1e-5,
+    2: 1e-4,
+    3: 1e-3,
+    4: 1e-2,
+    5: 1e-1,
+    6: 1.0,
+    7: 10.0,
+    8: 60.0,
+    9: 3600.0,
+    10: 86400.0,
 }
