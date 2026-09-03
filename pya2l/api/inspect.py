@@ -3564,6 +3564,9 @@ class Measurement(CachedBase):
         - rate: int
             the maximum refresh rate of the concerning measurement object in the control unit.
 
+    modelLink: str or None
+        Reference to a model link.
+
     physUnit: str or None
         Physical unit for Measurement.
 
@@ -3684,6 +3687,7 @@ class Measurement(CachedBase):
     layout: str | None
     matrixDim: MatrixDim
     maxRefresh: MaxRefresh | None
+    modelLink: str | None
     physUnit: str | None
     readWrite: bool
     refMemorySegment: str | None
@@ -3726,6 +3730,7 @@ class Measurement(CachedBase):
         self.layout = self.measurement.layout.indexMode if self.measurement.layout else None
         self.matrixDim = MatrixDim.from_model(self.measurement.matrix_dim, get_asap2_version(session))
         self.maxRefresh = _dissect_max_refresh(self.measurement.max_refresh)
+        self.modelLink = self.measurement.model_link.name if self.measurement.model_link else None
         self.physUnit = self.measurement.phys_unit.unit if self.measurement.phys_unit else None
         self.readWrite = False if self.measurement.read_write is None else True
         self.refMemorySegment = self.measurement.ref_memory_segment.name if self.measurement.ref_memory_segment else None
