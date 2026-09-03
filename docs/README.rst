@@ -136,6 +136,16 @@ Import a .a2l file and persist it as .a2ldb (SQLite):
 
    session = open_existing("ASAP2_Demo_V161")  # extension .a2ldb is implied
 
+Or use a context manager so resources are closed deterministically:
+
+.. code:: python
+
+   from pya2l import open_existing
+   import pya2l.model as model
+
+   with open_existing("ASAP2_Demo_V161") as session:
+       measurements = session.query(model.Measurement).limit(5).all()
+
 Query with SQLAlchemy ORM - List all measurements ordered by name with
 address and data type:
 
@@ -152,6 +162,9 @@ address and data type:
    )
    for m in measurements:
        print(f"{m.name:48} {m.datatype:12} 0x{m.ecu_address.address:08x}")
+
+When not using ``with ... as ...``, call ``session.close()`` when finished so
+SQLite WAL data is checkpointed and file handles are released.
 
 High-level inspection helpers - Use convenience wrappers from
 pya2l.api.inspect to access derived info:

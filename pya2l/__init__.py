@@ -204,6 +204,8 @@ def open_existing(file_name: str, loglevel: str = "INFO") -> model.SessionProxy:
     Returns
     -------
     SQLAlchemy session object.
+    Close the returned session (or use it as context manager) to ensure SQLite WAL
+    state is checkpointed and database resources are released.
 
     Raises
     ------
@@ -256,7 +258,11 @@ def open_existing(file_name: str, loglevel: str = "INFO") -> model.SessionProxy:
 
 
 def open_create(file_name: str, local: bool = False, encoding: str = "latin-1", loglevel: str = "INFO") -> model.SessionProxy:
-    """Open or create an A2LDB."""
+    """Open or create an A2LDB.
+
+    Close the returned session (or use it as context manager) to ensure SQLite WAL
+    state is checkpointed and database resources are released.
+    """
     from pathlib import Path
 
     _, path_components = _get_a2lparser_symbols()

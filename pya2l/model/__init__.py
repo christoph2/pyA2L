@@ -5576,6 +5576,19 @@ class SessionProxy:
     def __getattr__(self, name: str) -> Any:
         return getattr(self._session, name)
 
+    def close(self) -> None:
+        """Close session and owned database resources if present."""
+        self._session.close()
+        owner = getattr(self, "_a2l_db_owner", None)
+        if owner is not None:
+            owner.close()
+
+    def __enter__(self) -> "SessionProxy":
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> None:
+        self.close()
+
     def parse_ifdata(self, sections: Sequence["IfData"]) -> list[Any]:
         if self._ifdata_parser is None or not self._ifdata_parser.root or not sections:
             return []
