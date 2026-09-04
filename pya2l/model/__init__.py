@@ -5577,11 +5577,19 @@ class SessionProxy:
         return getattr(self._session, name)
 
     def close(self) -> None:
-        """Close session and owned database resources if present."""
-        self._session.close()
-        owner = getattr(self, "_a2l_db_owner", None)
-        if owner is not None:
-            owner.close()
+        """Close the wrapped SQLAlchemy session and any owned database resources."""
+        if getattr(self, "_closing", False):
+            return
+        self._closing = True
+        try:
+            self._session.close()
+            owner = getattr(self, "_a2l_db_owner", None)
+            if owner is not None and not getattr(owner, "_closed", False):
+                owner._session._session.close()
+                owner.engine.dispose()
+                owner._closed = True
+        finally:
+            self._closing = False
 
     def __enter__(self) -> "SessionProxy":
         return self
@@ -5660,8 +5668,10 @@ class A2LDatabase:
             self.close()
 
     def close(self) -> None:
-        """"""
-        self.session.close()
+        """Close the database and underlying SQLAlchemy session without recursing."""
+        if getattr(self, "_closed", False):
+            return
+        self._session._session.close()
         self.engine.dispose()
         self._closed = True
 
