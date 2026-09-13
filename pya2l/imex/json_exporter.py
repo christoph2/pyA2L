@@ -850,7 +850,7 @@ def transformer_to_dict(tr: Any) -> dict[str, Any]:
 
 
 def _column_dict(obj: Any) -> dict[str, Any]:
-    if obj is None:
+    if obj is None or not hasattr(obj, "__table__"):
         return {}
     cols = [c.name for c in getattr(obj, "__table__").columns if not c.name.endswith("_rid") and c.name not in ("rid",)]
     return {col: safe_get(obj, col) for col in cols}
@@ -862,6 +862,10 @@ def record_layout_to_dict(rl: Any) -> dict[str, Any]:
         attr = re.sub(r"(?<!^)(?=[A-Z])", "_", elem.name).lower()
         data = safe_get(rl, attr)
         if data is None:
+            continue
+        if isinstance(data, bool):
+            if data:
+                out["entries"].append({"keyword": elem.keyword_name, "values": {}})
             continue
         for item in as_list(data):
             out["entries"].append({"keyword": elem.keyword_name, "values": _column_dict(item)})
