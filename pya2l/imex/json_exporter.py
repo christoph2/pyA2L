@@ -936,7 +936,7 @@ def variant_coding_to_dict(vc: Any) -> dict[str, Any] | None:
         va = safe_get(v, "var_address")
         addr: list[Any] | None = None
         if va and safe_get(va, "address"):
-            addr = [x for x in va.address]
+            addr = [*va.address]
 
         var_characteristic.append(
             {
