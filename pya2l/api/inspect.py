@@ -3762,6 +3762,9 @@ def get_characteristic_or_axispts(session, name, module_name: str | None = None)
     axis_pts = _module_scoped(session.query(model.AxisPts).filter(model.AxisPts.name == name), module_name).first()
     if axis_pts is not None:
         return AxisPts.get(session, name, module_name)
+    blob = _module_scoped(session.query(model.Blob).filter(model.Blob.name == name), module_name).first()
+    if blob is not None:
+        return Blob.get(session, name, module_name)
     return None
 
 
