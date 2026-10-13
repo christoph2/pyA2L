@@ -4,6 +4,7 @@
 
 #include <new>
 #include <sstream>
+#include <type_traits>
 
 #include "a2lparser.hpp"
 #include "parser.hpp"
@@ -46,10 +47,24 @@ inline auto unicode_decode(std::string_view value, const char * encoding) -> py:
     return py::reinterpret_steal<py::str>(py_s);
 }
 
-auto parse(const std::string& file_name, const std::string& encoding, const std::string& log_level) -> std::tuple<std::size_t, ValueContainer, std::vector<A2LParser::value_table_t>, AmlData> {
+py::object convert_table_value(const AsamVariantType& value, const char* encoding) {
+    return std::visit(
+        [encoding](const auto& item) -> py::object {
+            using value_type = std::decay_t<decltype(item)>;
+            if constexpr (std::is_same_v<value_type, std::string>) {
+                return unicode_decode(item, encoding);
+            } else {
+                return py::cast(item);
+            }
+        },
+        value
+    );
+}
+
+auto parse(const std::string& file_name, const std::string& encoding, const std::string& log_level) -> py::tuple {
 	auto logger = create_logger("a2l", convert_loglevel(log_level));
 	Preprocessor p{ convert_loglevel(log_level) };
-	std::vector<A2LParser::value_table_t> converted_tables{};
+	py::list converted_tables{};
 
     std::chrono::steady_clock::time_point start1 = std::chrono::steady_clock::now();
     const auto res                   = p.process(file_name, encoding);
@@ -71,23 +86,19 @@ auto parse(const std::string& file_name, const std::string& encoding, const std:
 	for (const auto&[tp, name, rows]: raw_tables) {
 		const auto& tpt = unicode_decode(tp, encoding.c_str());
 		const auto& namet = unicode_decode(name, encoding.c_str());
-		std::vector<std::vector<AsamVariantType>> result;
+		py::list result;
 		for (const auto& row: rows) {
-			std::vector<AsamVariantType> fixed_row;
+			py::list fixed_row;
 			for (const auto& column: row) {
-				if (std::holds_alternative<std::string>(column)) {
-					fixed_row.emplace_back(unicode_decode(std::get<std::string>(column), encoding.c_str()));
-				} else {
-					fixed_row.emplace_back(column);
-				}
+				fixed_row.append(convert_table_value(column, encoding.c_str()));
 			}
-			result.emplace_back(std::move(fixed_row));
+			result.append(std::move(fixed_row));
 		}
-		converted_tables.emplace_back(std::move(tpt), std::move(namet), std::move(result));
+		converted_tables.append(py::make_tuple(tpt, namet, std::move(result)));
 	}
 	auto aml_data = parse_aml(fns.aml);
 
-    return {counter, std::move(values), std::move(converted_tables), std::move(aml_data)};
+    return py::make_tuple(counter, std::move(values), std::move(converted_tables), std::move(aml_data));
 }
 
 /// Wrapper that retries once after triggering the Python cyclic GC on bad_alloc.
@@ -95,7 +106,7 @@ auto parse(const std::string& file_name, const std::string& encoding, const std:
 /// process heap on memory-constrained CI runners.  A single PyGC_Collect() call
 /// usually reclaims enough memory for the retry to succeed.
 auto parse_with_gc_retry(const std::string& file_name, const std::string& encoding, const std::string& log_level)
-    -> std::tuple<std::size_t, ValueContainer, std::vector<A2LParser::value_table_t>, AmlData>
+    -> py::tuple
 {
     try {
         return parse(file_name, encoding, log_level);
