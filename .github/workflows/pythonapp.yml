@@ -63,7 +63,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version: "3.15"
       - name: Install Poetry
         run: |
           python -m pip install --upgrade pip
@@ -98,3 +98,5 @@ jobs:
           merge-multiple: true
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@v1.14.2
+        with:
+          attestations: true

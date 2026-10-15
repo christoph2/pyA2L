@@ -5,14 +5,13 @@ description = "A2L for Python"
 readme = "docs/README.rst"
 license = { text = "GPLv2" }
 authors = [{ name = "Christoph Schueler", email = "cpu12.gems@googlemail.com" }]
-requires-python = ">=3.10"
+requires-python = ">=3.11,<3.16"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Topic :: Software Development",
     "Topic :: Scientific/Engineering",
     "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -28,7 +27,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-compute = ["scipy>=1.15.0", "numexpr>=2.14.1"]
+compute = [
+    "scipy>=1.17.1; python_version < '3.12'",
+    "scipy>=1.18.1; python_version >= '3.12'",
+    "numexpr>=2.14.2",
+]
 
 [project.scripts]
 a2ldb-imex = "pya2l.scripts.a2ldb_imex:main"
@@ -46,7 +49,15 @@ version = "1.0.354"
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.11,<3.16"
+scipy = [
+    { version = "^1.17.1", python = ">=3.11,<3.12", optional = true },
+    { version = "^1.18.1", python = ">=3.12,<3.16", optional = true },
+]
+numexpr = { version = "^2.14.2", optional = true }
+
+[tool.poetry.extras]
+compute = ["scipy", "numexpr"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.2.2,<10.0.0"
@@ -61,8 +72,6 @@ pre-commit-hooks = ">=5,<7"
 pyupgrade = "^3.16.0"
 pytest-cov = ">=6,<8"
 mypy = ">=1.16,<3.0"
-scipy = "^1.15.0"
-numexpr = "^2.14.1"
 
 [tool.bumpver]
 current_version = "1.0.354"
@@ -193,6 +202,6 @@ exclude_dirs = [".venv", "tests", "pya2l/examples", "pya2l/build"]
 [tool.cibuildwheel]
 #test-command = "pya2l {package}/tests"
 
-build = "cp3{10,11,12,13,14,15}-*"
+build = "cp3{11,12,13,14,15}-*"
 skip = ["*_i686", "*-musllinux*"]
 build-frontend = "build"

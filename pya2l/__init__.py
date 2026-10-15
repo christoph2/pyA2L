@@ -41,13 +41,13 @@ __all__ = [
     "DB",
 ]
 
+import importlib.resources
 import re
 import sys
 import typing
 import warnings
 from io import TextIOWrapper
 from pathlib import Path
-
 
 try:
     from rich.traceback import install
@@ -66,10 +66,8 @@ from pya2l.imex import open_json_database  # noqa: F401
 from pya2l.logger import Logger
 from pya2l.templates import doTemplateFromText
 
-
 if RICH_AVAILABLE:
     install(show_locals=True, max_frames=3)  # Install custom exception handler.
-pyver = sys.version_info
 
 
 class InvalidA2LDatabase(Exception):
@@ -80,15 +78,8 @@ class InvalidA2LDatabase(Exception):
 
 a2l_logger = Logger("A2LDB", "INFO")
 
-if pyver.major == 3 and pyver.minor <= 9:
-    import pkg_resources
-
-    A2L_TEMPLATE = str(pkg_resources.resource_string("pya2l.cgen.templates", "a2l.tmpl"), encoding="utf8")
-else:
-    import importlib.resources
-
-    with (importlib.resources.files("pya2l.cgen.templates") / "a2l.tmpl").open(encoding="utf8") as data:
-        A2L_TEMPLATE = data.read()
+with (importlib.resources.files("pya2l.cgen.templates") / "a2l.tmpl").open(encoding="utf8") as data:
+    A2L_TEMPLATE = data.read()
 
 
 _BLANK_BLOCKS = re.compile(r"(\r?\n)[ \t]*(\r?\n){2,}")
