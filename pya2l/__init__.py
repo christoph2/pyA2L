@@ -49,6 +49,7 @@ import warnings
 from io import TextIOWrapper
 from pathlib import Path
 
+
 try:
     from rich.traceback import install
 
@@ -65,6 +66,7 @@ from pya2l.imex import open_a2l_database  # noqa: F401
 from pya2l.imex import open_json_database  # noqa: F401
 from pya2l.logger import Logger
 from pya2l.templates import doTemplateFromText
+
 
 if RICH_AVAILABLE:
     install(show_locals=True, max_frames=3)  # Install custom exception handler.
