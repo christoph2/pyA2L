@@ -1,7 +1,7 @@
 Installation
 ============
 
-- Pythons: Python ≥ 3.10 (see pyproject classifiers for exact versions)
+- Python: 3.11 – 3.15 (see pyproject classifiers for exact versions)
 - Platforms: No platform-specific restrictions for installing the Python
   package; building from source may require additional tools (see
   Building).

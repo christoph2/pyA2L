@@ -356,7 +356,7 @@ A small CLI is provided as a console script named ``a2ldb-imex``:
 Compatibility
 -------------
 
-- Python: 3.10 – 3.14
+- Python: 3.11 – 3.15
 - Platforms: Prebuilt wheels are published for selected platforms. From
   source, Windows/macOS are supported; Linux may require building native
   extensions.

@@ -8,7 +8,7 @@ source.
 Prerequisites
 -------------
 
-- Python 3.10+
+- Python 3.11 – 3.15
 - A C/C++ toolchain (e.g., MSVC Build Tools on Windows, Xcode Command
   Line Tools on macOS, or GCC/Clang on Linux)
 - CMake 3.12+
