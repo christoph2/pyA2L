@@ -34,9 +34,8 @@ import warnings
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import Column, ForeignKey, create_engine, event
+from sqlalchemy import Column, ForeignKey, create_engine, event, orm, types
 from sqlalchemy import exc as sa_exc
-from sqlalchemy import orm, types
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list

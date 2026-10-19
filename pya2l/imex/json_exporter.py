@@ -11,8 +11,7 @@ import argparse
 import json
 import logging
 import re
-from collections.abc import Iterable, Mapping
-from collections.abc import Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from collections.abc import Sequence as SequenceABC
 from dataclasses import dataclass
 from pathlib import Path
