@@ -404,6 +404,9 @@ Invalid block delimiters and missing or incompatible primitive values raise
 ``session.parse_ifdata()`` and inspect objects that parse IF_DATA; a failed
 section is not silently omitted.
 
+String values retain escape sequences as written, without the surrounding
+quotes. Line comments and multiline block comments are ignored.
+
 .. note::
 
    ``IfDataParser`` requires a valid AML schema in the database.  If

@@ -35,8 +35,8 @@ PAT_WS = re.compile(r"\s+")
 PAT_BEGIN = re.compile("/begin")
 PAT_END = re.compile("/end")
 
-PAT_COMMENT = re.compile(r"(/\*.*?\*/)|(//.*?)")
-PAT_STRING = re.compile(r'"[^"]*"')
+PAT_COMMENT = re.compile(r"/\*[\s\S]*?\*/|//[^\r\n]*")
+PAT_STRING = re.compile(r'"(?:\\[\s\S]|[^"\\])*"')
 
 PAT_FLOAT = re.compile(r"[+\-]?(?:(?:\d+[.]\d*|[.]\d+)(?:[eE][+\-]?\d+)?|\d+[eE][+\-]?\d+)")
 
@@ -49,7 +49,7 @@ def identity(value: Any) -> Any:
 
 
 def stripper(text: str) -> str:
-    return text.strip('"')
+    return text[1:-1]
 
 
 def convert_to_float(value: str) -> float:
@@ -89,6 +89,10 @@ class IfDataLexer:
         return result
 
     def get_token(self) -> IfDataToken | None:
+        if self.section.startswith("/*", self.pos) and not PAT_COMMENT.match(self.section, self.pos):
+            raise ValueError(f"Unterminated IF_DATA comment at position {self.pos}")
+        if self.section[self.pos] == '"' and not PAT_STRING.match(self.section, self.pos):
+            raise ValueError(f"Unterminated IF_DATA string at position {self.pos}")
         for code, expr, converter in EXPRESSIONS:
             match = expr.match(self.section, self.pos)
             if match:

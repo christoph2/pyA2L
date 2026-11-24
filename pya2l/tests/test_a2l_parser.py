@@ -570,6 +570,48 @@ def test_parse_if_data_char_and_integer_float_values(parser, tmp_path):
     assert db.session.parse_ifdata([section]) == [{"XCP": {"TEXT_VALUE": "", "CHAR_VALUE": 65, "FLOAT_VALUE": 1}}]
 
 
+def test_parse_if_data_comments_and_escaped_strings(parser, tmp_path):
+    a2l_file = tmp_path / "numeric_ifdata.a2l"
+    a2l_file.write_text(NUMERIC_IFDATA_A2L, encoding="latin-1")
+    db = parser.parse(str(a2l_file), in_memory=True, progress_bar=False, loglevel="ERROR")
+    db.session.setup_ifdata_parser(loglevel="ERROR")
+    raw = (
+        '/begin IF_DATA XCP // FLOAT_VALUE 99\n'
+        'TEXT_VALUE "a \\"quoted\\" value // not a comment" '
+        '/* FLOAT_VALUE 100\n/end WRONG */ FLOAT_VALUE 1.5 /end IF_DATA'
+    )
+
+    assert db.session.parse_ifdata([model.IfData(raw=raw)]) == [
+        {"XCP": {"TEXT_VALUE": r'a \"quoted\" value // not a comment', "FLOAT_VALUE": 1.5}}
+    ]
+
+
+def test_import_if_data_with_escaped_string(parser, tmp_path):
+    a2l_file = tmp_path / "escaped_ifdata.a2l"
+    a2l_file.write_text(
+        NUMERIC_IFDATA_A2L.replace("FLOAT_VALUE 1.5e-2", r'TEXT_VALUE "a \"quoted\" value"'),
+        encoding="latin-1",
+    )
+    db = parser.parse(str(a2l_file), in_memory=True, progress_bar=False, loglevel="ERROR")
+    db.session.setup_ifdata_parser(loglevel="ERROR")
+    section = db.session.query(model.Module).first().if_data
+
+    assert db.session.parse_ifdata(section) == [
+        {"XCP": {"DAQ_EVENT": {"FIXED_EVENT_LIST": {"EVENT": [0, 1]}}, "TEXT_VALUE": r'a \"quoted\" value'}}
+    ]
+
+
+@pytest.mark.parametrize("raw", ['/begin IF_DATA XCP TEXT_VALUE "unterminated', "/begin IF_DATA XCP /* unterminated"])
+def test_parse_if_data_rejects_unterminated_strings_and_comments(parser, tmp_path, raw):
+    a2l_file = tmp_path / "numeric_ifdata.a2l"
+    a2l_file.write_text(NUMERIC_IFDATA_A2L, encoding="latin-1")
+    db = parser.parse(str(a2l_file), in_memory=True, progress_bar=False, loglevel="ERROR")
+    db.session.setup_ifdata_parser(loglevel="ERROR")
+
+    with pytest.raises(ParsingError, match="Unterminated IF_DATA"):
+        db.session.parse_ifdata([model.IfData(raw=raw)])
+
+
 def test_parse_coeffs(parser, tmp_path):
     a2l_file = tmp_path / "coeffs.a2l"
     a2l_file.write_text(COEFFS_A2L, encoding="latin-1")
