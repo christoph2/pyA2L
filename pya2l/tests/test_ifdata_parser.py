@@ -4,11 +4,11 @@ import pytest
 
 from pya2l.aml.ifdata_lexer import IfDataToken, IfDataTokenType
 from pya2l.aml.ifdata_parser import (
+    PDT,
     AMLPredefinedTypeEnum,
     IfDataParser,
     Member,
     ParsingError,
-    PDT,
     Referrer,
     ReferrerType,
     Struct,
