@@ -340,6 +340,31 @@ ASAP2_VERSION 1 71
 """
 
 
+NUMERIC_IFDATA_A2L = """
+ASAP2_VERSION 1 71
+/begin PROJECT NumericProject "IF_DATA numeric test"
+  /begin MODULE NumericModule ""
+    /begin A2ML
+      block "IF_DATA" taggedunion {
+      "XCP" taggedstruct {
+      block "DAQ_EVENT" taggedunion {
+      "FIXED_EVENT_LIST" taggedstruct {
+      ("EVENT" uint)*;
+      };
+      };
+      "FLOAT_VALUE" double;
+      };
+      };
+    /end A2ML
+    /begin IF_DATA XCP
+      /begin DAQ_EVENT FIXED_EVENT_LIST EVENT 0x0000 EVENT 0x0001 /end DAQ_EVENT
+      FLOAT_VALUE 1.5e-2
+    /end IF_DATA
+  /end MODULE
+/end PROJECT
+"""
+
+
 @pytest.fixture
 def parser():
     import gc
@@ -475,6 +500,18 @@ def test_parse_if_data(parser, tmp_path):
     assert len(char.if_data) == 1
     assert "PROTOCOL_LAYER" in char.if_data[0].raw
     assert "0x100" in char.if_data[0].raw
+
+
+def test_parse_if_data_numeric_values(parser, tmp_path):
+    a2l_file = tmp_path / "numeric_ifdata.a2l"
+    a2l_file.write_text(NUMERIC_IFDATA_A2L, encoding="latin-1")
+
+    db = parser.parse(str(a2l_file), in_memory=True, progress_bar=False, loglevel="ERROR")
+    session = db.session
+    session.setup_ifdata_parser(loglevel="ERROR")
+    parsed = session.parse_ifdata(session.query(model.Module).first().if_data)
+
+    assert parsed == [{"XCP": {"DAQ_EVENT": {"FIXED_EVENT_LIST": {"EVENT": [0, 1]}}, "FLOAT_VALUE": 0.015}}]
 
 
 def test_parse_coeffs(parser, tmp_path):
