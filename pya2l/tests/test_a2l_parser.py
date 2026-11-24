@@ -576,13 +576,13 @@ def test_parse_if_data_comments_and_escaped_strings(parser, tmp_path):
     db = parser.parse(str(a2l_file), in_memory=True, progress_bar=False, loglevel="ERROR")
     db.session.setup_ifdata_parser(loglevel="ERROR")
     raw = (
-        '/begin IF_DATA XCP // FLOAT_VALUE 99\n'
+        "/begin IF_DATA XCP // FLOAT_VALUE 99\n"
         'TEXT_VALUE "a \\"quoted\\" value // not a comment" '
-        '/* FLOAT_VALUE 100\n/end WRONG */ FLOAT_VALUE 1.5 /end IF_DATA'
+        "/* FLOAT_VALUE 100\n/end WRONG */ FLOAT_VALUE 1.5 /end IF_DATA"
     )
 
     assert db.session.parse_ifdata([model.IfData(raw=raw)]) == [
-        {"XCP": {"TEXT_VALUE": r'a \"quoted\" value // not a comment', "FLOAT_VALUE": 1.5}}
+        {"XCP": {"TEXT_VALUE": r"a \"quoted\" value // not a comment", "FLOAT_VALUE": 1.5}}
     ]
 
 
@@ -597,7 +597,7 @@ def test_import_if_data_with_escaped_string(parser, tmp_path):
     section = db.session.query(model.Module).first().if_data
 
     assert db.session.parse_ifdata(section) == [
-        {"XCP": {"DAQ_EVENT": {"FIXED_EVENT_LIST": {"EVENT": [0, 1]}}, "TEXT_VALUE": r'a \"quoted\" value'}}
+        {"XCP": {"DAQ_EVENT": {"FIXED_EVENT_LIST": {"EVENT": [0, 1]}}, "TEXT_VALUE": r"a \"quoted\" value"}}
     ]
 
 
