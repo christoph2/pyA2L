@@ -499,8 +499,7 @@ class IfDataParser:
 
         for member in self.syntax_tos.members:
             tmp_res = self.enter(member.node)
-            if tmp_res != {}:
-                result.append(tmp_res)
+            result.append(tmp_res)
             self.leave()
 
         return result

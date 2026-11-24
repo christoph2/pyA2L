@@ -6,8 +6,12 @@ from pya2l.aml.ifdata_lexer import IfDataToken, IfDataTokenType
 from pya2l.aml.ifdata_parser import (
     AMLPredefinedTypeEnum,
     IfDataParser,
+    Member,
     ParsingError,
     PDT,
+    Referrer,
+    ReferrerType,
+    Struct,
     TaggedStruct,
     TaggedStructDefinition,
     TaggedStructMember,
@@ -91,3 +95,31 @@ def test_nested_exception_is_preserved_and_parser_can_be_reused(nested_parser, m
     assert parser.syntax_stack == [root]
     assert parser.level == 0
     assert parser.parse("/begin IF_DATA VALUE 1 /end IF_DATA") == {"VALUE": 1}
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("/begin IF_DATA 7 /end IF_DATA", [{}, 7, {}]),
+        ("/begin IF_DATA FIRST 2 7 /end IF_DATA", [{"FIRST": 2}, 7, {}]),
+        ("/begin IF_DATA 7 LAST 3 /end IF_DATA", [{}, 7, {"LAST": 3}]),
+        ("/begin IF_DATA FIRST 2 0 LAST 3 /end IF_DATA", [{"FIRST": 2}, 0, {"LAST": 3}]),
+    ],
+)
+def test_struct_preserves_empty_tagged_struct_positions(nested_parser, raw, expected):
+    parser = nested_parser
+    integer = PDT(AMLPredefinedTypeEnum.INT, [])
+    first = TaggedStruct(members={"FIRST": TaggedStructMember(TaggedStructDefinition(integer, False), False)})
+    last = TaggedStruct(members={"LAST": TaggedStructMember(TaggedStructDefinition(integer, False), False)})
+    parser.ref_dict = {ReferrerType.TaggedStructType: {"first": first}}
+    parser.syntax_stack = [
+        Struct(
+            members=[
+                Member(Referrer(ReferrerType.TaggedStructType, "first"), False),
+                Member(integer, False),
+                Member(last, False),
+            ]
+        )
+    ]
+
+    assert parser.parse(raw) == expected

@@ -103,6 +103,11 @@ is essential when you need the original text for diagnostics, logging,
 or when the AML schema is unavailable (in which case ``if_data_parsed``
 is empty but the raw text is still there).
 
+AML ``struct`` members are represented as positional list entries. Empty
+tagged structures are retained as ``{}``, including when they occur before
+or after other members. Code that indexes into these lists should account
+for these entries; earlier versions omitted them.
+
 Using the flatmap
 -----------------
 

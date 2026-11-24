@@ -629,9 +629,12 @@ def test_parse_and_export_xcp_on_can(parser, tmp_path):
 
     assert parsed and "XCP" in parsed[0]
     xcp_entries = parsed[0]["XCP"]
-    assert xcp_entries and "XCP_ON_CAN" in xcp_entries[0]
+    assert xcp_entries[0] == {}
+    assert "XCP_ON_CAN" in xcp_entries[1]
 
-    can_entry = xcp_entries[0]["XCP_ON_CAN"][0]
+    can_block = xcp_entries[1]["XCP_ON_CAN"]
+    assert can_block[1] == {}
+    can_entry = can_block[0]
     assert can_entry[0] == 0x0104
     params = can_entry[1]
     assert params["CAN_ID_MASTER"] == 0x7E0
