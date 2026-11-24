@@ -402,7 +402,7 @@ class IfDataParser:
                     # Handle multiple values
                     while True:
                         tmp_value = self.enter(elem.definition)
-                        if tmp_value:
+                        if tmp_value is not None:
                             result[tk_value].append(tmp_value)
                         self.leave()
 
