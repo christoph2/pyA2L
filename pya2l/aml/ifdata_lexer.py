@@ -38,9 +38,9 @@ PAT_END = re.compile("/end")
 PAT_COMMENT = re.compile(r"(/\*.*?\*/)|(//.*?)")
 PAT_STRING = re.compile(r'"[^"]*"')
 
-PAT_FLOAT = re.compile(r"[+\-]?(\d+([.]\d*)?([eE][+\-]?\d+)?|[.]\d+([eE][+\-]?\d+)?)")
+PAT_FLOAT = re.compile(r"[+\-]?(?:(?:\d+[.]\d*|[.]\d+)(?:[eE][+\-]?\d+)?|\d+[eE][+\-]?\d+)")
 
-PAT_INT = re.compile(r"(0x[0-9a-fA-F]+)|([+\-]?[0-9]+)")
+PAT_INT = re.compile(r"[+\-]?(?:0[xX][0-9a-fA-F]+|[0-9]+)")
 PAT_IDENT = re.compile(r"([a-zA-Z_][a-zA-Z_0-9.]*)\b")
 
 
@@ -57,7 +57,7 @@ def convert_to_float(value: str) -> float:
 
 
 def convert_to_int(value: str) -> int:
-    base = 16 if value.lower().startswith("0x") else 10
+    base = 16 if value.lstrip("+-").lower().startswith("0x") else 10
     return int(value, base)
 
 
@@ -65,8 +65,8 @@ EXPRESSIONS = [
     (IfDataTokenType.WS, PAT_WS, identity),
     (IfDataTokenType.COMMENT, PAT_COMMENT, identity),
     (IfDataTokenType.STRING, PAT_STRING, stripper),
-    (IfDataTokenType.INT, PAT_INT, convert_to_int),
     (IfDataTokenType.FLOAT, PAT_FLOAT, convert_to_float),
+    (IfDataTokenType.INT, PAT_INT, convert_to_int),
     (IfDataTokenType.BEGIN, PAT_BEGIN, identity),
     (IfDataTokenType.END, PAT_END, identity),
     (IfDataTokenType.IDENT, PAT_IDENT, identity),
