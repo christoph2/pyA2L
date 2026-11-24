@@ -308,29 +308,29 @@ class IfDataParser:
             self.level = 0
             self.num_tokens = len(self.tokens)
 
-            # typical minimal token sequence: BEGIN, IDENT(IF_DATA), END, IDENT(IF_DATA) -> 4 tokens.
-            if self.num_tokens <= 4:
-                self.logger.debug("IF_DATA section empty or contains no entries; returning empty result")
-                return {}
-
-            # Parse the IF_DATA section
             self.match(IfDataTokenType.BEGIN)
             self.match(IfDataTokenType.IDENT, "IF_DATA")
-            result = self.enter(self.syntax_tos)
-            self.leave()
+            if self.current_token.type == IfDataTokenType.END:
+                result = {}
+            else:
+                result = self.enter(self.syntax_tos)
+                self.leave()
             self.match(IfDataTokenType.END)
             self.match(IfDataTokenType.IDENT, "IF_DATA")
+            if self.token_idx != self.num_tokens:
+                token = self.current_token
+                raise ParsingError(f"Unexpected token after IF_DATA: {token.value!r}")
 
             return result
-        except EOFReached:
+        except EOFReached as e:
             self.logger.error("Unexpected end of input")
-            raise ParsingError("Unexpected end of input")
-        except IndexError as e:
-            self.logger.debug(f"IndexError while parsing IF_DATA, returning empty result: {e}")
-            return {}
+            raise ParsingError("Unexpected end of input") from e
+        except ParsingError as e:
+            self.logger.error(f"Error parsing IF_DATA: {e}")
+            raise
         except Exception as e:
-            self.logger.error(f"Error parsing IF_DATA: {str(e)}")
-            raise ParsingError(f"Error parsing IF_DATA: {str(e)}")
+            self.logger.error(f"Error parsing IF_DATA: {e}")
+            raise ParsingError(f"Error parsing IF_DATA: {e}") from e
 
     def block(self) -> dict:
         """
@@ -517,16 +517,23 @@ class IfDataParser:
         """
         pdt_type = self.syntax_tos.type
 
-        # Validate token type against PDT type
-        if pdt_type == AMLPredefinedTypeEnum.INT or pdt_type == AMLPredefinedTypeEnum.LONG:
+        if pdt_type in (
+            AMLPredefinedTypeEnum.INT,
+            AMLPredefinedTypeEnum.LONG,
+            AMLPredefinedTypeEnum.UCHAR,
+            AMLPredefinedTypeEnum.UINT,
+            AMLPredefinedTypeEnum.ULONG,
+            AMLPredefinedTypeEnum.INT64,
+            AMLPredefinedTypeEnum.UINT64,
+        ):
             return token.type == IfDataTokenType.INT
-        elif pdt_type == AMLPredefinedTypeEnum.FLOAT or pdt_type == AMLPredefinedTypeEnum.DOUBLE:
+        elif pdt_type in (AMLPredefinedTypeEnum.FLOAT16, AMLPredefinedTypeEnum.FLOAT, AMLPredefinedTypeEnum.DOUBLE):
             return token.type in (IfDataTokenType.FLOAT, IfDataTokenType.INT)
         elif pdt_type == AMLPredefinedTypeEnum.CHAR:
-            return token.type == IfDataTokenType.STRING and len(token.value) == 1
-
-        # Default validation
-        return True
+            if self.syntax_tos.arr_spec:
+                return token.type == IfDataTokenType.STRING
+            return token.type == IfDataTokenType.INT or (token.type == IfDataTokenType.STRING and len(token.value) == 1)
+        return False
 
     def pdt(self) -> Any:
         """
@@ -537,13 +544,10 @@ class IfDataParser:
         """
         tk = self.current_token
 
-        # Validate the token
-        #
-        # TODO: Add support for array types.
-        # if not self.validate_pdt(tk):
-        #    token_type_name = IfDataTokenType(tk.type).name
-        #    pdt_type_name = AMLPredefinedTypeEnum(self.syntax_tos.type).name
-        #    self.logger.warn(f"Token {token_type_name}[{tk.value}] may not be valid for PDT type {pdt_type_name}")
+        if not self.validate_pdt(tk):
+            token_type_name = IfDataTokenType(tk.type).name
+            pdt_type_name = self.syntax_tos.type.name
+            raise ParsingError(f"Expected {pdt_type_name} value, got {token_type_name} {tk.value!r}")
 
         self.consume()
 
@@ -625,6 +629,7 @@ class IfDataParser:
             klass = self.ref_dict[klass.category][klass.identifier]
 
         self.syntax_stack.append(klass)
+        self.level += 1
 
         try:
             # Dispatch based on node type
@@ -650,12 +655,10 @@ class IfDataParser:
                 self.logger.error(f"Unsupported class {type(klass).__name__}")
                 raise TypeError(f"Unsupported class {type(klass).__name__}")
 
-            self.level += 1
             return result
-        except Exception as e:
-            self.logger.error(f"Error in enter({type(klass).__name__}): {str(e)}")
-            self.level += 1
-            return {}
+        except Exception:
+            self.leave()
+            raise
 
     def leave(self) -> None:
         """Leave the current node in the syntax tree."""
@@ -722,50 +725,16 @@ class IfDataParser:
             token_type: The expected token type
             value: The expected token value (optional)
 
-        Returns:
-            True if the match succeeded, False otherwise
+        Raises:
+            ParsingError: If the token type or value does not match.
         """
-        try:
-            ok = self.current_token.type == token_type
-
-            if not ok:
-                expected_type_name = token_type.name
-                actual_type_name = IfDataTokenType(self.current_token.type).name
-                self.logger.error(f"{expected_type_name} not matched against {actual_type_name}")
-
-                # Try to recover by finding the next token of the expected type
-                recovery_limit = 10  # Limit recovery attempts to avoid infinite loops
-                recovery_count = 0
-
-                while recovery_count < recovery_limit:
-                    self.consume()
-                    recovery_count += 1
-
-                    if self.current_token.type == token_type:
-                        ok = True
-                        break
-
-                if not ok:
-                    self.logger.error(f"Failed to recover from token mismatch after {recovery_count} attempts")
-
-            token_value = self.current_token.value
-            self.consume()
-
-            if value is None:
-                return ok
-            else:
-                if not ok:
-                    return False
-
-                value_match = token_value == value
-                if not value_match:
-                    self.logger.error(f"Value mismatch: expected {value!r}, got {token_value!r}")
-
-                return value_match
-
-        except EOFReached:
-            self.logger.error("Unexpected end of input during token matching")
-            return False
+        token = self.current_token
+        if token.type != token_type:
+            raise ParsingError(f"Expected {token_type.name}, got {IfDataTokenType(token.type).name} {token.value!r}")
+        if value is not None and token.value != value:
+            raise ParsingError(f"Expected {value!r}, got {token.value!r}")
+        self.consume()
+        return True
 
     def traverse(self, node) -> Any:
         """

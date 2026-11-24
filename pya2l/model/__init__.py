@@ -25,7 +25,6 @@ __copyright__ = """
   """
 
 import datetime
-import logging
 import mmap
 import pickle  # nosec B403 — only deserializes blobs written by pya2l's own AML parser (never untrusted data)
 import re
@@ -5599,16 +5598,7 @@ class SessionProxy:
     def parse_ifdata(self, sections: Sequence["IfData"]) -> list[Any]:
         if self._ifdata_parser is None or not self._ifdata_parser.root or not sections:
             return []
-        else:
-            result: list[Any] = []
-            for section in sections:
-                try:
-                    res = self._ifdata_parser.parse(section.raw)
-                except Exception as e:
-                    logging.getLogger("pya2l.ifdata").debug(f"Error parsing IF_DATA section: {section.raw!r}: {e!r}")
-                else:
-                    result.append(res)
-            return result
+        return [self._ifdata_parser.parse(section.raw) for section in sections]
 
 
 class A2LDatabase:

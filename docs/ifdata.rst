@@ -394,6 +394,11 @@ whose AML schema has been loaded (i.e., the A2L file contained a
    result = parser.parse(raw_text)
    print(result)
 
+Invalid block delimiters and missing or incompatible primitive values raise
+``pya2l.aml.ifdata_parser.ParsingError``. This also applies to
+``session.parse_ifdata()`` and inspect objects that parse IF_DATA; a failed
+section is not silently omitted.
+
 .. note::
 
    ``IfDataParser`` requires a valid AML schema in the database.  If
