@@ -16,7 +16,7 @@ class Parameter {
         TUPLE
     };
 
-    using tuple_element_t = std::tuple<PredefinedType const &, std::string>;
+    using tuple_element_t = std::tuple<PredefinedType, std::string>;
 
     // Integral types and the like.
     Parameter(PredefinedType type, std::string_view name, bool multiple = false) :
